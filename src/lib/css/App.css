@@ -1,0 +1,392 @@
+.bugbattle--feedback-button {
+  position: fixed;
+  bottom: 0px;
+  right: 30px;
+  width: 135px;
+  height: 35px;
+  line-height: 35px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 13px;
+  font-family: sans-serif;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  cursor: pointer;
+  background-color: #086EFB;
+  color: #fff;
+}
+
+.bugbattle--feedback-dialog-container {
+  position: fixed;
+  left: 0px;
+  top: 0px;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.25);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bugbattle--feedback-dialog {
+  width: 90%;
+  max-width: 550px;
+  background-color: #fff;
+  box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow-y: auto;
+}
+
+.bugbattle--feedback-dialog-header {
+  height: 50px;
+  background-color: #086EFB;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@media only screen and (max-width: 600px) {
+  .bugbattle--feedback-dialog {
+    width: 100%;
+    height: 100%;
+    border-radius: 0px;
+  }
+  .bugbattle--feedback-dialog-header {
+    border-radius: 0px;
+  }  
+}
+
+.bugbattle--feedback-dialog-header-button {
+  font-weight: normal;
+  padding: 0px 20px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 14px;
+  font-family: sans-serif;
+}
+
+.bugbattle--feedback-dialog-header-title {
+  font-weight: bold;
+  text-align: center;
+  color: #fff;
+  font-size: 15px;
+  font-family: sans-serif;
+  text-align: center;
+  width: 100%;
+}
+
+.bugbattle--feedback-dialog-info-text {
+  color: #666;
+  font-size: 14px;
+  font-family: sans-serif;
+  padding-top: 10px;
+  text-align: center;
+}
+
+.bugbattle--feedback-dialog-success {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  padding: 100px;
+  display: none;
+}
+
+.bugbattle--feedback-dialog-success svg {
+  width: 30px;
+  height: auto;
+}
+
+.bugbattle--feedback-dialog-loading {
+  display: none;
+}
+
+.bugbattle--feedback-dialog-body {
+  display: block;
+}
+
+.bugbattle--feedback-inputgroup {
+  border-bottom: 1px solid #eee;
+}
+
+.bugbattle--feedback-inputgroup-label {
+  padding: 20px;
+  padding-bottom: 0px;
+  color: #A9A9A9;
+  font-size: 15px;
+  font-family: sans-serif;
+}
+
+.bugbattle--feedback-inputgroup input {
+  width: calc(100% - 40px);
+  border: none;
+  padding: 20px;
+  font-size: 15px;
+  font-family: sans-serif;
+  outline: none;
+}
+
+.bugbattle--feedback-inputgroup textarea {
+  border: none;
+  outline: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  resize: none;
+  width: 100%;
+  border: none;
+  padding: 20px;
+  font-size: 15px;
+  line-height: 17px;
+  font-family: sans-serif;
+  margin: 0px;
+  box-sizing: border-box;
+}
+
+.bugbattle-feedback-importance {
+  margin: 20px;
+  margin-bottom: -8px;
+  font-weight: bold;
+  color: #222426;
+  font-size: 14px;
+}
+
+.bugbattle--toggle {
+  display: flex;
+  margin: 20px 20px;
+  width: calc(100% - 40px);
+  position: relative;
+  user-select: none;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  position: relative;
+  z-index: 1;
+  font-size: 12px;
+  border: 1px solid #086EFB;
+  border-radius: 3px;
+  color: #086EFB;
+}
+
+.bugbattle--toggle > input {
+  display: none;
+}
+
+.bugbattle--toggle > input:checked + label {
+  color: #fff;
+}
+
+.bugbattle--toggle > input:nth-of-type(1):checked ~ label:last-of-type:before {
+  transform: translateX(calc(0% + 0px));
+}
+
+.bugbattle--toggle > input:nth-of-type(2):checked ~ label:last-of-type:before {
+  transform: translateX(calc(100% + 0px));
+}
+
+.bugbattle--toggle > input:nth-of-type(3):checked ~ label:last-of-type:before {
+  transform: translateX(calc(200% + 0px));
+}
+
+.bugbattle--toggle label {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  font-family: sans-serif;
+}
+
+.bugbattle--toggle label:last-of-type:before {
+  content: "";
+  display: block;
+  max-width: calc(33.3333333333% - 0px);
+  margin: 0px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  transform: translateX(0);
+}
+
+.bugbattle--toggle label {
+  padding: 6px 3px;
+  transition: color 250ms cubic-bezier(0, 0.95, 0.38, 0.98);
+}
+
+.bugbattle--toggle label:before {
+  background: #086EFB;
+  transition: all 250ms cubic-bezier(0, 0.95, 0.38, 0.98);
+}
+
+.bugbattle--toggle label:not(:last-child) {
+  border-right: 1px solid #086EFB;
+}
+
+.bugbattle--feedback-image {
+  position: relative;
+}
+
+.bugbattle--feedback-image img {
+  width: 200px;
+  height: auto;
+  max-height: 180px;
+  object-fit: cover;
+  margin: 20px;
+  border-radius: 5px;
+  border: solid 1px #eee;
+  min-height: 90px;
+}
+
+.bugbattle--edit-button {
+  position: absolute;
+  top: calc(50% - 25px);
+  left: 100px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bugbattle--edit-button svg {
+  width: 60%;
+}
+
+.bugbattle-spinner {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  margin: 100px auto;
+}
+
+.bugbattle-double-bounce1, .bugbattle-double-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #333;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  
+  -webkit-animation: sk-bounce 2.0s infinite ease-in-out;
+  animation: sk-bounce 2.0s infinite ease-in-out;
+}
+
+.bugbattle-double-bounce2 {
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+
+@-webkit-keyframes sk-bounce {
+  0%, 100% { -webkit-transform: scale(0.0) }
+  50% { -webkit-transform: scale(1.0) }
+}
+
+@keyframes sk-bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}
+
+.bugbattle-screenshot-editor-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  height: 100%;
+  background-color: #fff;
+}
+
+.bugbattle-screenshot-editor-canvas {
+  width: 100vw;
+  height: 100vh;
+  background-color: #eee;
+  cursor: crosshair;
+}
+
+.bugbattle-screenshot-editor-done {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 55px;
+  height: 55px;
+  line-height: 55px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 13px;
+  font-family: sans-serif;
+  cursor: pointer;
+  background-color: #fff;
+  color: #000;
+  font-weight: bold;
+  border-radius: 28px;
+  box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.2);
+}
+
+.bugbattle-screenshot-editor-color {
+  position: fixed;
+  top: 42px;
+  width: 30px;
+  height: 30px;
+  text-align: center;
+  font-weight: normal;
+  font-size: 10px;
+  font-family: sans-serif;
+  cursor: pointer;
+  color: #000;
+  font-weight: bold;
+  border-radius: 28px;
+  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+}
+
+.bugbattle-screenshot-editor-color--selected {
+  border: 2px solid #fff;
+}
+
+.bugbattle-screenshot-editor-color--black {
+  right: 105px;
+  background-color: #313131;
+}
+
+.bugbattle-screenshot-editor-color--yellow {
+  right: 140px;
+  background-color: #FCC83D;
+}
+
+.bugbattle-screenshot-editor-color--green {
+  right: 175px;
+  background-color: #50AF57;
+}
+
+.bugbattle-screenshot-editor-color--marine {
+  right: 210px;
+  background-color: #27BBD1;
+}
+
+.bugbattle-screenshot-editor-color--blue {
+  right: 245px;
+  background-color: #414FB0;
+}
+
+.bugbattle-screenshot-editor-color--pink {
+  right: 280px;
+  background-color: #9924AB;
+}
+
+.bugbattle-screenshot-editor-color--red {
+  right: 315px;
+  background-color: #ED443D;
+}
+
