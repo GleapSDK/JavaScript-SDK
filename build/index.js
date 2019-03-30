@@ -1,9 +1,9 @@
 /*!
  * 
- *   bugbatttle v1.0.1
+ *   bugbatttle v1.0.3
  *   https://github.com/BugBattle/BugBattle-JavaScript-SDK
  * 
- *   Copyright (c) Lukas Böhler 
+ *   Copyright (c) BugBattle 
  * 
  *   This source code is licensed under the MIT license found in the
  *   LICENSE file in the root directory of this source tree.
