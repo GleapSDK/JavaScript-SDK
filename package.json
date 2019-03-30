@@ -1,6 +1,6 @@
 {
   "name": "bugbatttle",
-  "version": "1.0.2",
+  "version": "1.0.1",
   "main": "build/index.js",
   "scripts": {
     "start": "node scripts/start.js",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BugBattle/BugBattle-JS-SDK"
+    "url": "https://github.com/BugBattle/BugBattle-JavaScript-SDK"
   },
   "author": "Lukas Böhler <hi@bugbattle.io>",
   "homepage": "https://www.bugbattle.io/",
