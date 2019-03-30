@@ -109,10 +109,14 @@ class BugBattle {
 
   reportBug() {
     let feedbackBtn = document.querySelector('.bugbattle--feedback-button');
-    feedbackBtn.style.display = "none";
+    if (feedbackBtn) {
+      feedbackBtn.style.display = "none";
+    }
     html2canvas(document.body).then((img) => {
       this.screenshot = img.toDataURL();
-      feedbackBtn.style.display = "block";
+      if (feedbackBtn) {
+        feedbackBtn.style.display = "block";
+      }
       this.createBugReportingDialog();
     });
   }

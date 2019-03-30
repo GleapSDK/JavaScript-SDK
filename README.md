@@ -26,8 +26,8 @@ npm install bugbattle --save
 
 OR add the following lines to your website's / webapp's head-tag:
 ```
-<link href="https://jssdk.bugbattle.io/v1.0.3/index.css" rel="stylesheet">
-<script src="https://jssdk.bugbattle.io/v1.0.3/index.js"></script>
+<link href="https://jssdk.bugbattle.io/latest/index.css" rel="stylesheet">
+<script src="https://jssdk.bugbattle.io/latest/index.js"></script>
 <script>let BugBattle = window.BugBattle.default;</script>
 ```
 

@@ -1,6 +1,6 @@
 {
-  "name": "bugbatttle",
-  "version": "1.0.3",
+  "name": "bugbattle",
+  "version": "1.0.4",
   "main": "build/index.js",
   "scripts": {
     "start": "node scripts/start.js",
