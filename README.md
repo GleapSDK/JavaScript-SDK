@@ -3,33 +3,55 @@ Achieve better app quality & ratings with comprehensive in-app bug reporting. Bu
 
 ## ⭐️ Features
 
-- Multiple Platforms (iOS, Android, JavaScript)
-- Plain and Instant Setup
-- Enhance your apps
-- Easy Integration
-- Datacenter in Europe
+- Plain and instant setup
+- Enhance your apps with bug reporting
+- Easy integration
+- Datacenter in europe
+- Multiple platforms (iOS, Android, JavaScript)
 
-## Getting started
+## 🚀 Getting started
 
 1.) Register an account at [www.bugbattle.io](https://www.bugbattle.io). It's free and takes just a few seconds.
 
 2.) Include the BugBattle JS SDK within your apps.
 
-2.a) NPM / YARN:
+NPM / YARN:
 ```
 npm install bugbattle --save
 ```
 
-2.b) Or add the following lines to your website's / webapp's header:
+Or add the following lines to your website's / webapp's header:
 ```
 <link href="https://jssdk.bugbattle.io/v1.0.3/index.css" rel="stylesheet">
 <script src="https://jssdk.bugbattle.io/v1.0.3/index.js"></script>
+<script>let BugBattle = window.BugBattle.default;</script>
 ```
 
-3.)
+3.) Initialize the SDK
+
+Add the following code to your app / website to initialize the BugBattle JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual sdk token.
+
+```
+<script>
+let bugBattle = new BugBattle("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
+</script>
+```
 
 Congrats, you are now all set! Report your first bug by using the feedback button.
 
-## Need help?
+## 🤤 Customization / tracking more data
+
+You track more data (i.e. the app build number, version code or custom data) by using one of the following functions.
+
+```
+bugBattle.setAppBuildNumber(5);
+bugBattle.setAppVersionCode("v5.0");
+bugBattle.setCustomData({
+    test: "Battle"
+});
+```
+
+
+## 🤝 Need help?
 
 We are here to help! hi@bugbattle.io
