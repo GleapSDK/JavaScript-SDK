@@ -1,6 +1,10 @@
 ## BugBattle JavaScript SDK
 Achieve better app quality & ratings with comprehensive in-app bug reporting. BugBattle offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
 
+## ❤️ Demo
+
+[https://jssdk.bugbattle.io/demo](https://jssdk.bugbattle.io/demo)
+
 ## ⭐️ Features
 
 - Plain and instant setup
@@ -58,6 +62,20 @@ bugBattle.setCustomData({
     test1: "Battle",
     data2: "Unicorn"
 });
+```
+
+## 🤠 Activation methods
+
+Currently you can choose between two activation methods, that initiate the bug reporting workflow.
+
+a.) BugBattle.FEEDBACK_BUTTON - this will add a feedback bottom to the page
+b.) BugBattle.NONE - this allows you to manually trigger the bug reporting workflow
+
+If you want to manually trigger the bug reporting workflow, simply call the following method:
+
+```
+// Initiates the bug reporting workflow.
+bugBattle.reportBug();
 ```
 
 ## 🤝 Need help?
