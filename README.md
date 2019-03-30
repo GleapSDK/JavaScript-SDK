@@ -11,20 +11,24 @@ Achieve better app quality & ratings with comprehensive in-app bug reporting. Bu
 
 ## Getting started
 
-1.) Register an account at www.bugbattle.io. It's free and takes just a few seconds.
+1.) Register an account at [www.bugbattle.io](https://www.bugbattle.io). It's free and takes just a few seconds.
+
 2.) Include the BugBattle JS SDK within your apps.
 
-NPM / YARN:
+2.a) NPM / YARN:
 ```
 npm install bugbattle --save
 ```
 
-Or add the following line to your Website / Webapp header:
+2.b) Or add the following lines to your website's / webapp's header:
 ```
-npm install bugbattle --save
+<link href="https://jssdk.bugbattle.io/v1.0.3/index.css" rel="stylesheet">
+<script src="https://jssdk.bugbattle.io/v1.0.3/index.js"></script>
 ```
 
-3.) Report your first bug by using the feedback button.
+3.)
+
+Congrats, you are now all set! Report your first bug by using the feedback button.
 
 ## Need help?
 
