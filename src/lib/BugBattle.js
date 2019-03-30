@@ -51,6 +51,17 @@ class BugBattle {
     this.customData = data;
   }
 
+  /**
+   * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
+   * @param {string} color 
+   */
+  setMainColor(color) {
+    let colorStyleSheet = ".bugbattle--feedback-button { background-color: " + color + "; } .bugbattle--feedback-dialog-header { background-color: " + color + "; } .bugbattle--toggle { border: 1px solid " + color + "; color: " + color + "; } .bugbattle--toggle label:before { background: " + color + "; } .bugbattle--toggle label:not(:last-child) { border-right: 1px solid " + color + "; }";
+    let node = document.createElement('style');
+    node.innerHTML = colorStyleSheet;
+    document.body.appendChild(node);
+  }
+
   overwriteConsoleLog() {
     window.console = (function(origConsole) {
         if (!window.console || !origConsole) {
@@ -211,7 +222,7 @@ class BugBattle {
   injectFeedbackButton() {
     var elem = document.createElement('div');
     elem.className = "bugbattle--feedback-button";
-    elem.innerHTML = "FEEDBACK";
+    elem.innerHTML = "";
     elem.onclick = () => {
       this.reportBug();
     };

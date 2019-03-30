@@ -16,6 +16,10 @@
   color: #fff;
 }
 
+.bugbattle--feedback-button:after {
+  content: "Feedback";
+}
+
 .bugbattle--feedback-dialog-container {
   position: fixed;
   left: 0px;
@@ -55,7 +59,21 @@
   }
   .bugbattle--feedback-dialog-header {
     border-radius: 0px;
-  }  
+  }
+  .bugbattle--feedback-button {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+    font-size: 13px;
+    border-radius: 100%;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  }
+  .bugbattle--feedback-button:after {
+    content: "?";
+  }
 }
 
 .bugbattle--feedback-dialog-header-button {

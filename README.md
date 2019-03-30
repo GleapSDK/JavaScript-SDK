@@ -41,9 +41,12 @@ Congrats, you are now all set! Report your first bug by using the feedback butto
 
 ## 🤤 Customization / tracking more data
 
-You track more data (i.e. the app build number, version code or custom data) by using one of the following functions.
+You can track more data (i.e. the app build number, version code or custom data) by using one of the following functions.
 
 ```
+// Set's the main color (color schema).
+bugBattle.setMainColor("#086EFB");
+
 // Set's the app's build number.
 bugBattle.setAppBuildNumber(5);
 
