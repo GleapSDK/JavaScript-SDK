@@ -20,7 +20,7 @@ NPM / YARN:
 npm install bugbattle --save
 ```
 
-Or add the following lines to your website's / webapp's header:
+OR add the following lines to your website's / webapp's header:
 ```
 <link href="https://jssdk.bugbattle.io/v1.0.3/index.css" rel="stylesheet">
 <script src="https://jssdk.bugbattle.io/v1.0.3/index.js"></script>
@@ -44,13 +44,18 @@ Congrats, you are now all set! Report your first bug by using the feedback butto
 You track more data (i.e. the app build number, version code or custom data) by using one of the following functions.
 
 ```
+// Set's the app's build number.
 bugBattle.setAppBuildNumber(5);
+
+// Set's the app's version code.
 bugBattle.setAppVersionCode("v5.0");
+
+// Attaches custom data to the bug reports.
 bugBattle.setCustomData({
-    test: "Battle"
+    test1: "Battle",
+    data2: "Unicorn"
 });
 ```
-
 
 ## 🤝 Need help?
 
