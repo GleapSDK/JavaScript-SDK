@@ -212,10 +212,12 @@ class BugBattle {
   init() {
     this.overwriteConsoleLog();
 
-    if (this.activation === BugBattle.SHAKE) {
+    window.onload = function () {
+      if (this.activation === BugBattle.SHAKE) {
 
-    } else if (this.activation === BugBattle.FEEDBACK_BUTTON) {
-      this.injectFeedbackButton();
+      } else if (this.activation === BugBattle.FEEDBACK_BUTTON) {
+        this.injectFeedbackButton();
+      }
     }
   }
 

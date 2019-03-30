@@ -20,7 +20,7 @@ NPM / YARN:
 npm install bugbattle --save
 ```
 
-OR add the following lines to your website's / webapp's header:
+OR add the following lines to your website's / webapp's head-tag:
 ```
 <link href="https://jssdk.bugbattle.io/v1.0.3/index.css" rel="stylesheet">
 <script src="https://jssdk.bugbattle.io/v1.0.3/index.js"></script>
