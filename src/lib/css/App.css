@@ -14,6 +14,8 @@
   cursor: pointer;
   background-color: #086EFB;
   color: #fff;
+  box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.1);
+  z-index: 16777260;
 }
 
 .bugbattle--feedback-button:after {
@@ -30,6 +32,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 16777261;
 }
 
 .bugbattle--feedback-dialog {
@@ -59,20 +62,6 @@
   }
   .bugbattle--feedback-dialog-header {
     border-radius: 0px;
-  }
-  .bugbattle--feedback-button {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    width: 44px;
-    height: 44px;
-    line-height: 44px;
-    font-size: 13px;
-    border-radius: 100%;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
-  }
-  .bugbattle--feedback-button:after {
-    content: "?";
   }
 }
 
@@ -326,6 +315,7 @@
   right: 0px;
   height: 100%;
   background-color: #fff;
+  z-index: 16777263;
 }
 
 .bugbattle-screenshot-editor-canvas {
@@ -352,6 +342,7 @@
   font-weight: bold;
   border-radius: 28px;
   box-shadow: 0px 0px 30px 0px rgba(0, 0, 0, 0.2);
+  z-index: 16777265;
 }
 
 .bugbattle-screenshot-editor-color {
@@ -368,6 +359,7 @@
   font-weight: bold;
   border-radius: 28px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  z-index: 16777265;
 }
 
 .bugbattle-screenshot-editor-color--selected {
