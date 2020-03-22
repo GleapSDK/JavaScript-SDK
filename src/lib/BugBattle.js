@@ -63,47 +63,47 @@ class BugBattle {
   }
 
   overwriteConsoleLog() {
-    window.console = (function(origConsole) {
-        if (!window.console || !origConsole) {
-            origConsole = {};
+    window.console = (function (origConsole) {
+      if (!window.console || !origConsole) {
+        origConsole = {};
+      }
+
+      let logArray = [];
+
+      return {
+        log: function () {
+          this.addLog(arguments, "logs");
+          origConsole.log && origConsole.log.apply(origConsole, arguments);
+        },
+        warn: function () {
+          this.addLog(arguments, "errors");
+          origConsole.warn && origConsole.warn.apply(origConsole, arguments);
+        },
+        error: function () {
+          this.addLog(arguments, "warns");
+          origConsole.error && origConsole.error.apply(origConsole, arguments);
+        },
+        info: function (v) {
+          this.addLog(arguments, "infos");
+          origConsole.info && origConsole.info.apply(origConsole, arguments);
+        },
+        addLog: function (args, type) {
+          let log = args[0];
+          if (!log) {
+            return;
+          }
+
+          logArray.push({
+            log: log,
+            date: new Date(),
+            type: type
+          });
+        },
+        logArray: function () {
+          return logArray;
         }
+      };
 
-        let logArray = [];
-
-        return {
-            log: function () {
-              this.addLog(arguments, "logs");
-              origConsole.log && origConsole.log.apply(origConsole, arguments);
-            },
-            warn: function () {
-              this.addLog(arguments, "errors");
-              origConsole.warn && origConsole.warn.apply(origConsole, arguments);
-            },
-            error: function () {
-              this.addLog(arguments, "warns");
-              origConsole.error && origConsole.error.apply(origConsole, arguments);
-            },
-            info: function (v) {
-              this.addLog(arguments, "infos");
-              origConsole.info && origConsole.info.apply(origConsole, arguments);
-            },
-            addLog: function (args, type) {
-              let log = args[0];
-              if (!log) {
-                return;
-              }
-
-              logArray.push({
-                log: log,
-                date: new Date(),
-                type: type
-              });
-            },
-            logArray: function () {
-              return logArray;
-            }
-        };
-    
     }(window.console));
   }
 
@@ -217,13 +217,21 @@ class BugBattle {
     this.overwriteConsoleLog();
 
     let self = this;
-    document.addEventListener("DOMContentLoaded", function(event) {
-      if (self.activation === BugBattle.SHAKE) {
-  
-      } else if (self.activation === BugBattle.FEEDBACK_BUTTON) {
-        self.injectFeedbackButton();
-      }
-    });
+    if (document.readyState === "complete" || document.readyState === "loaded") {
+      self.checkForInitType();
+    } else {
+      document.addEventListener("DOMContentLoaded", function(event) {
+        self.checkForInitType();
+      });
+    }
+  }
+
+  checkForInitType() {
+    if (this.activation === BugBattle.SHAKE) {
+      // TODO: implement shake gesture on mobile!
+    } else if (this.activation === BugBattle.FEEDBACK_BUTTON) {
+      this.injectFeedbackButton();
+    }
   }
 
   injectFeedbackButton() {
@@ -269,11 +277,11 @@ class BugBattle {
     }
 
     const Http = new XMLHttpRequest();
-    const url= 'https://dashboard.bugbattle.io/api/presignedUrl.php?apiKey=' + this.sdkKey;
+    const url = 'https://dashboard.bugbattle.io/api/presignedUrl.php?apiKey=' + this.sdkKey;
     Http.open("GET", url);
     Http.send();
     Http.onreadystatechange = (e) => {
-      if(Http.readyState === 4 && Http.status === 200) {
+      if (Http.readyState === 4 && Http.status === 200) {
         let body = JSON.parse(Http.responseText);
         let urlToUpload = body.url;
         if (urlToUpload) {
@@ -281,7 +289,7 @@ class BugBattle {
           this.uploadScreenshot(urlToUpload);
         }
       }
-      if(Http.readyState === 4 && Http.status !== 200) {
+      if (Http.readyState === 4 && Http.status !== 200) {
         this.showError();
       }
     }
@@ -295,7 +303,7 @@ class BugBattle {
     for (var i = 0; i < byteString.length; i++) {
       ia[i] = byteString.charCodeAt(i);
     }
-    var blob = new Blob([ab], {type: mimeString});
+    var blob = new Blob([ab], { type: mimeString });
     return blob;
   }
 
@@ -304,10 +312,10 @@ class BugBattle {
     Http.open("PUT", url);
     Http.send(this.dataURItoBlob(this.screenshot));
     Http.onreadystatechange = (e) => {
-      if(Http.readyState === 4 && Http.status === 200) {
+      if (Http.readyState === 4 && Http.status === 200) {
         this.sendBugReportToServer();
       }
-      if(Http.readyState === 4 && Http.status !== 200) {
+      if (Http.readyState === 4 && Http.status !== 200) {
         this.showError();
       }
     }
@@ -315,10 +323,10 @@ class BugBattle {
 
   sendBugReportToServer() {
     const Http = new XMLHttpRequest();
-    const url= 'https://webhooks.mongodb-stitch.com/api/client/v2.0/app/bugbattle-xfblb/service/reportBug/incoming_webhook/reportBugWebhook?token=' + this.sdkKey;
+    const url = 'https://webhooks.mongodb-stitch.com/api/client/v2.0/app/bugbattle-xfblb/service/reportBug/incoming_webhook/reportBugWebhook?token=' + this.sdkKey;
     Http.open("POST", url);
     Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    
+
     Http.send(JSON.stringify({
       "reportedBy": this.email,
       "description": this.description,
@@ -330,13 +338,13 @@ class BugBattle {
       "meta": this.getMetaData()
     }));
     Http.onreadystatechange = (e) => {
-      if(Http.readyState === 4 && Http.status === 200) {
+      if (Http.readyState === 4 && Http.status === 200) {
         this.showSuccessMessage();
         setTimeout(() => {
           this.hide();
         }, 2000);
       }
-      if(Http.readyState === 4 && Http.status !== 200) {
+      if (Http.readyState === 4 && Http.status !== 200) {
         this.showError();
       }
     }
@@ -349,74 +357,73 @@ class BugBattle {
   getMetaData() {
     var nVer = navigator.appVersion;
     var nAgt = navigator.userAgent;
-    var browserName  = navigator.appName;
-    var fullVersion  = ''+parseFloat(navigator.appVersion); 
-    var majorVersion = parseInt(navigator.appVersion,10);
-    var nameOffset,verOffset,ix;
+    var browserName = navigator.appName;
+    var fullVersion = '' + parseFloat(navigator.appVersion);
+    var majorVersion = parseInt(navigator.appVersion, 10);
+    var nameOffset, verOffset, ix;
 
     // In Opera, the true version is after "Opera" or after "Version"
-    if ((verOffset=nAgt.indexOf("Opera"))!=-1) {
-    browserName = "Opera";
-    fullVersion = nAgt.substring(verOffset+6);
-    if ((verOffset=nAgt.indexOf("Version"))!=-1) 
-      fullVersion = nAgt.substring(verOffset+8);
+    if ((verOffset = nAgt.indexOf("Opera")) != -1) {
+      browserName = "Opera";
+      fullVersion = nAgt.substring(verOffset + 6);
+      if ((verOffset = nAgt.indexOf("Version")) != -1)
+        fullVersion = nAgt.substring(verOffset + 8);
     }
     // In MSIE, the true version is after "MSIE" in userAgent
-    else if ((verOffset=nAgt.indexOf("MSIE"))!=-1) {
-    browserName = "Microsoft Internet Explorer";
-    fullVersion = nAgt.substring(verOffset+5);
+    else if ((verOffset = nAgt.indexOf("MSIE")) != -1) {
+      browserName = "Microsoft Internet Explorer";
+      fullVersion = nAgt.substring(verOffset + 5);
     }
     // In Chrome, the true version is after "Chrome" 
-    else if ((verOffset=nAgt.indexOf("Chrome"))!=-1) {
-    browserName = "Chrome";
-    fullVersion = nAgt.substring(verOffset+7);
+    else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
+      browserName = "Chrome";
+      fullVersion = nAgt.substring(verOffset + 7);
     }
     // In Safari, the true version is after "Safari" or after "Version" 
-    else if ((verOffset=nAgt.indexOf("Safari"))!=-1) {
-    browserName = "Safari";
-    fullVersion = nAgt.substring(verOffset+7);
-    if ((verOffset=nAgt.indexOf("Version"))!=-1) 
-      fullVersion = nAgt.substring(verOffset+8);
+    else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
+      browserName = "Safari";
+      fullVersion = nAgt.substring(verOffset + 7);
+      if ((verOffset = nAgt.indexOf("Version")) != -1)
+        fullVersion = nAgt.substring(verOffset + 8);
     }
     // In Firefox, the true version is after "Firefox" 
-    else if ((verOffset=nAgt.indexOf("Firefox"))!=-1) {
-    browserName = "Firefox";
-    fullVersion = nAgt.substring(verOffset+8);
+    else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
+      browserName = "Firefox";
+      fullVersion = nAgt.substring(verOffset + 8);
     }
     // In most other browsers, "name/version" is at the end of userAgent 
-    else if ( (nameOffset=nAgt.lastIndexOf(' ')+1) < 
-              (verOffset=nAgt.lastIndexOf('/')) ) 
-    {
-    browserName = nAgt.substring(nameOffset,verOffset);
-    fullVersion = nAgt.substring(verOffset+1);
-    if (browserName.toLowerCase()==browserName.toUpperCase()) {
-      browserName = navigator.appName;
-    }
+    else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) <
+      (verOffset = nAgt.lastIndexOf('/'))) {
+      browserName = nAgt.substring(nameOffset, verOffset);
+      fullVersion = nAgt.substring(verOffset + 1);
+      if (browserName.toLowerCase() == browserName.toUpperCase()) {
+        browserName = navigator.appName;
+      }
     }
     // trim the fullVersion string at semicolon/space if present
-    if ((ix=fullVersion.indexOf(";"))!=-1)
-      fullVersion=fullVersion.substring(0,ix);
-    if ((ix=fullVersion.indexOf(" "))!=-1)
-      fullVersion=fullVersion.substring(0,ix);
+    if ((ix = fullVersion.indexOf(";")) != -1)
+      fullVersion = fullVersion.substring(0, ix);
+    if ((ix = fullVersion.indexOf(" ")) != -1)
+      fullVersion = fullVersion.substring(0, ix);
 
-    majorVersion = parseInt(''+fullVersion,10);
+    majorVersion = parseInt('' + fullVersion, 10);
     if (isNaN(majorVersion)) {
-    fullVersion  = ''+parseFloat(navigator.appVersion); 
-    majorVersion = parseInt(navigator.appVersion,10);
+      fullVersion = '' + parseFloat(navigator.appVersion);
+      majorVersion = parseInt(navigator.appVersion, 10);
     }
 
-    var OSName="Unknown OS";
-    if (navigator.appVersion.indexOf("Win")!=-1) OSName="Windows";
-    if (navigator.appVersion.indexOf("Mac")!=-1) OSName="MacOS";
-    if (navigator.appVersion.indexOf("X11")!=-1) OSName="UNIX";
-    if (navigator.appVersion.indexOf("Linux")!=-1) OSName="Linux";
-    if (navigator.appVersion.indexOf("iPad")!=-1) OSName="iPad";
-    if (navigator.appVersion.indexOf("iPhone")!=-1) OSName="iPhone";
-    if (navigator.appVersion.indexOf("Android")!=-1) OSName="Android";
+    var OSName = "Unknown OS";
+    if (navigator.appVersion.indexOf("Win") != -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") != -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") != -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") != -1) OSName = "Linux";
+    if (navigator.appVersion.indexOf("iPad") != -1) OSName = "iPad";
+    if (navigator.appVersion.indexOf("iPhone") != -1) OSName = "iPhone";
+    if (navigator.appVersion.indexOf("Android") != -1) OSName = "Android";
 
     let now = new Date();
     let sessionDuration = (now.getTime() - this.sessionStart.getTime()) / 1000;
-    
+
     return {
       "web": true,
       "deviceName": browserName + "(" + fullVersion + ")",
@@ -479,13 +486,13 @@ class BugBattle {
 
     // Load screenshot
     var imageObj = new Image();
-    imageObj.onload = function() {
+    imageObj.onload = function () {
       var height = document.body.clientHeight;
       var width = document.body.clientWidth;
 
       canvas.width = width;
       canvas.height = height;
-      canvas.style.width  = width + 'px';
+      canvas.style.width = width + 'px';
       canvas.style.height = height + 'px';
 
       context.drawImage(imageObj, 0, 0, width, height);
@@ -498,9 +505,9 @@ class BugBattle {
     var paint;
 
     function addClick(x, y, dragging) {
-        clickX.push(x);
-        clickY.push(y);
-        clickDrag.push(dragging);
+      clickX.push(x);
+      clickY.push(y);
+      clickDrag.push(dragging);
     }
 
     function drawNew() {
@@ -508,90 +515,90 @@ class BugBattle {
       context.lineJoin = "round";
       context.lineWidth = 10;
 
-        var i = clickX.length - 1;
-        if (!clickDrag[i]) {
-            if (clickX.length == 0) {
-                context.beginPath();
-                context.moveTo(clickX[i], clickY[i]);
-                context.stroke();
-            } else {
-                context.closePath();
-
-                context.beginPath();
-                context.moveTo(clickX[i], clickY[i]);
-                context.stroke();
-            }
+      var i = clickX.length - 1;
+      if (!clickDrag[i]) {
+        if (clickX.length == 0) {
+          context.beginPath();
+          context.moveTo(clickX[i], clickY[i]);
+          context.stroke();
         } else {
-            context.lineTo(clickX[i], clickY[i]);
-            context.stroke();
+          context.closePath();
+
+          context.beginPath();
+          context.moveTo(clickX[i], clickY[i]);
+          context.stroke();
         }
+      } else {
+        context.lineTo(clickX[i], clickY[i]);
+        context.stroke();
+      }
     }
 
     function mouseDownEventHandler(e) {
-        paint = true;
-        var x = e.pageX - canvas.offsetLeft;
-        var y = e.pageY - canvas.offsetTop;
-        if (paint) {
-            addClick(x, y, false);
-            drawNew();
-        }
+      paint = true;
+      var x = e.pageX - canvas.offsetLeft;
+      var y = e.pageY - canvas.offsetTop;
+      if (paint) {
+        addClick(x, y, false);
+        drawNew();
+      }
     }
 
     function touchstartEventHandler(e) {
-        paint = true;
-        if (paint) {
-            addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, false);
-            drawNew();
-        }
+      paint = true;
+      if (paint) {
+        addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, false);
+        drawNew();
+      }
     }
 
     function mouseUpEventHandler(e) {
-        context.closePath();
-        paint = false;
+      context.closePath();
+      paint = false;
     }
 
     function mouseMoveEventHandler(e) {
-        var x = e.pageX - canvas.offsetLeft;
-        var y = e.pageY - canvas.offsetTop;
-        if (paint) {
-            addClick(x, y, true);
-            drawNew();
-        }
+      var x = e.pageX - canvas.offsetLeft;
+      var y = e.pageY - canvas.offsetTop;
+      if (paint) {
+        addClick(x, y, true);
+        drawNew();
+      }
     }
 
     function touchMoveEventHandler(e) {
-        if (paint) {
-            addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, true);
-            drawNew();
-        }
+      if (paint) {
+        addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, true);
+        drawNew();
+      }
     }
 
     function setUpHandler(isMouseandNotTouch, detectEvent) {
-        removeRaceHandlers();
-        if (isMouseandNotTouch) {
-            canvas.addEventListener('mouseup', mouseUpEventHandler);
-            canvas.addEventListener('mousemove', mouseMoveEventHandler);
-            canvas.addEventListener('mousedown', mouseDownEventHandler);
-            mouseDownEventHandler(detectEvent);
-        } else {
-            canvas.addEventListener('touchstart', touchstartEventHandler);
-            canvas.addEventListener('touchmove', touchMoveEventHandler);
-            canvas.addEventListener('touchend', mouseUpEventHandler);
-            touchstartEventHandler(detectEvent);
-        }
+      removeRaceHandlers();
+      if (isMouseandNotTouch) {
+        canvas.addEventListener('mouseup', mouseUpEventHandler);
+        canvas.addEventListener('mousemove', mouseMoveEventHandler);
+        canvas.addEventListener('mousedown', mouseDownEventHandler);
+        mouseDownEventHandler(detectEvent);
+      } else {
+        canvas.addEventListener('touchstart', touchstartEventHandler);
+        canvas.addEventListener('touchmove', touchMoveEventHandler);
+        canvas.addEventListener('touchend', mouseUpEventHandler);
+        touchstartEventHandler(detectEvent);
+      }
     }
 
     function mouseWins(e) {
-        setUpHandler(true, e);
+      setUpHandler(true, e);
     }
 
     function touchWins(e) {
-        setUpHandler(false, e);
+      setUpHandler(false, e);
     }
 
     function removeRaceHandlers() {
-        canvas.removeEventListener('mousedown', mouseWins);
-        canvas.removeEventListener('touchstart', touchWins);
+      canvas.removeEventListener('mousedown', mouseWins);
+      canvas.removeEventListener('touchstart', touchWins);
     }
 
     canvas.addEventListener('mousedown', mouseWins);
