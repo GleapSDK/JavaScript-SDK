@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>BugBattle DEMO</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+  }
+  .demo-container {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+  }
+  .demo-container > div {
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 20px;
+    line-height: 24px;
+  }
+  .demo-container > img {
+    width: 100%;
+    max-width: 220px;
+    height: auto;
+  }
+  </style>
+  <link href="https://jssdk.bugbattle.io/latest/index.css" rel="stylesheet">
+  <script src="https://jssdk.bugbattle.io/latest/index.js"></script>
+  <script>let BugBattle = window.BugBattle.default;</script>
+  <script>
+  let bugBattle = new BugBattle("5c41fcd794aaf5331dd4d513", BugBattle.FEEDBACK_BUTTON);
+  </script>
+</head>
+<body>
+  <div class="demo-container">
+    <div>BugBattle Demo</div>
+    <img src="./noun_Unicorn_2061796_1A1A1A.svg" />
+  </div>
+</body>
+</html>
+
