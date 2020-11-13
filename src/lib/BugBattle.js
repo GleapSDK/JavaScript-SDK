@@ -61,6 +61,14 @@ class BugBattle {
   }
 
   /**
+   * Enables the automatic crash detector.
+   * @param {boolean} enabled
+   */
+   static enableCrashDetector(enabled) {
+    this.instance.crashDetectorEnabled = enabled;
+  }
+
+  /**
    * Sets the customers email.
    * @param {string} email
    */
@@ -74,14 +82,6 @@ class BugBattle {
    */
   static setAppVersionCode(appVersionCode) {
     this.instance.appVersionCode = appVersionCode;
-  }
-
-  /**
-   * Enables the automatic crash detector.
-   * @param {boolean} enabled
-   */
-  static enableCrashDetector(enabled) {
-    this.instance.crashDetectorEnabled = enabled;
   }
 
   /**
