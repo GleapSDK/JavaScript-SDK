@@ -7,9 +7,13 @@ class BugBattle {
   activation = "";
   screenshot = null;
   screenshotURL = "";
+  crashDetectorEnabled = true;
+  crashDetected = false;
   actionLog = [];
+  logArray = [];
   customData = {};
   sessionStart = new Date();
+  bugReportingRunning = false;
   description = "";
   email = "";
   severity = "LOW";
@@ -20,6 +24,15 @@ class BugBattle {
   static SHAKE = "SHAKE_GESTURE";
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
+  static instance;
+
+  static initialize(sdkKey, activation) {
+    if (!this.instance) {
+      this.instance = new BugBattle(sdkKey, activation);
+    } else {
+      console.warn("Bugbattle already initialized.");
+    }
+  }
 
   constructor(sdkKey, activation) {
     this.sdkKey = sdkKey;
@@ -30,37 +43,53 @@ class BugBattle {
 
   /**
    * Sets the app version code.
-   * @param {*} appVersionCode
+   * @param {string} appVersionCode
    */
-  setAppVersionCode(appVersionCode) {
-    this.appVersionCode = appVersionCode;
+  static setAppVersionCode(appVersionCode) {
+    this.instance.appVersionCode = appVersionCode;
+  }
+
+  /**
+   * Enables the automatic crash detector.
+   * @param {boolean} enabled
+   */
+  static enableCrashDetector(enabled) {
+    this.instance.crashDetectorEnabled = enabled;
   }
 
   /**
    * Sets the app version code.
-   * @param {*} appVersionCode
+   * @param {string} appVersionCode
    */
-  setAppBuildNumber(appBuildNumber) {
-    this.appBuildNumber = appBuildNumber;
+  static setAppBuildNumber(appBuildNumber) {
+    this.instance.appBuildNumber = appBuildNumber;
+  }
+
+  /**
+   * Set a custom api url to send bug reports to.
+   * @param {string} apiUrl
+   */
+  static setApiUrl(apiUrl) {
+    this.instance.apiUrl = apiUrl;
   }
 
   /**
    * Set custom data that will be attached to the bug-report.
    * @param {*} data
    */
-  setCustomData(data) {
-    this.customData = data;
+  static setCustomData(data) {
+    this.instance.customData = data;
   }
 
   /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
    * @param {string} color
    */
-  setMainColor(color) {
+  static setMainColor(color) {
     let colorStyleSheet =
       ".bugbattle--feedback-button { background-color: " +
       color +
-      "; } .bugbattle--feedback-dialog-header { background-color: " +
+      "; } .bugbattle--feedback-dialog-header-button { color: " +
       color +
       "; } .bugbattle--toggle { border: 1px solid " +
       color +
@@ -76,62 +105,92 @@ class BugBattle {
     document.body.appendChild(node);
   }
 
-  overwriteConsoleLog() {
-    window.console = (function (origConsole) {
-      if (!window.console || !origConsole) {
-        origConsole = {};
-      }
-
-      let logArray = [];
-
-      return {
-        log: function () {
-          this.addLog(arguments, "logs");
-          origConsole.log && origConsole.log.apply(origConsole, arguments);
-        },
-        warn: function () {
-          this.addLog(arguments, "errors");
-          origConsole.warn && origConsole.warn.apply(origConsole, arguments);
-        },
-        error: function () {
-          this.addLog(arguments, "warns");
-          origConsole.error && origConsole.error.apply(origConsole, arguments);
-        },
-        info: function (v) {
-          this.addLog(arguments, "infos");
-          origConsole.info && origConsole.info.apply(origConsole, arguments);
-        },
-        addLog: function (args, type) {
-          let log = args[0];
-          if (!log) {
-            return;
-          }
-
-          logArray.push({
-            log: log,
-            date: new Date(),
-            type: type,
-          });
-        },
-        logArray: function () {
-          return logArray;
-        },
-      };
-    })(window.console);
-  }
-
-  reportBug() {
+  /**
+   * Starts the bug reporting flow.
+   */
+  static reportBug() {
     let feedbackBtn = document.querySelector(".bugbattle--feedback-button");
     if (feedbackBtn) {
       feedbackBtn.style.display = "none";
     }
     html2canvas(document.body).then((img) => {
-      this.screenshot = img.toDataURL();
+      this.instance.screenshot = img.toDataURL();
       if (feedbackBtn) {
         feedbackBtn.style.display = "block";
       }
-      this.createBugReportingDialog();
+      this.instance.createBugReportingDialog();
     });
+  }
+
+  startCrashDetection() {
+    const self = this;
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      var message = [
+        "Message: " + msg,
+        "URL: " + url,
+        "Line: " + lineNo,
+        "Column: " + columnNo,
+        "Error object: " + JSON.stringify(error),
+      ];
+      self.addLog(message, "error");
+
+      self.startCrashFlow();
+
+      return false;
+    };
+  }
+
+  startCrashFlow() {
+    if (this.crashDetectorEnabled && !this.bugReportingRunning) {
+      this.bugReportingRunning = true;
+      this.crashDetected = true;
+      BugBattle.reportBug();
+    }
+  }
+
+  addLog(args, type) {
+    if (!args) {
+      return;
+    }
+
+    var log = '';
+    for (var i = 0; i < args.length; i++) {
+      log += args[i] + ' ';
+    }
+    this.logArray.push({
+      log: log,
+      date: new Date(),
+      type: type,
+    });
+  }
+
+  overwriteConsoleLog() {
+    const self = this;
+    window.console = (function (origConsole) {
+      if (!window.console || !origConsole) {
+        origConsole = {};
+      }
+
+      return {
+        log: function () {
+          self.addLog(arguments, "log");
+          origConsole.log && origConsole.log.apply(origConsole, arguments);
+        },
+        warn: function () {
+          self.addLog(arguments, "warns");
+          origConsole.warn && origConsole.warn.apply(origConsole, arguments);
+        },
+        error: function () {
+          self.addLog(arguments, "error");
+          origConsole.error && origConsole.error.apply(origConsole, arguments);
+          self.startCrashFlow();
+        },
+        info: function (v) {
+          self.addLog(arguments, "info");
+          origConsole.info && origConsole.info.apply(origConsole, arguments);
+        },
+      };
+    })(window.console);
   }
 
   createBugReportingDialog() {
@@ -150,32 +209,38 @@ class BugBattle {
         </div>
       </div>
       <div class="bugbattle--feedback-dialog-success">
-        <svg fill="#E60000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" x="0px" y="0px"><title>07- love</title><path d="M22,4a8,8,0,0,0-5.66,2.34q-.18.18-.33.36s0,0,0,0,0,0,0,0-.21-.24-.33-.36A8,8,0,0,0,4.34,17.66q.18.18.36.33h0l9.9,9.9a2,2,0,0,0,2.83,0l9.9-9.9h0q.18-.15.36-.33A8,8,0,0,0,22,4Z"></path></svg>
+        <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="np_check_1807541_398CFE" fill="#398CFE" fill-rule="nonzero">
+                    <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
+                </g>
+            </g>
+        </svg>
         <div class="bugbattle--feedback-dialog-info-text">Thank you for your report!</div>
       </div>
       <div class="bugbattle--feedback-dialog-body">
+        <div class="bugbattle--feedback-inputgroup-label bugbattle--feedback-intro-text"></div>
+        <div class="bugbattle--feedback-inputgroup">
+          <div class="bugbattle--toggle">
+            <input type="radio" name="bugbattle--bug-severity" value="LOW" id="low" />
+            <label for="low">
+                Low
+            </label>
+            <input type="radio" name="bugbattle--bug-severity" value="MEDIUM" id="medium" checked />
+            <label for="medium">
+                Medium
+            </label>
+            <input type="radio" name="bugbattle--bug-severity" value="HIGH" id="high" />
+            <label for="high">
+                High
+            </label>
+          </div>
+        </div>
         <div class="bugbattle--feedback-inputgroup">
           <input class="bugbattle--feedback-email" type="text" placeholder="Email" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
           <textarea class="bugbattle--feedback-description" placeholder="What went wrong?"></textarea>
-        </div>
-        <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle-feedback-importance">How important is this to you?</div>
-          <div class="bugbattle--toggle">
-            <input type="radio" name="bugbattle--bug-severity" value="LOW" id="low" />
-            <label for="low">
-                LOW
-            </label>
-            <input type="radio" name="bugbattle--bug-severity" value="MEDIUM" id="medium" checked />
-            <label for="medium">
-                MEDIUM
-            </label>
-            <input type="radio" name="bugbattle--bug-severity" value="HIGH" id="high" />
-            <label for="high">
-                HIGH
-            </label>
-          </div>
         </div>
         <div class="bugbattle--feedback-image">
           <img src="" />
@@ -186,6 +251,19 @@ class BugBattle {
       </div>
     </div>`;
     document.body.appendChild(elem);
+
+    const introText = document.querySelector(".bugbattle--feedback-intro-text");
+
+    if (this.crashDetected) {
+      document.querySelector(
+        ".bugbattle--feedback-dialog-header-title"
+      ).innerHTML = "Crash detected";
+      introText.innerHTML =
+        "A crash has been detected. Do you want to submit a crash report?";
+      introText.style.display = "block";
+    } else {
+      introText.style.display = "none";
+    }
 
     let feedbackImage = document.querySelector(
       ".bugbattle--feedback-image img"
@@ -220,6 +298,12 @@ class BugBattle {
 
     sendButton.onclick = () => {
       this.email = emailField.value;
+
+      if (!this.email || this.email.length === 0) {
+        alert("Please provide an email address.");
+        return;
+      }
+
       this.description = textArea.value;
       this.severity = document.querySelector(
         "input[name=bugbattle--bug-severity]:checked"
@@ -239,10 +323,13 @@ class BugBattle {
 
   hide() {
     document.querySelector(".bugbattle--feedback-dialog-container").remove();
+    this.bugReportingRunning = false;
+    this.crashDetected = false;
   }
 
   init() {
     this.overwriteConsoleLog();
+    this.startCrashDetection();
 
     let self = this;
     if (
@@ -270,7 +357,7 @@ class BugBattle {
     elem.className = "bugbattle--feedback-button";
     elem.innerHTML = "";
     elem.onclick = () => {
-      this.reportBug();
+      BugBattle.reportBug();
     };
     document.body.appendChild(elem);
   }
@@ -368,10 +455,9 @@ class BugBattle {
       screenshotUrl: this.screenshotURL,
       customData: this.customData,
       metaData: this.getMetaData(),
+      consoleLog: this.logArray,
     };
-    http.send(
-      JSON.stringify(bugReportData)
-    );
+    http.send(JSON.stringify(bugReportData));
   }
 
   showError() {
@@ -464,30 +550,21 @@ class BugBattle {
       innerWidth: window.innerWidth,
       innerHeight: window.innerHeight,
       currentUrl: window.location.href,
-      language: navigator.language || navigator.userLanguage
+      language: navigator.language || navigator.userLanguage,
     };
   }
 
   initScreenshotEditor() {
-    let flag = false;
-    let prevX = 0;
-    let currX = 0;
-    let prevY = 0;
-    let currY = 0;
-    let dot_flag = true;
-    let color = "rgba(237, 68, 61, 0.05)";
+    let color = "rgba(254, 123, 140, 0.05)";
 
     var elem = document.createElement("div");
     elem.className = "bugbattle-screenshot-editor-container";
     elem.innerHTML = `
       <canvas class='bugbattle-screenshot-editor-canvas'></canvas>
-      <div drawcolor="rgba(65, 79, 176, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--blue"></div>
-      <div drawcolor="rgba(237, 68, 61, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--red bugbattle-screenshot-editor-color--selected"></div>
-      <div drawcolor="rgba(80, 175, 87, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--green"></div>
+      <div drawcolor="rgba(112, 185, 218, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--blue"></div>
+      <div drawcolor="rgba(254, 123, 140, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--red bugbattle-screenshot-editor-color--selected"></div>
+      <div drawcolor="rgba(236, 216, 83, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--yellow"></div>
       <div drawcolor="rgba(49, 49, 49, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--black"></div>
-      <div drawcolor="rgba(252, 200, 61, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--yellow"></div>
-      <div drawcolor="rgba(153, 36, 171, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--pink"></div>
-      <div drawcolor="rgba(39, 187, 209, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--marine"></div>
       <div class="bugbattle-screenshot-editor-done">Done</div>
     `;
     document.body.appendChild(elem);
@@ -553,7 +630,7 @@ class BugBattle {
     function drawNew() {
       context.strokeStyle = color;
       context.lineJoin = "round";
-      context.lineWidth = 10;
+      context.lineWidth = 8;
 
       var i = clickX.length - 1;
       if (!clickDrag[i]) {

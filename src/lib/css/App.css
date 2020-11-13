@@ -2,17 +2,17 @@
   position: fixed;
   bottom: 0px;
   right: 30px;
-  width: 135px;
+  width: 100px;
   height: 35px;
   line-height: 35px;
   text-align: center;
-  font-weight: normal;
+  font-weight: bold;
   font-size: 13px;
   font-family: sans-serif;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
   cursor: pointer;
-  background-color: #086EFB;
+  background-color: #398CFE;
   color: #fff;
   box-shadow: 0px 10px 30px 0px rgba(0, 0, 0, 0.1);
   z-index: 16777260;
@@ -29,6 +29,7 @@
   width: 100vw;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -46,7 +47,7 @@
 
 .bugbattle--feedback-dialog-header {
   height: 50px;
-  background-color: #086EFB;
+  color: #398CFE;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   display: flex;
@@ -66,10 +67,10 @@
 }
 
 .bugbattle--feedback-dialog-header-button {
-  font-weight: normal;
+  font-weight: bold;
   padding: 0px 20px;
   cursor: pointer;
-  color: #fff;
+  color: #398CFE;
   font-size: 14px;
   font-family: sans-serif;
 }
@@ -77,7 +78,7 @@
 .bugbattle--feedback-dialog-header-title {
   font-weight: bold;
   text-align: center;
-  color: #fff;
+  color: #000;
   font-size: 15px;
   font-family: sans-serif;
   text-align: center;
@@ -121,9 +122,10 @@
 .bugbattle--feedback-inputgroup-label {
   padding: 20px;
   padding-bottom: 0px;
-  color: #A9A9A9;
+  color: #000;
   font-size: 15px;
   font-family: sans-serif;
+  text-align: center;
 }
 
 .bugbattle--feedback-inputgroup input {
@@ -171,9 +173,9 @@
   position: relative;
   z-index: 1;
   font-size: 12px;
-  border: 1px solid #086EFB;
+  border: 1px solid #398CFE;
   border-radius: 3px;
-  color: #086EFB;
+  color: #398CFE;
 }
 
 .bugbattle--toggle > input {
@@ -226,12 +228,12 @@
 }
 
 .bugbattle--toggle label:before {
-  background: #086EFB;
+  background: #398CFE;
   transition: all 250ms cubic-bezier(0, 0.95, 0.38, 0.98);
 }
 
 .bugbattle--toggle label:not(:last-child) {
-  border-right: 1px solid #086EFB;
+  border-right: 1px solid #398CFE;
 }
 
 .bugbattle--feedback-image {
@@ -358,7 +360,7 @@
   color: #000;
   font-weight: bold;
   border-radius: 28px;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.3);
   z-index: 16777265;
 }
 
@@ -367,37 +369,22 @@
 }
 
 .bugbattle-screenshot-editor-color--black {
-  right: 105px;
+  right: 100px;
   background-color: #313131;
 }
 
 .bugbattle-screenshot-editor-color--yellow {
   right: 140px;
-  background-color: #FCC83D;
-}
-
-.bugbattle-screenshot-editor-color--green {
-  right: 175px;
-  background-color: #50AF57;
-}
-
-.bugbattle-screenshot-editor-color--marine {
-  right: 210px;
-  background-color: #27BBD1;
+  background-color: #ECD853;
 }
 
 .bugbattle-screenshot-editor-color--blue {
-  right: 245px;
-  background-color: #414FB0;
-}
-
-.bugbattle-screenshot-editor-color--pink {
-  right: 280px;
-  background-color: #9924AB;
+  right: 180px;
+  background-color: #70B9DA;
 }
 
 .bugbattle-screenshot-editor-color--red {
-  right: 315px;
-  background-color: #ED443D;
+  right: 220px;
+  background-color: #FE7B8C;
 }
 
