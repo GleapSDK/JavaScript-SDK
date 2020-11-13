@@ -4,6 +4,9 @@ import html2canvas from "html2canvas";
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
+  privacyPolicyUrl = "https://www.bugbattle.io/pages/privacy-policy";
+  privacyPolicyCheckEnabled = false;
+  email = localStorage.getItem("bugbattle-sender-email");
   activation = "";
   screenshot = null;
   screenshotURL = "";
@@ -21,9 +24,9 @@ class BugBattle {
   appBuildNumber = "";
 
   // Activation methods
-  static SHAKE = "SHAKE_GESTURE";
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
+
   static instance;
 
   static initialize(sdkKey, activation) {
@@ -39,6 +42,30 @@ class BugBattle {
     this.activation = activation;
 
     this.init();
+  }
+
+  /**
+   * Enables the privacy policy.
+   * @param {boolean} enabled
+   */
+  static enablePrivacyPolicy(enabled) {
+    this.instance.privacyPolicyCheckEnabled = enabled;
+  }
+
+  /**
+   * Sets the privacy policy url.
+   * @param {string} privacyPolicyUrl
+   */
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {
+    this.instance.privacyPolicyUrl = privacyPolicyUrl;
+  }
+
+  /**
+   * Sets the customers email.
+   * @param {string} email
+   */
+   static setCustomerEmail(email) {
+    this.instance.email = email;
   }
 
   /**
@@ -77,7 +104,7 @@ class BugBattle {
    * Set custom data that will be attached to the bug-report.
    * @param {*} data
    */
-  static setCustomData(data) {
+  static attachCustomData(data) {
     this.instance.customData = data;
   }
 
@@ -108,7 +135,7 @@ class BugBattle {
   /**
    * Starts the bug reporting flow.
    */
-  static reportBug() {
+  static startBugReporting() {
     let feedbackBtn = document.querySelector(".bugbattle--feedback-button");
     if (feedbackBtn) {
       feedbackBtn.style.display = "none";
@@ -144,7 +171,7 @@ class BugBattle {
     if (this.crashDetectorEnabled && !this.bugReportingRunning) {
       this.bugReportingRunning = true;
       this.crashDetected = true;
-      BugBattle.reportBug();
+      BugBattle.startBugReporting();
     }
   }
 
@@ -242,6 +269,9 @@ class BugBattle {
         <div class="bugbattle--feedback-inputgroup">
           <textarea class="bugbattle--feedback-description" placeholder="What went wrong?"></textarea>
         </div>
+        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
+          <input type="checkbox" required name="terms"> I read and accept the <a id="bugbattle-privacy-policy-link" href="#" target="_blank">privacy policy</a>.
+        </div>
         <div class="bugbattle--feedback-image">
           <img src="" />
           <div class="bugbattle--edit-button bugbattle--feedback-dialog-button-edit-screenshot">
@@ -252,8 +282,15 @@ class BugBattle {
     </div>`;
     document.body.appendChild(elem);
 
-    const introText = document.querySelector(".bugbattle--feedback-intro-text");
+    const privacyPolicyContainer = document.querySelector(".bugbattle--feedback-inputgroup--privacy-policy");
+    if (this.privacyPolicyCheckEnabled) {
+      privacyPolicyContainer.style.display = "block";
+      document.querySelector("#bugbattle-privacy-policy-link").href = this.privacyPolicyUrl;
+    } else {
+      privacyPolicyContainer.style.display = "none";
+    }
 
+    const introText = document.querySelector(".bugbattle--feedback-intro-text");
     if (this.crashDetected) {
       document.querySelector(
         ".bugbattle--feedback-dialog-header-title"
@@ -294,13 +331,19 @@ class BugBattle {
     };
 
     feedbackImage.src = this.screenshot;
-    emailField.value = localStorage.getItem("bugbattle-sender-email");
+    emailField.value = this.email;
 
     sendButton.onclick = () => {
       this.email = emailField.value;
 
       if (!this.email || this.email.length === 0) {
         alert("Please provide an email address.");
+        return;
+      }
+
+      const privacyPolicyInput = document.querySelector(".bugbattle--feedback-inputgroup--privacy-policy input");
+      if (this.privacyPolicyCheckEnabled && !privacyPolicyInput.checked) {
+        alert("Please read and accept the privacy policy.");
         return;
       }
 
@@ -345,9 +388,7 @@ class BugBattle {
   }
 
   checkForInitType() {
-    if (this.activation === BugBattle.SHAKE) {
-      // TODO: implement shake gesture on mobile!
-    } else if (this.activation === BugBattle.FEEDBACK_BUTTON) {
+    if (this.activation === BugBattle.FEEDBACK_BUTTON) {
       this.injectFeedbackButton();
     }
   }
@@ -357,7 +398,7 @@ class BugBattle {
     elem.className = "bugbattle--feedback-button";
     elem.innerHTML = "";
     elem.onclick = () => {
-      BugBattle.reportBug();
+      BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
   }

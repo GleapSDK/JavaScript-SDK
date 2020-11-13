@@ -4,7 +4,7 @@ import BugBattle from './../lib';
 class App {
   constructor() {
     // Initialize the SDK.
-    BugBattle.initialize("37TjmHILi0Jkop01LNoYEWO211ZwxVLW", BugBattle.FEEDBACK_BUTTON);
+    BugBattle.initialize("YOUR_API_KEY", BugBattle.FEEDBACK_BUTTON);
 
     // Set's the app's build number.
     BugBattle.setMainColor('#398CFE');
@@ -16,7 +16,7 @@ class App {
     BugBattle.setAppVersionCode("v5.0");
 
     // Attaches custom data to the bug reports.
-    BugBattle.setCustomData({
+    BugBattle.attachCustomData({
         test1: "Battle",
         data2: "Unicorn"
     });
