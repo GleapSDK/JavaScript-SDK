@@ -1,4 +1,4 @@
-# Bugbattle iOS SDK
+# Bugbattle JavaScript SDK
 
 ![Bugbattle JavaScript SDK Intro](https://github.com/BugBattle/JavaScript-SDK/blob/master/imgs/JavaScriptSDK.png)
 
