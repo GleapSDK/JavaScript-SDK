@@ -4,7 +4,7 @@
 
 The Bugbattle SDK for JavScript is the easiest way to integrate Bugbattle into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. BugBattle offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
 
-## Docs & Examples
+## 📖 Docs & Examples
 
 Checkout our [documentation](https://docs.bugbattle.io/docs/javascript-sdk) for full reference.
 
