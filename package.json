@@ -1,7 +1,8 @@
 {
   "name": "bugbattle",
-  "version": "1.1.1",
+  "version": "3.0.1",
   "main": "build/index.js",
+  "types": "index.d.ts",
   "scripts": {
     "start": "node scripts/start.js",
     "build": "node scripts/build.js",
@@ -12,26 +13,29 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BugBattle/BugBattle-JavaScript-SDK"
+    "url": "https://github.com/BugBattle/JavaScript-SDK"
   },
-  "author": "BugBattle <hi@bugbattle.io>",
+  "author": "BugBattle <hello@bugbattle.io>",
   "homepage": "https://www.bugbattle.io/",
   "keywords": [
-    "library"
+    "javascript-bug-reporting",
+    "bug",
+    "bug-reporting",
+    "bug-reporting-tool"
   ],
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "7.3.3",
-    "@babel/plugin-proposal-class-properties": "^7.3.3",
-    "@babel/preset-env": "^7.3.1",
-    "@babel/preset-react": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.5",
+    "@babel/preset-react": "^7.10.4",
     "@svgr/webpack": "4.1.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "10.0.1",
     "babel-jest": "23.6.0",
     "babel-loader": "8.0.5",
-    "babel-plugin-named-asset-import": "^0.3.1",
-    "babel-preset-react-app": "^7.0.1",
+    "babel-plugin-named-asset-import": "^0.3.6",
+    "babel-preset-react-app": "^7.0.2",
     "bfj": "6.1.1",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "chalk": "2.4.2",
@@ -39,7 +43,7 @@
     "dotenv": "6.2.0",
     "dotenv-expand": "4.2.0",
     "eslint": "5.14.1",
-    "eslint-config-react-app": "^3.0.7",
+    "eslint-config-react-app": "^3.0.8",
     "eslint-loader": "2.1.2",
     "eslint-plugin-flowtype": "3.4.2",
     "eslint-plugin-import": "2.16.0",
@@ -60,19 +64,19 @@
     "postcss-loader": "3.0.0",
     "postcss-preset-env": "6.5.0",
     "postcss-safe-parser": "4.0.1",
-    "react": "^16.8.3",
-    "react-app-polyfill": "^0.2.1",
-    "react-dev-utils": "^7.0.3",
-    "react-dom": "^16.8.3",
+    "react": "^16.13.1",
+    "react-app-polyfill": "^0.2.2",
+    "react-dev-utils": "^7.0.5",
+    "react-dom": "^16.13.1",
     "resolve": "1.10.0",
     "sass-loader": "7.1.0",
     "style-loader": "0.23.1",
-    "terser-webpack-plugin": "1.2.2",
-    "uglify-js": "^3.4.10",
-    "uglifyjs-webpack-plugin": "^2.1.2",
+    "terser-webpack-plugin": "^1.2.2",
+    "uglify-js": "^3.11.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
     "url-loader": "1.1.2",
     "webpack": "4.29.5",
-    "webpack-dev-server": "3.2.0",
+    "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "2.0.4",
     "workbox-webpack-plugin": "3.6.3"
   },
@@ -145,6 +149,6 @@
     ]
   },
   "dependencies": {
-    "html2canvas": "^1.0.0-alpha.12"
+    "html2canvas": "^1.0.0-rc.7"
   }
 }

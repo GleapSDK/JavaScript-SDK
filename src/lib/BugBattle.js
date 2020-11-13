@@ -1,24 +1,41 @@
-import './css/App.css';
-import html2canvas from 'html2canvas';
+import "./css/App.css";
+import html2canvas from "html2canvas";
 
 class BugBattle {
+  apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
+  privacyPolicyUrl = "https://www.bugbattle.io/pages/privacy-policy";
+  privacyPolicyCheckEnabled = false;
+  email = localStorage.getItem("bugbattle-sender-email");
   activation = "";
   screenshot = null;
   screenshotURL = "";
+  crashDetectorEnabled = true;
+  crashDetected = false;
   actionLog = [];
+  logArray = [];
   customData = {};
   sessionStart = new Date();
+  bugReportingRunning = false;
   description = "";
   email = "";
-  severity = "low";
+  severity = "LOW";
   appVersionCode = "";
   appBuildNumber = "";
 
   // Activation methods
-  static SHAKE = "SHAKE_GESTURE";
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
+
+  static instance;
+
+  static initialize(sdkKey, activation) {
+    if (!this.instance) {
+      this.instance = new BugBattle(sdkKey, activation);
+    } else {
+      console.warn("Bugbattle already initialized.");
+    }
+  }
 
   constructor(sdkKey, activation) {
     this.sdkKey = sdkKey;
@@ -28,101 +45,183 @@ class BugBattle {
   }
 
   /**
-   * Sets the app version code.
-   * @param {*} appVersionCode 
+   * Enables the privacy policy.
+   * @param {boolean} enabled
    */
-  setAppVersionCode(appVersionCode) {
-    this.appVersionCode = appVersionCode;
+  static enablePrivacyPolicy(enabled) {
+    this.instance.privacyPolicyCheckEnabled = enabled;
+  }
+
+  /**
+   * Sets the privacy policy url.
+   * @param {string} privacyPolicyUrl
+   */
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {
+    this.instance.privacyPolicyUrl = privacyPolicyUrl;
+  }
+
+  /**
+   * Sets the customers email.
+   * @param {string} email
+   */
+   static setCustomerEmail(email) {
+    this.instance.email = email;
   }
 
   /**
    * Sets the app version code.
-   * @param {*} appVersionCode 
+   * @param {string} appVersionCode
    */
-  setAppBuildNumber(appBuildNumber) {
-    this.appBuildNumber = appBuildNumber;
+  static setAppVersionCode(appVersionCode) {
+    this.instance.appVersionCode = appVersionCode;
+  }
+
+  /**
+   * Enables the automatic crash detector.
+   * @param {boolean} enabled
+   */
+  static enableCrashDetector(enabled) {
+    this.instance.crashDetectorEnabled = enabled;
+  }
+
+  /**
+   * Sets the app version code.
+   * @param {string} appVersionCode
+   */
+  static setAppBuildNumber(appBuildNumber) {
+    this.instance.appBuildNumber = appBuildNumber;
+  }
+
+  /**
+   * Set a custom api url to send bug reports to.
+   * @param {string} apiUrl
+   */
+  static setApiUrl(apiUrl) {
+    this.instance.apiUrl = apiUrl;
   }
 
   /**
    * Set custom data that will be attached to the bug-report.
-   * @param {*} data 
+   * @param {*} data
    */
-  setCustomData(data) {
-    this.customData = data;
+  static attachCustomData(data) {
+    this.instance.customData = data;
   }
 
   /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
-   * @param {string} color 
+   * @param {string} color
    */
-  setMainColor(color) {
-    let colorStyleSheet = ".bugbattle--feedback-button { background-color: " + color + "; } .bugbattle--feedback-dialog-header { background-color: " + color + "; } .bugbattle--toggle { border: 1px solid " + color + "; color: " + color + "; } .bugbattle--toggle label:before { background: " + color + "; } .bugbattle--toggle label:not(:last-child) { border-right: 1px solid " + color + "; }";
-    let node = document.createElement('style');
+  static setMainColor(color) {
+    let colorStyleSheet =
+      ".bugbattle--feedback-button { background-color: " +
+      color +
+      "; } .bugbattle--feedback-dialog-header-button { color: " +
+      color +
+      "; } .bugbattle--toggle { border: 1px solid " +
+      color +
+      "; color: " +
+      color +
+      "; } .bugbattle--toggle label:before { background: " +
+      color +
+      "; } .bugbattle--toggle label:not(:last-child) { border-right: 1px solid " +
+      color +
+      "; }";
+    let node = document.createElement("style");
     node.innerHTML = colorStyleSheet;
     document.body.appendChild(node);
   }
 
+  /**
+   * Starts the bug reporting flow.
+   */
+  static startBugReporting() {
+    let feedbackBtn = document.querySelector(".bugbattle--feedback-button");
+    if (feedbackBtn) {
+      feedbackBtn.style.display = "none";
+    }
+    html2canvas(document.body).then((img) => {
+      this.instance.screenshot = img.toDataURL();
+      if (feedbackBtn) {
+        feedbackBtn.style.display = "block";
+      }
+      this.instance.createBugReportingDialog();
+    });
+  }
+
+  startCrashDetection() {
+    const self = this;
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      var message = [
+        "Message: " + msg,
+        "URL: " + url,
+        "Line: " + lineNo,
+        "Column: " + columnNo,
+        "Error object: " + JSON.stringify(error),
+      ];
+      self.addLog(message, "error");
+
+      self.startCrashFlow();
+
+      return false;
+    };
+  }
+
+  startCrashFlow() {
+    if (this.crashDetectorEnabled && !this.bugReportingRunning) {
+      this.bugReportingRunning = true;
+      this.crashDetected = true;
+      BugBattle.startBugReporting();
+    }
+  }
+
+  addLog(args, type) {
+    if (!args) {
+      return;
+    }
+
+    var log = '';
+    for (var i = 0; i < args.length; i++) {
+      log += args[i] + ' ';
+    }
+    this.logArray.push({
+      log: log,
+      date: new Date(),
+      type: type,
+    });
+  }
+
   overwriteConsoleLog() {
+    const self = this;
     window.console = (function (origConsole) {
       if (!window.console || !origConsole) {
         origConsole = {};
       }
 
-      let logArray = [];
-
       return {
         log: function () {
-          this.addLog(arguments, "logs");
+          self.addLog(arguments, "log");
           origConsole.log && origConsole.log.apply(origConsole, arguments);
         },
         warn: function () {
-          this.addLog(arguments, "errors");
+          self.addLog(arguments, "warns");
           origConsole.warn && origConsole.warn.apply(origConsole, arguments);
         },
         error: function () {
-          this.addLog(arguments, "warns");
+          self.addLog(arguments, "error");
           origConsole.error && origConsole.error.apply(origConsole, arguments);
+          self.startCrashFlow();
         },
         info: function (v) {
-          this.addLog(arguments, "infos");
+          self.addLog(arguments, "info");
           origConsole.info && origConsole.info.apply(origConsole, arguments);
         },
-        addLog: function (args, type) {
-          let log = args[0];
-          if (!log) {
-            return;
-          }
-
-          logArray.push({
-            log: log,
-            date: new Date(),
-            type: type
-          });
-        },
-        logArray: function () {
-          return logArray;
-        }
       };
-
-    }(window.console));
-  }
-
-  reportBug() {
-    let feedbackBtn = document.querySelector('.bugbattle--feedback-button');
-    if (feedbackBtn) {
-      feedbackBtn.style.display = "none";
-    }
-    html2canvas(document.body).then((img) => {
-      this.screenshot = img.toDataURL();
-      if (feedbackBtn) {
-        feedbackBtn.style.display = "block";
-      }
-      this.createBugReportingDialog();
-    });
+    })(window.console);
   }
 
   createBugReportingDialog() {
-    var elem = document.createElement('div');
+    var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
@@ -137,32 +236,41 @@ class BugBattle {
         </div>
       </div>
       <div class="bugbattle--feedback-dialog-success">
-        <svg fill="#E60000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" x="0px" y="0px"><title>07- love</title><path d="M22,4a8,8,0,0,0-5.66,2.34q-.18.18-.33.36s0,0,0,0,0,0,0,0-.21-.24-.33-.36A8,8,0,0,0,4.34,17.66q.18.18.36.33h0l9.9,9.9a2,2,0,0,0,2.83,0l9.9-9.9h0q.18-.15.36-.33A8,8,0,0,0,22,4Z"></path></svg>
+        <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="np_check_1807541_398CFE" fill="#398CFE" fill-rule="nonzero">
+                    <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
+                </g>
+            </g>
+        </svg>
         <div class="bugbattle--feedback-dialog-info-text">Thank you for your report!</div>
       </div>
       <div class="bugbattle--feedback-dialog-body">
+        <div class="bugbattle--feedback-inputgroup-label bugbattle--feedback-intro-text"></div>
+        <div class="bugbattle--feedback-inputgroup">
+          <div class="bugbattle--toggle">
+            <input type="radio" name="bugbattle--bug-severity" value="LOW" id="low" />
+            <label for="low">
+                Low
+            </label>
+            <input type="radio" name="bugbattle--bug-severity" value="MEDIUM" id="medium" checked />
+            <label for="medium">
+                Medium
+            </label>
+            <input type="radio" name="bugbattle--bug-severity" value="HIGH" id="high" />
+            <label for="high">
+                High
+            </label>
+          </div>
+        </div>
         <div class="bugbattle--feedback-inputgroup">
           <input class="bugbattle--feedback-email" type="text" placeholder="Email" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
           <textarea class="bugbattle--feedback-description" placeholder="What went wrong?"></textarea>
         </div>
-        <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle-feedback-importance">How important is this to you?</div>
-          <div class="bugbattle--toggle">
-            <input type="radio" name="bugbattle--bug-severity" value="low" id="low" />
-            <label for="low">
-                LOW
-            </label>
-            <input type="radio" name="bugbattle--bug-severity" value="medium" id="medium" checked />
-            <label for="medium">
-                MEDIUM
-            </label>
-            <input type="radio" name="bugbattle--bug-severity" value="high" id="high" />
-            <label for="high">
-                HIGH
-            </label>
-          </div>
+        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
+          <input type="checkbox" required name="terms"> I read and accept the <a id="bugbattle-privacy-policy-link" href="#" target="_blank">privacy policy</a>.
         </div>
         <div class="bugbattle--feedback-image">
           <img src="" />
@@ -174,15 +282,43 @@ class BugBattle {
     </div>`;
     document.body.appendChild(elem);
 
-    let feedbackImage = document.querySelector('.bugbattle--feedback-image img');
-    let sendButton = document.querySelector('.bugbattle--feedback-dialog-header-button-send');
-    let cancelButton = document.querySelector('.bugbattle--feedback-dialog-header-button-cancel');
-    let editButton = document.querySelector('.bugbattle--feedback-dialog-button-edit-screenshot');
-    let emailField = document.querySelector('.bugbattle--feedback-email');
-    let textArea = document.querySelector('.bugbattle--feedback-description');
+    const privacyPolicyContainer = document.querySelector(".bugbattle--feedback-inputgroup--privacy-policy");
+    if (this.privacyPolicyCheckEnabled) {
+      privacyPolicyContainer.style.display = "block";
+      document.querySelector("#bugbattle-privacy-policy-link").href = this.privacyPolicyUrl;
+    } else {
+      privacyPolicyContainer.style.display = "none";
+    }
+
+    const introText = document.querySelector(".bugbattle--feedback-intro-text");
+    if (this.crashDetected) {
+      document.querySelector(
+        ".bugbattle--feedback-dialog-header-title"
+      ).innerHTML = "Crash detected";
+      introText.innerHTML =
+        "A crash has been detected. Do you want to submit a crash report?";
+      introText.style.display = "block";
+    } else {
+      introText.style.display = "none";
+    }
+
+    let feedbackImage = document.querySelector(
+      ".bugbattle--feedback-image img"
+    );
+    let sendButton = document.querySelector(
+      ".bugbattle--feedback-dialog-header-button-send"
+    );
+    let cancelButton = document.querySelector(
+      ".bugbattle--feedback-dialog-header-button-cancel"
+    );
+    let editButton = document.querySelector(
+      ".bugbattle--feedback-dialog-button-edit-screenshot"
+    );
+    let emailField = document.querySelector(".bugbattle--feedback-email");
+    let textArea = document.querySelector(".bugbattle--feedback-description");
 
     textArea.oninput = () => {
-      textArea.style.height = 'inherit';
+      textArea.style.height = "inherit";
       textArea.style.height = textArea.scrollHeight + "px";
     };
 
@@ -195,60 +331,87 @@ class BugBattle {
     };
 
     feedbackImage.src = this.screenshot;
-    emailField.value = localStorage.getItem("bugbattle-sender-email");
+    emailField.value = this.email;
 
     sendButton.onclick = () => {
       this.email = emailField.value;
+
+      if (!this.email || this.email.length === 0) {
+        alert("Please provide an email address.");
+        return;
+      }
+
+      const privacyPolicyInput = document.querySelector(".bugbattle--feedback-inputgroup--privacy-policy input");
+      if (this.privacyPolicyCheckEnabled && !privacyPolicyInput.checked) {
+        alert("Please read and accept the privacy policy.");
+        return;
+      }
+
       this.description = textArea.value;
-      this.severity = document.querySelector('input[name=bugbattle--bug-severity]:checked').value;
+      this.severity = document.querySelector(
+        "input[name=bugbattle--bug-severity]:checked"
+      ).value;
 
       localStorage.setItem("bugbattle-sender-email", this.email);
 
       this.toggleLoading(true);
-      this.getPresignedUrl();
+
+      if (!this.sdkKey) {
+        console.log("BUGBATTLE: Please provide a valid API key!");
+      }
+
+      this.uploadScreenshot();
     };
   }
 
   hide() {
-    document.querySelector('.bugbattle--feedback-dialog-container').remove();
+    document.querySelector(".bugbattle--feedback-dialog-container").remove();
+    this.bugReportingRunning = false;
+    this.crashDetected = false;
   }
 
   init() {
     this.overwriteConsoleLog();
+    this.startCrashDetection();
 
     let self = this;
-    if (document.readyState === "complete" || document.readyState === "loaded") {
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded"
+    ) {
       self.checkForInitType();
     } else {
-      document.addEventListener("DOMContentLoaded", function(event) {
+      document.addEventListener("DOMContentLoaded", function (event) {
         self.checkForInitType();
       });
     }
   }
 
   checkForInitType() {
-    if (this.activation === BugBattle.SHAKE) {
-      // TODO: implement shake gesture on mobile!
-    } else if (this.activation === BugBattle.FEEDBACK_BUTTON) {
+    if (this.activation === BugBattle.FEEDBACK_BUTTON) {
       this.injectFeedbackButton();
     }
   }
 
   injectFeedbackButton() {
-    var elem = document.createElement('div');
+    var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-button";
     elem.innerHTML = "";
     elem.onclick = () => {
-      this.reportBug();
+      BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
   }
 
   toggleLoading(loading) {
-    let sendButton = document.querySelector('.bugbattle--feedback-dialog-header-button-send');
-    let cancelButton = document.querySelector('.bugbattle--feedback-dialog-header-button-cancel');
-    let body = document.querySelector('.bugbattle--feedback-dialog-body');
-    let loader = document.querySelector('.bugbattle--feedback-dialog-loading');
+    let sendButton = document.querySelector(
+      ".bugbattle--feedback-dialog-header-button-send"
+    );
+    let cancelButton = document.querySelector(
+      ".bugbattle--feedback-dialog-header-button-cancel"
+    );
+    let body = document.querySelector(".bugbattle--feedback-dialog-body");
+    let loader = document.querySelector(".bugbattle--feedback-dialog-loading");
     if (loading) {
       body.style.display = "none";
       loader.style.display = "block";
@@ -263,41 +426,17 @@ class BugBattle {
   }
 
   showSuccessMessage() {
-    let success = document.querySelector('.bugbattle--feedback-dialog-success');
-    let body = document.querySelector('.bugbattle--feedback-dialog-body');
-    let loader = document.querySelector('.bugbattle--feedback-dialog-loading');
+    let success = document.querySelector(".bugbattle--feedback-dialog-success");
+    let body = document.querySelector(".bugbattle--feedback-dialog-body");
+    let loader = document.querySelector(".bugbattle--feedback-dialog-loading");
     body.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
   }
 
-  getPresignedUrl() {
-    if (!this.sdkKey) {
-      console.log("BUGBATTLE: Please provide a valid API key!");
-    }
-
-    const Http = new XMLHttpRequest();
-    const url = 'https://dashboard.bugbattle.io/api/presignedUrl.php?apiKey=' + this.sdkKey;
-    Http.open("GET", url);
-    Http.send();
-    Http.onreadystatechange = (e) => {
-      if (Http.readyState === 4 && Http.status === 200) {
-        let body = JSON.parse(Http.responseText);
-        let urlToUpload = body.url;
-        if (urlToUpload) {
-          this.screenshotURL = body.path;
-          this.uploadScreenshot(urlToUpload);
-        }
-      }
-      if (Http.readyState === 4 && Http.status !== 200) {
-        this.showError();
-      }
-    }
-  }
-
   dataURItoBlob(dataURI) {
-    var byteString = atob(dataURI.split(',')[1]);
-    var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+    var byteString = atob(dataURI.split(",")[1]);
+    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
     var ab = new ArrayBuffer(byteString.length);
     var ia = new Uint8Array(ab);
     for (var i = 0; i < byteString.length; i++) {
@@ -307,47 +446,59 @@ class BugBattle {
     return blob;
   }
 
-  uploadScreenshot(url) {
-    const Http = new XMLHttpRequest();
-    Http.open("PUT", url);
-    Http.send(this.dataURItoBlob(this.screenshot));
-    Http.onreadystatechange = (e) => {
-      if (Http.readyState === 4 && Http.status === 200) {
-        this.sendBugReportToServer();
+  uploadScreenshot() {
+    const http = new XMLHttpRequest();
+    http.open("POST", this.apiUrl + "/uploads/sdk");
+    http.setRequestHeader("Api-Token", this.sdkKey);
+    const self = this;
+    http.onreadystatechange = (e) => {
+      if (http.readyState == XMLHttpRequest.DONE) {
+        try {
+          const response = JSON.parse(http.responseText);
+          if (response && response.fileUrl) {
+            self.screenshotURL = response.fileUrl;
+            self.sendBugReportToServer();
+          } else {
+            this.showError();
+          }
+        } catch (e) {
+          this.showError();
+        }
       }
-      if (Http.readyState === 4 && Http.status !== 200) {
-        this.showError();
-      }
-    }
+    };
+
+    const file = this.dataURItoBlob(this.screenshot);
+    const formData = new FormData();
+    formData.append("file", file, "screenshot.jpg");
+    http.send(formData);
   }
 
   sendBugReportToServer() {
-    const Http = new XMLHttpRequest();
-    const url = 'https://webhooks.mongodb-stitch.com/api/client/v2.0/app/bugbattle-xfblb/service/reportBug/incoming_webhook/reportBugWebhook?token=' + this.sdkKey;
-    Http.open("POST", url);
-    Http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-    Http.send(JSON.stringify({
-      "reportedBy": this.email,
-      "description": this.description,
-      "severity": this.severity,
-      "screenshot": this.screenshotURL,
-      "consoleLog": window.console.logArray(),
-      "actionLog": this.actionLog,
-      "customData": this.customData,
-      "meta": this.getMetaData()
-    }));
-    Http.onreadystatechange = (e) => {
-      if (Http.readyState === 4 && Http.status === 200) {
+    const http = new XMLHttpRequest();
+    http.open("POST", this.apiUrl + "/bugs");
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    http.setRequestHeader("Api-Token", this.sdkKey);
+    http.onreadystatechange = (e) => {
+      if (
+        http.readyState === XMLHttpRequest.DONE &&
+        (http.status === 200 || http.status === 201)
+      ) {
         this.showSuccessMessage();
         setTimeout(() => {
           this.hide();
         }, 2000);
       }
-      if (Http.readyState === 4 && Http.status !== 200) {
-        this.showError();
-      }
-    }
+    };
+    const bugReportData = {
+      reportedBy: this.email,
+      description: this.description,
+      priority: this.severity,
+      screenshotUrl: this.screenshotURL,
+      customData: this.customData,
+      metaData: this.getMetaData(),
+      consoleLog: this.logArray,
+    };
+    http.send(JSON.stringify(bugReportData));
   }
 
   showError() {
@@ -358,7 +509,7 @@ class BugBattle {
     var nVer = navigator.appVersion;
     var nAgt = navigator.userAgent;
     var browserName = navigator.appName;
-    var fullVersion = '' + parseFloat(navigator.appVersion);
+    var fullVersion = "" + parseFloat(navigator.appVersion);
     var majorVersion = parseInt(navigator.appVersion, 10);
     var nameOffset, verOffset, ix;
 
@@ -374,26 +525,28 @@ class BugBattle {
       browserName = "Microsoft Internet Explorer";
       fullVersion = nAgt.substring(verOffset + 5);
     }
-    // In Chrome, the true version is after "Chrome" 
+    // In Chrome, the true version is after "Chrome"
     else if ((verOffset = nAgt.indexOf("Chrome")) != -1) {
       browserName = "Chrome";
       fullVersion = nAgt.substring(verOffset + 7);
     }
-    // In Safari, the true version is after "Safari" or after "Version" 
+    // In Safari, the true version is after "Safari" or after "Version"
     else if ((verOffset = nAgt.indexOf("Safari")) != -1) {
       browserName = "Safari";
       fullVersion = nAgt.substring(verOffset + 7);
       if ((verOffset = nAgt.indexOf("Version")) != -1)
         fullVersion = nAgt.substring(verOffset + 8);
     }
-    // In Firefox, the true version is after "Firefox" 
+    // In Firefox, the true version is after "Firefox"
     else if ((verOffset = nAgt.indexOf("Firefox")) != -1) {
       browserName = "Firefox";
       fullVersion = nAgt.substring(verOffset + 8);
     }
-    // In most other browsers, "name/version" is at the end of userAgent 
-    else if ((nameOffset = nAgt.lastIndexOf(' ') + 1) <
-      (verOffset = nAgt.lastIndexOf('/'))) {
+    // In most other browsers, "name/version" is at the end of userAgent
+    else if (
+      (nameOffset = nAgt.lastIndexOf(" ") + 1) <
+      (verOffset = nAgt.lastIndexOf("/"))
+    ) {
       browserName = nAgt.substring(nameOffset, verOffset);
       fullVersion = nAgt.substring(verOffset + 1);
       if (browserName.toLowerCase() == browserName.toUpperCase()) {
@@ -406,9 +559,9 @@ class BugBattle {
     if ((ix = fullVersion.indexOf(" ")) != -1)
       fullVersion = fullVersion.substring(0, ix);
 
-    majorVersion = parseInt('' + fullVersion, 10);
+    majorVersion = parseInt("" + fullVersion, 10);
     if (isNaN(majorVersion)) {
-      fullVersion = '' + parseFloat(navigator.appVersion);
+      fullVersion = "" + parseFloat(navigator.appVersion);
       majorVersion = parseInt(navigator.appVersion, 10);
     }
 
@@ -425,60 +578,65 @@ class BugBattle {
     let sessionDuration = (now.getTime() - this.sessionStart.getTime()) / 1000;
 
     return {
-      "web": true,
-      "deviceName": browserName + "(" + fullVersion + ")",
-      "deviceModel": OSName,
-      "deviceIdentifier": nAgt,
-      "bundleID": navigator.appName,
-      "systemName": OSName,
-      "buildVersionNumber": this.appBuildNumber,
-      "releaseVersionNumber": this.appVersionCode,
-      "sessionDuration": sessionDuration
+      browserName: browserName + "(" + fullVersion + ")",
+      userAgent: nAgt,
+      browser: navigator.appName,
+      systemName: OSName,
+      buildVersionNumber: this.appBuildNumber,
+      releaseVersionNumber: this.appVersionCode,
+      sessionDuration: sessionDuration,
+      devicePixelRatio: window.devicePixelRatio,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      currentUrl: window.location.href,
+      language: navigator.language || navigator.userLanguage,
     };
   }
 
   initScreenshotEditor() {
-    let flag = false;
-    let prevX = 0;
-    let currX = 0;
-    let prevY = 0;
-    let currY = 0;
-    let dot_flag = true;
-    let color = "rgba(237, 68, 61, 0.05)";
+    let color = "rgba(254, 123, 140, 0.05)";
 
-    var elem = document.createElement('div');
+    var elem = document.createElement("div");
     elem.className = "bugbattle-screenshot-editor-container";
     elem.innerHTML = `
       <canvas class='bugbattle-screenshot-editor-canvas'></canvas>
-      <div drawcolor="rgba(65, 79, 176, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--blue"></div>
-      <div drawcolor="rgba(237, 68, 61, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--red bugbattle-screenshot-editor-color--selected"></div>
-      <div drawcolor="rgba(80, 175, 87, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--green"></div>
+      <div drawcolor="rgba(112, 185, 218, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--blue"></div>
+      <div drawcolor="rgba(254, 123, 140, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--red bugbattle-screenshot-editor-color--selected"></div>
+      <div drawcolor="rgba(236, 216, 83, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--yellow"></div>
       <div drawcolor="rgba(49, 49, 49, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--black"></div>
-      <div drawcolor="rgba(252, 200, 61, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--yellow"></div>
-      <div drawcolor="rgba(153, 36, 171, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--pink"></div>
-      <div drawcolor="rgba(39, 187, 209, 0.05)" class="bugbattle-screenshot-editor-color bugbattle-screenshot-editor-color--marine"></div>
       <div class="bugbattle-screenshot-editor-done">Done</div>
     `;
     document.body.appendChild(elem);
 
-    let canvas = document.querySelector('.bugbattle-screenshot-editor-canvas');
-    let doneButton = document.querySelector('.bugbattle-screenshot-editor-done');
+    let canvas = document.querySelector(".bugbattle-screenshot-editor-canvas");
+    let doneButton = document.querySelector(
+      ".bugbattle-screenshot-editor-done"
+    );
     doneButton.onclick = () => {
       this.screenshot = canvas.toDataURL();
-      let feedbackImage = document.querySelector('.bugbattle--feedback-image img');
+      let feedbackImage = document.querySelector(
+        ".bugbattle--feedback-image img"
+      );
       feedbackImage.src = this.screenshot;
       elem.remove();
     };
 
-    let colorButtons = document.querySelectorAll('.bugbattle-screenshot-editor-color');
-    colorButtons.forEach(colorButton => {
+    let colorButtons = document.querySelectorAll(
+      ".bugbattle-screenshot-editor-color"
+    );
+    colorButtons.forEach((colorButton) => {
       colorButton.onclick = () => {
         let newColor = colorButton.getAttribute("drawcolor");
         color = newColor;
-        colorButtons.forEach(colorButton => {
-          colorButton.className = colorButton.className.replace("bugbattle-screenshot-editor-color--selected", "");
+        colorButtons.forEach((colorButton) => {
+          colorButton.className = colorButton.className.replace(
+            "bugbattle-screenshot-editor-color--selected",
+            ""
+          );
         });
-        colorButton.className += ' bugbattle-screenshot-editor-color--selected';
+        colorButton.className += " bugbattle-screenshot-editor-color--selected";
       };
     });
 
@@ -492,8 +650,8 @@ class BugBattle {
 
       canvas.width = width;
       canvas.height = height;
-      canvas.style.width = width + 'px';
-      canvas.style.height = height + 'px';
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
 
       context.drawImage(imageObj, 0, 0, width, height);
     };
@@ -513,7 +671,7 @@ class BugBattle {
     function drawNew() {
       context.strokeStyle = color;
       context.lineJoin = "round";
-      context.lineWidth = 10;
+      context.lineWidth = 8;
 
       var i = clickX.length - 1;
       if (!clickDrag[i]) {
@@ -547,7 +705,11 @@ class BugBattle {
     function touchstartEventHandler(e) {
       paint = true;
       if (paint) {
-        addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, false);
+        addClick(
+          e.touches[0].pageX - canvas.offsetLeft,
+          e.touches[0].pageY - canvas.offsetTop,
+          false
+        );
         drawNew();
       }
     }
@@ -568,7 +730,11 @@ class BugBattle {
 
     function touchMoveEventHandler(e) {
       if (paint) {
-        addClick(e.touches[0].pageX - canvas.offsetLeft, e.touches[0].pageY - canvas.offsetTop, true);
+        addClick(
+          e.touches[0].pageX - canvas.offsetLeft,
+          e.touches[0].pageY - canvas.offsetTop,
+          true
+        );
         drawNew();
       }
     }
@@ -576,14 +742,14 @@ class BugBattle {
     function setUpHandler(isMouseandNotTouch, detectEvent) {
       removeRaceHandlers();
       if (isMouseandNotTouch) {
-        canvas.addEventListener('mouseup', mouseUpEventHandler);
-        canvas.addEventListener('mousemove', mouseMoveEventHandler);
-        canvas.addEventListener('mousedown', mouseDownEventHandler);
+        canvas.addEventListener("mouseup", mouseUpEventHandler);
+        canvas.addEventListener("mousemove", mouseMoveEventHandler);
+        canvas.addEventListener("mousedown", mouseDownEventHandler);
         mouseDownEventHandler(detectEvent);
       } else {
-        canvas.addEventListener('touchstart', touchstartEventHandler);
-        canvas.addEventListener('touchmove', touchMoveEventHandler);
-        canvas.addEventListener('touchend', mouseUpEventHandler);
+        canvas.addEventListener("touchstart", touchstartEventHandler);
+        canvas.addEventListener("touchmove", touchMoveEventHandler);
+        canvas.addEventListener("touchend", mouseUpEventHandler);
         touchstartEventHandler(detectEvent);
       }
     }
@@ -597,12 +763,12 @@ class BugBattle {
     }
 
     function removeRaceHandlers() {
-      canvas.removeEventListener('mousedown', mouseWins);
-      canvas.removeEventListener('touchstart', touchWins);
+      canvas.removeEventListener("mousedown", mouseWins);
+      canvas.removeEventListener("touchstart", touchWins);
     }
 
-    canvas.addEventListener('mousedown', mouseWins);
-    canvas.addEventListener('touchstart', touchWins);
+    canvas.addEventListener("mousedown", mouseWins);
+    canvas.addEventListener("touchstart", touchWins);
   }
 }
 
