@@ -4,10 +4,10 @@ import BugBattle from './../lib';
 class App {
   constructor() {
     // Initialize the SDK.
-    let bugBattle = new BugBattle("5c41fcd794aaf5331dd4d513", BugBattle.FEEDBACK_BUTTON);
+    let bugBattle = new BugBattle("8hWXOj5yeZxweCgnyxYTXqJ1qFlu0N4U", BugBattle.FEEDBACK_BUTTON);
 
     // Set's the main color (color schema).
-    bugBattle.setMainColor("#086EFB");
+    bugBattle.setMainColor("#000");
 
     // Set's the app's build number.
     bugBattle.setAppBuildNumber(5);
