@@ -11,6 +11,7 @@ Achieve better app quality & ratings with comprehensive in-app bug reporting. Bu
 - Enhance your apps with bug reporting
 - Easy integration
 - Datacenter in europe
+- Automatic crash detection
 - Multiple platforms (iOS, Android, JavaScript)
 
 ## 🚀 Getting started
@@ -37,7 +38,7 @@ Add the following code to your app / website to initialize the BugBattle JavaScr
 
 ```
 <script>
-let bugBattle = new BugBattle("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
+BugBattle.initialize("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
 </script>
 ```
 
@@ -49,16 +50,16 @@ You can track more data (i.e. the app build number, version code or custom data)
 
 ```
 // Set's the main color (color schema).
-bugBattle.setMainColor("#086EFB");
+BugBattle.setMainColor("#086EFB");
 
 // Set's the app's build number.
-bugBattle.setAppBuildNumber(5);
+BugBattle.setAppBuildNumber(5);
 
 // Set's the app's version code.
-bugBattle.setAppVersionCode("v5.0");
+BugBattle.setAppVersionCode("v5.0");
 
 // Attaches custom data to the bug reports.
-bugBattle.setCustomData({
+BugBattle.setCustomData({
     test1: "Battle",
     data2: "Unicorn"
 });
@@ -75,9 +76,9 @@ If you want to manually trigger the bug reporting workflow, simply call the foll
 
 ```
 // Initiates the bug reporting workflow.
-bugBattle.reportBug();
+BugBattle.startBugReporting();
 ```
 
 ## 🤝 Need help?
 
-We are here to help! hi@bugbattle.io
+We are here to help! hello@bugbattle.io
