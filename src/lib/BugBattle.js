@@ -492,7 +492,7 @@ class BugBattle {
         this.showSuccessMessage();
         setTimeout(() => {
 
-          //this.hide();
+          this.hide();
         }, 2000);
       }
     };
