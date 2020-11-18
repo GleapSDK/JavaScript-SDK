@@ -1,3 +1,10 @@
+input,
+label {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
 .bugbattle--feedback-button {
   position: fixed;
   bottom: 0px;
