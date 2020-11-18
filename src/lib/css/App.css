@@ -1,5 +1,5 @@
-input,
-label {
+.bugbattle--feedback-dialog-container input,
+.bugbattle--feedback-dialog-container label {
   margin: 0;
   padding: 0;
   border: none;
@@ -80,6 +80,7 @@ label {
   color: #398cfe;
   font-size: 14px;
   font-family: sans-serif;
+  word-break: initial;
 }
 
 .bugbattle--feedback-dialog-header-title {
@@ -89,6 +90,7 @@ label {
   font-size: 15px;
   font-family: sans-serif;
   text-align: center;
+  width: 100%;
 }
 
 .bugbattle--feedback-dialog-info-text {
