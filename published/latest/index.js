@@ -1,11 +1,11 @@
 /*!
  * 
- *   bugbattle v3.0.5
+ *   bugbattle v3.0.6
  *   https://github.com/BugBattle/JavaScript-SDK
  * 
  *   Copyright (c) BugBattle 
  * 
- *   This source code is licensed under the MIT license found in the
+ *   This source code is licensed under the Commercial license found in the
  *   LICENSE file in the root directory of this source tree.
  *   
  */
