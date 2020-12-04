@@ -767,6 +767,7 @@ class BugBattle {
         );
         drawNew();
       }
+      e.preventDefault();
     }
 
     function setUpHandler(isMouseandNotTouch, detectEvent) {
