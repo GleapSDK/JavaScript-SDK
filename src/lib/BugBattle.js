@@ -10,7 +10,7 @@ class BugBattle {
   activation = "";
   screenshot = null;
   screenshotURL = "";
-  crashDetectorEnabled = true;
+  crashDetectorEnabled = false;
   crashDetected = false;
   actionLog = [];
   logArray = [];
