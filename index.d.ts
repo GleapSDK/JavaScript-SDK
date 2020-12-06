@@ -15,6 +15,7 @@ declare module "bugbattle" {
     function enableCrashDetector(enabled: boolean): void;
     function setAppBuildNumber(buildNumber: string): void;
     function setAppVersionCode(versionCode: string): void;
+    function enablePoweredByBugbattle(hide: boolean): void;
     function setMainColor(color: string): void;
   }
   export default BugBattle;

@@ -7,7 +7,7 @@ class App {
     BugBattle.initialize("8hWXOj5yeZxweCgnyxYTXqJ1qFlu0N4U", BugBattle.FEEDBACK_BUTTON);
 
     // Set's the app's build number.
-    BugBattle.setMainColor('#398CFE');
+    BugBattle.setMainColor('#FEAB39');
 
     // Set's the app's build number.
     BugBattle.setAppBuildNumber(5);
@@ -21,7 +21,20 @@ class App {
         data2: "Unicorn"
     });
 
+    // Turn the privacy policy check on or off.
+    BugBattle.enablePrivacyPolicy(false);
+
+    // Enable the automatic crash detector.
     BugBattle.enableCrashDetector(true);
+
+    // console.error("Y");
+
+    const feedbackButton = document.querySelector("#feedback-button");
+    if (feedbackButton) {
+      feedbackButton.onclick = function () {
+        BugBattle.startBugReporting();
+      }
+    }
   }
 }
 

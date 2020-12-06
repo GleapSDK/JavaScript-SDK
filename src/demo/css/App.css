@@ -1,4 +1,114 @@
-body {
-  background-color: #70B9DA;
-  color: black;
+* {
+    box-sizing: border-box;
+    border: none;
+    padding: 0px;
+    margin: 0px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+body, html {
+    background-color: #fff;
+    margin: 0;
+}
+
+.header {
+    width: 100%;
+    background: linear-gradient(rgb(112, 185, 218) 0%, rgb(117, 169, 192) 80%, rgb(255, 255, 255) 80.001%, rgb(255, 255, 255) 100%);
+    min-height: 750px;
+}
+
+.header-container {
+    max-width: 650px;
+    margin: auto;
+    padding-top: 200px;
+}
+
+.header-container-image {
+    max-width: 850px;
+    margin: auto;
+    padding-top: 0px;
+}
+
+h1 {
+    color: #fff;
+    font-size: 32px;
+    font-weight: 900;
+}
+
+h2 {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.logo {
+    width: 60%;
+    width: 200px;
+    height: auto;
+    position: fixed;
+    top: 40px;
+    left: 40px;
+}
+
+.head-image {
+    margin-top: 40px;
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.content {
+    max-width: 650px;
+    margin: auto;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    color: #333;
+    font-size: 18px;
+    line-height: 26px;
+    font-weight: 300;
+}
+
+a {
+    color: rgb(57, 140, 254);
+    text-decoration: none;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.buttonlink {
+    display: inline-block;
+    width: fit-content;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgb(255, 255, 255);
+    background-color: rgb(57, 140, 254);
+    border-style: solid;
+    border-width: 0px;
+    border-radius: 56px;
+    padding: 15px 40px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+@media only screen and (max-width: 600px) {
+    .header-container {
+        padding-left: 40px;
+        padding-right: 40px;
+        padding-top: 150px;
+    }
+    .head-image {
+        border-radius: 0px;
+    }
+    .header {
+        min-height: initial;
+    }
+    .content {
+        margin-top: 0px;
+        padding: 40px;
+    }
 }
