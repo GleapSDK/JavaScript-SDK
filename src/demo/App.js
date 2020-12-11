@@ -25,7 +25,7 @@ class App {
     BugBattle.enablePrivacyPolicy(false);
 
     // Enable the automatic crash detector.
-    BugBattle.enableCrashDetector(true);
+    BugBattle.enableCrashDetector(false);
 
     const feedbackButton = document.querySelector("#feedback-button");
     if (feedbackButton) {

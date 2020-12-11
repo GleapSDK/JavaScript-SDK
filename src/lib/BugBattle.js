@@ -178,13 +178,20 @@ class BugBattle {
       height: window.innerHeight,
       letterRendering: 1,
       allowTaint: true,
-      useCORS: true,
-      imageTimeout: 15000
+      useCORS: false,
+      logging: false,
+      imageTimeout: 15000,
+      proxy: "https://jsproxy.bugbattle.io/",
     }).then(function (canvas) {
-      self.instance.screenshot = canvas.toDataURL();
-      if (self.instance.crashDetected) {
-        self.instance.askForCrashReport();
+      if (canvas) {
+        self.instance.screenshot = canvas.toDataURL();
+        if (self.instance.crashDetected) {
+          self.instance.askForCrashReport();
+        } else {
+          self.instance.showBugReportEditor();
+        }
       } else {
+        console.warn("Couldn't create image.");
         self.instance.showBugReportEditor();
       }
     });
@@ -419,7 +426,7 @@ class BugBattle {
     if (this.poweredByHidden) {
       poweredByContainer.style.display = "none";
     } else {
-      poweredByContainer.onclick = function() {
+      poweredByContainer.onclick = function () {
         window.open("https://www.bugbattle.io/", "_blank");
       };
     }
@@ -525,7 +532,7 @@ class BugBattle {
     elem.className = "bugbattle--feedback-button";
     elem.innerHTML =
       '<div class="bugbattle--feedback-button-inner"><div class="bugbattle--feedback-button-inner-text">Feedback</div></div>';
-    elem.onclick = function() {
+    elem.onclick = function () {
       BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
@@ -634,7 +641,7 @@ class BugBattle {
     const http = new XMLHttpRequest();
     http.open("POST", this.apiUrl + "/uploads/sdk");
     http.setRequestHeader("Api-Token", this.sdkKey);
-    http.onreadystatechange = function(e) {
+    http.onreadystatechange = function (e) {
       if (http.readyState === XMLHttpRequest.DONE) {
         try {
           const response = JSON.parse(http.responseText);
@@ -665,13 +672,13 @@ class BugBattle {
     http.open("POST", this.apiUrl + "/bugs");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", this.sdkKey);
-    http.onreadystatechange = function(e) {
+    http.onreadystatechange = function (e) {
       if (
         http.readyState === XMLHttpRequest.DONE &&
         (http.status === 200 || http.status === 201)
       ) {
         self.showSuccessMessage();
-        setTimeout(function() {
+        setTimeout(function () {
           self.hide();
         }, 1500);
       }
@@ -685,7 +692,7 @@ class BugBattle {
       customData: this.customData,
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
-      type: this.crashDetected ? 'CRASHREPORT' : 'BUG'
+      type: this.crashDetected ? "CRASHREPORT" : "BUG",
     };
     http.send(JSON.stringify(bugReportData));
   }
@@ -797,7 +804,7 @@ class BugBattle {
       </div>
     `;
     document.body.appendChild(bugReportingEditor);
-    
+
     const editorRectangle = document.querySelector(
       ".bugbattle-screenshot-editor-borderlayer"
     );
