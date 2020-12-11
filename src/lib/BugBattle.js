@@ -170,31 +170,11 @@ class BugBattle {
       feedbackBtn.style.display = "none";
     }
 
-    const self = this;
-    html2canvas(document.body, {
-      x: window.scrollX,
-      y: window.scrollY,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      letterRendering: 1,
-      allowTaint: true,
-      useCORS: false,
-      logging: false,
-      imageTimeout: 15000,
-      proxy: "https://jsproxy.bugbattle.io/",
-    }).then(function (canvas) {
-      if (canvas) {
-        self.instance.screenshot = canvas.toDataURL();
-        if (self.instance.crashDetected) {
-          self.instance.askForCrashReport();
-        } else {
-          self.instance.showBugReportEditor();
-        }
-      } else {
-        console.warn("Couldn't create image.");
-        self.instance.showBugReportEditor();
-      }
-    });
+    if (this.instance.crashDetected) {
+      this.instance.askForCrashReport();
+    } else {
+      this.instance.showBugReportEditor();
+    }
   }
 
   startCrashDetection() {
@@ -286,6 +266,7 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
+    elem.setAttribute("data-html2canvas-ignore", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
         <div></div>
@@ -330,6 +311,7 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
+    elem.setAttribute("data-html2canvas-ignore", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
         <div></div>
@@ -475,7 +457,24 @@ class BugBattle {
         console.log("BUGBATTLE: Please provide a valid API key!");
       }
 
-      self.prepareScreenshot();
+      html2canvas(document.body, {
+        x: window.scrollX,
+        y: window.scrollY,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        letterRendering: 1,
+        allowTaint: true,
+        useCORS: false,
+        logging: false,
+        imageTimeout: 15000,
+        proxy: "https://jsproxy.bugbattle.io/",
+      }).then(function (canvas) {
+        if (canvas) {
+          self.screenshot = canvas.toDataURL();
+          self.prepareScreenshot();
+        }
+      });
+
     };
   }
 
@@ -629,6 +628,7 @@ class BugBattle {
 
       // Upload screenshot
       self.uploadScreenshot(canvas.toDataURL("image/jpeg", 0.5));
+      self.screenshot = null;
     };
     imageObj.onerror = function () {
       self.hide();
@@ -795,6 +795,7 @@ class BugBattle {
     const self = this;
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bugbattle-screenshot-editor-container";
+    bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
     bugReportingEditor.innerHTML = `
       <div class='bugbattle-screenshot-editor-container-inner'>
         <div class='bugbattle-screenshot-editor-borderlayer'></div>
