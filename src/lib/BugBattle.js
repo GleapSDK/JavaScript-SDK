@@ -503,7 +503,8 @@ class BugBattle {
     const self = this;
     if (
       document.readyState === "complete" ||
-      document.readyState === "loaded"
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
     ) {
       self.checkForInitType();
     } else {
