@@ -3,6 +3,7 @@
   margin: 0;
   padding: 0;
   border: none;
+  background-color: #fff;
 }
 
 .bugbattle--feedback-button {
@@ -19,6 +20,7 @@
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   z-index: 16777260;
   border: 1px solid rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
 }
 
 .bugbattle--feedback-button:hover {
@@ -31,19 +33,15 @@
   height: 116px;
   padding: 0px;
   margin: 0px;
+  position: relative;
 }
 
 .bugbattle--feedback-button-inner-text {
   position: absolute;
-  bottom: 0px;
-  left: 10px;
+  top: 50%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%) rotate(-90deg);
   background: none;
-  transform-origin: 0 0;
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  -o-transform: rotate(-90deg);
-  -ms-transform: rotate(-90deg);
-  transform: rotate(-90deg);
   text-align: center;
   font-weight: bold;
   font-size: 16px;
@@ -71,6 +69,7 @@
   box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.15);
   border-radius: 8px;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .bugbattle--feedback-dialog-header {
@@ -83,6 +82,7 @@
   padding: 0px 20px;
   border-bottom: 1px solid #eee;
   margin-bottom: 20px;
+  box-sizing: border-box;
 }
 
 .bugbattle--feedback-dialog-header-button-cancel svg {
@@ -157,6 +157,7 @@
 .bugbattle--feedback-send-button {
   background-color: #398cfe;
   border-radius: 5px;
+  box-sizing: border-box;
   padding: 10px 12px;
   font-size: 17px;
   font-weight: bold;
@@ -181,6 +182,7 @@
   outline: none;
   border: 1px solid #ccc;
   border-radius: 3px;
+  box-sizing: border-box;
 }
 
 .bugbattle--feedback-inputgroup textarea {
@@ -198,6 +200,8 @@
   box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 3px;
+  box-sizing: border-box;
+  background-color: #fff;
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy {
@@ -363,6 +367,7 @@
   border: 12px solid #398cfe;
   cursor: crosshair;
   z-index: 16777272;
+  box-sizing: border-box;
 }
 
 .bugbattle-screenshot-editor-dot {
@@ -376,6 +381,7 @@
   border-radius: 100%;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   z-index: 16777270;
+  box-sizing: border-box;
 }
 
 .bugbattle-screenshot-editor-drag-info {
@@ -385,6 +391,7 @@
   background-color: #398cfe;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 5px;
+  box-sizing: border-box;
   padding: 8px 10px;
   font-size: 16px;
   font-family: sans-serif;
@@ -402,6 +409,7 @@
   width: 0px;
   height: 0px;
   border: 3px solid #398cfe;
+  box-sizing: border-box;
   z-index: 16777269;
   box-shadow: 0 0 0 4999px rgba(0, 0, 0, 0.1);
 }
@@ -410,6 +418,7 @@
   .bugbattle--feedback-dialog {
     width: 100%;
     border-radius: 0px;
+    box-sizing: border-box;
     max-width: inherit;
     position: fixed;
     bottom: 0;
@@ -427,8 +436,6 @@
   }
 
   .bugbattle--feedback-button-inner-text {
-    bottom: -2px;
-    left: 8px;
     font-size: 15px;
   }
 

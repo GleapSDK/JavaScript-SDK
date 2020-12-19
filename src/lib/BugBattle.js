@@ -530,7 +530,7 @@ class BugBattle {
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-button";
     elem.innerHTML =
-      '<div class="bugbattle--feedback-button-inner"><div class="bugbattle--feedback-button-inner-text">Feedback</div></div>';
+      '<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">Feedback</span></div>';
     elem.onclick = function () {
       BugBattle.startBugReporting();
     };
