@@ -249,17 +249,63 @@
   cursor: pointer;
 }
 
+.bugbattle--feedback-dialog-type .bugbattle--feedback-poweredbycontainer {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
 .bugbattle--feedback-poweredbycontainer span {
   font-weight: normal;
   font-size: 14px;
+  line-height: 15px;
   font-family: sans-serif;
   color: #aaa;
 }
 
 .bugbattle--feedback-poweredbycontainer svg {
-  height: 18px;
+  height: 16px;
   width: auto;
   margin-left: 5px;
+}
+
+.bugbattle--feedback-dialog-type {
+  max-width: 380px;
+}
+
+.bugbattle--feedback-dialog-type .bugbattle--feedback-dialog-header {
+  margin-bottom: 0px;
+}
+
+.bugbattle--feedback-option {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.bugbattle--feedback-option:hover {
+  background-color: #eee;
+}
+
+.bugbattle--feedback-option-icon {
+  background-color: #fff;
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 100%;
+}
+
+.bugbattle--feedback-option-icon svg {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  display: block;
+}
+
+.bugbattle--feedback-option-text {
+  flex-grow: 1;
+  padding-left: 20px;
+  font-weight: 500;
 }
 
 .bugbattle--edit-button {
