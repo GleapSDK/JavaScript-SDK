@@ -17,6 +17,7 @@ declare module "bugbattle" {
     function setAppVersionCode(versionCode: string): void;
     function enablePoweredByBugbattle(hide: boolean): void;
     function setMainColor(color: string): void;
+    function disableConsoleLogOverwrite(): void;
   }
   export default BugBattle;
 }

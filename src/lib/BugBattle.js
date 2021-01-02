@@ -18,12 +18,17 @@ class BugBattle {
   sessionStart = new Date();
   bugReportingRunning = false;
   poweredByHidden = false;
+  originalConsoleLog;
   description = "";
   severity = "LOW";
   appVersionCode = "";
   appBuildNumber = "";
   mainColor = "#398CFE";
   previousBodyOverflow;
+  snapshotPosition = {
+    x: 0,
+    y: 0,
+  };
 
   // Activation methods
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
@@ -170,6 +175,12 @@ class BugBattle {
       feedbackBtn.style.display = "none";
     }
 
+    // Set snapshot position
+    this.instance.snapshotPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+    };
+
     if (this.instance.crashDetected) {
       this.instance.askForCrashReport();
     } else {
@@ -219,12 +230,18 @@ class BugBattle {
     });
   }
 
+  static disableConsoleLogOverwrite() {
+    window.console = this.instance.originalConsoleLog;
+  }
+
   overwriteConsoleLog() {
     const self = this;
     window.console = (function (origConsole) {
       if (!window.console || !origConsole) {
         origConsole = {};
       }
+
+      self.originalConsoleLog = origConsole;
 
       return {
         log: function () {
@@ -454,12 +471,15 @@ class BugBattle {
       self.toggleLoading(true);
 
       if (!self.sdkKey) {
-        console.log("BUGBATTLE: Please provide a valid API key!");
+        return alert("BUGBATTLE: Please provide a valid API key!");
       }
 
+      self.preScreenshotCleanup();
+
+      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
       html2canvas(document.body, {
-        x: window.scrollX,
-        y: window.scrollY,
+        x: self.snapshotPosition.x,
+        y: self.snapshotPosition.y,
         width: window.innerWidth,
         height: window.innerHeight,
         letterRendering: 1,
@@ -468,14 +488,25 @@ class BugBattle {
         logging: false,
         imageTimeout: 15000,
         proxy: "https://jsproxy.bugbattle.io/",
-      }).then(function (canvas) {
-        if (canvas) {
-          self.screenshot = canvas.toDataURL();
-          self.prepareScreenshot();
-        }
-      });
-
+      })
+        .then(function (canvas) {
+          if (canvas) {
+            self.screenshot = canvas.toDataURL();
+            self.prepareScreenshot();
+          }
+        })
+        .catch(function () {
+          self.showError();
+        });
     };
+  }
+
+  preScreenshotCleanup() {
+    const imgElements = document.body.querySelectorAll("img, svg, video");
+    imgElements.forEach(function (item) {
+      item.setAttribute("width", item.getBoundingClientRect().width);
+      item.setAttribute("height", item.getBoundingClientRect().height);
+    });
   }
 
   hide() {
@@ -618,12 +649,14 @@ class BugBattle {
         context.lineWidth = 3 * pixelRatio;
         context.strokeStyle = self.mainColor;
         context.stroke();
-        context.strokeRect(
-          editorRectangle.offsetLeft * pixelRatio,
-          editorRectangle.offsetTop * pixelRatio,
-          editorRectangle.offsetWidth * pixelRatio,
-          editorRectangle.offsetHeight * pixelRatio
-        );
+        if (editorRectangle.offsetTop > 0 || editorRectangle.offsetLeft) {
+          context.strokeRect(
+            editorRectangle.offsetLeft * pixelRatio,
+            editorRectangle.offsetTop * pixelRatio,
+            editorRectangle.offsetWidth * pixelRatio,
+            editorRectangle.offsetHeight * pixelRatio
+          );
+        }
       }
 
       // Upload screenshot
