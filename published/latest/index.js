@@ -1,6 +1,6 @@
 /*!
  * 
- *   bugbattle v3.1.8
+ *   bugbattle v3.1.10
  *   https://github.com/BugBattle/JavaScript-SDK
  * 
  *   Copyright (c) BugBattle 
