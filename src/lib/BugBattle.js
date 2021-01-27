@@ -1,5 +1,5 @@
 import "./css/App.css";
-import html2canvas from "html2canvas";
+import { dataURL } from "@gripeless/pico";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -214,7 +214,7 @@ class BugBattle {
     }
   }
 
-  addLog(args, type) {
+  addLog(args, priority) {
     if (!args) {
       return;
     }
@@ -226,7 +226,7 @@ class BugBattle {
     this.logArray.push({
       log: log,
       date: new Date(),
-      type: type,
+      priority,
     });
   }
 
@@ -245,20 +245,20 @@ class BugBattle {
 
       return {
         log: function () {
-          self.addLog(arguments, "log");
+          self.addLog(arguments, "INFO");
           origConsole.log && origConsole.log.apply(origConsole, arguments);
         },
         warn: function () {
-          self.addLog(arguments, "warns");
+          self.addLog(arguments, "WARNING");
           origConsole.warn && origConsole.warn.apply(origConsole, arguments);
         },
         error: function () {
-          self.addLog(arguments, "error");
+          self.addLog(arguments, "ERROR");
           origConsole.error && origConsole.error.apply(origConsole, arguments);
           self.startCrashFlow();
         },
         info: function (v) {
-          self.addLog(arguments, "info");
+          self.addLog(arguments, "INFO");
           origConsole.info && origConsole.info.apply(origConsole, arguments);
         },
       };
@@ -283,7 +283,7 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
-    elem.setAttribute("data-html2canvas-ignore", "true");
+    elem.setAttribute("data-ignore-bb", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
         <div></div>
@@ -328,7 +328,7 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
-    elem.setAttribute("data-html2canvas-ignore", "true");
+    elem.setAttribute("data-ignore-bb", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
         <div></div>
@@ -477,25 +477,19 @@ class BugBattle {
       self.preScreenshotCleanup();
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
-      html2canvas(document.body, {
-        x: self.snapshotPosition.x,
-        y: self.snapshotPosition.y,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        letterRendering: 1,
-        allowTaint: true,
-        useCORS: false,
-        logging: false,
-        imageTimeout: 15000,
-        proxy: "https://jsproxy.bugbattle.io/",
+
+      dataURL(window, {
+        ignore: ['[data-ignore-bb~="true"]'],
       })
-        .then(function (canvas) {
-          if (canvas) {
-            self.screenshot = canvas.toDataURL();
+        .then((screen) => {
+          if (screen && screen.value) {
+            self.screenshot = screen.value;
             self.prepareScreenshot();
+          } else {
+            self.showError();
           }
         })
-        .catch(function () {
+        .catch((exp) => {
           self.showError();
         });
     };
@@ -828,7 +822,7 @@ class BugBattle {
     const self = this;
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bugbattle-screenshot-editor-container";
-    bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
+    bugReportingEditor.setAttribute("data-ignore-bb", "true");
     bugReportingEditor.innerHTML = `
       <div class='bugbattle-screenshot-editor-container-inner'>
         <div class='bugbattle-screenshot-editor-borderlayer'></div>

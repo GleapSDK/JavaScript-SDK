@@ -4,7 +4,7 @@ import BugBattle from './../lib';
 class App {
   constructor() {
     // Initialize the SDK.
-    BugBattle.initialize("8hWXOj5yeZxweCgnyxYTXqJ1qFlu0N4U", BugBattle.FEEDBACK_BUTTON);
+    BugBattle.initialize("NF0AbayNnRfrT6QsB3uGAi6ANdd8WeX4", BugBattle.FEEDBACK_BUTTON);
 
     // Set's the app's build number.
     BugBattle.setMainColor('#FEAB39');
@@ -33,6 +33,10 @@ class App {
         BugBattle.startBugReporting();
       }
     }
+
+    console.log("asdf");
+    console.warn("asdf");
+    console.error("asdf");
   }
 }
 
