@@ -27,7 +27,7 @@ class App {
     BugBattle.disableUserScreenshot(false);
 
     // Set's the app's build number.
-    BugBattle.setScreenshotScale(0.5);
+    BugBattle.setScreenshotScale(1.0);
 
     // Enable the automatic crash detector.
     BugBattle.enableCrashDetector(false);
