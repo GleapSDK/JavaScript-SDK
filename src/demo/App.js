@@ -4,7 +4,7 @@ import BugBattle from './../lib';
 class App {
   constructor() {
     // Initialize the SDK.
-    BugBattle.initialize("8hWXOj5yeZxweCgnyxYTXqJ1qFlu0N4U", BugBattle.FEEDBACK_BUTTON);
+    BugBattle.initialize("cGA5pvWKsGPSDHJclA4Se0ADGMYKuJ0N", BugBattle.FEEDBACK_BUTTON);
 
     // Set's the app's build number.
     BugBattle.setMainColor('#FEAB39');
@@ -23,6 +23,11 @@ class App {
 
     // Turn the privacy policy check on or off.
     BugBattle.enablePrivacyPolicy(false);
+
+    BugBattle.disableUserScreenshot(false);
+
+    // Set's the app's build number.
+    BugBattle.setScreenshotScale(0.5);
 
     // Enable the automatic crash detector.
     BugBattle.enableCrashDetector(false);

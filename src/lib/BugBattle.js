@@ -18,6 +18,7 @@ class BugBattle {
   sessionStart = new Date();
   bugReportingRunning = false;
   poweredByHidden = false;
+  disableUserScreenshot = false;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -25,6 +26,7 @@ class BugBattle {
   appBuildNumber = "";
   mainColor = "#398CFE";
   previousBodyOverflow;
+  screenshotScale = window.devicePixelRatio;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -49,6 +51,22 @@ class BugBattle {
     this.sdkKey = sdkKey;
     this.activation = activation;
     this.init();
+  }
+
+  /**
+   * Disables the user screenshot functionality. A full screenshot of the page will be appended insead.
+   * @param {boolean} disableUserScreenshot
+   */
+  static disableUserScreenshot(disableUserScreenshot) {
+    this.instance.disableUserScreenshot = disableUserScreenshot;
+  }
+
+  /**
+   * Sets the scale of the taken screenshots.
+   * @param {boolean} scale
+   */
+  static setScreenshotScale(scale) {
+    this.instance.screenshotScale = scale;
   }
 
   /**
@@ -183,6 +201,8 @@ class BugBattle {
 
     if (this.instance.crashDetected) {
       this.instance.askForCrashReport();
+    } else if (this.instance.disableUserScreenshot) {
+      this.instance.createBugReportingDialog();
     } else {
       this.instance.showBugReportEditor();
     }
@@ -357,8 +377,8 @@ class BugBattle {
       </div>
       <div class="bugbattle--feedback-dialog-body">
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">Email</div>
-          <input class="bugbattle--feedback-email" type="text" placeholder="Email" />
+          <div class="bugbattle--feedback-inputgroup-label">Your e-mail</div>
+          <input class="bugbattle--feedback-email" type="text" placeholder="E-mail" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
           <div class="bugbattle--feedback-inputgroup-label">What went wrong?</div>
@@ -486,7 +506,8 @@ class BugBattle {
         allowTaint: true,
         useCORS: false,
         logging: false,
-        imageTimeout: 15000,
+        scale: self.screenshotScale,
+        imageTimeout: 10000,
         proxy: "https://jsproxy.bugbattle.io/",
       })
         .then(function (canvas) {
@@ -614,7 +635,7 @@ class BugBattle {
     const self = this;
     const imageObj = new Image();
     imageObj.onload = function () {
-      const pixelRatio = window.devicePixelRatio;
+      const pixelRatio = self.screenshotScale;
       const canvas = document.createElement("canvas");
 
       canvas.width = this.width;

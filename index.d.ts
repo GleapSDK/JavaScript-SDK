@@ -18,6 +18,8 @@ declare module "bugbattle" {
     function enablePoweredByBugbattle(hide: boolean): void;
     function setMainColor(color: string): void;
     function disableConsoleLogOverwrite(): void;
+    function setScreenshotScale(scale: number): void;
+    function disableUserScreenshot(disableUserScreenshot: boolean): void;
   }
   export default BugBattle;
 }
