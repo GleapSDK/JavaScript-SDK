@@ -6,13 +6,13 @@ class App {
     // Initialize the SDK.
     BugBattle.initialize("cGA5pvWKsGPSDHJclA4Se0ADGMYKuJ0N", BugBattle.FEEDBACK_BUTTON);
 
-    // Set's the app's build number.
+    // Sets the app's build number.
     BugBattle.setMainColor('#FEAB39');
 
-    // Set's the app's build number.
+    // Sets the app's build number.
     BugBattle.setAppBuildNumber(5);
 
-    // Set's the app's version code.
+    // Sets the app's version code.
     BugBattle.setAppVersionCode("v5.0");
 
     // Attaches custom data to the bug reports.
@@ -24,9 +24,10 @@ class App {
     // Turn the privacy policy check on or off.
     BugBattle.enablePrivacyPolicy(false);
 
+    // Sets weather to enable or disable the user screenshot step within the bug reporting flow.
     BugBattle.disableUserScreenshot(false);
 
-    // Set's the app's build number.
+    // Sets the screenshot scale. This could improve upload speeds.
     BugBattle.setScreenshotScale(1.0);
 
     // Enable the automatic crash detector.
