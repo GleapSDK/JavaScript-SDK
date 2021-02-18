@@ -7,9 +7,9 @@
   "what_went_wrong_subtitle": "Beschreibe den Fehler",
   "send_feedback": "Feedback senden",
   "send_success": "Vielen Dank für dein Feedback!",
-  "apikey_wrong": "BUGBATTLE: Please provide a valid API key!",
-  "provide_email": "Please provide an email address.",
-  "accept_policy_alert": "Please read and accept the privacy policy.",
-  "accept_policy_text": "I read and accept the ",
-  "privacy_policy": "privacy policy"
+  "apikey_wrong": "BUGBATTLE: Bitte gib einen gültigen API Key ein!",
+  "provide_email": "Bitte gib eine E-Mail Adresse ein.",
+  "accept_policy_alert": "Bitte lies und akzeptiere die Datenschutzerklärung.",
+  "accept_policy_text": "Ich akzeptiere die",
+  "privacy_policy": "Datenschutzerklärung."
 }
