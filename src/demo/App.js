@@ -32,7 +32,7 @@ class App {
 
     // Enable the automatic crash detector.
     BugBattle.enableCrashDetector(false);
-
+    
     const feedbackButton = document.querySelector("#feedback-button");
     if (feedbackButton) {
       feedbackButton.onclick = function () {

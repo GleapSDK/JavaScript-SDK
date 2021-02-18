@@ -1,0 +1,12 @@
+{
+  "feedback_btn_title": "Feedback",
+  "click_and_drag": "Klicke oder zieh über den Bildschirm",
+  "report_bug_title": "Feedback abgeben",
+  "your_email": "Deine E-Mail Adresse",
+  "what_went_wrong": "Was ist schief gelaufen?",
+  "what_went_wrong_subtitle": "Beschreibe den Fehler",
+  "send_feedback": "Feedback senden",
+  "send_success":"Danke für dein Feedback",
+  "apikey_wrong": "BUGBATTLE: Please provide a valid API key!"
+
+}

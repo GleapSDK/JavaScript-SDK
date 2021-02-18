@@ -1,0 +1,11 @@
+{
+  "feedback_btn_title": "Feedback",
+  "click_and_drag": "ESPANIOL",
+  "report_bug_title": "Report your Feedback",
+  "your_email": "Your e-mail",
+  "what_went_wrong": "What went wrong?",
+  "what_went_wrong_subtitle": "Describe your issue",
+  "send_feedback": "Send feedback",
+  "send_success": "Thank you for your feedback!",
+  "apikey_wrong": "BUGBATTLE: Please provide a valid API key!"
+}

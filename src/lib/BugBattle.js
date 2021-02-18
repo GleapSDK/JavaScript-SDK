@@ -1,5 +1,10 @@
 import "./css/App.css";
 import html2canvas from "html2canvas";
+import de from "./i18n/de.json";
+import en from "./i18n/en.json";
+import es from "./i18n/es.json";
+import fr from "./i18n/fr.json";
+import it from "./i18n/it.json";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -8,6 +13,7 @@ class BugBattle {
   privacyPolicyCheckEnabled = false;
   email = localStorage.getItem("bugbattle-sender-email") ?? "";
   activation = "";
+  overrideLanguage = "";
   screenshot = null;
   screenshotURL = "";
   crashDetectorEnabled = false;
@@ -139,6 +145,19 @@ class BugBattle {
    */
   static attachCustomData(data) {
     this.instance.customData = data;
+  }
+
+  /**
+   * Override the browser language. Currently supported languages:
+   * - en
+   * - de
+   * - fr
+   * - it
+   * - es
+   * @param {string} language country code with two letters
+   */
+  static setLanguage(language) {
+    this.instance.overrideLanguage = language;
   }
 
   /**
@@ -333,7 +352,7 @@ class BugBattle {
     );
 
     cancelButton.onclick = function () {
-      self.hide();
+      self.closeBugBattle();
     };
 
     sendButton.onclick = function () {
@@ -352,7 +371,9 @@ class BugBattle {
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
       <div class="bugbattle--feedback-dialog-header">
         <div></div>
-        <div class="bugbattle--feedback-dialog-header-title">Report your feedback</div>
+        <div class="bugbattle--feedback-dialog-header-title">${this.translateText(
+          "report_bug_title"
+        )}</div>
         <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
           <svg fill="#CCCCCC" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
@@ -368,27 +389,39 @@ class BugBattle {
       <div class="bugbattle--feedback-dialog-success">
         <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="np_check_1807541" fill="${this.mainColor}" fill-rule="nonzero">
+                <g id="np_check_1807541" fill="${
+                  this.mainColor
+                }" fill-rule="nonzero">
                     <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
                 </g>
             </g>
         </svg>
-        <div class="bugbattle--feedback-dialog-info-text">Thank you for your feedback!</div>
+        <div class="bugbattle--feedback-dialog-info-text">${this.translateText(
+          "send_success"
+        )}</div>
       </div>
       <div class="bugbattle--feedback-dialog-body">
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">Your e-mail</div>
+          <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
+            "your_email"
+          )}</div>
           <input class="bugbattle--feedback-email" type="text" placeholder="E-mail" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">What went wrong?</div>
-          <textarea class="bugbattle--feedback-description" placeholder="Describe your issue"></textarea>
+          <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
+            "what_went_wrong"
+          )}</div>
+          <textarea class="bugbattle--feedback-description" placeholder=${this.translateText(
+            "what_went_wrong_subtitle"
+          )}></textarea>
         </div>
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
           <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">I read and accept the <a id="bugbattle-privacy-policy-link" href="#" target="_blank">privacy policy</a>.</span>
         </div>
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-send-button">Send feedback</div>
+          <div class="bugbattle--feedback-send-button">${this.translateText(
+            "send_feedback"
+          )}</div>
         </div>
         <div class="bugbattle--feedback-poweredbycontainer">
           <span>Powered by</span>
@@ -466,7 +499,7 @@ class BugBattle {
     };
 
     cancelButton.onclick = function () {
-      self.hide();
+      self.closeBugBattle();
     };
 
     emailField.value = this.email;
@@ -491,7 +524,7 @@ class BugBattle {
       self.toggleLoading(true);
 
       if (!self.sdkKey) {
-        return alert("BUGBATTLE: Please provide a valid API key!");
+        return alert(this.translateText("apikey_wrong"));
       }
 
       self.preScreenshotCleanup();
@@ -557,7 +590,6 @@ class BugBattle {
   init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
-
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -579,11 +611,15 @@ class BugBattle {
   }
 
   injectFeedbackButton() {
+    const self = this;
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-button";
-    elem.innerHTML =
-      '<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">Feedback</span></div>';
+    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${this.translateText(
+      "feedback_btn_title"
+    )}</span></div>`;
+
     elem.onclick = function () {
+      self.registerEscapeListener();
       BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
@@ -604,6 +640,54 @@ class BugBattle {
       loader.style.display = "none";
       header.style.display = "block";
     }
+  }
+
+  detectEscapePress(evt) {
+    evt = evt || window.event;
+    var isEscape = false;
+    if ("key" in evt) {
+      isEscape = evt.key === "Escape" || evt.key === "Esc";
+    } else {
+      isEscape = evt.keyCode === 27;
+    }
+    if (isEscape) {
+      this.closeBugBattle();
+    }
+  }
+
+  registerEscapeListener() {
+    document.onkeydown = this.detectEscapePress.bind(this);
+  }
+
+  closeBugBattle() {
+    document.onkeydown = null;
+    this.hide();
+  }
+
+  translateText(key) {
+    let language = navigator.language;
+    if (this.overrideLanguage != "") {
+      language = this.overrideLanguage;
+    }
+
+    let languagePack = en;
+    if (/^de\b/.test(language)) {
+      languagePack = de;
+    }
+    if (/^it\b/.test(language)) {
+      languagePack = it;
+    }
+    if (/^es\b/.test(language)) {
+      languagePack = es;
+    }
+    if (/^fr\b/.test(language)) {
+      languagePack = fr;
+    }
+    if (/^it\b/.test(language)) {
+      languagePack = it;
+    }
+
+    return languagePack[key];
   }
 
   showSuccessMessage() {
@@ -685,7 +769,7 @@ class BugBattle {
       self.screenshot = null;
     };
     imageObj.onerror = function () {
-      self.hide();
+      self.closeBattle();
     };
     imageObj.src = this.screenshot;
   }
@@ -733,7 +817,7 @@ class BugBattle {
       ) {
         self.showSuccessMessage();
         setTimeout(function () {
-          self.hide();
+          self.closeBugBattle();
         }, 1500);
       }
     };
@@ -855,7 +939,9 @@ class BugBattle {
         <div class='bugbattle-screenshot-editor-borderlayer'></div>
         <div class='bugbattle-screenshot-editor-dot'></div>
         <div class='bugbattle-screenshot-editor-rectangle'></div>
-        <div class='bugbattle-screenshot-editor-drag-info'>Click or drag to create a comment</div>
+        <div class='bugbattle-screenshot-editor-drag-info'>${this.translateText(
+          "click_and_drag"
+        )}</div>
       </div>
     `;
     document.body.appendChild(bugReportingEditor);
