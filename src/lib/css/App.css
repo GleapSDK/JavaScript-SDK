@@ -208,10 +208,20 @@
   padding: 8px 20px;
   font-family: sans-serif;
   font-size: 14px;
+  display: flex !important;
+  flex-direction: row;
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy-label {
   cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-left: 5px;
+  white-space:pre;
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy a {

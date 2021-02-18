@@ -411,12 +411,16 @@ class BugBattle {
           <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
             "what_went_wrong"
           )}</div>
-          <textarea class="bugbattle--feedback-description" placeholder=${this.translateText(
+          <textarea class="bugbattle--feedback-description" placeholder="${this.translateText(
             "what_went_wrong_subtitle"
-          )}></textarea>
+          )}"></textarea>
         </div>
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
-          <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">I read and accept the <a id="bugbattle-privacy-policy-link" href="#" target="_blank">privacy policy</a>.</span>
+          <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">${this.translateText(
+            "accept_policy_text"
+          )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${this.translateText(
+      "privacy_policy"
+    )}</a>.</span>
         </div>
         <div class="bugbattle--feedback-inputgroup">
           <div class="bugbattle--feedback-send-button">${this.translateText(
@@ -508,12 +512,12 @@ class BugBattle {
       self.email = emailField.value;
 
       if (!self.email || self.email.length === 0) {
-        alert("Please provide an email address.");
+        alert(self.translateText("provide_email"));
         return;
       }
 
       if (self.privacyPolicyCheckEnabled && !privacyPolicyInput.checked) {
-        alert("Please read and accept the privacy policy.");
+        alert(self.translateText("accept_policy_alert"));
         return;
       }
 
@@ -666,7 +670,7 @@ class BugBattle {
 
   translateText(key) {
     let language = navigator.language;
-    if (this.overrideLanguage != "") {
+    if (this.overrideLanguage !== "") {
       language = this.overrideLanguage;
     }
 

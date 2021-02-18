@@ -7,5 +7,9 @@
   "what_went_wrong_subtitle": "Describe your issue",
   "send_feedback": "Send feedback",
   "send_success": "Thank you for your feedback!",
-  "apikey_wrong": "BUGBATTLE: Please provide a valid API key!"
+  "apikey_wrong": "BUGBATTLE: Please provide a valid API key!",
+  "provide_email": "Please provide an email address.",
+  "accept_policy_alert": "Please read and accept the privacy policy.",
+  "accept_policy_text": "I read and accept the ",
+  "privacy_policy":"privacy policy"
 }

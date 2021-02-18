@@ -22,7 +22,7 @@ class App {
     });
 
     // Turn the privacy policy check on or off.
-    BugBattle.enablePrivacyPolicy(false);
+    BugBattle.enablePrivacyPolicy(true);
 
     // Sets weather to enable or disable the user screenshot step within the bug reporting flow.
     BugBattle.disableUserScreenshot(false);
