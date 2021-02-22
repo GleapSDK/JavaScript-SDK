@@ -1,15 +1,16 @@
 {
   "feedback_btn_title": "Feedback",
-  "click_and_drag": "Klicke und ziehe für Feedback",
-  "report_bug_title": "Gib dein Feedback ein",
-  "your_email": "Deine E-Mail Adresse",
+  "click_and_drag": "Klicken und ziehen Sie um Feedback zu melden",
+  "report_bug_title": "Feedback",
+  "your_email": "Ihre E-Mail Adresse",
+  "email_placeholder": "E-Mail",
   "what_went_wrong": "Was ist schief gelaufen?",
-  "what_went_wrong_subtitle": "Beschreibe den Fehler",
+  "what_went_wrong_subtitle": "Beschreiben Sie den Fehler",
   "send_feedback": "Feedback senden",
-  "send_success": "Vielen Dank für dein Feedback!",
+  "send_success": "Vielen Dank für Ihr Feedback!",
   "apikey_wrong": "BUGBATTLE: Bitte gib einen gültigen API Key ein!",
-  "provide_email": "Bitte gib eine E-Mail Adresse ein.",
-  "accept_policy_alert": "Bitte lies und akzeptiere die Datenschutzerklärung.",
+  "provide_email": "Bitte geben Sie Ihre E-Mail Adresse ein.",
+  "accept_policy_alert": "Bitte lesen und akzeptieren Sie die Datenschutzerklärung.",
   "accept_policy_text": "Ich akzeptiere die",
   "privacy_policy": "Datenschutzerklärung."
 }

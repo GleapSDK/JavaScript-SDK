@@ -405,7 +405,9 @@ class BugBattle {
           <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
             "your_email"
           )}</div>
-          <input class="bugbattle--feedback-email" type="text" placeholder="E-mail" />
+          <input class="bugbattle--feedback-email" type="text" placeholder="${this.translateText(
+            "email_placeholder"
+          )}" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
           <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
