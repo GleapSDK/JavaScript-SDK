@@ -1,5 +1,4 @@
-.bugbattle--feedback-dialog-container input,
-.bugbattle--feedback-dialog-container label {
+.bugbattle--feedback-dialog-container input, .bugbattle--feedback-dialog-container label {
   margin: 0;
   padding: 0;
   border: none;
@@ -18,7 +17,7 @@
   background-color: #398cfe;
   color: #fff;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 16777260;
+  z-index: 916777260;
   border: 1px solid rgba(0, 0, 0, 0.15);
   box-sizing: border-box;
 }
@@ -58,8 +57,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 16777282;
-  background-color: rgba(0,0,0,0.2);
+  z-index: 916777282;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .bugbattle--feedback-dialog {
@@ -173,8 +172,7 @@
   opacity: 0.9;
 }
 
-.bugbattle--feedback-inputgroup > input,
-.bugbattle--feedback-inputgroup input {
+.bugbattle--feedback-inputgroup>input, .bugbattle--feedback-inputgroup input {
   width: auto;
   padding: 12px;
   font-size: 15px;
@@ -208,7 +206,6 @@
   padding: 8px 20px;
   font-family: sans-serif;
   font-size: 14px;
- 
   flex-direction: row;
   width: 100%;
   justify-content: flex-start;
@@ -221,7 +218,7 @@
   flex-direction: row;
   align-items: center;
   margin-left: 5px;
-  white-space:pre;
+  white-space: pre;
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy a {
@@ -297,8 +294,7 @@
   margin: 100px auto;
 }
 
-.bugbattle-double-bounce1,
-.bugbattle-double-bounce2 {
+.bugbattle-double-bounce1, .bugbattle-double-bounce2 {
   width: 100%;
   height: 100%;
   border-radius: 50%;
@@ -307,7 +303,6 @@
   position: absolute;
   top: 0;
   left: 0;
-
   -webkit-animation: sk-bounce 2s infinite ease-in-out;
   animation: sk-bounce 2s infinite ease-in-out;
 }
@@ -318,8 +313,7 @@
 }
 
 @-webkit-keyframes sk-bounce {
-  0%,
-  100% {
+  0%, 100% {
     -webkit-transform: scale(0);
   }
   50% {
@@ -328,8 +322,7 @@
 }
 
 @keyframes sk-bounce {
-  0%,
-  100% {
+  0%, 100% {
     transform: scale(0);
     -webkit-transform: scale(0);
   }
@@ -346,7 +339,7 @@
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
-  z-index: 16777263;
+  z-index: 916777263;
 }
 
 .bugbattle-screenshot-editor-container-inner {
@@ -364,7 +357,7 @@
   height: 100vh;
   height: -webkit-fill-available;
   cursor: crosshair;
-  z-index: 16777267;
+  z-index: 916777267;
 }
 
 .bugbattle-screenshot-editor-borderlayer {
@@ -376,7 +369,7 @@
   height: -webkit-fill-available;
   border: 12px solid #398cfe;
   cursor: crosshair;
-  z-index: 16777272;
+  z-index: 916777272;
   box-sizing: border-box;
 }
 
@@ -390,7 +383,7 @@
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 100%;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 16777270;
+  z-index: 916777270;
   box-sizing: border-box;
 }
 
@@ -407,7 +400,7 @@
   font-family: sans-serif;
   color: #fff;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 16777271;
+  z-index: 916777271;
   min-width: 270px;
   text-align: center;
 }
@@ -420,7 +413,7 @@
   height: 0px;
   border: 3px solid #398cfe;
   box-sizing: border-box;
-  z-index: 16777269;
+  z-index: 916777269;
   box-shadow: 0 0 0 4999px rgba(0, 0, 0, 0.1);
 }
 
@@ -435,20 +428,16 @@
     left: 0;
     right: 0;
   }
-
   .bugbattle--feedback-dialog-header {
     border-radius: 0px;
   }
-
   .bugbattle--feedback-button-inner {
     width: 32px;
     height: 100px;
   }
-
   .bugbattle--feedback-button-inner-text {
     font-size: 15px;
   }
-
   .bugbattle-screenshot-editor-drag-info {
     position: absolute;
     top: 20px;
