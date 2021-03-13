@@ -11,6 +11,7 @@ class BugBattle {
   email = localStorage.getItem("bugbattle-sender-email") ?? "";
   activation = "";
   overrideLanguage = "";
+  overrideButtonText = undefined;
   screenshot = null;
   actionLog = [];
   logArray = [];
@@ -75,6 +76,14 @@ class BugBattle {
    */
   static enablePoweredByBugbattle(hide) {
     this.instance.poweredByHidden = hide;
+  }
+
+  /**
+   * Overrides the feedback button text
+   * @param {string} overrideButtonText
+   */
+  static setFeedbackButtonText(overrideButtonText) {
+    this.instance.overrideButtonText = overrideButtonText;
   }
 
   /**
@@ -298,22 +307,14 @@ class BugBattle {
       </div>
       <div class="bugbattle--feedback-dialog-body">
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">${translateText(
-            "your_email",
-            this.overrideLanguage
-          )}</div>
           <input class="bugbattle--feedback-email" type="text" placeholder="${translateText(
-            "email_placeholder",
+            "your_email",
             this.overrideLanguage
           )}" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">${translateText(
-            "what_went_wrong",
-            this.overrideLanguage
-          )}</div>
           <textarea class="bugbattle--feedback-description" placeholder="${translateText(
-            "what_went_wrong_subtitle",
+            "what_went_wrong",
             this.overrideLanguage
           )}"></textarea>
         </div>
@@ -326,7 +327,7 @@ class BugBattle {
       this.overrideLanguage
     )}</a>.</span>
         </div>
-        <div class="bugbattle--feedback-inputgroup">
+        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup-button">
           <div class="bugbattle--feedback-send-button">${translateText(
             "send_feedback",
             this.overrideLanguage
@@ -438,10 +439,7 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
-      startScreenCapture(
-        self.mainColor,
-        self.snapshotPosition
-      )
+      startScreenCapture(self.mainColor, self.snapshotPosition)
         .then((data) => {
           self.sendBugReportToServer(data);
         })
@@ -498,12 +496,19 @@ class BugBattle {
 
   injectFeedbackButton() {
     const self = this;
-    var elem = document.createElement("div");
-    elem.className = "bugbattle--feedback-button";
-    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${translateText(
+
+    var feedbackButtonText = translateText(
       "feedback_btn_title",
       self.overrideLanguage
-    )}</span></div>`;
+    );
+
+    if (this.overrideButtonText) {
+      feedbackButtonText = this.overrideButtonText;
+    }
+
+    var elem = document.createElement("div");
+    elem.className = "bugbattle--feedback-button";
+    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${feedbackButtonText}</span></div>`;
 
     elem.onclick = function () {
       self.registerEscapeListener();
@@ -593,11 +598,11 @@ class BugBattle {
     };
 
     if (screenshotData.fileUrl) {
-      bugReportData['screenshotUrl'] = screenshotData.fileUrl;
+      bugReportData["screenshotUrl"] = screenshotData.fileUrl;
     }
 
     if (screenshotData.html) {
-      bugReportData['screenshotData'] = screenshotData;
+      bugReportData["screenshotData"] = screenshotData;
     }
 
     http.send(JSON.stringify(bugReportData));

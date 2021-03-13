@@ -7,7 +7,7 @@ class App {
     BugBattle.initialize("MUl7W9jydmpGWDnksEcAYi7CT1GInprD", BugBattle.FEEDBACK_BUTTON);
 
     // Sets the app's build number.
-    BugBattle.setMainColor('#FEAB39');
+    // BugBattle.setMainColor('#FEAB39');
 
     // Sets the app's build number.
     BugBattle.setAppBuildNumber(5);
