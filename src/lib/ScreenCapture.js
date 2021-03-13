@@ -110,7 +110,7 @@ const prepareScreenshot = (screenshot, mainColor) => {
       uploadScreenshot(canvas.toDataURL("image/jpeg", 0.5))
         .then((fileUrl) => {
           resolve({
-            fileUrl: fileUrl
+            fileUrl: fileUrl,
           });
         })
         .catch((err) => {
@@ -166,8 +166,8 @@ const dataURItoBlob = (dataURI) => {
 
 const prepareRemoteScreenshot = (snapshotPosition) => {
   return new Promise((resolve, reject) => {
-    /*$(document)
-      .find("img, video, iframe, svg, picture, embed")
+    $(document)
+      .find("iframe, video, embed")
       .each(function () {
         var width = $(this).width();
         var height = $(this).height();
@@ -175,18 +175,20 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
         $(this).attr("bugbattle-element", true);
         $(this).attr("bugbattle-width", width);
         $(this).attr("bugbattle-height", height);
-      });*/
+      });
 
-    let clone = $(document.documentElement).clone();
+    let clone = $(document.documentElement).clone(true, true);
 
     // Cleanup
-    /*$(document)
+    $(document)
       .find("[bugbattle-element=true]")
       .each(function () {
         $(this).attr("bugbattle-element", null);
         $(this).attr("bugbattle-width", null);
         $(this).attr("bugbattle-height", null);
-      });*/
+      });
+
+    clone.find("script, noscript").remove();
 
     // Cleanup base path
     clone.remove("base");
@@ -198,12 +200,19 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
     clone.find("[bugbattle-element=true]").each(function () {
       $(this).css("width", $(this).attr("bugbattle-width"));
       $(this).css("height", $(this).attr("bugbattle-height"));
-      $(this).css("min-width", $(this).attr("bugbattle-width"));
-      $(this).css("min-height", $(this).attr("bugbattle-height"));
     });
 
-    const html = clone.html();
+    var node = document.doctype;
+    var html =
+      "<!DOCTYPE " +
+      node.name +
+      (node.publicId ? ' PUBLIC "' + node.publicId + '"' : "") +
+      (!node.publicId && node.systemId ? " SYSTEM" : "") +
+      (node.systemId ? ' "' + node.systemId + '"' : "") +
+      ">";
 
+    html += clone.prop("outerHTML");
+    
     resolve({
       html: html,
       baseUrl: window.location.origin,
