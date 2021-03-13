@@ -166,7 +166,7 @@ const dataURItoBlob = (dataURI) => {
 
 const prepareRemoteScreenshot = (snapshotPosition) => {
   return new Promise((resolve, reject) => {
-    $(document)
+    /*$(document)
       .find("img, video, iframe, svg, picture, embed")
       .each(function () {
         var width = $(this).width();
@@ -175,18 +175,18 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
         $(this).attr("bugbattle-element", true);
         $(this).attr("bugbattle-width", width);
         $(this).attr("bugbattle-height", height);
-      });
+      });*/
 
     let clone = $(document.documentElement).clone();
 
     // Cleanup
-    $(document)
+    /*$(document)
       .find("[bugbattle-element=true]")
       .each(function () {
         $(this).attr("bugbattle-element", null);
         $(this).attr("bugbattle-width", null);
         $(this).attr("bugbattle-height", null);
-      });
+      });*/
 
     // Cleanup base path
     clone.remove("base");
