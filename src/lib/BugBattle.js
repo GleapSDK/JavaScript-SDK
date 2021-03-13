@@ -12,12 +12,10 @@ class BugBattle {
   activation = "";
   overrideLanguage = "";
   screenshot = null;
-  screenshotURL = "";
   actionLog = [];
   logArray = [];
   customData = {};
   sessionStart = new Date();
-  bugReportingRunning = false;
   poweredByHidden = false;
   disableUserScreenshot = false;
   originalConsoleLog;
@@ -445,8 +443,7 @@ class BugBattle {
         self.snapshotPosition
       )
         .then((data) => {
-          self.screenshotURL = data;
-          self.sendBugReportToServer();
+          self.sendBugReportToServer(data);
         })
         .catch((err) => {
           self.showError();
@@ -473,7 +470,6 @@ class BugBattle {
       feedbackBtn.style.display = "block";
     }
 
-    this.bugReportingRunning = false;
     this.enableScroll();
   }
 
@@ -568,7 +564,7 @@ class BugBattle {
     success.style.display = "flex";
   }
 
-  sendBugReportToServer() {
+  sendBugReportToServer(screenshotData) {
     const self = this;
     const http = new XMLHttpRequest();
     http.open("POST", this.apiUrl + "/bugs");
@@ -590,12 +586,20 @@ class BugBattle {
       reportedBy: this.email,
       description: this.description,
       priority: this.severity,
-      screenshotUrl: this.screenshotURL,
       customData: this.customData,
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
       type: "BUG",
     };
+
+    if (screenshotData.fileUrl) {
+      bugReportData['screenshotUrl'] = screenshotData.fileUrl;
+    }
+
+    if (screenshotData.html) {
+      bugReportData['screenshotData'] = screenshotData;
+    }
+
     http.send(JSON.stringify(bugReportData));
   }
 

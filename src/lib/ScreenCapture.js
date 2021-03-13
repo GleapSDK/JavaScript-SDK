@@ -2,10 +2,7 @@ import $ from "jquery";
 import html2canvas from "html2canvas";
 import BugBattle from "./BugBattle";
 
-export const startScreenCapture = (
-  mainColor,
-  snapshotPosition
-) => {
+export const startScreenCapture = (mainColor, snapshotPosition) => {
   return checkOnlineStatus(window.location.origin).then((status) => {
     if (status && status.up) {
       return prepareRemoteScreenshot(snapshotPosition);
@@ -112,7 +109,9 @@ const prepareScreenshot = (screenshot, mainColor) => {
 
       uploadScreenshot(canvas.toDataURL("image/jpeg", 0.5))
         .then((fileUrl) => {
-          resolve(fileUrl);
+          resolve({
+            fileUrl: fileUrl
+          });
         })
         .catch((err) => {
           reject(err);
@@ -167,23 +166,27 @@ const dataURItoBlob = (dataURI) => {
 
 const prepareRemoteScreenshot = (snapshotPosition) => {
   return new Promise((resolve, reject) => {
-    $(document).find("img, video, iframe, svg, picture, embed").each(function () {
-      var width = $(this).width();
-      var height = $(this).height();
+    $(document)
+      .find("img, video, iframe, svg, picture, embed")
+      .each(function () {
+        var width = $(this).width();
+        var height = $(this).height();
 
-      $(this).attr("bugbattle-element", true);
-      $(this).attr("bugbattle-width", width);
-      $(this).attr("bugbattle-height", height);
-    });
+        $(this).attr("bugbattle-element", true);
+        $(this).attr("bugbattle-width", width);
+        $(this).attr("bugbattle-height", height);
+      });
 
     let clone = $(document.documentElement).clone();
 
     // Cleanup
-    $(document).find("[bugbattle-element=true]").each(function () {
-      $(this).attr("bugbattle-element", null);
-      $(this).attr("bugbattle-width", null);
-      $(this).attr("bugbattle-height", null);
-    });
+    $(document)
+      .find("[bugbattle-element=true]")
+      .each(function () {
+        $(this).attr("bugbattle-element", null);
+        $(this).attr("bugbattle-width", null);
+        $(this).attr("bugbattle-height", null);
+      });
 
     // Cleanup base path
     clone.remove("base");
@@ -201,36 +204,13 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
 
     const html = clone.html();
 
-    const http = new XMLHttpRequest();
-    http.open("POST", "https://renderer.bugbattle.io/");
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    http.onreadystatechange = function (e) {
-      if (http.readyState === XMLHttpRequest.DONE) {
-        try {
-          const response = JSON.parse(http.responseText);
-          console.log(response);
-          if (response && response.fileUrl) {
-            resolve(response.fileUrl);
-          } else {
-            reject();
-          }
-        } catch (e) {
-          reject(e);
-        }
-      }
-    };
-
-    http.send(
-      JSON.stringify({
-        html: html,
-        baseUrl: window.location.origin,
-        x: snapshotPosition.x,
-        y: snapshotPosition.y,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        apiUrl: BugBattle.instance.apiUrl,
-        sdkKey: BugBattle.instance.sdkKey,
-      })
-    );
+    resolve({
+      html: html,
+      baseUrl: window.location.origin,
+      x: snapshotPosition.x,
+      y: snapshotPosition.y,
+      width: window.innerWidth,
+      height: window.innerHeight,
+    });
   });
 };
