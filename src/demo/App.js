@@ -7,13 +7,16 @@ class App {
     BugBattle.initialize("MUl7W9jydmpGWDnksEcAYi7CT1GInprD", BugBattle.FEEDBACK_BUTTON);
 
     // Sets the app's build number.
-    // BugBattle.setMainColor('#FEAB39');
+    BugBattle.setMainColor('#FEAB39');
 
     // Sets the app's build number.
     BugBattle.setAppBuildNumber(5);
 
     // Sets the app's version code.
     BugBattle.setAppVersionCode("v5.0");
+
+    // Sets the Bugbattle logo url.
+    // BugBattle.setLogoUrl("https://someurl");
 
     // Attaches custom data to the bug reports.
     BugBattle.attachCustomData({

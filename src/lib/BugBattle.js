@@ -1,7 +1,6 @@
-import "./css/App.css";
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
-import { setColor } from "./UI";
+import { setColor, applyBugbattleBaseCSS } from "./UI";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -19,6 +18,7 @@ class BugBattle {
   sessionStart = new Date();
   poweredByHidden = false;
   disableUserScreenshot = false;
+  customLogoUrl = null;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -79,11 +79,19 @@ class BugBattle {
   }
 
   /**
-   * Overrides the feedback button text
+   * Overrides the feedback button text.
    * @param {string} overrideButtonText
    */
   static setFeedbackButtonText(overrideButtonText) {
     this.instance.overrideButtonText = overrideButtonText;
+  }
+
+  /**
+   * Sets the logo url.
+   * @param {string} logoUrl
+   */
+  static setLogoUrl(logoUrl) {
+    this.instance.customLogoUrl = logoUrl;
   }
 
   /**
@@ -268,21 +276,34 @@ class BugBattle {
   createBugReportingDialog() {
     const self = this;
 
+    let headerImage = `<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Artboard" transform="translate(-1.000000, -1.000000)" fill="#398CFE">
+                <path d="M100.524809,33.1304992 C99.5584401,31.4524034 97.6257019,31.0672666 95.6112987,32.208922 C92.7530239,33.8457531 89.8675274,35.4413196 87.0773068,37.1744349 C85.9748294,37.8621791 85.4984502,37.7383851 84.8723519,36.5967298 C81.537698,30.5858457 78.0669358,24.6299811 74.718671,18.7153812 C74.4311065,18.0635671 74.0141725,17.4783635 73.4936961,16.9960208 C72.9047419,16.5919655 72.2174285,16.3588504 71.5065145,16.3220315 L49.3344686,16.3220315 C48.3953212,16.3220315 48.5042078,15.6205324 48.5042078,14.9465431 C48.5042078,11.535332 48.5042078,8.06910137 48.5042078,4.6991549 C48.6443929,3.65838853 48.2429786,2.61822784 47.4425629,1.94817819 C46.8629771,1.34219441 46.06476,1 45.2308027,1 C44.3968453,1 43.5986283,1.34219441 43.0190424,1.94817819 C42.244452,2.63601536 41.8528356,3.66396625 41.9710083,4.6991549 C41.8485108,8.55052229 42.0935058,12.4156446 41.7668458,16.267012 L26.4954919,16.1982375 C25.8641184,16.2921775 25.2655819,16.5426319 24.7533054,16.9272464 C24.322815,17.2345018 23.9495608,17.6163632 23.6508279,18.0551468 L1.560447,56.4862914 C0.813184334,57.6689833 0.813184334,59.1824767 1.560447,60.3651686 L23.5419413,99.043901 C23.9232891,99.8640262 24.6556491,100.462198 25.5291228,100.666977 C25.9337297,100.744459 26.3429353,100.795003 26.7540977,100.818281 L70.5401455,100.98334 C71.2137764,101.044697 71.8919396,100.935988 72.5137161,100.666977 C73.3121387,100.380903 73.9576397,99.7733873 74.2967352,98.9888815 C81.5558458,86.3068789 88.8603258,73.6248763 96.2101753,60.9428737 C97.1317051,59.5530829 97.1317051,57.7385333 96.2101753,56.3487426 C93.9779988,52.5523947 91.8683198,48.6735176 89.6225324,44.8909246 C89.0508775,43.9280827 89.2958725,43.5979655 90.1533549,43.1302995 C93.1069055,41.4797135 96.0332345,39.760353 98.9731743,38.0409926 C99.8632114,37.6405423 100.541726,36.8751197 100.838091,35.9372062 C101.134456,34.9992927 101.020475,33.9781259 100.524809,33.1304992 Z M82.697238,61.0280456 C82.1277368,62.0143675 81.5853548,62.9595927 81.0022941,63.9185168 L81.0022941,63.9185168 L73.4496243,77.0557772 L73.4496243,77.0557772 C71.4428108,80.5763986 69.3817591,84.0833211 67.4427433,87.6176414 C66.9491122,88.5498928 65.9486463,89.0904001 64.9071073,88.987533 C54.1589034,88.9236047 43.4016597,88.8688091 32.6353764,88.823146 C31.7564295,88.8606451 30.940112,88.3647425 30.5607651,87.5628457 C25.1369448,78.0740633 19.7402435,68.5807146 14.3706614,59.0827995 C13.9190214,58.4345022 13.8768077,57.5815513 14.262185,56.890973 L20.3233042,46.4934958 C20.3169536,46.4526494 20.3169536,46.4110519 20.3233042,46.3702055 L28.1607246,32.6712896 L28.1607246,32.6712896 C28.7166662,31.6849676 29.326846,30.3972695 29.7743111,29.6301302 C30.2217763,28.8629909 30.4929673,28.8629909 31.1302662,29.2739584 C38.0727562,33.3836332 45.0423654,37.493308 51.9984149,41.5207893 C62.0053634,47.3839253 72.0168318,53.242495 82.03282,59.0964984 C83.0769054,59.808842 83.2531795,60.0417236 82.6701189,61.0280456 L82.697238,61.0280456 Z" id="Shape"></path>
+            </g>
+        </g>
+    </svg>`;
+    if (this.customLogoUrl) {
+      headerImage = `<img src="${this.customLogoUrl}" alt="bugbattle-logo" />`;
+    }
+
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
     elem.setAttribute("data-html2canvas-ignore", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
+      <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
+        <svg fill="#ffffff" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
+        </svg>
+      </div>
       <div class="bugbattle--feedback-dialog-header">
-        <div></div>
+        <div class="bugbattle--feedback-dialog-header-logo">
+          ${headerImage}
+        </div>
         <div class="bugbattle--feedback-dialog-header-title">${translateText(
           "report_bug_title",
           this.overrideLanguage
         )}</div>
-        <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
-          <svg fill="#CCCCCC" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
-          </svg>
-        </div>
       </div>
       <div class="bugbattle--feedback-dialog-loading">
         <div class="bugbattle-spinner">
@@ -472,6 +493,7 @@ class BugBattle {
   }
 
   init() {
+    applyBugbattleBaseCSS();
     this.overwriteConsoleLog();
     this.startCrashDetection();
     const self = this;
