@@ -1,6 +1,7 @@
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
+import "./css/App.css";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -493,7 +494,6 @@ class BugBattle {
   }
 
   init() {
-    applyBugbattleBaseCSS();
     this.overwriteConsoleLog();
     this.startCrashDetection();
     const self = this;
@@ -511,6 +511,8 @@ class BugBattle {
   }
 
   checkForInitType() {
+    applyBugbattleBaseCSS();
+
     if (this.activation === BugBattle.FEEDBACK_BUTTON) {
       this.injectFeedbackButton();
     }

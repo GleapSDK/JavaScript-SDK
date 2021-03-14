@@ -1,4 +1,4 @@
-export const applyBugbattleBaseCSS = (color) => {
+export const applyBugbattleBaseCSS = () => {
   const colorStyleSheet = `
     .bugbattle--feedback-dialog-container input, .bugbattle--feedback-dialog-container label {
       margin: 0;
