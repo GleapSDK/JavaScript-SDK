@@ -40,7 +40,18 @@ runScript("scripts/build.js", function (err) {
         return;
       }
 
-      console.log("finished preperation");
+      exec("cp ./demo/* ./published/demo", (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+        }
+  
+        console.log("finished preperation");
+      });
     });
   });
 });
