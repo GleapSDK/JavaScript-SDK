@@ -376,10 +376,6 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle-screenshot-editor-container {
-      z-index: 916777263;
-    }
-
-    .bugbattle-screenshot-editor-container-outer {
       position: fixed;
       top: 0px;
       left: 0px;
@@ -390,11 +386,23 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle-screenshot-editor-container-inner {
+      position: relative;
       width: 100vw;
       height: 100vh;
       height: -webkit-fill-available;
     }
-
+    
+    .bugbattle-screenshot-editor-canvas {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      height: -webkit-fill-available;
+      cursor: crosshair;
+      z-index: 916777267;
+    }
+    
     .bugbattle-screenshot-editor-borderlayer {
       position: absolute;
       top: 0px;

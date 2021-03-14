@@ -749,17 +749,15 @@ class BugBattle {
     bugReportingEditor.className = "bugbattle-screenshot-editor-container";
     bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
     bugReportingEditor.innerHTML = `
-    <div class="bugbattle-screenshot-editor-container-outer">
       <div class='bugbattle-screenshot-editor-container-inner'>
         <div class='bugbattle-screenshot-editor-borderlayer'></div>
+        <div class='bugbattle-screenshot-editor-dot'></div>
+        <div class='bugbattle-screenshot-editor-rectangle'></div>
+        <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
+          "click_and_drag",
+          self.overrideLanguage
+        )}</div>
       </div>
-    </div>
-    <div class='bugbattle-screenshot-editor-dot'></div>
-    <div class='bugbattle-screenshot-editor-rectangle'></div>
-    <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
-      "click_and_drag",
-      self.overrideLanguage
-    )}</div>
     `;
     document.body.appendChild(bugReportingEditor);
 
@@ -817,14 +815,14 @@ class BugBattle {
     }
 
     function mouseDownEventHandler(e) {
-      clickStartX = e.pageX;
-      clickStartY = e.pageY;
+      clickStartX = e.pageX - document.documentElement.scrollLeft;
+      clickStartY = e.pageY - document.documentElement.scrollTop;
       setStartPoint(clickStartX, clickStartY);
     }
 
     function touchstartEventHandler(e) {
-      clickStartX = e.touches[0].pageX;
-      clickStartY = e.touches[0].pageY;
+      clickStartX = e.touches[0].pageX - document.documentElement.scrollLeft;
+      clickStartY = e.touches[0].pageY - document.documentElement.scrollTop;
       setStartPoint(clickStartX, clickStartY);
     }
 
@@ -840,14 +838,14 @@ class BugBattle {
     }
 
     function mouseMoveEventHandler(e) {
-      const x = e.pageX;
-      const y = e.pageY;
+      const x = e.pageX - document.documentElement.scrollLeft;
+      const y = e.pageY - document.documentElement.scrollTop;
       setMouseMove(x, y);
     }
 
     function touchMoveEventHandler(e) {
-      const x = e.touches[0].pageX;
-      const y = e.touches[0].pageY;
+      const x = e.touches[0].pageX - document.documentElement.scrollLeft;
+      const y = e.touches[0].pageY - document.documentElement.scrollTop;
       setMouseMove(x, y);
       e.preventDefault();
     }
