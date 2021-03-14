@@ -83,8 +83,14 @@ const prepareScreenshot = (screenshot, mainColor) => {
       if (editorDot && editorRectangle) {
         context.beginPath();
         context.arc(
-          (editorDot.offsetLeft + editorDot.offsetWidth / 2) * pixelRatio,
-          (editorDot.offsetTop + editorDot.offsetHeight / 2) * pixelRatio,
+          (editorDot.offsetLeft -
+            document.documentElement.scrollLeft +
+            editorDot.offsetWidth / 2) *
+            pixelRatio,
+          (editorDot.offsetTop -
+            document.documentElement.scrollTop +
+            editorDot.offsetHeight / 2) *
+            pixelRatio,
           6 * pixelRatio,
           0,
           2 * Math.PI,
@@ -99,8 +105,10 @@ const prepareScreenshot = (screenshot, mainColor) => {
         context.stroke();
         if (editorRectangle.offsetTop > 0 || editorRectangle.offsetLeft) {
           context.strokeRect(
-            editorRectangle.offsetLeft * pixelRatio,
-            editorRectangle.offsetTop * pixelRatio,
+            (editorRectangle.offsetLeft - document.documentElement.scrollLeft) *
+              pixelRatio,
+            (editorRectangle.offsetTop - document.documentElement.scrollTop) *
+              pixelRatio,
             editorRectangle.offsetWidth * pixelRatio,
             editorRectangle.offsetHeight * pixelRatio
           );
@@ -133,7 +141,6 @@ const uploadScreenshot = (screenshot) => {
       if (http.readyState === XMLHttpRequest.DONE) {
         try {
           const response = JSON.parse(http.responseText);
-          console.log(response);
           if (response && response.fileUrl) {
             resolve(response.fileUrl);
           } else {
@@ -212,6 +219,8 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
       ">";
 
     html += clone.prop("outerHTML");
+
+    console.log(html);
 
     var isMobile = false;
     if (

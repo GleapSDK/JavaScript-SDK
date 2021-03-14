@@ -1,3 +1,4 @@
+import $ from "jquery";
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
@@ -490,7 +491,7 @@ class BugBattle {
 
   hide() {
     const editorContainer = document.querySelector(
-      ".bugbattle-screenshot-editor-container"
+      ".bugbattle-screenshot-editor"
     );
     if (editorContainer) {
       editorContainer.remove();
@@ -746,17 +747,19 @@ class BugBattle {
   showBugReportEditor() {
     const self = this;
     var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bugbattle-screenshot-editor-container";
+    bugReportingEditor.className = "bugbattle-screenshot-editor";
     bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
     bugReportingEditor.innerHTML = `
-      <div class='bugbattle-screenshot-editor-container-inner'>
-        <div class='bugbattle-screenshot-editor-borderlayer'></div>
-        <div class='bugbattle-screenshot-editor-dot'></div>
-        <div class='bugbattle-screenshot-editor-rectangle'></div>
-        <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
-          "click_and_drag",
-          self.overrideLanguage
-        )}</div>
+      <div class="bugbattle-screenshot-editor-container">
+        <div class='bugbattle-screenshot-editor-container-inner'>
+          <div class='bugbattle-screenshot-editor-borderlayer'></div>
+          <div class='bugbattle-screenshot-editor-dot'></div>
+          <div class='bugbattle-screenshot-editor-rectangle'></div>
+          <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
+            "click_and_drag",
+            self.overrideLanguage
+          )}</div>
+        </div>
       </div>
     `;
     document.body.appendChild(bugReportingEditor);
@@ -831,6 +834,32 @@ class BugBattle {
         ".bugbattle-screenshot-editor-drag-info"
       );
       dragInfo.style.display = "none";
+
+      const fixedDot = $(".bugbattle-screenshot-editor-dot");
+      const fixedRectangle = $(".bugbattle-screenshot-editor-rectangle");
+
+      fixedRectangle.css({
+        top: `${
+          fixedRectangle.position().top + document.documentElement.scrollTop
+        }px`,
+        left: `${
+          fixedRectangle.position().left + document.documentElement.scrollLeft
+        }px`,
+      });
+      fixedDot.css({
+        top: `${
+          fixedDot.position().top + document.documentElement.scrollTop
+        }px`,
+        left: `${
+          fixedDot.position().left + document.documentElement.scrollLeft
+        }px`,
+      });
+
+      fixedDot.detach();
+      fixedRectangle.detach();
+
+      $(".bugbattle-screenshot-editor").append(fixedDot);
+      $(".bugbattle-screenshot-editor").append(fixedRectangle);
 
       addedMarker = true;
 

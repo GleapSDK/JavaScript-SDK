@@ -486,6 +486,9 @@ export const applyBugbattleBaseCSS = () => {
         left: 20px;
         right: 20px;
       }
+      .bugbattle-screenshot-editor-borderlayer {
+        border-width: 5px;
+      }  
     }
     `;
 
