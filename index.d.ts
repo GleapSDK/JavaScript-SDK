@@ -13,6 +13,7 @@ declare module "bugbattle" {
     function setPrivacyPolicyUrl(privacyUrl: string): void;
     function setApiUrl(apiUrl: string): void;
     function setLogoUrl(logoUrl: string): void;
+    function enableCrashDetector(enabled: boolean): void;
     function setAppBuildNumber(buildNumber: string): void;
     function setAppVersionCode(versionCode: string): void;
     function enablePoweredByBugbattle(hide: boolean): void;

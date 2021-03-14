@@ -197,7 +197,7 @@ export const applyBugbattleBaseCSS = () => {
       background-color: #398cfe;
       border-radius: 8px;
       box-sizing: border-box;
-      padding: 13px 19px;
+      padding: 10px 19px;
       font-size: 16px;
       font-weight: bold;
       font-family: sans-serif;

@@ -165,6 +165,12 @@ class BugBattle {
   }
 
   /**
+   * Enables crash detection.
+   * @deprecated since version 3.1.13
+   */
+  static enableCrashDetector(enabled) {}
+
+  /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
    * @param {string} color
    */
