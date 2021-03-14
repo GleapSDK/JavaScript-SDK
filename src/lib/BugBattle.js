@@ -170,7 +170,18 @@ class BugBattle {
    */
   static setMainColor(color) {
     this.instance.mainColor = color;
-    setColor(color);
+
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
+    ) {
+      setColor(color);
+    } else {
+      document.addEventListener("DOMContentLoaded", function (event) {
+        setColor(color);
+      });
+    }
   }
 
   /**
