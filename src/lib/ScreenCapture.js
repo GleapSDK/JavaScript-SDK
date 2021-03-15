@@ -7,7 +7,6 @@ export const startScreenCapture = (mainColor, snapshotPosition) => {
     if (status && status.up) {
       return prepareRemoteScreenshot(snapshotPosition);
     } else {
-      return prepareRemoteScreenshot(snapshotPosition);
       return prepareHTML2canvas(mainColor, snapshotPosition);
     }
   });
