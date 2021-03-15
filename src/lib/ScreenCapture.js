@@ -7,6 +7,7 @@ export const startScreenCapture = (mainColor, snapshotPosition) => {
     if (status && status.up) {
       return prepareRemoteScreenshot(snapshotPosition);
     } else {
+      return prepareRemoteScreenshot(snapshotPosition);
       return prepareHTML2canvas(mainColor, snapshotPosition);
     }
   });
@@ -176,23 +177,42 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
     $(document)
       .find("iframe, video, embed, img, svg")
       .each(function () {
-        var width = $(this).width();
-        var height = $(this).height();
+        var height = 0;
 
-        $(this).attr("bugbattle-element", true);
-        $(this).attr("bugbattle-width", width);
-        $(this).attr("bugbattle-height", height);
+        if ($(this).css("box-sizing") === "border-box") {
+          height = $(this).outerHeight();
+        } else {
+          height = $(this).height();
+        }
+
+        $(this).attr("bb-element", true);
+        $(this).attr("bb-height", height);
       });
 
     let clone = $(document.documentElement).clone(true, true);
 
+    clone.find("select, textarea, input").each(function () {
+      const tagName = $(this).prop("tagName").toUpperCase();
+      if (
+        tagName === "SELECT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "INPUT"
+      ) {
+        $(this).attr("bb-data-value", $(this).val());
+        if ($(this).prop("type") === "checkbox" || $(this).prop("type") === "radio") {
+          if ($(this).prop("checked") === true) {
+            $(this).attr("bb-data-checked", "true");
+          }
+        }
+      }
+    });
+
     // Cleanup
     $(document)
-      .find("[bugbattle-element=true]")
+      .find("[bb-element=true]")
       .each(function () {
-        $(this).attr("bugbattle-element", null);
-        $(this).attr("bugbattle-width", null);
-        $(this).attr("bugbattle-height", null);
+        $(this).attr("bb-element", null);
+        $(this).attr("bb-height", null);
       });
 
     clone.find("script, noscript").remove();
@@ -204,9 +224,8 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
     clone.find(".bugbattle--feedback-dialog-container").remove();
     clone.find(".bugbattle-screenshot-editor-borderlayer").remove();
 
-    clone.find("[bugbattle-element=true]").each(function () {
-      $(this).css("width", $(this).attr("bugbattle-width"));
-      $(this).css("height", $(this).attr("bugbattle-height"));
+    clone.find("[bb-element=true]").each(function () {
+      $(this).css("height", $(this).attr("bb-height"));
     });
 
     var node = document.doctype;
@@ -219,9 +238,7 @@ const prepareRemoteScreenshot = (snapshotPosition) => {
       ">";
 
     html += clone.prop("outerHTML");
-
-    console.log(html);
-
+    
     var isMobile = false;
     if (
       /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(

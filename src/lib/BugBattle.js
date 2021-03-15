@@ -484,6 +484,7 @@ class BugBattle {
           self.sendBugReportToServer(data);
         })
         .catch((err) => {
+          console.error(err);
           self.showError();
         });
     };
