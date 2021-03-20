@@ -24,6 +24,9 @@ class App {
         data2: "Unicorn"
     });
 
+    // Disable shortcuts
+    BugBattle.enableShortcuts(true);
+
     // Turn the privacy policy check on or off.
     BugBattle.enablePrivacyPolicy(false);
 

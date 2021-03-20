@@ -21,6 +21,7 @@ class BugBattle {
   poweredByHidden = false;
   disableUserScreenshot = false;
   customLogoUrl = null;
+  shortcutsEnabled = true;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -70,6 +71,14 @@ class BugBattle {
    */
   static disableUserScreenshot(disableUserScreenshot) {
     this.instance.disableUserScreenshot = disableUserScreenshot;
+  }
+
+  /**
+   * Enable or disable shortcuts
+   * @param {boolean} enabled
+   */
+  static enableShortcuts(enabled) {
+    this.instance.shortcutsEnabled = enabled;
   }
 
   /**
@@ -515,6 +524,7 @@ class BugBattle {
   init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
+    this.registerKeyboardListener();
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -527,6 +537,30 @@ class BugBattle {
         self.checkForInitType();
       });
     }
+  }
+
+  registerKeyboardListener() {
+    const self = this;
+    const charForEvent = function(event) {
+      var code;
+    
+      if (event.key !== undefined) {
+        code = event.key;
+      } else if (event.keyIdentifier !== undefined) {
+        code = event.keyIdentifier;
+      } else if (event.keyCode !== undefined) {
+        code = event.keyCode;
+      }
+
+      return code;
+    };
+
+    document.onkeyup = function(e) {
+      var char = charForEvent(e);
+      if (e.ctrlKey && (char  === 'r' || char  === 'R') && self.shortcutsEnabled) {
+        BugBattle.startBugReporting();
+      }
+    };
   }
 
   checkForInitType() {
