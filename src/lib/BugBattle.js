@@ -204,6 +204,7 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
+    this.instance.registerEscapeListener();
     this.instance.disableScroll();
     const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
     if (feedbackBtn) {
@@ -588,7 +589,6 @@ class BugBattle {
     elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${feedbackButtonText}</span></div>`;
 
     elem.onclick = function () {
-      self.registerEscapeListener();
       BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
