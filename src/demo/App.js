@@ -4,7 +4,7 @@ import BugBattle from './../lib';
 class App {
   constructor() {
     // Initialize the SDK.
-    BugBattle.initialize("MUl7W9jydmpGWDnksEcAYi7CT1GInprD", BugBattle.FEEDBACK_BUTTON);
+    BugBattle.initialize("arO906tKWMgSF1KvHVtTnDchklUZtyM8", BugBattle.FEEDBACK_BUTTON);
 
     // Sets the app's build number.
     // BugBattle.setMainColor('#FEAB39');

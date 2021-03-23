@@ -1,5 +1,5 @@
 import $ from "jquery";
-import { startScreenCapture } from "./ScreenCapture";
+import { isMobile, startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
@@ -542,9 +542,9 @@ class BugBattle {
 
   registerKeyboardListener() {
     const self = this;
-    const charForEvent = function(event) {
+    const charForEvent = function (event) {
       var code;
-    
+
       if (event.key !== undefined) {
         code = event.key;
       } else if (event.keyIdentifier !== undefined) {
@@ -556,9 +556,13 @@ class BugBattle {
       return code;
     };
 
-    document.onkeyup = function(e) {
+    document.onkeyup = function (e) {
       var char = charForEvent(e);
-      if (e.ctrlKey && (char  === 'r' || char  === 'R') && self.shortcutsEnabled) {
+      if (
+        e.ctrlKey &&
+        (char === "r" || char === "R") &&
+        self.shortcutsEnabled
+      ) {
         BugBattle.startBugReporting();
       }
     };
@@ -776,6 +780,7 @@ class BugBattle {
       innerHeight: window.innerHeight,
       currentUrl: window.location.href,
       language: navigator.language || navigator.userLanguage,
+      mobile: isMobile(),
     };
   }
 
