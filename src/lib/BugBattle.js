@@ -3,6 +3,7 @@ import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
+import { interceptNetworkRequests } from "./NetworkInterception";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -526,6 +527,7 @@ class BugBattle {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
+    this.interceptNetworkRequests();
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -540,11 +542,23 @@ class BugBattle {
     }
   }
 
+  interceptNetworkRequests() {
+    interceptNetworkRequests({
+      onFetch: console.log,
+      onFetchResponse: console.log,
+      onFetchLoad: console.log,
+      onOpen: console.log,
+      onSend: console.log,
+      onError: console.log,
+      onLoad: console.log,
+    });
+  }
+
   registerKeyboardListener() {
     const self = this;
-    const charForEvent = function(event) {
+    const charForEvent = function (event) {
       var code;
-    
+
       if (event.key !== undefined) {
         code = event.key;
       } else if (event.keyIdentifier !== undefined) {
@@ -556,9 +570,13 @@ class BugBattle {
       return code;
     };
 
-    document.onkeyup = function(e) {
+    document.onkeyup = function (e) {
       var char = charForEvent(e);
-      if (e.ctrlKey && (char  === 'r' || char  === 'R') && self.shortcutsEnabled) {
+      if (
+        e.ctrlKey &&
+        (char === "r" || char === "R") &&
+        self.shortcutsEnabled
+      ) {
         BugBattle.startBugReporting();
       }
     };
