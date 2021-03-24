@@ -3,7 +3,7 @@ import { isMobile, startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
-import { interceptNetworkRequests } from "./NetworkInterception";
+import BugBattleNetworkIntercepter from "./NetworkInterception";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -30,6 +30,7 @@ class BugBattle {
   appBuildNumber = "";
   mainColor = "#398CFE";
   previousBodyOverflow;
+  networkIntercepter = new BugBattleNetworkIntercepter();
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -543,15 +544,7 @@ class BugBattle {
   }
 
   interceptNetworkRequests() {
-    interceptNetworkRequests({
-      onFetch: console.log,
-      onFetchResponse: console.log,
-      onFetchLoad: console.log,
-      onOpen: console.log,
-      onSend: console.log,
-      onError: console.log,
-      onLoad: console.log,
-    });
+    this.networkIntercepter.start();
   }
 
   registerKeyboardListener() {
@@ -690,6 +683,7 @@ class BugBattle {
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
       type: "BUG",
+      networkLogs: this.networkIntercepter.getRequests(),
     };
 
     if (screenshotData.fileUrl) {

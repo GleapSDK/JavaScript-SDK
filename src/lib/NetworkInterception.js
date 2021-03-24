@@ -1,60 +1,183 @@
-function interceptNetworkRequests(ee) {
-  const open = XMLHttpRequest.prototype.open;
-  const send = XMLHttpRequest.prototype.send;
+class BugBattleNetworkIntercepter {
+  requestId = 0;
+  requests = {};
+  maxRequests = 10;
 
-  const isRegularXHR = open.toString().indexOf("native code") !== -1;
-
-  // don't hijack if already hijacked - this will mess up with frameworks like Angular with zones
-  // we work if we load first there which we can.
-  if (isRegularXHR) {
-    XMLHttpRequest.prototype.open = function () {
-      ee.onOpen && ee.onOpen(this, arguments);
-      if (ee.onLoad) {
-        this.addEventListener("load", ee.onLoad.bind(ee));
-      }
-      if (ee.onError) {
-        this.addEventListener("error", ee.onError.bind(ee));
-      }
-      return open.apply(this, arguments);
-    };
-    XMLHttpRequest.prototype.send = function () {
-      ee.onSend && ee.onSend(this, arguments);
-      return send.apply(this, arguments);
-    };
+  getRequests() {
+    return this.requests;
   }
 
-  const fetch = window.fetch || "";
-  // don't hijack twice, if fetch is built with XHR no need to decorate, if already hijacked
-  // then this is dangerous and we opt out
-  const isFetchNative = fetch.toString().indexOf("native code") !== -1;
-  if (isFetchNative) {
-    window.fetch = function () {
-      ee.onFetch && ee.onFetch(arguments);
-      const p = fetch.apply(this, arguments);
-      p.then(ee.onFetchResponse, ee.onFetchError);
-      return p;
-    };
-    // at the moment, we don't listen to streams which are likely video
-    const json = Response.prototype.json;
-    const text = Response.prototype.text;
-    const blob = Response.prototype.blob;
-    Response.prototype.json = function () {
-      const p = json.apply(this.arguments);
-      p.then(ee.onFetchLoad && ee.onFetchLoad.bind(ee, "json"));
-      return p;
-    };
-    Response.prototype.text = function () {
-      const p = text.apply(this.arguments);
-      p.then(ee.onFetchLoad && ee.onFetchLoad.bind(ee, "text"));
-      return p;
-    };
-    Response.prototype.blob = function () {
-      const p = blob.apply(this.arguments);
-      p.then(ee.onFetchLoad && ee.onFetchLoad.bind(ee, "blob"));
-      return p;
-    };
+  setMaxRequests(maxRequests) {
+    this.maxRequests = maxRequests;
   }
-  return ee;
+
+  cleanRequests() {
+    var keys = Object.keys(this.requests);
+    if (keys.length > this.maxRequests) {
+      var keysToRemove = keys.slice(0, keys.length - this.maxRequests);
+      for (var i = 0; i < keysToRemove.length; i++) {
+        delete this.requests[keysToRemove[i]];
+      }
+    }
+  }
+
+  start() {
+    this.interceptNetworkRequests({
+      onFetch: (params, bbRequestId) => {
+        if (params.length >= 2) {
+          let method = params[1].method ? params[1].method : "GET";
+          this.requests[bbRequestId] = {
+            request: {
+              payload: params[1].body,
+              headers: params[1].headers,
+            },
+            type: method,
+            url: params[0],
+            date: new Date(),
+          };
+        } else {
+          this.requests[bbRequestId] = {
+            url: params[0],
+            date: new Date(),
+          };
+        }
+
+        this.cleanRequests();
+      },
+      onFetchLoad: (req, bbRequestId) => {
+        req.text().then((responseText) => {
+          this.requests[bbRequestId]["success"] = true;
+          this.requests[bbRequestId]["response"] = {
+            status: req.status,
+            statusText: req.statusText,
+            responseText: responseText,
+          };
+
+          this.cleanRequests();
+        });
+      },
+      onOpen: (request, args) => {
+        if (request && request.bbRequestId && args.length >= 2) {
+          this.requests[request.bbRequestId] = {
+            type: args[0],
+            url: args[1],
+            date: new Date(),
+          };
+        }
+
+        this.cleanRequests();
+      },
+      onSend: (request, args) => {
+        if (request && request.bbRequestId && args.length > 0) {
+          this.requests[request.bbRequestId]["request"] = {
+            payload: args[0],
+            headers: request.requestHeaders,
+          };
+        }
+
+        this.cleanRequests();
+      },
+      onError: (request, args) => {
+        if (
+          request &&
+          request.currentTarget &&
+          request.currentTarget.bbRequestId
+        ) {
+          var target = request.currentTarget;
+          this.requests[target.bbRequestId]["success"] = false;
+        }
+
+        this.cleanRequests();
+      },
+      onLoad: (request, args) => {
+        if (
+          request &&
+          request.currentTarget &&
+          request.currentTarget.bbRequestId
+        ) {
+          var target = request.currentTarget;
+          this.requests[target.bbRequestId]["success"] = true;
+          this.requests[target.bbRequestId]["response"] = {
+            status: target.status,
+            statusText: target.statusText,
+            responseText: target.responseText,
+          };
+        }
+
+        this.cleanRequests();
+      },
+    });
+  }
+
+  interceptNetworkRequests(callback) {
+    var self = this;
+    const open = XMLHttpRequest.prototype.open;
+    const send = XMLHttpRequest.prototype.send;
+
+    const isRegularXHR = open.toString().indexOf("native code") !== -1;
+    if (isRegularXHR) {
+      XMLHttpRequest.prototype.wrappedSetRequestHeader =
+        XMLHttpRequest.prototype.setRequestHeader;
+      XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+        this.wrappedSetRequestHeader(header, value);
+
+        if (!this.requestHeaders) {
+          this.requestHeaders = {};
+        }
+
+        if (!this.requestHeaders[header]) {
+          this.requestHeaders[header] = [];
+        }
+
+        this.requestHeaders[header].push(value);
+      };
+      XMLHttpRequest.prototype.open = function () {
+        this["bbRequestId"] = ++self.requestId;
+        callback.onOpen && callback.onOpen(this, arguments);
+        if (callback.onLoad) {
+          this.addEventListener("load", callback.onLoad.bind(callback));
+        }
+        if (callback.onError) {
+          this.addEventListener("error", callback.onError.bind(callback));
+        }
+        return open.apply(this, arguments);
+      };
+      XMLHttpRequest.prototype.send = function () {
+        callback.onSend && callback.onSend(this, arguments);
+        return send.apply(this, arguments);
+      };
+    }
+
+    const fetch = window.fetch || "";
+    const isFetchNative = fetch.toString().indexOf("native code") !== -1;
+    if (isFetchNative) {
+      (function () {
+        var originalFetch = window.fetch;
+        window.fetch = function () {
+          var bbRequestId = ++self.requestId;
+          callback.onFetch(arguments, bbRequestId);
+
+          return originalFetch.apply(this, arguments).then(function (data) {
+            return data.text().then((textData) => {
+              data.text = function () {
+                return Promise.resolve(textData);
+              };
+
+              data.json = function () {
+                return Promise.resolve(JSON.parse(textData));
+              };
+
+              callback.onFetchLoad(data, bbRequestId);
+
+              return data;
+            });
+          });
+        };
+      })();
+    }
+
+    return callback;
+  }
 }
 
-export { interceptNetworkRequests };
+export default BugBattleNetworkIntercepter;
