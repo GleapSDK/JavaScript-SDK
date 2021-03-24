@@ -1,5 +1,5 @@
 import $ from "jquery";
-import { startScreenCapture } from "./ScreenCapture";
+import { isMobile, startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
@@ -794,6 +794,7 @@ class BugBattle {
       innerHeight: window.innerHeight,
       currentUrl: window.location.href,
       language: navigator.language || navigator.userLanguage,
+      mobile: isMobile(),
     };
   }
 
