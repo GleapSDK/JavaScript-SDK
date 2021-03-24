@@ -4,7 +4,7 @@ class BugBattleNetworkIntercepter {
   maxRequests = 10;
 
   getRequests() {
-    return this.requests;
+    return Object.values(this.requests);
   }
 
   setMaxRequests(maxRequests) {
@@ -100,7 +100,7 @@ class BugBattleNetworkIntercepter {
           this.requests[target.bbRequestId]["response"] = {
             status: target.status,
             statusText: target.statusText,
-            responseText: target.responseText,
+            responseText: target.responseType === 'text' ? target.responseText : '<' + target.responseType + '>',
           };
         }
 

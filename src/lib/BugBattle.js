@@ -100,6 +100,13 @@ class BugBattle {
   }
 
   /**
+   * Enables the network logger.
+   */
+   static enableNetworkLogger() {
+    this.instance.networkIntercepter.start();
+  }
+
+  /**
    * Sets the logo url.
    * @param {string} logoUrl
    */
@@ -528,7 +535,7 @@ class BugBattle {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
-    this.interceptNetworkRequests();
+
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -541,10 +548,6 @@ class BugBattle {
         self.checkForInitType();
       });
     }
-  }
-
-  interceptNetworkRequests() {
-    this.networkIntercepter.start();
   }
 
   registerKeyboardListener() {
