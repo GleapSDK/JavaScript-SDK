@@ -27,7 +27,11 @@ class BugBattleNetworkIntercepter {
   }
 
   calcRequestTime(bbRequestId) {
-    let startDate = this.requests[bbRequestId]["date"];
+    if (!this.requests[bbRequestId]) {
+      return;
+    }
+    
+    var startDate = this.requests[bbRequestId]["date"];
     if (startDate) {
       this.requests[bbRequestId]["duration"] = new Date().getTime() - startDate.getTime();
     }
@@ -41,7 +45,7 @@ class BugBattleNetworkIntercepter {
         }
 
         if (params.length >= 2) {
-          let method = params[1].method ? params[1].method : "GET";
+          var method = params[1].method ? params[1].method : "GET";
           this.requests[bbRequestId] = {
             request: {
               payload: params[1].body,
