@@ -213,6 +213,7 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
+    this.instance.networkIntercepter.setStopped(true);
     this.instance.registerEscapeListener();
     this.instance.disableScroll();
     const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
@@ -510,6 +511,8 @@ class BugBattle {
   }
 
   hide() {
+    this.networkIntercepter.setStopped(false);
+
     const editorContainer = document.querySelector(
       ".bugbattle-screenshot-editor"
     );

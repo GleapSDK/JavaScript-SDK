@@ -2,6 +2,7 @@ class BugBattleNetworkIntercepter {
   requestId = 0;
   requests = {};
   maxRequests = 10;
+  stopped = false;
 
   getRequests() {
     return Object.values(this.requests);
@@ -9,6 +10,10 @@ class BugBattleNetworkIntercepter {
 
   setMaxRequests(maxRequests) {
     this.maxRequests = maxRequests;
+  }
+
+  setStopped(stopped) {
+    this.stopped = stopped;
   }
 
   cleanRequests() {
@@ -21,9 +26,20 @@ class BugBattleNetworkIntercepter {
     }
   }
 
+  calcRequestTime(bbRequestId) {
+    let startDate = this.requests[bbRequestId]["date"];
+    if (startDate) {
+      this.requests[bbRequestId]["duration"] = new Date().getTime() - startDate.getTime();
+    }
+  }
+
   start() {
     this.interceptNetworkRequests({
       onFetch: (params, bbRequestId) => {
+        if (this.stopped) {
+          return;
+        }
+
         if (params.length >= 2) {
           let method = params[1].method ? params[1].method : "GET";
           this.requests[bbRequestId] = {
@@ -45,6 +61,10 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onFetchLoad: (req, bbRequestId) => {
+        if (this.stopped) {
+          return;
+        }
+
         req.text().then((responseText) => {
           this.requests[bbRequestId]["success"] = true;
           this.requests[bbRequestId]["response"] = {
@@ -53,10 +73,26 @@ class BugBattleNetworkIntercepter {
             responseText: responseText,
           };
 
+          this.calcRequestTime(bbRequestId);
+
           this.cleanRequests();
         });
       },
+      onFetchFailed: (err, bbRequestId) => {
+        if (this.stopped) {
+          return;
+        }
+        
+        this.requests[bbRequestId]["success"] = false;
+        this.calcRequestTime(bbRequestId);
+
+        this.cleanRequests();
+      },
       onOpen: (request, args) => {
+        if (this.stopped) {
+          return;
+        }
+        
         if (request && request.bbRequestId && args.length >= 2) {
           this.requests[request.bbRequestId] = {
             type: args[0],
@@ -68,6 +104,10 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onSend: (request, args) => {
+        if (this.stopped) {
+          return;
+        }
+        
         if (request && request.bbRequestId && args.length > 0) {
           this.requests[request.bbRequestId]["request"] = {
             payload: args[0],
@@ -75,9 +115,17 @@ class BugBattleNetworkIntercepter {
           };
         }
 
+        this.calcRequestTime(request.bbRequestId);
         this.cleanRequests();
       },
       onError: (request, args) => {
+        if (this.stopped) {
+          return;
+        }
+
+        console.log(request);
+        console.log(args);
+        
         if (
           request &&
           request.currentTarget &&
@@ -87,9 +135,14 @@ class BugBattleNetworkIntercepter {
           this.requests[target.bbRequestId]["success"] = false;
         }
 
+        this.calcRequestTime(request.bbRequestId);
         this.cleanRequests();
       },
       onLoad: (request, args) => {
+        if (this.stopped) {
+          return;
+        }
+        
         if (
           request &&
           request.currentTarget &&
@@ -158,6 +211,7 @@ class BugBattleNetworkIntercepter {
           callback.onFetch(arguments, bbRequestId);
 
           return originalFetch.apply(this, arguments).then(function (data) {
+            console.log(data);
             return data.text().then((textData) => {
               data.text = function () {
                 return Promise.resolve(textData);
@@ -171,6 +225,9 @@ class BugBattleNetworkIntercepter {
 
               return data;
             });
+          }).catch((err) => {
+            callback.onFetchFailed(err, bbRequestId);
+            throw err;
           });
         };
       })();
