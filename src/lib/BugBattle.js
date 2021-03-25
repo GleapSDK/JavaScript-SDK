@@ -3,6 +3,7 @@ import { isMobile, startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
+import BugBattleNetworkIntercepter from "./NetworkInterception";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -29,6 +30,7 @@ class BugBattle {
   appBuildNumber = "";
   mainColor = "#398CFE";
   previousBodyOverflow;
+  networkIntercepter = new BugBattleNetworkIntercepter();
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -95,6 +97,13 @@ class BugBattle {
    */
   static setFeedbackButtonText(overrideButtonText) {
     this.instance.overrideButtonText = overrideButtonText;
+  }
+
+  /**
+   * Enables the network logger.
+   */
+   static enableNetworkLogger() {
+    this.instance.networkIntercepter.start();
   }
 
   /**
@@ -204,6 +213,7 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
+    this.instance.networkIntercepter.setStopped(true);
     this.instance.registerEscapeListener();
     this.instance.disableScroll();
     const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
@@ -501,6 +511,8 @@ class BugBattle {
   }
 
   hide() {
+    this.networkIntercepter.setStopped(false);
+
     const editorContainer = document.querySelector(
       ".bugbattle-screenshot-editor"
     );
@@ -526,6 +538,7 @@ class BugBattle {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
+
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -676,6 +689,7 @@ class BugBattle {
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
       type: "BUG",
+      networkLogs: this.networkIntercepter.getRequests(),
     };
 
     if (screenshotData.fileUrl) {

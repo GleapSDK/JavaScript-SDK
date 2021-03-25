@@ -48,8 +48,8 @@ export const isMobile = () => {
   return false;
 };
 
-const documentToHTML = (document, clone) => {
-  var node = document.doctype;
+const documentToHTML = (clone) => {
+  var node = window.document.doctype;
   var html =
     "<!DOCTYPE " +
     node.name +
@@ -143,7 +143,7 @@ const optionallyPrepareRemoteData = (clone, remote) => {
 
 const prepareScreenshotData = (snapshotPosition, remote) => {
   return new Promise((resolve, reject) => {
-    $(document)
+    $(window.document)
       .find("iframe, video, embed, img, svg")
       .each(function () {
         var height = 0;
@@ -158,7 +158,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
         $(this).attr("bb-height", height);
       });
 
-    let clone = $(document.documentElement).clone(true, true);
+    let clone = $(window.document.documentElement).clone(true, true);
 
     clone.find("select, textarea, input").each(function () {
       const tagName = $(this).prop("tagName").toUpperCase();
@@ -180,7 +180,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     });
 
     // Cleanup
-    $(document)
+    $(window.document)
       .find("[bb-element=true]")
       .each(function () {
         $(this).attr("bb-element", null);
@@ -201,7 +201,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     });
 
     optionallyPrepareRemoteData(clone, remote).then(() => {
-      let html = documentToHTML(document, clone);
+      let html = documentToHTML(clone);
 
       resolve({
         html: html,
