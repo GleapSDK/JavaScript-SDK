@@ -2772,11 +2772,6 @@
     "mixin-deep" "^1.2.0"
     "pascalcase" "^0.1.1"
 
-"base64-arraybuffer@^0.2.0":
-  "integrity" "sha512-7emyCsu1/xiBXgQZrscw/8KPRT44I4Yq9Pe6EGs3aPRTsWuggML1/1DTuZUuIaJPIm1FTDUVXl4x/yW8s0kQDQ=="
-  "resolved" "https://registry.npmjs.org/base64-arraybuffer/-/base64-arraybuffer-0.2.0.tgz"
-  "version" "0.2.0"
-
 "base64-js@^1.0.2":
   "integrity" "sha512-ccav/yGvoa80BQDljCxsmmQ3Xvx60/UpBIij5QN21W3wBi/hhIC9OoO+KLpu9IJTS9j4DRVJ3aDDF9cMSoa2lw=="
   "resolved" "https://registry.npmjs.org/base64-js/-/base64-js-1.3.0.tgz"
@@ -3808,13 +3803,6 @@
   dependencies:
     "postcss" "^7.0.6"
     "postcss-selector-parser" "^5.0.0-rc.4"
-
-"css-line-break@1.1.1":
-  "integrity" "sha512-1feNVaM4Fyzdj4mKPIQNL2n70MmuYzAXZ1aytlROFX1JsOo070OsugwGjj7nl6jnDJWHDM8zRZswkmeYVWZJQA=="
-  "resolved" "https://registry.npmjs.org/css-line-break/-/css-line-break-1.1.1.tgz"
-  "version" "1.1.1"
-  dependencies:
-    "base64-arraybuffer" "^0.2.0"
 
 "css-loader@2.1.0":
   "integrity" "sha512-MoOu+CStsGrSt5K2OeZ89q3Snf+IkxRfAIt9aAKg4piioTrhtP1iEFPu+OVn3Ohz24FO6L+rw9UJxBILiSBw5Q=="
@@ -5772,13 +5760,6 @@
     "pretty-error" "^2.1.1"
     "tapable" "^1.1.0"
     "util.promisify" "1.0.0"
-
-"html2canvas@^1.0.0-rc.7":
-  "integrity" "sha512-yvPNZGejB2KOyKleZspjK/NruXVQuowu8NnV2HYG7gW7ytzl+umffbtUI62v2dCHQLDdsK6HIDtyJZ0W3neerA=="
-  "resolved" "https://registry.npmjs.org/html2canvas/-/html2canvas-1.0.0-rc.7.tgz"
-  "version" "1.0.0-rc.7"
-  dependencies:
-    "css-line-break" "1.1.1"
 
 "htmlparser2@~3.3.0":
   "integrity" "sha1-zHDQWln2VC5D8OaFyYLhTJJKnv4="
