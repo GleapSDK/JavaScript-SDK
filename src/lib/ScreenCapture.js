@@ -49,14 +49,17 @@ export const isMobile = () => {
 };
 
 const documentToHTML = (clone) => {
+  var html = "";
   var node = window.document.doctype;
-  var html =
-    "<!DOCTYPE " +
-    node.name +
-    (node.publicId ? ' PUBLIC "' + node.publicId + '"' : "") +
-    (!node.publicId && node.systemId ? " SYSTEM" : "") +
-    (node.systemId ? ' "' + node.systemId + '"' : "") +
-    ">";
+  if (node) {
+    html =
+      "<!DOCTYPE " +
+      node.name +
+      (node.publicId ? ' PUBLIC "' + node.publicId + '"' : "") +
+      (!node.publicId && node.systemId ? " SYSTEM" : "") +
+      (node.systemId ? ' "' + node.systemId + '"' : "") +
+      ">";
+  }
 
   html += clone.prop("outerHTML");
   return html;
@@ -95,7 +98,7 @@ const downloadAllScripts = (dom) => {
   return Promise.all(linkItemsPromises);
 };
 
-const fetchItemResource = (elem) => {
+const fetchItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     if (elem && elem.src) {
       var xhr = new XMLHttpRequest();
@@ -107,7 +110,26 @@ const fetchItemResource = (elem) => {
         };
         reader.readAsDataURL(xhr.response);
       };
-      xhr.open("GET", elem.src);
+      xhr.onerror = function () {
+        // Retry with proxy.
+        if (proxy === false) {
+          fetchItemResource(elem, true)
+            .then(() => {
+              resolve();
+            })
+            .catch(() => {
+              resolve();
+            });
+        } else {
+          resolve();
+        }
+      };
+      var url = elem.src;
+      if (proxy) {
+        url =
+          "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(elem.src);
+      }
+      xhr.open("GET", url);
       xhr.responseType = "blob";
       xhr.send();
     } else {
@@ -132,7 +154,7 @@ const optionallyPrepareRemoteData = (clone, remote) => {
     if (remote) {
       resolve();
     } else {
-      return downloadAllImages(clone).then((done) => {
+      return downloadAllImages(clone).then(() => {
         return downloadAllScripts(clone).then(() => {
           resolve();
         });
