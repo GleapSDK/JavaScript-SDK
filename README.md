@@ -73,9 +73,9 @@ BugBattle.setAppBuildNumber(5);
 BugBattle.setAppVersionCode("v5.0");
 
 // Attaches custom data to the bug reports.
-BugBattle.setCustomData({
-    test1: "Battle",
-    data2: "Unicorn"
+BugBattle.attachCustomData({
+    test1: 'Battle',
+    data2: 'Unicorn',
 });
 
 // Enables the privacy policy check.
