@@ -213,7 +213,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
     // Cleanup base path
     clone.remove("base");
-    clone.find("head").append('<base href="' + window.location.origin + '">');
+    clone.find("head").prepend('<base href="' + window.location.origin + '">');
 
     clone.find(".bugbattle--feedback-dialog-container").remove();
     clone.find(".bugbattle-screenshot-editor-borderlayer").remove();
