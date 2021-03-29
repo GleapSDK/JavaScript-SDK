@@ -215,7 +215,6 @@ class BugBattleNetworkIntercepter {
           callback.onFetch(arguments, bbRequestId);
 
           return originalFetch.apply(this, arguments).then(function (data) {
-            console.log(data);
             return data.text().then((textData) => {
               data.text = function () {
                 return Promise.resolve(textData);
