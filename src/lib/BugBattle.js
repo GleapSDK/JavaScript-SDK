@@ -87,8 +87,8 @@ class BugBattle {
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
    */
-  static enablePoweredByBugbattle(hide) {
-    this.instance.poweredByHidden = hide;
+  static enablePoweredByBugbattle(enabled) {
+    this.instance.poweredByHidden = !enabled;
   }
 
   /**
@@ -573,7 +573,7 @@ class BugBattle {
       var char = charForEvent(e);
       if (
         e.ctrlKey &&
-        (char === "r" || char === "R") &&
+        (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
         BugBattle.startBugReporting();

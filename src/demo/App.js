@@ -14,6 +14,8 @@ class App {
     // Sets the app's build number.
     // BugBattle.setMainColor('#FEAB39');
 
+    BugBattle.enablePoweredByBugbattle(true);
+
     BugBattle.enableNetworkLogger();
 
     // Sets the app's build number.
