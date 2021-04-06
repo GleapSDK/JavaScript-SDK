@@ -65,7 +65,7 @@ const documentToHTML = (clone) => {
   return html;
 };
 
-const fetchLinkItemResource = (elem) => {
+const fetchLinkItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     var isCSS =
       elem.href.includes(".css") ||
@@ -78,6 +78,20 @@ const fetchLinkItemResource = (elem) => {
         ).insertAfter(elem);
         elem.remove();
         resolve();
+      };
+      xhr.onerror = function (err) {
+        // Retry with proxy.
+        if (proxy === false) {
+          fetchLinkItemResource(elem, true)
+            .then(() => {
+              resolve();
+            })
+            .catch(() => {
+              resolve();
+            });
+        } else {
+          resolve();
+        }
       };
       xhr.open("GET", elem.href);
       xhr.send();
@@ -110,7 +124,7 @@ const fetchItemResource = (elem, proxy = false) => {
         };
         reader.readAsDataURL(xhr.response);
       };
-      xhr.onerror = function () {
+      xhr.onerror = function (err) {
         // Retry with proxy.
         if (proxy === false) {
           fetchItemResource(elem, true)
