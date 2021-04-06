@@ -128,9 +128,6 @@ class BugBattleNetworkIntercepter {
           return;
         }
 
-        console.log(request);
-        console.log(args);
-
         if (
           request &&
           request.currentTarget &&
