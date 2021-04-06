@@ -172,43 +172,38 @@ class BugBattleNetworkIntercepter {
     const open = XMLHttpRequest.prototype.open;
     const send = XMLHttpRequest.prototype.send;
 
-    const isRegularXHR = open.toString().indexOf("native code") !== -1;
-    if (isRegularXHR) {
-      XMLHttpRequest.prototype.wrappedSetRequestHeader =
-        XMLHttpRequest.prototype.setRequestHeader;
-      XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
-        this.wrappedSetRequestHeader(header, value);
+    XMLHttpRequest.prototype.wrappedSetRequestHeader =
+      XMLHttpRequest.prototype.setRequestHeader;
+    XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+      this.wrappedSetRequestHeader(header, value);
 
-        if (!this.requestHeaders) {
-          this.requestHeaders = {};
-        }
+      if (!this.requestHeaders) {
+        this.requestHeaders = {};
+      }
 
-        if (!this.requestHeaders[header]) {
-          this.requestHeaders[header] = [];
-        }
+      if (!this.requestHeaders[header]) {
+        this.requestHeaders[header] = [];
+      }
 
-        this.requestHeaders[header].push(value);
-      };
-      XMLHttpRequest.prototype.open = function () {
-        this["bbRequestId"] = ++self.requestId;
-        callback.onOpen && callback.onOpen(this, arguments);
-        if (callback.onLoad) {
-          this.addEventListener("load", callback.onLoad.bind(callback));
-        }
-        if (callback.onError) {
-          this.addEventListener("error", callback.onError.bind(callback));
-        }
-        return open.apply(this, arguments);
-      };
-      XMLHttpRequest.prototype.send = function () {
-        callback.onSend && callback.onSend(this, arguments);
-        return send.apply(this, arguments);
-      };
-    }
+      this.requestHeaders[header].push(value);
+    };
+    XMLHttpRequest.prototype.open = function () {
+      this["bbRequestId"] = ++self.requestId;
+      callback.onOpen && callback.onOpen(this, arguments);
+      if (callback.onLoad) {
+        this.addEventListener("load", callback.onLoad.bind(callback));
+      }
+      if (callback.onError) {
+        this.addEventListener("error", callback.onError.bind(callback));
+      }
+      return open.apply(this, arguments);
+    };
+    XMLHttpRequest.prototype.send = function () {
+      callback.onSend && callback.onSend(this, arguments);
+      return send.apply(this, arguments);
+    };
 
-    const fetch = window.fetch || "";
-    const isFetchNative = fetch.toString().indexOf("native code") !== -1;
-    if (isFetchNative) {
+    if (window.fetch) {
       (function () {
         var originalFetch = window.fetch;
         window.fetch = function () {
