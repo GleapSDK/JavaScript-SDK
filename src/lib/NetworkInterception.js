@@ -30,10 +30,11 @@ class BugBattleNetworkIntercepter {
     if (!this.requests[bbRequestId]) {
       return;
     }
-    
+
     var startDate = this.requests[bbRequestId]["date"];
     if (startDate) {
-      this.requests[bbRequestId]["duration"] = new Date().getTime() - startDate.getTime();
+      this.requests[bbRequestId]["duration"] =
+        new Date().getTime() - startDate.getTime();
     }
   }
 
@@ -86,7 +87,7 @@ class BugBattleNetworkIntercepter {
         if (this.stopped) {
           return;
         }
-        
+
         this.requests[bbRequestId]["success"] = false;
         this.calcRequestTime(bbRequestId);
 
@@ -96,7 +97,7 @@ class BugBattleNetworkIntercepter {
         if (this.stopped) {
           return;
         }
-        
+
         if (request && request.bbRequestId && args.length >= 2) {
           this.requests[request.bbRequestId] = {
             type: args[0],
@@ -111,7 +112,7 @@ class BugBattleNetworkIntercepter {
         if (this.stopped) {
           return;
         }
-        
+
         if (request && request.bbRequestId && args.length > 0) {
           this.requests[request.bbRequestId]["request"] = {
             payload: args[0],
@@ -129,7 +130,7 @@ class BugBattleNetworkIntercepter {
 
         console.log(request);
         console.log(args);
-        
+
         if (
           request &&
           request.currentTarget &&
@@ -146,7 +147,7 @@ class BugBattleNetworkIntercepter {
         if (this.stopped) {
           return;
         }
-        
+
         if (
           request &&
           request.currentTarget &&
@@ -157,7 +158,10 @@ class BugBattleNetworkIntercepter {
           this.requests[target.bbRequestId]["response"] = {
             status: target.status,
             statusText: target.statusText,
-            responseText: target.responseType === 'text' ? target.responseText : '<' + target.responseType + '>',
+            responseText:
+              target.responseType === "text"
+                ? target.responseText
+                : "<" + target.responseType + ">",
           };
         }
 
@@ -214,24 +218,27 @@ class BugBattleNetworkIntercepter {
           var bbRequestId = ++self.requestId;
           callback.onFetch(arguments, bbRequestId);
 
-          return originalFetch.apply(this, arguments).then(function (data) {
-            return data.text().then((textData) => {
-              data.text = function () {
-                return Promise.resolve(textData);
-              };
+          return originalFetch
+            .apply(this, arguments)
+            .then(function (data) {
+              return data.text().then((textData) => {
+                data.text = function () {
+                  return Promise.resolve(textData);
+                };
 
-              data.json = function () {
-                return Promise.resolve(JSON.parse(textData));
-              };
+                data.json = function () {
+                  return Promise.resolve(JSON.parse(textData));
+                };
 
-              callback.onFetchLoad(data, bbRequestId);
+                callback.onFetchLoad(data, bbRequestId);
 
-              return data;
+                return data;
+              });
+            })
+            .catch((err) => {
+              callback.onFetchFailed(err, bbRequestId);
+              throw err;
             });
-          }).catch((err) => {
-            callback.onFetchFailed(err, bbRequestId);
-            throw err;
-          });
         };
       })();
     }

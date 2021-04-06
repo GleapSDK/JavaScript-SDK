@@ -430,7 +430,7 @@ class BugBattle {
       ".bugbattle--feedback-inputgroup--privacy-policy input"
     );
     if (this.privacyPolicyCheckEnabled) {
-      privacyPolicyContainer.style.display = "block";
+      privacyPolicyContainer.style.display = "flex";
       document.querySelector(
         "#bugbattle-privacy-policy-link"
       ).href = this.privacyPolicyUrl;

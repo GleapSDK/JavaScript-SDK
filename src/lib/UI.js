@@ -246,7 +246,7 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-inputgroup--privacy-policy {
-      padding: 8px 20px;
+      padding: 8px 32px;
       font-family: sans-serif;
       font-size: 14px;
       flex-direction: row;
@@ -257,21 +257,20 @@ export const applyBugbattleBaseCSS = () => {
     
     .bugbattle--feedback-inputgroup--privacy-policy-label {
       cursor: pointer;
-      display: flex;
-      flex-direction: row;
       align-items: center;
-      margin-left: 5px;
-      white-space: pre;
+      margin-left: 10px;
     }
     
     .bugbattle--feedback-inputgroup--privacy-policy a {
       color: #398cfe;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      display: inline;
     }
     
     .bugbattle--feedback-inputgroup--privacy-policy input {
       width: auto;
       border: none;
-      padding: 20px;
       font-size: 15px;
       font-family: sans-serif;
       outline: none;
