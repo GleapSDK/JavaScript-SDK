@@ -65,16 +65,67 @@ const documentToHTML = (clone) => {
   return html;
 };
 
+const replaceAsync = async (str, regex, asyncFn) => {
+  const promises = [];
+  str.replace(regex, (match, ...args) => {
+    const promise = asyncFn(match, ...args);
+    promises.push(promise);
+  });
+  const data = await Promise.all(promises);
+  return str.replace(regex, () => data.shift());
+};
+
+const loadCSSUrlResources = async (data, basePath) => {
+  const replacedString = await replaceAsync(
+    data,
+    /url\((.*?)\)/g,
+    async (matchedData) => {
+      if (!matchedData) {
+        return matchedData;
+      }
+
+      var matchedUrl = matchedData.substr(4, matchedData.length - 5).replaceAll("'", "").replaceAll("\"", "");
+
+      // Remote file or data
+      if (
+        matchedUrl.indexOf("http") === 0 ||
+        matchedUrl.indexOf("//") === 0 ||
+        matchedUrl.indexOf("data") === 0
+      ) {
+        return matchedData;
+      }
+
+      try {
+        let resourcePath = matchedUrl;
+        if (basePath) {
+          resourcePath = basePath + "/" + matchedUrl;
+        }
+        let resourceData = await fetchCSSResource(resourcePath);
+        return "url(" + resourceData + ")";
+      } catch (exp) {}
+
+      return matchedData;
+    }
+  );
+
+  return replacedString;
+};
+
 const fetchLinkItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     var isCSS =
       elem.href.includes(".css") ||
       (elem.rel && elem.rel.includes("stylesheet"));
     if (elem && elem.href && isCSS) {
+      var basePath = elem.href.substring(0, elem.href.lastIndexOf("/"));
       var xhr = new XMLHttpRequest();
-      xhr.onload = function () {
+      xhr.onload = async function () {
         $(
-          '<style type="text/css">' + xhr.responseText + "</style>"
+          '<style type="text/css" bb-basepath="' +
+            basePath +
+            '">' +
+            xhr.responseText +
+            "</style>"
         ).insertAfter(elem);
         elem.remove();
         resolve();
@@ -112,6 +163,46 @@ const downloadAllScripts = (dom) => {
   return Promise.all(linkItemsPromises);
 };
 
+const fetchCSSResource = (url, proxy = false) => {
+  return new Promise((resolve, reject) => {
+    if (url) {
+      var xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          resolve(reader.result);
+        };
+        reader.onerror = function () {
+          reject();
+        };
+        reader.readAsDataURL(xhr.response);
+      };
+      xhr.onerror = function (err) {
+        // Retry with proxy.
+        if (proxy === false) {
+          fetchCSSResource(url, true)
+            .then(() => {
+              resolve();
+            })
+            .catch(() => {
+              resolve();
+            });
+        } else {
+          resolve();
+        }
+      };
+      if (proxy) {
+        url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(url);
+      }
+      xhr.open("GET", url);
+      xhr.responseType = "blob";
+      xhr.send();
+    } else {
+      resolve();
+    }
+  });
+};
+
 const fetchItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     if (elem && elem.src) {
@@ -121,6 +212,9 @@ const fetchItemResource = (elem, proxy = false) => {
         reader.onloadend = function () {
           elem.src = reader.result;
           resolve();
+        };
+        reader.onerror = function () {
+          reject();
         };
         reader.readAsDataURL(xhr.response);
       };
@@ -163,6 +257,19 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
+const downloadAllCSSUrlResources = async (clone) => {
+  let styleTags = clone.find("style");
+  for (const style of styleTags) {
+    if (style) {
+      let basePath = style.getAttribute("bb-basepath");
+      let replacedStyle = await loadCSSUrlResources(style.innerHTML, basePath);
+      style.innerHTML = replacedStyle;
+    }
+  }
+
+  return;
+};
+
 const optionallyPrepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
@@ -170,7 +277,9 @@ const optionallyPrepareRemoteData = (clone, remote) => {
     } else {
       return downloadAllImages(clone).then(() => {
         return downloadAllScripts(clone).then(() => {
-          resolve();
+          return downloadAllCSSUrlResources(clone).then(() => {
+            resolve();
+          });
         });
       });
     }
