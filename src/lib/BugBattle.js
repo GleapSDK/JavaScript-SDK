@@ -8,7 +8,7 @@ import BugBattleNetworkIntercepter from "./NetworkInterception";
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
-  privacyPolicyUrl = "https://www.bugbattle.io/pages/privacy-policy";
+  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
   privacyPolicyCheckEnabled = false;
   email = localStorage.getItem("bugbattle-sender-email") ?? "";
   activation = "";
@@ -102,7 +102,7 @@ class BugBattle {
   /**
    * Enables the network logger.
    */
-   static enableNetworkLogger() {
+  static enableNetworkLogger() {
     this.instance.networkIntercepter.start();
   }
 
@@ -499,7 +499,7 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
-      startScreenCapture(self.mainColor, self.snapshotPosition)
+      startScreenCapture(self.snapshotPosition)
         .then((data) => {
           self.sendBugReportToServer(data);
         })

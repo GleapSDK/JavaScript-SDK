@@ -5,7 +5,7 @@ class App {
   constructor() {
     // Initialize the SDK.
     BugBattle.initialize(
-      "arO906tKWMgSF1KvHVtTnDchklUZtyM8",
+      "SkjNXijCcs1ahhQSKgL6ZRYu3VNAA9gG",
       BugBattle.FEEDBACK_BUTTON
     );
 

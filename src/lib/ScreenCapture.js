@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-export const startScreenCapture = (mainColor, snapshotPosition) => {
+export const startScreenCapture = (snapshotPosition) => {
   return checkOnlineStatus(window.location.origin).then((status) => {
     if (status && status.up) {
       return prepareScreenshotData(snapshotPosition, true);
@@ -192,6 +192,18 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
         $(this).attr("bb-element", true);
         $(this).attr("bb-height", height);
+      });
+
+    $(window.document)
+      .find("div")
+      .each(function () {
+        let scrollTop = $(this).scrollTop();
+        let scrollLeft = $(this).scrollLeft();
+        if (scrollTop > 0 || scrollLeft > 0) {
+          $(this).attr("bb-scrollpos", true);
+          $(this).attr("bb-scrolltop", scrollTop);
+          $(this).attr("bb-scrollleft", scrollLeft);
+        }
       });
 
     let clone = $(window.document.documentElement).clone(true, true);
