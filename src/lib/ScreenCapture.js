@@ -65,50 +65,61 @@ const documentToHTML = (clone) => {
   return html;
 };
 
-const replaceAsync = async (str, regex, asyncFn) => {
-  const promises = [];
-  str.replace(regex, (match, ...args) => {
-    const promise = asyncFn(match, ...args);
-    promises.push(promise);
+const replaceAsync = (str, regex, asyncFn) => {
+  return new Promise((resolve, reject) => {
+    const promises = [];
+    str.replace(regex, (match, ...args) => {
+      const promise = asyncFn(match, ...args);
+      promises.push(promise);
+    });
+    Promise.all(promises)
+      .then((data) => {
+        resolve(str.replace(regex, () => data.shift()));
+      })
+      .catch(() => {
+        reject();
+      });
   });
-  const data = await Promise.all(promises);
-  return str.replace(regex, () => data.shift());
 };
 
-const loadCSSUrlResources = async (data, basePath) => {
-  const replacedString = await replaceAsync(
+const loadCSSUrlResources = (data, basePath) => {
+  return replaceAsync(
     data,
     /url\((.*?)\)/g,
-    async (matchedData) => {
-      if (!matchedData) {
-        return matchedData;
-      }
-
-      var matchedUrl = matchedData.substr(4, matchedData.length - 5).replaceAll("'", "").replaceAll("\"", "");
-
-      // Remote file or data
-      if (
-        matchedUrl.indexOf("http") === 0 ||
-        matchedUrl.indexOf("//") === 0 ||
-        matchedUrl.indexOf("data") === 0
-      ) {
-        return matchedData;
-      }
-
-      try {
-        let resourcePath = matchedUrl;
-        if (basePath) {
-          resourcePath = basePath + "/" + matchedUrl;
+    (matchedData) =>
+      new Promise((resolve, reject) => {
+        if (!matchedData) {
+          return resolve(matchedData);
         }
-        let resourceData = await fetchCSSResource(resourcePath);
-        return "url(" + resourceData + ")";
-      } catch (exp) {}
 
-      return matchedData;
-    }
+        var matchedUrl = matchedData
+          .substr(4, matchedData.length - 5)
+          .replaceAll("'", "")
+          .replaceAll('"', "");
+
+        // Remote file or data
+        if (
+          matchedUrl.indexOf("http") === 0 ||
+          matchedUrl.indexOf("//") === 0 ||
+          matchedUrl.indexOf("data") === 0
+        ) {
+          return resolve(matchedData);
+        }
+
+        try {
+          let resourcePath = matchedUrl;
+          if (basePath) {
+            resourcePath = basePath + "/" + matchedUrl;
+          }
+
+          return fetchCSSResource(resourcePath).then((resourceData) => {
+            return resolve("url(" + resourceData + ")");
+          });
+        } catch (exp) {
+          return resolve(matchedData);
+        }
+      })
   );
-
-  return replacedString;
 };
 
 const fetchLinkItemResource = (elem, proxy = false) => {
@@ -119,7 +130,7 @@ const fetchLinkItemResource = (elem, proxy = false) => {
     if (elem && elem.href && isCSS) {
       var basePath = elem.href.substring(0, elem.href.lastIndexOf("/"));
       var xhr = new XMLHttpRequest();
-      xhr.onload = async function () {
+      xhr.onload = function () {
         $(
           '<style type="text/css" bb-basepath="' +
             basePath +
@@ -257,17 +268,22 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
-const downloadAllCSSUrlResources = async (clone) => {
+const downloadAllCSSUrlResources = (clone) => {
+  let promises = [];
+
   let styleTags = clone.find("style");
   for (const style of styleTags) {
     if (style) {
       let basePath = style.getAttribute("bb-basepath");
-      let replacedStyle = await loadCSSUrlResources(style.innerHTML, basePath);
-      style.innerHTML = replacedStyle;
+      promises.push(
+        loadCSSUrlResources(style.innerHTML, basePath).then((replacedStyle) => {
+          return (style.innerHTML = replacedStyle);
+        })
+      );
     }
   }
 
-  return;
+  return Promise.all(promises);
 };
 
 const optionallyPrepareRemoteData = (clone, remote) => {
