@@ -5,9 +5,11 @@ class App {
   constructor() {
     // Initialize the SDK.
     BugBattle.initialize(
-      "nwImRIghsF1NvF7qYMudNBlSU8laEMmx",
+      "NWgFrsK4k499s4M2T7PFsWYOc2Iu1i8j",
       BugBattle.FEEDBACK_BUTTON
     );
+
+    BugBattle.setApiUrl("http://localhost:9000")
 
     // Sets the app's build number.
     // BugBattle.setMainColor('#FEAB39');

@@ -4,6 +4,7 @@ import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
+import ReplayRecorder from "./ReplayRecorder";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -31,6 +32,7 @@ class BugBattle {
   mainColor = "#398CFE";
   previousBodyOverflow;
   networkIntercepter = new BugBattleNetworkIntercepter();
+  replay = new ReplayRecorder();
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -213,6 +215,9 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
+    let recording = this.instance.replay.stop();
+    console.log(JSON.stringify(recording));
+
     this.instance.networkIntercepter.setStopped(true);
     this.instance.registerEscapeListener();
     this.instance.disableScroll();
