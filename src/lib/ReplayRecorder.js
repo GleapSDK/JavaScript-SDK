@@ -4,9 +4,7 @@ import {
   REPLAYREC_ATTR,
   REPLAYREC_CANVAS_DATA,
   REPLAYREC_DELAY,
-  REPLAYREC_FRAME,
   REPLAYREC_INPUT,
-  REPLAYREC_LABEL,
   REPLAYREC_REMOVE,
   REPLAYREC_SCROLL,
   REPLAYREC_TEXT,
@@ -21,12 +19,64 @@ export default class ReplayRecorder {
     this.nestedObserverCallbacks = 0;
     this.focusedElement = null;
     this.observerCallback = this.callback.bind(this);
-    this.iFrameStylesheets = {};
-    this.iframeLoadedListener = (event) =>
-      this.iframeLoaded(event.target, this.actions);
-    this.rootFrame = new ReplayRecFrame(window, this.node, this, null);
-    this.evaluateFocus();
+    this.resourcesToResolve = {};
     this.actions = [];
+    this.rootFrame = new ReplayRecFrame(window, this.node, this);
+    this.evaluateFocus();
+  }
+
+  fetchItemResource = (src, proxy = false) => {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      if (src) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            self.resourcesToResolve[src] = reader.result;
+            resolve();
+          };
+          reader.onerror = function () {
+            reject();
+          };
+          reader.readAsDataURL(xhr.response);
+        };
+        xhr.onerror = function (err) {
+          // Retry with proxy.
+          if (proxy === false) {
+            self
+              .fetchItemResource(src, true)
+              .then(() => {
+                resolve();
+              })
+              .catch(() => {
+                resolve();
+              });
+          } else {
+            resolve();
+          }
+        };
+        var url = src;
+        if (proxy) {
+          url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(src);
+        }
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.send();
+      } else {
+        resolve();
+      }
+    });
+  };
+
+  fetchImageResources() {
+    let resolvePromises = [];
+    let resourceKeys = Object.keys(this.resourcesToResolve);
+    for (var i = 0; i < resourceKeys.length; i++) {
+      resolvePromises.push(this.fetchItemResource(resourceKeys[i]));
+    }
+
+    return Promise.all(resolvePromises);
   }
 
   stop() {
@@ -34,15 +84,19 @@ export default class ReplayRecorder {
     const height = this.rootFrame.node.getBoundingClientRect().height;
     const ret = {
       initialState: this.rootFrame.initialState,
-      iframeStylesheets: this.iFrameStylesheets,
       actions: this.actions,
       width,
       height,
+      resourcesToResolve: this.resourcesToResolve,
     };
+
     this.rootFrame.stop();
     this.clearFakeFocus();
     this.rootFrame = null;
-    return ret;
+
+    return this.fetchImageResources().then(() => {
+      return ret;
+    });
   }
 
   clearFakeFocus() {
@@ -136,9 +190,6 @@ export default class ReplayRecorder {
         a[REPLAYREC_SCROLL] = [id, scrolledIntoView];
       }
       actions.push(a);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log("Warning: unknown scroll operation ignored");
     }
   }
 
@@ -180,6 +231,18 @@ export default class ReplayRecorder {
           case "SCRIPT":
           case "LINK":
             delete node.ReplayRecID;
+
+            if (
+              node &&
+              node.href &&
+              (node.href.includes(".css") ||
+                (node.rel && node.rel.includes("stylesheet")))
+            ) {
+              console.log(node.href);
+              this.resourcesToResolve[node.href] = "--";
+              break;
+            }
+            
             return null;
           case "CANVAS": {
             const a = {};
@@ -187,10 +250,8 @@ export default class ReplayRecorder {
             actions.push(a);
             break;
           }
-          case "IFRAME":
-            this.attachToIFrame(node, actions);
-            break;
         }
+
         obj[""] = tag;
         const attrs = {};
         let hasAttr = false;
@@ -203,6 +264,10 @@ export default class ReplayRecorder {
         }
         if (hasAttr) {
           obj.a = attrs;
+
+          if (obj.a && obj.a.src) {
+            this.optionallyAddAttribute("src", obj.a.src);
+          }
         }
         const children = [];
         for (const c of node.childNodes) {
@@ -219,6 +284,7 @@ export default class ReplayRecorder {
         }
         break;
       }
+
       case Node.TEXT_NODE:
       case Node.CDATA_SECTION_NODE: {
         const data = node.data;
@@ -227,90 +293,17 @@ export default class ReplayRecorder {
         }
         break;
       }
+
       case Node.PROCESSING_INSTRUCTION_NODE:
       case Node.COMMENT_NODE:
         break;
+
       default:
         delete node.ReplayRecID;
         throw new Error(`Bad node ${node}`);
     }
+
     return obj;
-  }
-
-  attachToIFrame(e, actions) {
-    e.addEventListener("load", this.iframeLoadedListener);
-    if (e.contentDocument && e.contentDocument.readyState === "complete") {
-      this.iframeLoaded(e, actions);
-    }
-  }
-
-  iframeLoaded(e, actions) {
-    e.ReplayRecInner = new ReplayRecFrame(
-      e.contentWindow,
-      e.contentDocument.body,
-      this,
-      e
-    );
-    const bodyElement = e.ReplayRecInner.initialState[0];
-    if (!bodyElement.c) {
-      bodyElement.c = [];
-    }
-    for (
-      let c = e.contentDocument.head.firstElementChild;
-      c;
-      c = c.nextElementSibling
-    ) {
-      if (c.tagName === "STYLE") {
-        bodyElement.c.push(
-          this.serializeNode(c, e.ReplayRecInner.initialState[1])
-        );
-        this.deleteAllReplayRecIDs(c);
-      } else if (
-        c.tagName === "LINK" &&
-        c.getAttribute("rel") === "stylesheet"
-      ) {
-        const href = c.getAttribute("href");
-        const lastSlash = href.lastIndexOf("/");
-        let key = href;
-        if (lastSlash >= 0) {
-          key = href.substring(lastSlash + 1);
-        }
-        const style = {
-          "": "STYLE",
-          a: { cached: key },
-          id: this.nextID++,
-        };
-        this.iFrameStylesheets[key] = href;
-        bodyElement.c.push(style);
-      }
-    }
-    const styles = {
-      "": "STYLE",
-      c: [{ d: ".scrollbar { opacity: 0 ! important }", id: this.nextID++ }],
-      id: this.nextID++,
-    };
-    bodyElement.c.push(styles);
-    const a = {};
-    a[REPLAYREC_FRAME] = [e.ReplayRecID, bodyElement];
-    actions.push(a);
-    for (const aa of e.ReplayRecInner.initialState[1]) {
-      actions.push(aa);
-    }
-    delete e.ReplayRecInner.initialState;
-  }
-
-  detachFromIFrame(e) {
-    if (e.ReplayRecInner) {
-      e.ReplayRecInner.stop();
-    }
-    e.removeEventListener("load", this.iframeLoadedListener);
-  }
-
-  label(name) {
-    this.callback(this.observer.takeRecords());
-    const a = {};
-    a[REPLAYREC_LABEL] = name;
-    this.actions.push(a);
   }
 
   delay(seconds) {
@@ -326,8 +319,16 @@ export default class ReplayRecorder {
         this.deleteAllReplayRecIDs(c);
       }
     }
-    if (e.tagName === "IFRAME") {
-      this.detachFromIFrame(e);
+  }
+
+  optionallyAddAttribute(name, value) {
+    if (name === "src" && value) {
+      var url = value;
+      if (url.indexOf("data") === 0) {
+        // Already data url.
+      } else {
+        this.resourcesToResolve[url] = "--";
+      }
     }
   }
 
@@ -346,6 +347,7 @@ export default class ReplayRecorder {
       }
     }
     ++this.nestedObserverCallbacks;
+
     try {
       // A node has a ReplayRecID if and only if it was in the non-excluded DOM at the start of the records
       // batch.
@@ -388,6 +390,12 @@ export default class ReplayRecorder {
                 attributeName,
                 target.getAttribute(attributeName),
               ];
+
+              this.optionallyAddAttribute(
+                attributeName,
+                target.getAttribute(attributeName)
+              );
+
               this.actions.push(a);
             }
             break;

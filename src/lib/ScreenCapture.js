@@ -354,7 +354,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
     // Cleanup
     $(window.document)
-      .find("[bb-element=true]")
+      .find("*")
       .each(function () {
         $(this).attr("bb-element", null);
         $(this).attr("bb-height", null);

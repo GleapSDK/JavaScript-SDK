@@ -1,10 +1,8 @@
 export const REPLAYREC_ADD = "a";
 export const REPLAYREC_CANVAS_DATA = "c";
 export const REPLAYREC_DELAY = "d";
-export const REPLAYREC_FRAME = "e";
 export const REPLAYREC_FORCE_STYLE_FLUSH = "f";
 export const REPLAYREC_INPUT = "i";
-export const REPLAYREC_LABEL = "l";
 export const REPLAYREC_MOUSE_MOVE = "m";
 export const REPLAYREC_MOUSE_DOWN = "n";
 export const REPLAYREC_ATTR = "r";
@@ -12,3 +10,4 @@ export const REPLAYREC_TEXT = "t";
 export const REPLAYREC_MOUSE_UP = "u";
 export const REPLAYREC_REMOVE = "v";
 export const REPLAYREC_SCROLL = "s";
+export const REPLAYREC_MAINSCROLL = "x";

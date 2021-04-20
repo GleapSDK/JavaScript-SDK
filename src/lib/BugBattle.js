@@ -215,8 +215,9 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
-    let recording = this.instance.replay.stop();
-    console.log(JSON.stringify(recording));
+    this.instance.replay.stop().then((recording) => {
+      console.log(JSON.stringify(recording));
+    });
 
     this.instance.networkIntercepter.setStopped(true);
     this.instance.registerEscapeListener();
