@@ -687,9 +687,7 @@ class BugBattle {
     if (/^fr\b/.test(language)) {
       languagePack = fr;
     }
-    if (/^it\b/.test(language)) {
-      languagePack = it;
-    }
+
 
     return languagePack[key];
   }
