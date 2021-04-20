@@ -1,4 +1,5 @@
 import $ from "jquery";
+import { resizeImage } from "./ImageHelper";
 
 export const startScreenCapture = (snapshotPosition) => {
   return checkOnlineStatus(window.location.origin).then((status) => {
@@ -221,8 +222,14 @@ const fetchItemResource = (elem, proxy = false) => {
       xhr.onload = function () {
         var reader = new FileReader();
         reader.onloadend = function () {
-          elem.src = reader.result;
-          resolve();
+          resizeImage(reader.result, 600, 600)
+            .then(() => {
+              elem.src = reader.result;
+              resolve();
+            })
+            .catch(() => {
+              reject();
+            });
         };
         reader.onerror = function () {
           reject();
@@ -230,7 +237,6 @@ const fetchItemResource = (elem, proxy = false) => {
         reader.readAsDataURL(xhr.response);
       };
       xhr.onerror = function (err) {
-        // Retry with proxy.
         if (proxy === false) {
           fetchItemResource(elem, true)
             .then(() => {
