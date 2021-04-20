@@ -9,6 +9,7 @@ import {
   REPLAYREC_SCROLL,
   REPLAYREC_TEXT,
 } from "./ReplayConstants";
+import { resizeImage } from "./ImageHelper";
 
 export default class ReplayRecorder {
   constructor() {
@@ -25,6 +26,110 @@ export default class ReplayRecorder {
     this.evaluateFocus();
   }
 
+  fetchCSSResource = (url, proxy = false) => {
+    var self = this;
+    return new Promise((resolve, reject) => {
+      if (url) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject();
+          };
+          reader.readAsDataURL(xhr.response);
+        };
+        xhr.onerror = function (err) {
+          // Retry with proxy.
+          if (proxy === false) {
+            self
+              .fetchCSSResource(url, true)
+              .then(() => {
+                resolve();
+              })
+              .catch(() => {
+                resolve();
+              });
+          } else {
+            resolve();
+          }
+        };
+        if (proxy) {
+          url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(url);
+        }
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.send();
+      } else {
+        resolve();
+      }
+    });
+  };
+
+  replaceAsync = (str, regex, asyncFn) => {
+    return new Promise((resolve, reject) => {
+      const promises = [];
+      str.replace(regex, (match, ...args) => {
+        const promise = asyncFn(match, ...args);
+        promises.push(promise);
+      });
+      Promise.all(promises)
+        .then((data) => {
+          resolve(str.replace(regex, () => data.shift()));
+        })
+        .catch(() => {
+          reject();
+        });
+    });
+  };
+
+  validateStylesheetResources = (data, url) => {
+    var basePath = url.substring(0, url.lastIndexOf("/"));
+    var split = data.split(",");
+    if (split.length !== 2) {
+      return Promise.reject();
+    }
+    data = atob(split[1]);
+    delete split[1];
+    return this.replaceAsync(
+      data,
+      /url\((.*?)\)/g,
+      (matchedData) =>
+        new Promise((resolve, reject) => {
+          var matchedUrl = matchedData
+            .substr(4, matchedData.length - 5)
+            .replaceAll("'", "")
+            .replaceAll('"', "");
+
+          // Remote file or data
+          if (
+            matchedUrl.indexOf("http") === 0 ||
+            matchedUrl.indexOf("//") === 0 ||
+            matchedUrl.indexOf("data") === 0
+          ) {
+            return resolve(matchedData);
+          }
+
+          try {
+            let resourcePath = matchedUrl;
+            if (basePath) {
+              resourcePath = basePath + "/" + matchedUrl;
+            }
+
+            return this.fetchCSSResource(resourcePath).then((resourceData) => {
+              return resolve("url(" + resourceData + ")");
+            });
+          } catch (exp) {
+            return resolve(matchedData);
+          }
+        })
+    ).then((result) => {
+      return split[0] + "," + btoa(result);
+    });
+  };
+
   fetchItemResource = (src, proxy = false) => {
     const self = this;
     return new Promise((resolve, reject) => {
@@ -33,8 +138,26 @@ export default class ReplayRecorder {
         xhr.onload = function () {
           var reader = new FileReader();
           reader.onloadend = function () {
-            self.resourcesToResolve[src] = reader.result;
-            resolve();
+            if (reader.result && reader.result.indexOf("data:text/css") === 0) {
+              self
+                .validateStylesheetResources(reader.result, src)
+                .then((data) => {
+                  self.resourcesToResolve[src] = data;
+                  resolve();
+                });
+            } else if (
+              reader.result &&
+              (reader.result.indexOf("data:image/jpeg") === 0 ||
+                reader.result.indexOf("data:image/png") === 0)
+            ) {
+              resizeImage(reader.result, 600, 600).then((data) => {
+                self.resourcesToResolve[src] = data;
+                resolve();
+              });
+            } else {
+              self.resourcesToResolve[src] = reader.result;
+              resolve();
+            }
           };
           reader.onerror = function () {
             reject();
@@ -238,11 +361,10 @@ export default class ReplayRecorder {
               (node.href.includes(".css") ||
                 (node.rel && node.rel.includes("stylesheet")))
             ) {
-              console.log(node.href);
-              this.resourcesToResolve[node.href] = "--";
+              this.resourcesToResolve[node.getAttribute("href")] = "--";
               break;
             }
-            
+
             return null;
           case "CANVAS": {
             const a = {};
@@ -265,7 +387,7 @@ export default class ReplayRecorder {
         if (hasAttr) {
           obj.a = attrs;
 
-          if (obj.a && obj.a.src) {
+          if (obj.a && obj.a.src && tag !== "SOURCE") {
             this.optionallyAddAttribute("src", obj.a.src);
           }
         }
@@ -324,9 +446,7 @@ export default class ReplayRecorder {
   optionallyAddAttribute(name, value) {
     if (name === "src" && value) {
       var url = value;
-      if (url.indexOf("data") === 0) {
-        // Already data url.
-      } else {
+      if (url.indexOf("data") !== 0) {
         this.resourcesToResolve[url] = "--";
       }
     }
@@ -391,10 +511,12 @@ export default class ReplayRecorder {
                 target.getAttribute(attributeName),
               ];
 
-              this.optionallyAddAttribute(
-                attributeName,
-                target.getAttribute(attributeName)
-              );
+              if (target.tagName !== "SOURCE") {
+                this.optionallyAddAttribute(
+                  attributeName,
+                  target.getAttribute(attributeName)
+                );
+              }
 
               this.actions.push(a);
             }
