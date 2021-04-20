@@ -40,6 +40,9 @@ class App {
     // Sets weather to enable or disable the user screenshot step within the bug reporting flow.
     BugBattle.disableUserScreenshot(false);
 
+    //Sets the language of the bug reporting flow.
+    BugBattle.setLanguage("it")
+
     const feedbackButton = document.querySelector("#feedback-button");
     if (feedbackButton) {
       feedbackButton.onclick = function () {

@@ -4,6 +4,11 @@ import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
+import de from './i18n/de.json';
+import en from './i18n/en.json';
+import es from './i18n/es.json';
+import fr from './i18n/fr.json';
+import it from './i18n/it.json';
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -652,6 +657,7 @@ class BugBattle {
 
   translateText(key) {
     let language = navigator.language;
+
     if (this.overrideLanguage !== "") {
       language = this.overrideLanguage;
     }
