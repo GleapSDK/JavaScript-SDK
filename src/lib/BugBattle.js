@@ -1,30 +1,28 @@
+import $ from "jquery";
+import { isMobile, startScreenCapture } from "./ScreenCapture";
+import { translateText } from "./Translation";
+import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
-import html2canvas from "html2canvas";
-import de from "./i18n/de.json";
-import en from "./i18n/en.json";
-import es from "./i18n/es.json";
-import fr from "./i18n/fr.json";
-import it from "./i18n/it.json";
+import BugBattleNetworkIntercepter from "./NetworkInterception";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
-  privacyPolicyUrl = "https://www.bugbattle.io/pages/privacy-policy";
+  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
   privacyPolicyCheckEnabled = false;
   email = localStorage.getItem("bugbattle-sender-email") ?? "";
   activation = "";
   overrideLanguage = "";
+  overrideButtonText = undefined;
   screenshot = null;
-  screenshotURL = "";
-  crashDetectorEnabled = false;
-  crashDetected = false;
   actionLog = [];
   logArray = [];
   customData = {};
   sessionStart = new Date();
-  bugReportingRunning = false;
   poweredByHidden = false;
   disableUserScreenshot = false;
+  customLogoUrl = null;
+  shortcutsEnabled = true;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -32,7 +30,7 @@ class BugBattle {
   appBuildNumber = "";
   mainColor = "#398CFE";
   previousBodyOverflow;
-  screenshotScale = window.devicePixelRatio;
+  networkIntercepter = new BugBattleNetworkIntercepter();
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -45,6 +43,11 @@ class BugBattle {
   // Bugbattle singleton instance
   static instance;
 
+  /**
+   * Initializes the SDK
+   * @param {*} sdkKey
+   * @param {*} activation
+   */
   static initialize(sdkKey, activation) {
     if (!this.instance) {
       this.instance = new BugBattle(sdkKey, activation);
@@ -53,6 +56,11 @@ class BugBattle {
     }
   }
 
+  /**
+   * Main constructor
+   * @param {*} sdkKey
+   * @param {*} activation
+   */
   constructor(sdkKey, activation) {
     this.sdkKey = sdkKey;
     this.activation = activation;
@@ -68,19 +76,42 @@ class BugBattle {
   }
 
   /**
-   * Sets the scale of the taken screenshots.
-   * @param {boolean} scale
+   * Enable or disable shortcuts
+   * @param {boolean} enabled
    */
-  static setScreenshotScale(scale) {
-    this.instance.screenshotScale = scale;
+  static enableShortcuts(enabled) {
+    this.instance.shortcutsEnabled = enabled;
   }
 
   /**
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
    */
-  static enablePoweredByBugbattle(hide) {
-    this.instance.poweredByHidden = hide;
+  static enablePoweredByBugbattle(enabled) {
+    this.instance.poweredByHidden = !enabled;
+  }
+
+  /**
+   * Overrides the feedback button text.
+   * @param {string} overrideButtonText
+   */
+  static setFeedbackButtonText(overrideButtonText) {
+    this.instance.overrideButtonText = overrideButtonText;
+  }
+
+  /**
+   * Enables the network logger.
+   */
+  static enableNetworkLogger() {
+    this.instance.networkIntercepter.start();
+  }
+
+  /**
+   * Sets the logo url.
+   * @param {string} logoUrl
+   */
+  static setLogoUrl(logoUrl) {
+    this.instance.customLogoUrl = logoUrl;
   }
 
   /**
@@ -97,14 +128,6 @@ class BugBattle {
    */
   static setPrivacyPolicyUrl(privacyPolicyUrl) {
     this.instance.privacyPolicyUrl = privacyPolicyUrl;
-  }
-
-  /**
-   * Enables the automatic crash detector.
-   * @param {boolean} enabled
-   */
-  static enableCrashDetector(enabled) {
-    this.instance.crashDetectorEnabled = enabled;
   }
 
   /**
@@ -161,51 +184,37 @@ class BugBattle {
   }
 
   /**
+   * Enables crash detection.
+   * @deprecated since version 3.1.13
+   */
+  static enableCrashDetector(enabled) {}
+
+  /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
    * @param {string} color
    */
   static setMainColor(color) {
-    const colorStyleSheet = `
-    .bugbattle--feedback-button {
-        background-color: ${color};
-    }
-    .bugbattle--feedback-dialog-header-button {
-        color: ${color};
-    }
-    .bugbattle-screenshot-editor-borderlayer {
-        border-color: ${color};
-    }
-    .bugbattle-screenshot-editor-dot {
-      background-color: ${color};
-    }
-    .bugbattle-screenshot-editor-rectangle {
-      border-color: ${color};
-    }
-    .bugbattle--feedback-send-button {
-      background-color: ${color};
-    }
-    .bugbattle--feedback-inputgroup--privacy-policy a {
-      color: ${color};
-    }
-    .bugbattle-screenshot-editor-drag-info {
-      background-color: ${color};
-    }
-    .bugbattle-double-bounce1,
-    .bugbattle-double-bounce2 {
-      background-color: ${color};
-    }
-    `;
-
     this.instance.mainColor = color;
-    const node = document.createElement("style");
-    node.innerHTML = colorStyleSheet;
-    document.body.appendChild(node);
+
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
+    ) {
+      setColor(color);
+    } else {
+      document.addEventListener("DOMContentLoaded", function (event) {
+        setColor(color);
+      });
+    }
   }
 
   /**
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
+    this.instance.networkIntercepter.setStopped(true);
+    this.instance.registerEscapeListener();
     this.instance.disableScroll();
     const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
     if (feedbackBtn) {
@@ -218,9 +227,7 @@ class BugBattle {
       y: window.scrollY,
     };
 
-    if (this.instance.crashDetected) {
-      this.instance.askForCrashReport();
-    } else if (this.instance.disableUserScreenshot) {
+    if (this.instance.disableUserScreenshot) {
       this.instance.createBugReportingDialog();
     } else {
       this.instance.showBugReportEditor();
@@ -238,19 +245,8 @@ class BugBattle {
         "Error object: " + JSON.stringify(error),
       ];
       self.addLog(message, "error");
-
-      self.startCrashFlow();
-
       return false;
     };
-  }
-
-  startCrashFlow() {
-    if (this.crashDetectorEnabled && !this.bugReportingRunning) {
-      this.bugReportingRunning = true;
-      this.crashDetected = true;
-      BugBattle.startBugReporting();
-    }
   }
 
   addLog(args, type) {
@@ -294,7 +290,6 @@ class BugBattle {
         error: function () {
           self.addLog(arguments, "error");
           origConsole.error && origConsole.error.apply(origConsole, arguments);
-          self.startCrashFlow();
         },
         info: function (v) {
           self.addLog(arguments, "info");
@@ -317,68 +312,37 @@ class BugBattle {
     }
   }
 
-  askForCrashReport() {
-    const self = this;
-
-    var elem = document.createElement("div");
-    elem.className = "bugbattle--feedback-dialog-container";
-    elem.setAttribute("data-html2canvas-ignore", "true");
-    elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
-      <div class="bugbattle--feedback-dialog-header">
-        <div></div>
-        <div class="bugbattle--feedback-dialog-header-title">Crash detected</div>
-        <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
-          <svg fill="#CCCCCC" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
-          </svg>
-        </div>
-      </div>
-      <div class="bugbattle--feedback-dialog-body">
-        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup-text">
-          A critical error has been detected. Do you want to submit an error report?
-        </div>
-        <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-send-button">Submit error report</div>
-        </div>
-      </div>
-    </div>`;
-    document.body.appendChild(elem);
-
-    const sendButton = document.querySelector(
-      ".bugbattle--feedback-send-button"
-    );
-    const cancelButton = document.querySelector(
-      ".bugbattle--feedback-dialog-header-button-cancel"
-    );
-
-    cancelButton.onclick = function () {
-      self.closeBugBattle();
-    };
-
-    sendButton.onclick = function () {
-      document.querySelector(".bugbattle--feedback-dialog-container").remove();
-
-      self.createBugReportingDialog();
-    };
-  }
-
   createBugReportingDialog() {
     const self = this;
 
+    let headerImage = `<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Artboard" transform="translate(-1.000000, -1.000000)" fill="#398CFE">
+                <path d="M100.524809,33.1304992 C99.5584401,31.4524034 97.6257019,31.0672666 95.6112987,32.208922 C92.7530239,33.8457531 89.8675274,35.4413196 87.0773068,37.1744349 C85.9748294,37.8621791 85.4984502,37.7383851 84.8723519,36.5967298 C81.537698,30.5858457 78.0669358,24.6299811 74.718671,18.7153812 C74.4311065,18.0635671 74.0141725,17.4783635 73.4936961,16.9960208 C72.9047419,16.5919655 72.2174285,16.3588504 71.5065145,16.3220315 L49.3344686,16.3220315 C48.3953212,16.3220315 48.5042078,15.6205324 48.5042078,14.9465431 C48.5042078,11.535332 48.5042078,8.06910137 48.5042078,4.6991549 C48.6443929,3.65838853 48.2429786,2.61822784 47.4425629,1.94817819 C46.8629771,1.34219441 46.06476,1 45.2308027,1 C44.3968453,1 43.5986283,1.34219441 43.0190424,1.94817819 C42.244452,2.63601536 41.8528356,3.66396625 41.9710083,4.6991549 C41.8485108,8.55052229 42.0935058,12.4156446 41.7668458,16.267012 L26.4954919,16.1982375 C25.8641184,16.2921775 25.2655819,16.5426319 24.7533054,16.9272464 C24.322815,17.2345018 23.9495608,17.6163632 23.6508279,18.0551468 L1.560447,56.4862914 C0.813184334,57.6689833 0.813184334,59.1824767 1.560447,60.3651686 L23.5419413,99.043901 C23.9232891,99.8640262 24.6556491,100.462198 25.5291228,100.666977 C25.9337297,100.744459 26.3429353,100.795003 26.7540977,100.818281 L70.5401455,100.98334 C71.2137764,101.044697 71.8919396,100.935988 72.5137161,100.666977 C73.3121387,100.380903 73.9576397,99.7733873 74.2967352,98.9888815 C81.5558458,86.3068789 88.8603258,73.6248763 96.2101753,60.9428737 C97.1317051,59.5530829 97.1317051,57.7385333 96.2101753,56.3487426 C93.9779988,52.5523947 91.8683198,48.6735176 89.6225324,44.8909246 C89.0508775,43.9280827 89.2958725,43.5979655 90.1533549,43.1302995 C93.1069055,41.4797135 96.0332345,39.760353 98.9731743,38.0409926 C99.8632114,37.6405423 100.541726,36.8751197 100.838091,35.9372062 C101.134456,34.9992927 101.020475,33.9781259 100.524809,33.1304992 Z M82.697238,61.0280456 C82.1277368,62.0143675 81.5853548,62.9595927 81.0022941,63.9185168 L81.0022941,63.9185168 L73.4496243,77.0557772 L73.4496243,77.0557772 C71.4428108,80.5763986 69.3817591,84.0833211 67.4427433,87.6176414 C66.9491122,88.5498928 65.9486463,89.0904001 64.9071073,88.987533 C54.1589034,88.9236047 43.4016597,88.8688091 32.6353764,88.823146 C31.7564295,88.8606451 30.940112,88.3647425 30.5607651,87.5628457 C25.1369448,78.0740633 19.7402435,68.5807146 14.3706614,59.0827995 C13.9190214,58.4345022 13.8768077,57.5815513 14.262185,56.890973 L20.3233042,46.4934958 C20.3169536,46.4526494 20.3169536,46.4110519 20.3233042,46.3702055 L28.1607246,32.6712896 L28.1607246,32.6712896 C28.7166662,31.6849676 29.326846,30.3972695 29.7743111,29.6301302 C30.2217763,28.8629909 30.4929673,28.8629909 31.1302662,29.2739584 C38.0727562,33.3836332 45.0423654,37.493308 51.9984149,41.5207893 C62.0053634,47.3839253 72.0168318,53.242495 82.03282,59.0964984 C83.0769054,59.808842 83.2531795,60.0417236 82.6701189,61.0280456 L82.697238,61.0280456 Z" id="Shape"></path>
+            </g>
+        </g>
+    </svg>`;
+    if (this.customLogoUrl) {
+      headerImage = `<img src="${this.customLogoUrl}" alt="bugbattle-logo" />`;
+    }
+
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
     elem.setAttribute("data-html2canvas-ignore", "true");
     elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
+      <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
+        <svg fill="#ffffff" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
+        </svg>
+      </div>
       <div class="bugbattle--feedback-dialog-header">
-        <div></div>
-        <div class="bugbattle--feedback-dialog-header-title">${this.translateText(
-          "report_bug_title"
-        )}</div>
-        <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
-          <svg fill="#CCCCCC" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-            <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
-          </svg>
+        <div class="bugbattle--feedback-dialog-header-logo">
+          ${headerImage}
         </div>
+        <div class="bugbattle--feedback-dialog-header-title">${translateText(
+          "report_bug_title",
+          this.overrideLanguage
+        )}</div>
       </div>
       <div class="bugbattle--feedback-dialog-loading">
         <div class="bugbattle-spinner">
@@ -396,35 +360,37 @@ class BugBattle {
                 </g>
             </g>
         </svg>
-        <div class="bugbattle--feedback-dialog-info-text">${this.translateText(
-          "send_success"
+        <div class="bugbattle--feedback-dialog-info-text">${translateText(
+          "send_success",
+          this.overrideLanguage
         )}</div>
       </div>
       <div class="bugbattle--feedback-dialog-body">
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
-            "your_email"
-          )}</div>
-          <input class="bugbattle--feedback-email" type="text" placeholder="E-mail" />
+          <input class="bugbattle--feedback-email" type="text" placeholder="${translateText(
+            "your_email",
+            this.overrideLanguage
+          )}" />
         </div>
         <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-inputgroup-label">${this.translateText(
-            "what_went_wrong"
-          )}</div>
-          <textarea class="bugbattle--feedback-description" placeholder="${this.translateText(
-            "what_went_wrong_subtitle"
+          <textarea class="bugbattle--feedback-description" placeholder="${translateText(
+            "what_went_wrong",
+            this.overrideLanguage
           )}"></textarea>
         </div>
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
-          <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">${this.translateText(
-            "accept_policy_text"
-          )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${this.translateText(
-      "privacy_policy"
+          <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">${translateText(
+            "accept_policy_text",
+            this.overrideLanguage
+          )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${translateText(
+      "privacy_policy",
+      this.overrideLanguage
     )}</a>.</span>
         </div>
-        <div class="bugbattle--feedback-inputgroup">
-          <div class="bugbattle--feedback-send-button">${this.translateText(
-            "send_feedback"
+        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup-button">
+          <div class="bugbattle--feedback-send-button">${translateText(
+            "send_feedback",
+            this.overrideLanguage
           )}</div>
         </div>
         <div class="bugbattle--feedback-poweredbycontainer">
@@ -464,7 +430,7 @@ class BugBattle {
       ".bugbattle--feedback-inputgroup--privacy-policy input"
     );
     if (this.privacyPolicyCheckEnabled) {
-      privacyPolicyContainer.style.display = "block";
+      privacyPolicyContainer.style.display = "flex";
       document.querySelector(
         "#bugbattle-privacy-policy-link"
       ).href = this.privacyPolicyUrl;
@@ -512,12 +478,12 @@ class BugBattle {
       self.email = emailField.value;
 
       if (!self.email || self.email.length === 0) {
-        alert(self.translateText("provide_email"));
+        alert(translateText("provide_email", self.overrideLanguage));
         return;
       }
 
       if (self.privacyPolicyCheckEnabled && !privacyPolicyInput.checked) {
-        alert(self.translateText("accept_policy_alert"));
+        alert(translateText("accept_policy_alert", self.overrideLanguage));
         return;
       }
 
@@ -528,48 +494,27 @@ class BugBattle {
       self.toggleLoading(true);
 
       if (!self.sdkKey) {
-        return alert(this.translateText("apikey_wrong"));
+        return alert(translateText("apikey_wrong", self.overrideLanguage));
       }
 
-      self.preScreenshotCleanup();
-
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
-      html2canvas(document.body, {
-        x: self.snapshotPosition.x,
-        y: self.snapshotPosition.y,
-        width: window.innerWidth,
-        height: window.innerHeight,
-        letterRendering: 1,
-        allowTaint: true,
-        useCORS: false,
-        logging: false,
-        scale: self.screenshotScale,
-        imageTimeout: 10000,
-        proxy: "https://jsproxy.bugbattle.io/",
-      })
-        .then(function (canvas) {
-          if (canvas) {
-            self.screenshot = canvas.toDataURL();
-            self.prepareScreenshot();
-          }
+
+      startScreenCapture(self.snapshotPosition)
+        .then((data) => {
+          self.sendBugReportToServer(data);
         })
-        .catch(function () {
+        .catch((err) => {
+          console.error(err);
           self.showError();
         });
     };
   }
 
-  preScreenshotCleanup() {
-    const imgElements = document.body.querySelectorAll("img, svg, video");
-    imgElements.forEach(function (item) {
-      item.setAttribute("width", item.getBoundingClientRect().width);
-      item.setAttribute("height", item.getBoundingClientRect().height);
-    });
-  }
-
   hide() {
+    this.networkIntercepter.setStopped(false);
+
     const editorContainer = document.querySelector(
-      ".bugbattle-screenshot-editor-container"
+      ".bugbattle-screenshot-editor"
     );
     if (editorContainer) {
       editorContainer.remove();
@@ -586,14 +531,14 @@ class BugBattle {
       feedbackBtn.style.display = "block";
     }
 
-    this.bugReportingRunning = false;
-    this.crashDetected = false;
     this.enableScroll();
   }
 
   init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
+    this.registerKeyboardListener();
+
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -608,7 +553,37 @@ class BugBattle {
     }
   }
 
+  registerKeyboardListener() {
+    const self = this;
+    const charForEvent = function (event) {
+      var code;
+
+      if (event.key !== undefined) {
+        code = event.key;
+      } else if (event.keyIdentifier !== undefined) {
+        code = event.keyIdentifier;
+      } else if (event.keyCode !== undefined) {
+        code = event.keyCode;
+      }
+
+      return code;
+    };
+
+    document.onkeyup = function (e) {
+      var char = charForEvent(e);
+      if (
+        e.ctrlKey &&
+        (char === "i" || char === "I" || char === 73) &&
+        self.shortcutsEnabled
+      ) {
+        BugBattle.startBugReporting();
+      }
+    };
+  }
+
   checkForInitType() {
+    applyBugbattleBaseCSS();
+
     if (this.activation === BugBattle.FEEDBACK_BUTTON) {
       this.injectFeedbackButton();
     }
@@ -616,14 +591,21 @@ class BugBattle {
 
   injectFeedbackButton() {
     const self = this;
+
+    var feedbackButtonText = translateText(
+      "feedback_btn_title",
+      self.overrideLanguage
+    );
+
+    if (this.overrideButtonText) {
+      feedbackButtonText = this.overrideButtonText;
+    }
+
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-button";
-    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${this.translateText(
-      "feedback_btn_title"
-    )}</span></div>`;
+    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${feedbackButtonText}</span></div>`;
 
     elem.onclick = function () {
-      self.registerEscapeListener();
       BugBattle.startBugReporting();
     };
     document.body.appendChild(elem);
@@ -642,7 +624,7 @@ class BugBattle {
     } else {
       body.style.display = "block";
       loader.style.display = "none";
-      header.style.display = "block";
+      header.style.display = "flex";
     }
   }
 
@@ -688,7 +670,6 @@ class BugBattle {
       languagePack = fr;
     }
 
-
     return languagePack[key];
   }
 
@@ -705,108 +686,7 @@ class BugBattle {
     success.style.display = "flex";
   }
 
-  dataURItoBlob(dataURI) {
-    var byteString = atob(dataURI.split(",")[1]);
-    var mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
-    var ab = new ArrayBuffer(byteString.length);
-    var ia = new Uint8Array(ab);
-    for (var i = 0; i < byteString.length; i++) {
-      ia[i] = byteString.charCodeAt(i);
-    }
-    var blob = new Blob([ab], { type: mimeString });
-    return blob;
-  }
-
-  prepareScreenshot() {
-    const self = this;
-    const imageObj = new Image();
-    imageObj.onload = function () {
-      const pixelRatio = self.screenshotScale;
-      const canvas = document.createElement("canvas");
-
-      canvas.width = this.width;
-      canvas.height = this.height;
-      const context = canvas.getContext("2d");
-
-      // Draw image
-      context.drawImage(imageObj, 0, 0, this.width, this.height);
-
-      // Draw markers
-      const editorDot = document.querySelector(
-        ".bugbattle-screenshot-editor-dot"
-      );
-      const editorRectangle = document.querySelector(
-        ".bugbattle-screenshot-editor-rectangle"
-      );
-
-      if (editorDot && editorRectangle) {
-        context.beginPath();
-        context.arc(
-          (editorDot.offsetLeft + editorDot.offsetWidth / 2) * pixelRatio,
-          (editorDot.offsetTop + editorDot.offsetHeight / 2) * pixelRatio,
-          6 * pixelRatio,
-          0,
-          2 * Math.PI,
-          false
-        );
-        context.fillStyle = self.mainColor;
-        context.fill();
-        context.closePath();
-
-        context.lineWidth = 3 * pixelRatio;
-        context.strokeStyle = self.mainColor;
-        context.stroke();
-        if (editorRectangle.offsetTop > 0 || editorRectangle.offsetLeft) {
-          context.strokeRect(
-            editorRectangle.offsetLeft * pixelRatio,
-            editorRectangle.offsetTop * pixelRatio,
-            editorRectangle.offsetWidth * pixelRatio,
-            editorRectangle.offsetHeight * pixelRatio
-          );
-        }
-      }
-
-      // Upload screenshot
-      self.uploadScreenshot(canvas.toDataURL("image/jpeg", 0.5));
-      self.screenshot = null;
-    };
-    imageObj.onerror = function () {
-      self.closeBattle();
-    };
-    imageObj.src = this.screenshot;
-  }
-
-  uploadScreenshot(screenshot) {
-    const self = this;
-    const http = new XMLHttpRequest();
-    http.open("POST", this.apiUrl + "/uploads/sdk");
-    http.setRequestHeader("Api-Token", this.sdkKey);
-    http.onreadystatechange = function (e) {
-      if (http.readyState === XMLHttpRequest.DONE) {
-        try {
-          const response = JSON.parse(http.responseText);
-          if (response && response.fileUrl) {
-            self.screenshotURL = response.fileUrl;
-            self.sendBugReportToServer();
-          } else {
-            self.showError();
-          }
-        } catch (e) {
-          self.showError();
-        }
-      }
-    };
-
-    const canvas = document.querySelector(
-      ".bugbattle-screenshot-editor-canvas"
-    );
-    const file = this.dataURItoBlob(screenshot);
-    const formData = new FormData();
-    formData.append("file", file, "screenshot.jpg");
-    http.send(formData);
-  }
-
-  sendBugReportToServer() {
+  sendBugReportToServer(screenshotData) {
     const self = this;
     const http = new XMLHttpRequest();
     http.open("POST", this.apiUrl + "/bugs");
@@ -828,12 +708,21 @@ class BugBattle {
       reportedBy: this.email,
       description: this.description,
       priority: this.severity,
-      screenshotUrl: this.screenshotURL,
       customData: this.customData,
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
-      type: this.crashDetected ? "CRASHREPORT" : "BUG",
+      type: "BUG",
+      networkLogs: this.networkIntercepter.getRequests(),
     };
+
+    if (screenshotData.fileUrl) {
+      bugReportData["screenshotUrl"] = screenshotData.fileUrl;
+    }
+
+    if (screenshotData.html) {
+      bugReportData["screenshotData"] = screenshotData;
+    }
+
     http.send(JSON.stringify(bugReportData));
   }
 
@@ -928,22 +817,26 @@ class BugBattle {
       innerHeight: window.innerHeight,
       currentUrl: window.location.href,
       language: navigator.language || navigator.userLanguage,
+      mobile: isMobile(),
     };
   }
 
   showBugReportEditor() {
     const self = this;
     var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bugbattle-screenshot-editor-container";
+    bugReportingEditor.className = "bugbattle-screenshot-editor";
     bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
     bugReportingEditor.innerHTML = `
-      <div class='bugbattle-screenshot-editor-container-inner'>
-        <div class='bugbattle-screenshot-editor-borderlayer'></div>
-        <div class='bugbattle-screenshot-editor-dot'></div>
-        <div class='bugbattle-screenshot-editor-rectangle'></div>
-        <div class='bugbattle-screenshot-editor-drag-info'>${this.translateText(
-          "click_and_drag"
-        )}</div>
+      <div class="bugbattle-screenshot-editor-container">
+        <div class='bugbattle-screenshot-editor-container-inner'>
+          <div class='bugbattle-screenshot-editor-borderlayer'></div>
+          <div class='bugbattle-screenshot-editor-dot'></div>
+          <div class='bugbattle-screenshot-editor-rectangle'></div>
+          <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
+            "click_and_drag",
+            self.overrideLanguage
+          )}</div>
+        </div>
       </div>
     `;
     document.body.appendChild(bugReportingEditor);
@@ -1018,6 +911,32 @@ class BugBattle {
         ".bugbattle-screenshot-editor-drag-info"
       );
       dragInfo.style.display = "none";
+
+      const fixedDot = $(".bugbattle-screenshot-editor-dot");
+      const fixedRectangle = $(".bugbattle-screenshot-editor-rectangle");
+
+      fixedRectangle.css({
+        top: `${
+          fixedRectangle.position().top + document.documentElement.scrollTop
+        }px`,
+        left: `${
+          fixedRectangle.position().left + document.documentElement.scrollLeft
+        }px`,
+      });
+      fixedDot.css({
+        top: `${
+          fixedDot.position().top + document.documentElement.scrollTop
+        }px`,
+        left: `${
+          fixedDot.position().left + document.documentElement.scrollLeft
+        }px`,
+      });
+
+      fixedDot.detach();
+      fixedRectangle.detach();
+
+      $(".bugbattle-screenshot-editor").append(fixedDot);
+      $(".bugbattle-screenshot-editor").append(fixedRectangle);
 
       addedMarker = true;
 

@@ -43,7 +43,6 @@ import BugBattle from 'bugbattle';
 
 Add the following lines to your website's / webapp's ```<head>```-tag:
 ```
-<link href="https://jssdk.bugbattle.io/latest/index.css" rel="stylesheet">
 <script src="https://jssdk.bugbattle.io/latest/index.js"></script>
 <script>let BugBattle = window.BugBattle.default;</script>
 ```
@@ -57,50 +56,6 @@ BugBattle.initialize("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
 ```
 
 Congrats, you are now all set! Report your first bug by using the feedback button.
-
-## 🤤 Customization
-
-You can track more data (i.e. the app build number, version code or custom data) by using one of the following functions.
-
-```
-// Sets the main color (color schema).
-BugBattle.setMainColor("#086EFB");
-
-// Sets the app's build number.
-BugBattle.setAppBuildNumber(5);
-
-// Sets the app's version code.
-BugBattle.setAppVersionCode("v5.0");
-
-// Attaches custom data to the bug reports.
-BugBattle.setCustomData({
-    test1: "Battle",
-    data2: "Unicorn"
-});
-
-// Enables the privacy policy check.
-BugBattle.enablePrivacyPolicy(true);
-
-// Sets the privacy policy.
-BugBattle.setPrivacyPolicyUrl("https://someawesomesite...");
-
-// Enables the automatic detection of crashes.
-BugBattle.enableCrashDetector(true);
-```
-
-## 🤠 Activation methods
-
-Currently you can choose between two activation methods, that initiate the bug reporting workflow.
-
-a.) BugBattle.FEEDBACK_BUTTON - this will add a feedback bottom to the page
-b.) BugBattle.NONE - this allows you to manually trigger the bug reporting workflow
-
-If you want to manually trigger the bug reporting workflow, simply call the following method:
-
-```
-// Initiates the bug reporting workflow.
-BugBattle.startBugReporting();
-```
 
 ## 🤝 Need help?
 

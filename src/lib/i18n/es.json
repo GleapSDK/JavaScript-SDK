@@ -1,8 +1,9 @@
 {
   "feedback_btn_title": "Feedback",
   "click_and_drag": "Click or drag to comment",
-  "report_bug_title": "Report your Feedback",
+  "report_bug_title": "Submit your feedback",
   "your_email": "Your e-mail",
+  "email_placeholder": "E-mail",
   "what_went_wrong": "What went wrong?",
   "what_went_wrong_subtitle": "Describe your issue",
   "send_feedback": "Send feedback",
@@ -11,5 +12,5 @@
   "provide_email": "Please provide an email address.",
   "accept_policy_alert": "Please read and accept the privacy policy.",
   "accept_policy_text": "I read and accept the ",
-  "privacy_policy":"privacy policy"
+  "privacy_policy":" privacy policy"
 }

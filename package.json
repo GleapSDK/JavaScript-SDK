@@ -1,6 +1,6 @@
 {
   "name": "bugbattle",
-  "version": "3.1.11",
+  "version": "3.3.11",
   "main": "build/index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -9,7 +9,7 @@
     "demo": "node scripts/demo.js",
     "test": "node scripts/test.js",
     "postinstall": "node bin/postinstall",
-    "prepare": "npm run build"
+    "prepare": "node prepare.js"
   },
   "repository": {
     "type": "git",
@@ -150,6 +150,6 @@
     ]
   },
   "dependencies": {
-    "html2canvas": "^1.0.0-rc.7"
+    "jquery": "^3.6.0"
   }
 }
