@@ -5,7 +5,7 @@ class App {
   constructor() {
     // Initialize the SDK.
     BugBattle.initialize(
-      "NWgFrsK4k499s4M2T7PFsWYOc2Iu1i8j",
+      "arO906tKWMgSF1KvHVtTnDchklUZtyM8",
       BugBattle.FEEDBACK_BUTTON
     );
 
@@ -13,6 +13,8 @@ class App {
 
     // Sets the app's build number.
     // BugBattle.setMainColor('#FEAB39');
+
+    BugBattle.enableReplays(true);
 
     BugBattle.enablePoweredByBugbattle(true);
 

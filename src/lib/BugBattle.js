@@ -1,10 +1,11 @@
 import $ from "jquery";
-import { isMobile, startScreenCapture } from "./ScreenCapture";
+import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
 import "./css/App.css";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
+import { isMobile } from "./ImageHelper";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -22,6 +23,7 @@ class BugBattle {
   sessionStart = new Date();
   poweredByHidden = false;
   disableUserScreenshot = false;
+  replaysEnabled = false;
   customLogoUrl = null;
   shortcutsEnabled = true;
   originalConsoleLog;
@@ -32,7 +34,7 @@ class BugBattle {
   mainColor = "#398CFE";
   previousBodyOverflow;
   networkIntercepter = new BugBattleNetworkIntercepter();
-  replay = new ReplayRecorder();
+  replay = null;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -67,6 +69,22 @@ class BugBattle {
     this.sdkKey = sdkKey;
     this.activation = activation;
     this.init();
+  }
+
+  static enableReplays(enabled) {
+    this.replaysEnabled = enabled;
+    if (enabled) {
+      if (this.instance.replay) {
+        this.instance.replay.stop();
+        this.instance.replay = null;
+      }
+      this.instance.replay = new ReplayRecorder();
+    } else {
+      if (this.instance.replay) {
+        this.instance.replay.stop();
+        this.instance.replay = null;
+      }
+    }
   }
 
   /**
@@ -215,10 +233,9 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting() {
-    this.instance.replay.stop().then((recording) => {
-      console.log(JSON.stringify(recording));
-    });
-
+    if (this.instance.replay) {
+      this.instance.replay.stop();
+    }
     this.instance.networkIntercepter.setStopped(true);
     this.instance.registerEscapeListener();
     this.instance.disableScroll();
@@ -517,6 +534,7 @@ class BugBattle {
   }
 
   hide() {
+    BugBattle.enableReplays(this.replaysEnabled);
     this.networkIntercepter.setStopped(false);
 
     const editorContainer = document.querySelector(
@@ -704,6 +722,10 @@ class BugBattle {
 
     if (screenshotData.html) {
       bugReportData["screenshotData"] = screenshotData;
+    }
+
+    if (this.replay && this.replay.result) {
+      bugReportData["webReplay"] = this.replay.result;
     }
 
     http.send(JSON.stringify(bugReportData));

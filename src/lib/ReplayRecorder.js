@@ -9,7 +9,7 @@ import {
   REPLAYREC_SCROLL,
   REPLAYREC_TEXT,
 } from "./ReplayConstants";
-import { resizeImage } from "./ImageHelper";
+import { isMobile, resizeImage } from "./ImageHelper";
 
 export default class ReplayRecorder {
   constructor() {
@@ -24,6 +24,7 @@ export default class ReplayRecorder {
     this.actions = [];
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
     this.evaluateFocus();
+    this.result = null;
   }
 
   fetchCSSResource = (url, proxy = false) => {
@@ -203,21 +204,28 @@ export default class ReplayRecorder {
   }
 
   stop() {
-    const width = this.rootFrame.node.getBoundingClientRect().width;
-    const height = this.rootFrame.node.getBoundingClientRect().height;
+    if (!this.rootFrame) {
+      this.clearFakeFocus();
+      this.rootFrame = null;
+      return;
+    }
+
     const ret = {
       initialState: this.rootFrame.initialState,
       actions: this.actions,
-      width,
-      height,
+      baseUrl: window.location.origin,
+      width: window.innerWidth,
+      height: window.innerHeight,
       resourcesToResolve: this.resourcesToResolve,
+      isMobile: isMobile(),
     };
-
+    
     this.rootFrame.stop();
     this.clearFakeFocus();
     this.rootFrame = null;
 
     return this.fetchImageResources().then(() => {
+      this.result = ret;
       return ret;
     });
   }
