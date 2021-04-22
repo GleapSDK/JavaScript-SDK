@@ -522,11 +522,14 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
+      console.log("FETCHING THE SCREEENNOOOOOO.");
       startScreenCapture(self.snapshotPosition)
         .then((data) => {
+          console.log("DONE THE SCREEENNOOOOOO.");
           self.sendBugReportToServer(data);
         })
         .catch((err) => {
+          console.log("ERROR THE SCREEENNOOOOOO.");
           console.error(err);
           self.showError();
         });
@@ -693,6 +696,10 @@ class BugBattle {
     http.open("POST", this.apiUrl + "/bugs");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", this.sdkKey);
+    http.onerror = (error) => {
+      console.log(error);
+      self.showError();
+    };
     http.onreadystatechange = function (e) {
       if (
         http.readyState === XMLHttpRequest.DONE &&
@@ -703,6 +710,7 @@ class BugBattle {
           self.closeBugBattle();
         }, 1500);
       }
+      console.log(e);
     };
 
     const bugReportData = {
@@ -724,6 +732,7 @@ class BugBattle {
       bugReportData["screenshotData"] = screenshotData;
     }
 
+    debugger;
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
     }

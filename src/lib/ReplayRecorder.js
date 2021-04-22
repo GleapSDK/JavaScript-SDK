@@ -25,6 +25,7 @@ export default class ReplayRecorder {
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
     this.evaluateFocus();
     this.result = null;
+    this.finalizingResult = false;
   }
 
   fetchCSSResource = (url, proxy = false) => {
@@ -151,7 +152,7 @@ export default class ReplayRecorder {
               (reader.result.indexOf("data:image/jpeg") === 0 ||
                 reader.result.indexOf("data:image/png") === 0)
             ) {
-              resizeImage(reader.result, 600, 600).then((data) => {
+              resizeImage(reader.result, 500, 500).then((data) => {
                 self.resourcesToResolve[src] = data;
                 resolve();
               });
@@ -161,12 +162,11 @@ export default class ReplayRecorder {
             }
           };
           reader.onerror = function () {
-            reject();
+            resolve();
           };
           reader.readAsDataURL(xhr.response);
         };
         xhr.onerror = function (err) {
-          // Retry with proxy.
           if (proxy === false) {
             self
               .fetchItemResource(src, true)
@@ -177,7 +177,7 @@ export default class ReplayRecorder {
                 resolve();
               });
           } else {
-            resolve();
+            reject();
           }
         };
         var url = src;
@@ -224,8 +224,10 @@ export default class ReplayRecorder {
     this.clearFakeFocus();
     this.rootFrame = null;
 
-    return this.fetchImageResources().then(() => {
+    this.finalizingResult = true;
+    return this.fetchImageResources().then((proms) => {
       this.result = ret;
+      this.finalizingResult = false;
       return ret;
     });
   }
@@ -569,7 +571,6 @@ export default class ReplayRecorder {
     } catch (ex) {
       --this.nestedObserverCallbacks;
       // eslint-disable-next-line no-console
-      console.log("MutationObserver exception: ", ex);
       throw ex;
     }
     --this.nestedObserverCallbacks;

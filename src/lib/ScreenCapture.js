@@ -208,7 +208,7 @@ const fetchItemResource = (elem, proxy = false) => {
       xhr.onload = function () {
         var reader = new FileReader();
         reader.onloadend = function () {
-          resizeImage(reader.result, 600, 600)
+          resizeImage(reader.result, 500, 500)
             .then(() => {
               elem.src = reader.result;
               resolve();
@@ -283,9 +283,13 @@ const optionallyPrepareRemoteData = (clone, remote) => {
     if (remote) {
       resolve();
     } else {
+      console.log("IMG");
       return downloadAllImages(clone).then(() => {
+        console.log("IMG");
         return downloadAllScripts(clone).then(() => {
+          console.log("SCRIPTS");
           return downloadAllCSSUrlResources(clone).then(() => {
+            console.log("CSS");
             resolve();
           });
         });

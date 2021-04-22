@@ -9,7 +9,7 @@ class App {
       BugBattle.FEEDBACK_BUTTON
     );
 
-    BugBattle.setApiUrl("http://localhost:9000")
+    BugBattle.setApiUrl("http://localhost:9000");
 
     // Sets the app's build number.
     // BugBattle.setMainColor('#FEAB39');
