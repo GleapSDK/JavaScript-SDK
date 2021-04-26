@@ -1,70 +1,62 @@
- <div align="center">
- <img align="center" width="230" src="https://i.imgur.com/pGGFGpi.png" />
-  <h2>Javascript Library Boilerplate Basic</h2>
-  <blockquote>Minimal Library Starter Kit for your Javascript projects</blockquote>
- 
- <a href="https://github.com/hodgef/js-library-boilerplate-basic/actions"><img alt="Build Status" src="https://github.com/hodgef/js-library-boilerplate-basic/workflows/Build/badge.svg?color=green" /></a> <a href="https://github.com/hodgef/js-library-boilerplate-basic/actions"> <img alt="Publish Status" src="https://github.com/hodgef/js-library-boilerplate-basic/workflows/Publish/badge.svg?color=green" /></a> <img src="https://img.shields.io/david/hodgef/js-library-boilerplate-basic.svg" /> <a href="https://david-dm.org/hodgef/js-library-boilerplate-basic?type=dev"><img src="https://img.shields.io/david/dev/hodgef/js-library-boilerplate-basic.svg" /></a> <img src="https://api.dependabot.com/badges/status?host=github&repo=hodgef/js-library-boilerplate-basic" />
- 
-<strong>This is a basic library boilerplate. For a more robust alternative, check out [js-library-boilerplate](https://github.com/hodgef/js-library-boilerplate).</strong><br />
-<strong>Like TypeScript? Check out [ts-library-boilerplate-basic](https://github.com/hodgef/ts-library-boilerplate-basic).</strong>
-</div>
+# Bugbattle JavaScript SDK
+
+![Bugbattle JavaScript SDK Intro](https://github.com/BugBattle/JavaScript-SDK/blob/master/imgs/JavaScriptSDK.png)
+
+The Bugbattle SDK for JavScript is the easiest way to integrate Bugbattle into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. BugBattle offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
+
+## 📖 Docs & Examples
+
+Checkout our [documentation](https://docs.bugbattle.io/docs/javascript-sdk) for full reference.
+
+## ❤️ Demo
+
+[https://jssdk.bugbattle.io/demo](https://jssdk.bugbattle.io/demo)
 
 ## ⭐️ Features
 
-- Webpack 5
-- Babel 7
-- Hot reloading (`npm start`)
-- UMD exports, so your library works everywhere.
-- Jest unit testing
-- Daily [dependabot](https://dependabot.com) dependency updates
+- Plain and instant setup
+- Enhance your apps with bug reporting
+- Easy integration
+- Datacenter in europe
+- Automatic crash detection
+- Multiple platforms (iOS, Android, JavaScript)
 
-## 📦 Getting Started
+## 🚀 Getting started
 
+1.) Register an account at [www.bugbattle.io](https://www.bugbattle.io). It's free and takes just a few seconds.
+
+2.) Include the BugBattle JS SDK within your apps.
+
+### Installation via nom
+
+Install the **bugbattle** package via npm or yarn.
 ```
-git clone https://github.com/hodgef/js-library-boilerplate-basic.git myLibrary
-npm install
-```
-
-## 💎 Customization
-
-> Before shipping, make sure to:
-
-1. Edit `LICENSE` file
-2. Edit `package.json` information (These will be used to generate the headers for your built files)
-3. Edit `library: "MyLibrary"` with your library's export name in `./webpack.config.js`
-
-## 🚀 Deployment
-
-1. `npm publish`
-2. Your users can include your library as usual
-
-### npm
-
-```
-import MyLibrary from 'my-library';
-const libraryInstance = new MyLibrary();
-...
+npm install bugbattle --save
 ```
 
-### self-host/cdn
-
+Import the **bugbattle** package.
 ```
-<script src="build/index.js"></script>
-
-const MyLibrary = window.MyLibrary.default;
-const libraryInstance = new MyLibrary();
-...
+import BugBattle from 'bugbattle';
 ```
 
-> **Note:** In this minimal version, any images and css files you import will be added to the js bundle. If you want them as separate files, you can use [js-library-boilerplate](https://github.com/hodgef/js-library-boilerplate) or edit the Webpack config accordingly.
+### Manual installation
 
-## ✅ Libraries built with this boilerplate
+Add the following lines to your website's / webapp's ```<head>```-tag:
+```
+<script src="https://jssdk.bugbattle.io/latest/index.js"></script>
+<script>let BugBattle = window.BugBattle.default;</script>
+```
 
-> Made a library using this starter kit? Share it here by [submitting a pull request](https://github.com/hodgef/js-library-boilerplate-basic/pulls)!
+### Initialize the SDK
 
-- [Canvas-Txt](https://github.com/geongeorge/Canvas-Txt) - A library to print multiline text on HTML5 canvas with better line breaks and alignments
-- [moon-phase-widget](https://github.com/g00dv1n/moon-phase-widget) - Super tiny javascript library to add awesome moon phase widget to your website
-- [simple-keyboard-autocorrect](https://github.com/hodgef/simple-keyboard-autocorrect) - Autocorrect module for simple-keyboard
-- [simple-keyboard-input-mask](https://github.com/hodgef/simple-keyboard-input-mask) - Input mask module for simple-keyboard
-- [simple-keyboard-key-navigation](https://github.com/hodgef/simple-keyboard-key-navigation) - Key navigation module for simple-keyboard
-- [swipe-keyboard](https://github.com/hodgef/swipe-keyboard) - Swype type keyboard module for simple-keyboard
+Add the following code to to initialize the BugBattle JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Bugbattle dashboard](https://app.bugbattle.io).
+
+```
+BugBattle.initialize("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
+```
+
+Congrats, you are now all set! Report your first bug by using the feedback button.
+
+## 🤝 Need help?
+
+We are here to help! hello@bugbattle.io
