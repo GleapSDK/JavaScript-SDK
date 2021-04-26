@@ -1,5 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
+const exec = require("child_process").exec;
 const PrettierPlugin = require("prettier-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
@@ -55,5 +56,20 @@ module.exports = {
       },
     ],
   },
-  plugins: [new PrettierPlugin()],
+  plugins: [
+    new PrettierPlugin(),
+    {
+      apply: (compiler) => {
+        compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
+          exec(
+            "mv ./build/index.js published/latest/index.js",
+            (err, stdout, stderr) => {
+              if (stdout) process.stdout.write(stdout);
+              if (stderr) process.stderr.write(stderr);
+            }
+          );
+        });
+      },
+    },
+  ],
 };
