@@ -1,0 +1,16 @@
+{
+  "feedback_btn_title": "Feedback",
+  "click_and_drag": "Cliquer et glisser pour laisser votre feedback",
+  "report_bug_title": "Remarquez votre feedback",
+  "your_email": "Votre adresse email",
+  "email_placeholder": "E-mail",
+  "what_went_wrong": "Qu'est-ce qui n'a pas fonctionné?",
+  "what_went_wrong_subtitle": "Décrire le problème",
+  "send_feedback": "Envoyer feedback",
+  "send_success": "Merci pour votre feedback!",
+  "apikey_wrong": "BUGBATTLE: Veuillez fournir un API key valide!",
+  "provide_email": "Veuillez fournir une adresse email.",
+  "accept_policy_alert": "Lire et accepter la politique privacité.",
+  "accept_policy_text": "J'ai lu et j'accepte la",
+  "privacy_policy": " politique de privacité"
+}
