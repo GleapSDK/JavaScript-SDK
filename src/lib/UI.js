@@ -324,54 +324,22 @@ export const applyBugbattleBaseCSS = () => {
       justify-content: center;
       align-items: center;
     }
+
+    .bugbattle--feedback-dialog-loading {
+      padding: 20px;
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .bugbattle--progress-ring__circle {
+      transition: 0.35s stroke-dashoffset;
+      transform: rotate(-90deg);
+      transform-origin: 50% 50%;
+    }
     
     .bugbattle--edit-button svg {
       width: 60%;
-    }
-    
-    .bugbattle-spinner {
-      width: 40px;
-      height: 40px;
-      position: relative;
-      margin: 100px auto;
-    }
-    
-    .bugbattle-double-bounce1, .bugbattle-double-bounce2 {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background-color: #398cfe;
-      opacity: 0.6;
-      position: absolute;
-      top: 0;
-      left: 0;
-      -webkit-animation: sk-bounce 2s infinite ease-in-out;
-      animation: sk-bounce 2s infinite ease-in-out;
-    }
-    
-    .bugbattle-double-bounce2 {
-      -webkit-animation-delay: -1s;
-      animation-delay: -1s;
-    }
-    
-    @-webkit-keyframes sk-bounce {
-      0%, 100% {
-        -webkit-transform: scale(0);
-      }
-      50% {
-        -webkit-transform: scale(1);
-      }
-    }
-    
-    @keyframes sk-bounce {
-      0%, 100% {
-        transform: scale(0);
-        -webkit-transform: scale(0);
-      }
-      50% {
-        transform: scale(1);
-        -webkit-transform: scale(1);
-      }
     }
     
     .bugbattle-screenshot-editor-container {

@@ -5,30 +5,27 @@ class App {
   constructor() {
     // Initialize the SDK.
     BugBattle.initialize(
-      "arO906tKWMgSF1KvHVtTnDchklUZtyM8",
+      "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
       BugBattle.FEEDBACK_BUTTON
     );
 
-    BugBattle.setApiUrl("http://localhost:9000");
+    // BugBattle.setApiUrl("http://localhost:9000");
 
     // Sets the app's build number.
-    // BugBattle.setMainColor('#FEAB39');
+    BugBattle.setMainColor('#FEAB39');
 
     BugBattle.enableReplays(true);
 
     BugBattle.enablePoweredByBugbattle(true);
 
-    BugBattle.enableNetworkLogger();
+    // BugBattle.enableNetworkLogger();
 
     // Sets the app's build number.
     BugBattle.setAppBuildNumber(5);
 
     // Sets the app's version code.
     BugBattle.setAppVersionCode("v5.0");
-
-    // Sets the Bugbattle logo url.
-    // BugBattle.setLogoUrl("https://someurl");
-
+    
     // Attaches custom data to the bug reports.
     BugBattle.attachCustomData({
       test1: "Battle",

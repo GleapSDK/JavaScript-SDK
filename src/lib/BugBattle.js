@@ -72,7 +72,7 @@ class BugBattle {
   }
 
   static enableReplays(enabled) {
-    this.replaysEnabled = enabled;
+    this.instance.replaysEnabled = enabled;
     if (enabled) {
       if (this.instance.replay) {
         this.instance.replay.stop();
@@ -368,10 +368,19 @@ class BugBattle {
         )}</div>
       </div>
       <div class="bugbattle--feedback-dialog-loading">
-        <div class="bugbattle-spinner">
-          <div class="bugbattle-double-bounce1"></div>
-          <div class="bugbattle-double-bounce2"></div>
-        </div>
+        <svg
+          class="bugbattle--progress-ring"
+          width="120"
+          height="120">
+          <circle
+            class="bugbattle--progress-ring__circle"
+            stroke="${this.mainColor}"
+            stroke-width="6"
+            fill="transparent"
+            r="34"
+            cx="60"
+            cy="60"/>
+        </svg>
       </div>
       <div class="bugbattle--feedback-dialog-success">
         <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -442,6 +451,10 @@ class BugBattle {
     document.body.appendChild(elem);
 
     // poweredByHidden
+    const circle = document.querySelector(".bugbattle--progress-ring__circle");
+    const circumference = 213.628300444;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = `${circumference}`;
 
     const privacyPolicyContainer = document.querySelector(
       ".bugbattle--feedback-inputgroup--privacy-policy"
@@ -522,14 +535,11 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
-      console.log("FETCHING THE SCREEENNOOOOOO.");
       startScreenCapture(self.snapshotPosition)
         .then((data) => {
-          console.log("DONE THE SCREEENNOOOOOO.");
           self.sendBugReportToServer(data);
         })
         .catch((err) => {
-          console.log("ERROR THE SCREEENNOOOOOO.");
           console.error(err);
           self.showError();
         });
@@ -646,7 +656,7 @@ class BugBattle {
     );
     if (loading) {
       body.style.display = "none";
-      loader.style.display = "block";
+      loader.style.display = "flex";
       header.style.display = "none";
     } else {
       body.style.display = "block";
@@ -697,8 +707,19 @@ class BugBattle {
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", this.sdkKey);
     http.onerror = (error) => {
-      console.log(error);
       self.showError();
+    };
+    http.upload.onprogress = function (evt) {
+      if (evt.lengthComputable) {
+        var percentComplete = parseInt((evt.loaded / evt.total) * 100);
+
+        var circle = document.querySelector(
+          ".bugbattle--progress-ring__circle"
+        );
+        const circumference = 213.628300444;
+        const offset = circumference - (percentComplete / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+      }
     };
     http.onreadystatechange = function (e) {
       if (
@@ -710,7 +731,6 @@ class BugBattle {
           self.closeBugBattle();
         }, 1500);
       }
-      console.log(e);
     };
 
     const bugReportData = {
@@ -732,7 +752,6 @@ class BugBattle {
       bugReportData["screenshotData"] = screenshotData;
     }
 
-    debugger;
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
     }

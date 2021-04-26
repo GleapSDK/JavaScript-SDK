@@ -8,6 +8,8 @@ export const startScreenCapture = (snapshotPosition) => {
     } else {
       return prepareScreenshotData(snapshotPosition, false);
     }
+  }).catch(() => {
+    return prepareScreenshotData(snapshotPosition, false);
   });
 };
 
@@ -31,7 +33,7 @@ const checkOnlineStatus = (url) => {
       "https://uptime.bugbattle.io/?url=" + encodeURIComponent(url),
       true
     );
-    xhr.send(null);
+    xhr.send();
   });
 };
 
@@ -209,8 +211,8 @@ const fetchItemResource = (elem, proxy = false) => {
         var reader = new FileReader();
         reader.onloadend = function () {
           resizeImage(reader.result, 500, 500)
-            .then(() => {
-              elem.src = reader.result;
+            .then((data) => {
+              elem.src = data;
               resolve();
             })
             .catch(() => {
@@ -283,13 +285,9 @@ const optionallyPrepareRemoteData = (clone, remote) => {
     if (remote) {
       resolve();
     } else {
-      console.log("IMG");
       return downloadAllImages(clone).then(() => {
-        console.log("IMG");
         return downloadAllScripts(clone).then(() => {
-          console.log("SCRIPTS");
           return downloadAllCSSUrlResources(clone).then(() => {
-            console.log("CSS");
             resolve();
           });
         });

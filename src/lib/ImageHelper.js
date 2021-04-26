@@ -1,8 +1,11 @@
 export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     var isJPEG = base64Str.indexOf("data:image/jpeg") === 0;
     var img = new Image();
     img.src = base64Str;
+    img.onerror = () => {
+      reject();
+    };
     img.onload = () => {
       var canvas = document.createElement("canvas");
       const MAX_WIDTH = maxWidth;
@@ -26,7 +29,7 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       var ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
       if (isJPEG) {
-        resolve(canvas.toDataURL("image/jpeg", 0.4));
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
       } else {
         resolve(canvas.toDataURL());
       }

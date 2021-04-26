@@ -1,6 +1,6 @@
-export const REPLAYREC_ADD = "a";
+export const REPLAYREC_ADD = "p";
 export const REPLAYREC_CANVAS_DATA = "c";
-export const REPLAYREC_DELAY = "d";
+export const REPLAYREC_DELAY = "o";
 export const REPLAYREC_FORCE_STYLE_FLUSH = "f";
 export const REPLAYREC_INPUT = "i";
 export const REPLAYREC_MOUSE_MOVE = "m";

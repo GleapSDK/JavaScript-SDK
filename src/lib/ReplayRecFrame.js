@@ -14,6 +14,7 @@ export default class ReplayRecFrame {
     this.node = node;
     this.rec = rec;
     this.initialState = {};
+    this.initialActions = [];
 
     this.prepEvent = (event) => {
       var _a;
@@ -114,9 +115,11 @@ export default class ReplayRecFrame {
 
     node.ownerDocument.ReplayRecInner = this;
 
-    let serializedNode = this.rec.serializeNode(this.node, []);
+    let initialActions = [];
+    let serializedNode = this.rec.serializeNode(this.node, initialActions);
     if (serializedNode) {
       this.initialState = serializedNode;
+      this.initialActions = initialActions;
 
       this.observer = new MutationObserver(rec.observerCallback);
       this.observer.observe(node, {
@@ -125,6 +128,9 @@ export default class ReplayRecFrame {
         childList: true,
         subtree: true,
       });
+
+      // Get scroll position
+      this.mainScrollListener();
 
       win.addEventListener("input", this.inputListener, {
         capture: true,
@@ -198,6 +204,7 @@ export default class ReplayRecFrame {
     });
     this.rec.deleteAllReplayRecIDs(this.node);
   }
+
   flushObserver() {
     this.rec.observerCallback(this.observer.takeRecords());
   }

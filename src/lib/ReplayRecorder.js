@@ -13,6 +13,7 @@ import { isMobile, resizeImage } from "./ImageHelper";
 
 export default class ReplayRecorder {
   constructor() {
+    this.startDate = Date.now();
     this.node = document.documentElement;
     this.nextID = 1;
     this.actions = [];
@@ -21,7 +22,6 @@ export default class ReplayRecorder {
     this.focusedElement = null;
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
-    this.actions = [];
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
     this.evaluateFocus();
     this.result = null;
@@ -211,7 +211,9 @@ export default class ReplayRecorder {
     }
 
     const ret = {
+      startDate: this.startDate,
       initialState: this.rootFrame.initialState,
+      initialActions: this.rootFrame.initialActions,
       actions: this.actions,
       baseUrl: window.location.origin,
       width: window.innerWidth,
@@ -219,7 +221,7 @@ export default class ReplayRecorder {
       resourcesToResolve: this.resourcesToResolve,
       isMobile: isMobile(),
     };
-    
+
     this.rootFrame.stop();
     this.clearFakeFocus();
     this.rootFrame = null;
