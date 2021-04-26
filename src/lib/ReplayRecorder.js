@@ -28,6 +28,13 @@ export default class ReplayRecorder {
     this.finalizingResult = false;
   }
 
+  isFull() {
+    if (this.actions && this.actions.length > 15000) {
+      return true;
+    }
+    return false;
+  }
+
   fetchCSSResource = (url, proxy = false) => {
     var self = this;
     return new Promise((resolve, reject) => {

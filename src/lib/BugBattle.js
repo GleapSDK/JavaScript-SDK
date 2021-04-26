@@ -621,6 +621,12 @@ class BugBattle {
   checkForInitType() {
     applyBugbattleBaseCSS();
 
+    setInterval(() => {
+      if (this.replay && this.replay.isFull()) {
+        BugBattle.enableReplays(this.replaysEnabled);
+      }
+    }, 1000);
+
     if (this.activation === BugBattle.FEEDBACK_BUTTON) {
       this.injectFeedbackButton();
     }
@@ -729,7 +735,7 @@ class BugBattle {
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
-        }, 1500);
+        }, 1000);
       }
     };
 
