@@ -1,4 +1,3 @@
-import $ from "jquery";
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import { setColor, applyBugbattleBaseCSS } from "./UI";
@@ -716,16 +715,17 @@ class BugBattle {
     http.onerror = (error) => {
       self.showError();
     };
-    http.upload.onprogress = function (evt) {
-      if (evt.lengthComputable) {
-        var percentComplete = parseInt((evt.loaded / evt.total) * 100);
-
-        var circle = document.querySelector(
+    http.upload.onprogress = function (e) {
+      if (e.lengthComputable) {
+        const percentComplete = parseInt((e.loaded / e.total) * 100);
+        const circle = window.document.querySelector(
           ".bugbattle--progress-ring__circle"
         );
         const circumference = 213.628300444;
         const offset = circumference - (percentComplete / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
+        if (circle) {
+          circle.style.strokeDashoffset = offset;
+        }
       }
     };
     http.onreadystatechange = function (e) {
@@ -952,31 +952,35 @@ class BugBattle {
       );
       dragInfo.style.display = "none";
 
-      const fixedDot = $(".bugbattle-screenshot-editor-dot");
-      const fixedRectangle = $(".bugbattle-screenshot-editor-rectangle");
+      const fixedDot = window.document.querySelector(
+        ".bugbattle-screenshot-editor-dot"
+      );
+      const fixedRectangle = window.document.querySelector(
+        ".bugbattle-screenshot-editor-rectangle"
+      );
 
-      fixedRectangle.css({
-        top: `${
-          fixedRectangle.position().top + document.documentElement.scrollTop
-        }px`,
-        left: `${
-          fixedRectangle.position().left + document.documentElement.scrollLeft
-        }px`,
-      });
-      fixedDot.css({
-        top: `${
-          fixedDot.position().top + document.documentElement.scrollTop
-        }px`,
-        left: `${
-          fixedDot.position().left + document.documentElement.scrollLeft
-        }px`,
-      });
+      fixedRectangle.style.top = `${
+        fixedRectangle.offsetTop + document.documentElement.scrollTop
+      }px`;
+      fixedRectangle.style.left = `${
+        fixedRectangle.offsetLeft + document.documentElement.scrollLeft
+      }px`;
 
-      fixedDot.detach();
-      fixedRectangle.detach();
+      fixedDot.style.top = `${
+        fixedDot.offsetTop + document.documentElement.scrollTop
+      }px`;
+      fixedDot.style.left = `${
+        fixedDot.offsetLeft + document.documentElement.scrollLeft
+      }px`;
 
-      $(".bugbattle-screenshot-editor").append(fixedDot);
-      $(".bugbattle-screenshot-editor").append(fixedRectangle);
+      fixedDot.parentNode.removeChild(fixedDot);
+      fixedRectangle.parentNode.removeChild(fixedRectangle);
+
+      const screenshotEditor = window.document.querySelector(
+        ".bugbattle-screenshot-editor"
+      );
+      screenshotEditor.appendChild(fixedDot);
+      screenshotEditor.appendChild(fixedRectangle);
 
       addedMarker = true;
 

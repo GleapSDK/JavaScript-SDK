@@ -1,4 +1,3 @@
-import $ from "jquery";
 import { isMobile, resizeImage } from "./ImageHelper";
 
 export const startScreenCapture = (snapshotPosition) => {
@@ -10,7 +9,7 @@ export const startScreenCapture = (snapshotPosition) => {
         return prepareScreenshotData(snapshotPosition, false);
       }
     })
-    .catch(() => {
+    .catch((err) => {
       return prepareScreenshotData(snapshotPosition, false);
     });
 };
@@ -52,7 +51,7 @@ const documentToHTML = (clone) => {
       ">";
   }
 
-  html += clone.prop("outerHTML");
+  html += clone.outerHTML;
   return html;
 };
 
@@ -98,7 +97,7 @@ const loadCSSUrlResources = (data, basePath) => {
         }
 
         try {
-          let resourcePath = matchedUrl;
+          var resourcePath = matchedUrl;
           if (basePath) {
             resourcePath = basePath + "/" + matchedUrl;
           }
@@ -122,13 +121,11 @@ const fetchLinkItemResource = (elem, proxy = false) => {
       var basePath = elem.href.substring(0, elem.href.lastIndexOf("/"));
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        $(
-          '<style type="text/css" bb-basepath="' +
-            basePath +
-            '">' +
-            xhr.responseText +
-            "</style>"
-        ).insertAfter(elem);
+        const styleNode = document.createElement("style");
+        styleNode.type = "text/css";
+        styleNode.setAttribute("bb-basepath", basePath);
+        styleNode.appendChild(document.createTextNode(xhr.responseText));
+        elem.parentNode.insertBefore(styleNode, elem.nextSibling);
         elem.remove();
         resolve();
       };
@@ -155,10 +152,10 @@ const fetchLinkItemResource = (elem, proxy = false) => {
 };
 
 const downloadAllScripts = (dom) => {
-  let linkItems = dom.find("link");
-  let linkItemsPromises = [];
+  const linkItems = dom.querySelectorAll("link");
+  const linkItemsPromises = [];
   for (var i = 0; i < linkItems.length; i++) {
-    let item = linkItems[i];
+    const item = linkItems[i];
     linkItemsPromises.push(fetchLinkItemResource(item));
   }
 
@@ -254,10 +251,10 @@ const fetchItemResource = (elem, proxy = false) => {
 };
 
 const downloadAllImages = (dom) => {
-  let imgItems = dom.find("img");
-  let imgItemsPromises = [];
+  const imgItems = dom.querySelectorAll("img");
+  const imgItemsPromises = [];
   for (var i = 0; i < imgItems.length; i++) {
-    let item = imgItems[i];
+    const item = imgItems[i];
     imgItemsPromises.push(fetchItemResource(item));
   }
 
@@ -265,12 +262,12 @@ const downloadAllImages = (dom) => {
 };
 
 const downloadAllCSSUrlResources = (clone) => {
-  let promises = [];
+  var promises = [];
 
-  let styleTags = clone.find("style");
+  const styleTags = clone.querySelectorAll("style");
   for (const style of styleTags) {
     if (style) {
-      let basePath = style.getAttribute("bb-basepath");
+      const basePath = style.getAttribute("bb-basepath");
       promises.push(
         loadCSSUrlResources(style.innerHTML, basePath).then((replacedStyle) => {
           return (style.innerHTML = replacedStyle);
@@ -300,77 +297,101 @@ const optionallyPrepareRemoteData = (clone, remote) => {
 
 const prepareScreenshotData = (snapshotPosition, remote) => {
   return new Promise((resolve, reject) => {
-    $(window.document)
-      .find("iframe, video, embed, img, svg")
-      .each(function () {
-        var height = 0;
+    const imgElems = window.document.querySelectorAll(
+      "iframe, video, embed, img, svg"
+    );
+    for (var i = 0; i < imgElems.length; ++i) {
+      const elem = imgElems[i];
+      var height = 0;
 
-        if ($(this).css("box-sizing") === "border-box") {
-          height = $(this).outerHeight();
-        } else {
-          height = $(this).height();
-        }
+      if (elem.style.boxSizing === "border-box") {
+        height =
+          elem.height +
+          elem.marginTop +
+          elem.marginBottom +
+          elem.bordorTop +
+          elem.borderBottom;
+      } else {
+        height = elem.height;
+      }
 
-        $(this).attr("bb-element", true);
-        $(this).attr("bb-height", height);
-      });
+      elem.setAttribute("bb-element", true);
+      elem.setAttribute("bb-height", height);
+    }
 
-    $(window.document)
-      .find("div")
-      .each(function () {
-        let scrollTop = $(this).scrollTop();
-        let scrollLeft = $(this).scrollLeft();
-        if (scrollTop > 0 || scrollLeft > 0) {
-          $(this).attr("bb-scrollpos", true);
-          $(this).attr("bb-scrolltop", scrollTop);
-          $(this).attr("bb-scrollleft", scrollLeft);
-        }
-      });
+    const divElems = window.document.querySelectorAll("div");
+    for (var i = 0; i < divElems.length; ++i) {
+      const elem = divElems[i];
+      if (elem.scrollTop > 0 || elem.scrollLeft > 0) {
+        elem.setAttribute("bb-scrollpos", true);
+        elem.setAttribute("bb-scrolltop", elem.scrollTop);
+        elem.setAttribute("bb-scrollleft", elem.scrollLeft);
+      }
+    }
 
-    let clone = $(window.document.documentElement).clone(true, true);
+    const clone = window.document.documentElement.cloneNode(true);
 
-    clone.find("select, textarea, input").each(function () {
-      const tagName = $(this).prop("tagName").toUpperCase();
+    // Copy values
+    const selectElems = clone.querySelectorAll("select, textarea, input");
+    for (var i = 0; i < selectElems.length; ++i) {
+      const elem = selectElems[i];
+      const tagName = elem.tagName ? elem.tagName.toUpperCase() : elem.tagName;
       if (
         tagName === "SELECT" ||
         tagName === "TEXTAREA" ||
         tagName === "INPUT"
       ) {
-        $(this).attr("bb-data-value", $(this).val());
-        if (
-          $(this).prop("type") === "checkbox" ||
-          $(this).prop("type") === "radio"
-        ) {
-          if ($(this).prop("checked") === true) {
-            $(this).attr("bb-data-checked", "true");
+        elem.setAttribute("bb-data-value", elem.value);
+        if (elem.type === "checkbox" || elem.type === "radio") {
+          if (elem.checked) {
+            elem.setAttribute("bb-data-checked", true);
           }
         }
       }
-    });
+    }
 
     // Cleanup
-    $(window.document)
-      .find("*")
-      .each(function () {
-        $(this).attr("bb-element", null);
-        $(this).attr("bb-height", null);
-      });
+    const allElems = window.document.querySelectorAll("*");
+    for (var i = 0; i < allElems.length; ++i) {
+      const elem = allElems[i];
+      elem.setAttribute("bb-element", null);
+      elem.setAttribute("bb-height", null);
+    }
 
-    clone.find("script, noscript").remove();
+    // Remove all scripts
+    const scriptElems = clone.querySelectorAll("script, noscript");
+    for (var i = 0; i < scriptElems.length; ++i) {
+      scriptElems[i].remove();
+    }
 
     // Cleanup base path
-    clone.remove("base");
-    clone.find("head").prepend('<base href="' + window.location.origin + '">');
+    const baseElems = clone.querySelectorAll("base");
+    for (var i = 0; i < baseElems.length; ++i) {
+      baseElems[i].remove();
+    }
 
-    clone.find(".bugbattle--feedback-dialog-container").remove();
-    clone.find(".bugbattle-screenshot-editor-borderlayer").remove();
+    // Fix base node
+    const baseNode = window.document.createElement("base");
+    baseNode.href = window.location.origin;
+    const head = clone.querySelector("head");
+    head.insertBefore(baseNode, head.firstChild);
 
-    clone.find("[bb-element=true]").each(function () {
-      $(this).css("height", $(this).attr("bb-height"));
-    });
+    // Do further cleanup.
+    const dialogElems = clone.querySelectorAll(
+      ".bugbattle--feedback-dialog-container, .bugbattle-screenshot-editor-borderlayer"
+    );
+    for (var i = 0; i < dialogElems.length; ++i) {
+      dialogElems[i].remove();
+    }
+
+    // Calculate heights
+    const bbElems = clone.querySelectorAll("[bb-element=true]");
+    for (var i = 0; i < bbElems.length; ++i) {
+      bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
+    }
 
     optionallyPrepareRemoteData(clone, remote).then(() => {
-      let html = documentToHTML(clone);
+      const html = documentToHTML(clone);
 
       resolve({
         html: html,
