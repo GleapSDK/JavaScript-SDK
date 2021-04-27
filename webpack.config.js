@@ -1,7 +1,6 @@
 const path = require("path");
 const webpack = require("webpack");
 const exec = require("child_process").exec;
-const PrettierPlugin = require("prettier-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
@@ -57,7 +56,6 @@ module.exports = {
     ],
   },
   plugins: [
-    new PrettierPlugin(),
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
