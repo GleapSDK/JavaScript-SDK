@@ -21,6 +21,7 @@ declare module "bugbattle" {
     function disableConsoleLogOverwrite(): void;
     function enableNetworkLogger(): void;
     function enableShortcuts(enabled: boolean): void;
+    function enableReplays(enabled: boolean): void;
     function disableUserScreenshot(disableUserScreenshot: boolean): void;
   }
   export default BugBattle;
