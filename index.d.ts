@@ -7,6 +7,7 @@ declare module "bugbattle" {
       activationMethod: "NONE" | "FEEDBACK_BUTTON"
     ): void;
     function startBugReporting(): void;
+    function startSilentBugReporting(senderEmail: string, description: string): void;
     function setCustomerEmail(email: string): void;
     function attachCustomData(customData: any): void;
     function enablePrivacyPolicy(enable: boolean): void;

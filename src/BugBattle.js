@@ -9,7 +9,6 @@ class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
   privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
-  privacyPolicyCheckEnabled = false;
   email = localStorage.getItem("bugbattle-sender-email") ?? "";
   activation = "";
   overrideLanguage = "";
@@ -21,9 +20,12 @@ class BugBattle {
   sessionStart = new Date();
   poweredByHidden = false;
   disableUserScreenshot = false;
+  enabledCrashDetector = false;
   replaysEnabled = false;
   customLogoUrl = null;
   shortcutsEnabled = true;
+  privacyPolicyCheckEnabled = false;
+  silentBugReport = false;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -203,9 +205,10 @@ class BugBattle {
 
   /**
    * Enables crash detection.
-   * @deprecated since version 3.1.13
    */
-  static enableCrashDetector(enabled) {}
+  static enableCrashDetector(enabled) {
+    this.instance.enabledCrashDetector = enabled;
+  }
 
   /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
@@ -228,9 +231,23 @@ class BugBattle {
   }
 
   /**
+   * Reports a bug silently
+   * @param {*} senderEmail
+   * @param {*} description
+   */
+  static startSilentBugReporting(senderEmail, description) {
+    this.instance.description = description;
+    if (senderEmail) {
+      this.instance.email = senderEmail;
+    }
+    this.startBugReporting(true);
+  }
+
+  /**
    * Starts the bug reporting flow.
    */
-  static startBugReporting() {
+  static startBugReporting(silentBugReport = false) {
+    this.instance.silentBugReport = silentBugReport;
     if (this.instance.replay) {
       this.instance.replay.stop();
     }
@@ -248,10 +265,14 @@ class BugBattle {
       y: window.scrollY,
     };
 
-    if (this.instance.disableUserScreenshot) {
-      this.instance.createBugReportingDialog();
+    if (this.instance.silentBugReport) {
+      this.instance.takeScreenshotAndSend();
     } else {
-      this.instance.showBugReportEditor();
+      if (this.instance.disableUserScreenshot) {
+        this.instance.createBugReportingDialog();
+      } else {
+        this.instance.showBugReportEditor();
+      }
     }
   }
 
@@ -266,6 +287,12 @@ class BugBattle {
         "Error object: " + JSON.stringify(error),
       ];
       self.addLog(message, "error");
+
+      const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
+        error
+      )}\n`;
+      BugBattle.startSilentBugReporting(null, errorMessage);
+
       return false;
     };
   }
@@ -453,7 +480,7 @@ class BugBattle {
     const circumference = 213.628300444;
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
 
-    const offset = circumference - (5 / 100) * circumference;
+    const offset = circumference - (1 / 100) * circumference;
     circle.style.strokeDashoffset = offset;
 
     const privacyPolicyContainer = document.querySelector(
@@ -535,15 +562,18 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
-      startScreenCapture(self.snapshotPosition)
-        .then((data) => {
-          self.sendBugReportToServer(data);
-        })
-        .catch((err) => {
-          console.error(err);
-          self.showError();
-        });
+      self.takeScreenshotAndSend();
     };
+  }
+
+  takeScreenshotAndSend() {
+    return startScreenCapture(this.snapshotPosition)
+      .then((data) => {
+        this.sendBugReportToServer(data);
+      })
+      .catch((err) => {
+        this.showError();
+      });
   }
 
   hide() {
@@ -713,9 +743,17 @@ class BugBattle {
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", this.sdkKey);
     http.onerror = (error) => {
+      if (self.silentBugReport) {
+        return;
+      }
+
       self.showError();
     };
     http.upload.onprogress = function (e) {
+      if (self.silentBugReport) {
+        return;
+      }
+
       if (e.lengthComputable) {
         const percentComplete = parseInt((e.loaded / e.total) * 100);
         const circle = window.document.querySelector(
@@ -729,6 +767,10 @@ class BugBattle {
       }
     };
     http.onreadystatechange = function (e) {
+      if (self.silentBugReport) {
+        return;
+      }
+
       if (
         http.readyState === XMLHttpRequest.DONE &&
         (http.status === 200 || http.status === 201)
@@ -767,6 +809,9 @@ class BugBattle {
   }
 
   showError() {
+    if (this.silentBugReport) {
+      return;
+    }
     this.toggleLoading(false);
   }
 

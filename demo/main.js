@@ -5,7 +5,7 @@ BugBattle.initialize(
   BugBattle.FEEDBACK_BUTTON
 );
 
-// BugBattle.setApiUrl("http://localhost:9000");
+BugBattle.setApiUrl("http://localhost:9000");
 
 // Sets the app's build number.
 BugBattle.setMainColor("#FEAB39");
@@ -40,6 +40,6 @@ BugBattle.disableUserScreenshot(false);
 const feedbackButton = document.querySelector("#feedback-button");
 if (feedbackButton) {
   feedbackButton.onclick = function () {
-    BugBattle.startBugReporting();
+    BugBattle.xxx();
   };
 }

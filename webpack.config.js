@@ -34,7 +34,7 @@ module.exports = {
     hot: true,
     host: "localhost",
     static: path.join(__dirname, "demo"),
-    port: 9000,
+    port: 4444,
   },
   module: {
     rules: [
