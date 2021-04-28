@@ -21,6 +21,8 @@ class BugBattle {
   poweredByHidden = false;
   disableUserScreenshot = false;
   enabledCrashDetector = false;
+  enabledCrashDetectorSilent = false;
+  currentlySendingBug = false;
   replaysEnabled = false;
   customLogoUrl = null;
   shortcutsEnabled = true;
@@ -205,9 +207,12 @@ class BugBattle {
 
   /**
    * Enables crash detection.
+   * @param {*} enabled
+   * @param {*} silent
    */
-  static enableCrashDetector(enabled) {
+  static enableCrashDetector(enabled, silent = false) {
     this.instance.enabledCrashDetector = enabled;
+    this.instance.enabledCrashDetectorSilent = silent;
   }
 
   /**
@@ -247,16 +252,24 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting(silentBugReport = false) {
+    if (this.instance.currentlySendingBug) {
+      return;
+    }
+
+    this.instance.currentlySendingBug = true;
     this.instance.silentBugReport = silentBugReport;
     if (this.instance.replay) {
       this.instance.replay.stop();
     }
     this.instance.networkIntercepter.setStopped(true);
-    this.instance.registerEscapeListener();
-    this.instance.disableScroll();
-    const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
-    if (feedbackBtn) {
-      feedbackBtn.style.display = "none";
+
+    if (!this.instance.silentBugReport) {
+      this.instance.registerEscapeListener();
+      this.instance.disableScroll();
+      const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
+      if (feedbackBtn) {
+        feedbackBtn.style.display = "none";
+      }
     }
 
     // Set snapshot position
@@ -288,10 +301,16 @@ class BugBattle {
       ];
       self.addLog(message, "error");
 
-      const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
-        error
-      )}\n`;
-      BugBattle.startSilentBugReporting(null, errorMessage);
+      if (self.enabledCrashDetector) {
+        if (self.enabledCrashDetectorSilent) {
+          const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
+            error
+          )}\n`;
+          BugBattle.startSilentBugReporting(null, errorMessage);
+        } else {
+          BugBattle.startBugReporting();
+        }
+      }
 
       return false;
     };
@@ -576,9 +595,14 @@ class BugBattle {
       });
   }
 
-  hide() {
+  reportCleanup() {
     BugBattle.enableReplays(this.replaysEnabled);
     this.networkIntercepter.setStopped(false);
+    this.currentlySendingBug = false;
+  }
+
+  hide() {
+    this.reportCleanup();
 
     const editorContainer = document.querySelector(
       ".bugbattle-screenshot-editor"
@@ -744,6 +768,7 @@ class BugBattle {
     http.setRequestHeader("Api-Token", this.sdkKey);
     http.onerror = (error) => {
       if (self.silentBugReport) {
+        self.reportCleanup();
         return;
       }
 
@@ -751,6 +776,7 @@ class BugBattle {
     };
     http.upload.onprogress = function (e) {
       if (self.silentBugReport) {
+        self.reportCleanup();
         return;
       }
 
@@ -768,6 +794,7 @@ class BugBattle {
     };
     http.onreadystatechange = function (e) {
       if (self.silentBugReport) {
+        self.reportCleanup();
         return;
       }
 

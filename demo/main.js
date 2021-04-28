@@ -14,7 +14,9 @@ BugBattle.enableReplays(true);
 
 BugBattle.enablePoweredByBugbattle(true);
 
-// BugBattle.enableNetworkLogger();
+BugBattle.enableNetworkLogger();
+
+BugBattle.enableCrashDetector(true, true);
 
 // Sets the app's build number.
 BugBattle.setAppBuildNumber(5);

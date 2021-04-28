@@ -27,7 +27,7 @@ class BugBattleNetworkIntercepter {
   }
 
   calcRequestTime(bbRequestId) {
-    if (!this.requests[bbRequestId]) {
+    if (!bbRequestId || !this.requests || !this.requests[bbRequestId]) {
       return;
     }
 
@@ -41,7 +41,12 @@ class BugBattleNetworkIntercepter {
   start() {
     this.interceptNetworkRequests({
       onFetch: (params, bbRequestId) => {
-        if (this.stopped) {
+        if (
+          this.stopped ||
+          !bbRequestId ||
+          !this.requests ||
+          !this.requests[bbRequestId]
+        ) {
           return;
         }
 
@@ -66,7 +71,12 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onFetchLoad: (req, bbRequestId) => {
-        if (this.stopped) {
+        if (
+          this.stopped ||
+          !bbRequestId ||
+          !this.requests ||
+          !this.requests[bbRequestId]
+        ) {
           return;
         }
 
@@ -84,7 +94,12 @@ class BugBattleNetworkIntercepter {
         });
       },
       onFetchFailed: (err, bbRequestId) => {
-        if (this.stopped) {
+        if (
+          this.stopped ||
+          !bbRequestId ||
+          !this.requests ||
+          !this.requests[bbRequestId]
+        ) {
           return;
         }
 
@@ -124,7 +139,11 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onError: (request, args) => {
-        if (this.stopped) {
+        if (
+          this.stopped ||
+          !this.requests ||
+          !this.requests[target.bbRequestId]
+        ) {
           return;
         }
 
@@ -148,7 +167,9 @@ class BugBattleNetworkIntercepter {
         if (
           request &&
           request.currentTarget &&
-          request.currentTarget.bbRequestId
+          request.currentTarget.bbRequestId &&
+          this.requests &&
+          this.requests[request.currentTarget.bbRequestId]
         ) {
           var target = request.currentTarget;
           this.requests[target.bbRequestId]["success"] = true;
