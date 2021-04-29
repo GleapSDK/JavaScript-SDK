@@ -41,14 +41,25 @@ export default class ReplayRecorder {
       if (url) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
-          var reader = new FileReader();
-          reader.onloadend = function () {
-            resolve(reader.result);
-          };
-          reader.onerror = function () {
-            reject();
-          };
-          reader.readAsDataURL(xhr.response);
+          if (proxy) {
+            xhr.response
+              .text()
+              .then((text) => {
+                resolve(text);
+              })
+              .catch(() => {
+                reject();
+              });
+          } else {
+            var reader = new FileReader();
+            reader.onloadend = function () {
+              resolve(reader.result);
+            };
+            reader.onerror = function () {
+              reject();
+            };
+            reader.readAsDataURL(xhr.response);
+          }
         };
         xhr.onerror = function (err) {
           // Retry with proxy.
@@ -139,39 +150,53 @@ export default class ReplayRecorder {
     });
   };
 
+  progressResource = (data, src, resolve, reject) => {
+    if (data && data.indexOf("data:text/css") === 0) {
+      this.validateStylesheetResources(data, src).then((data) => {
+        this.resourcesToResolve[src] = data;
+        resolve();
+      });
+    } else if (
+      data &&
+      (data.indexOf("data:image/jpeg") === 0 ||
+        data.indexOf("data:image/png") === 0)
+    ) {
+      resizeImage(data, 500, 500).then((data) => {
+        this.resourcesToResolve[src] = data;
+        resolve();
+      });
+    } else {
+      this.resourcesToResolve[src] = data;
+      resolve();
+    }
+  };
+
   fetchItemResource = (src, proxy = false) => {
     const self = this;
+
     return new Promise((resolve, reject) => {
       if (src) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
-          var reader = new FileReader();
-          reader.onloadend = function () {
-            if (reader.result && reader.result.indexOf("data:text/css") === 0) {
-              self
-                .validateStylesheetResources(reader.result, src)
-                .then((data) => {
-                  self.resourcesToResolve[src] = data;
-                  resolve();
-                });
-            } else if (
-              reader.result &&
-              (reader.result.indexOf("data:image/jpeg") === 0 ||
-                reader.result.indexOf("data:image/png") === 0)
-            ) {
-              resizeImage(reader.result, 500, 500).then((data) => {
-                self.resourcesToResolve[src] = data;
-                resolve();
+          if (proxy) {
+            xhr.response
+              .text()
+              .then((text) => {
+                self.progressResource(text, src, resolve, reject);
+              })
+              .catch(() => {
+                reject();
               });
-            } else {
-              self.resourcesToResolve[src] = reader.result;
+          } else {
+            var reader = new FileReader();
+            reader.onloadend = function () {
+              self.progressResource(reader.result, src, resolve, reject);
+            };
+            reader.onerror = function () {
               resolve();
-            }
-          };
-          reader.onerror = function () {
-            resolve();
-          };
-          reader.readAsDataURL(xhr.response);
+            };
+            reader.readAsDataURL(xhr.response);
+          }
         };
         xhr.onerror = function (err) {
           if (proxy === false) {
