@@ -105,7 +105,6 @@ class BugBattleNetworkIntercepter {
 
         this.requests[bbRequestId]["success"] = false;
         this.calcRequestTime(bbRequestId);
-
         this.cleanRequests();
       },
       onOpen: (request, args) => {
@@ -139,12 +138,7 @@ class BugBattleNetworkIntercepter {
         this.cleanRequests();
       },
       onError: (request, args) => {
-        if (
-          this.stopped ||
-          !this.requests ||
-          !request.bbRequestId ||
-          !this.requests[request.bbRequestId]
-        ) {
+        if (this.stopped || !this.requests) {
           return;
         }
 
@@ -155,10 +149,9 @@ class BugBattleNetworkIntercepter {
         ) {
           var target = request.currentTarget;
           this.requests[target.bbRequestId]["success"] = false;
+          this.calcRequestTime(request.bbRequestId);
+          this.cleanRequests();
         }
-
-        this.calcRequestTime(request.bbRequestId);
-        this.cleanRequests();
       },
       onLoad: (request, args) => {
         if (this.stopped) {

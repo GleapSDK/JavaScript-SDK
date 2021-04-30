@@ -304,6 +304,7 @@ class BugBattle {
 
       if (self.enabledCrashDetector && !self.crashedWaitingForReload) {
         self.crashedWaitingForReload = true;
+        console.log("CRASHED.");
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
