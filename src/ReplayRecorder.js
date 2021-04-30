@@ -259,10 +259,9 @@ export default class ReplayRecorder {
     this.rootFrame = null;
 
     this.finalizingResult = true;
-    return this.fetchImageResources().then((proms) => {
+    return this.fetchImageResources().then(() => {
       this.result = ret;
       this.finalizingResult = false;
-      return ret;
     });
   }
 
@@ -323,7 +322,6 @@ export default class ReplayRecorder {
   allowAttribute(e, name) {
     // eslint-disable-next-line default-case
     switch (name) {
-      case "src":
       case "srcdoc":
         if (e.tagName === "IFRAME") {
           return false;
@@ -430,8 +428,7 @@ export default class ReplayRecorder {
         }
         if (hasAttr) {
           obj.a = attrs;
-
-          if (obj.a && obj.a.src && tag !== "SOURCE") {
+          if (obj.a && obj.a.src && tag !== "SOURCE" && tag !== "IFRAME") {
             this.optionallyAddAttribute("src", obj.a.src);
           }
         }

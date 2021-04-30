@@ -22,6 +22,7 @@ class BugBattle {
   disableUserScreenshot = false;
   enabledCrashDetector = false;
   enabledCrashDetectorSilent = false;
+  crashedWaitingForReload = false;
   currentlySendingBug = false;
   replaysEnabled = false;
   customLogoUrl = null;
@@ -279,7 +280,7 @@ class BugBattle {
     };
 
     if (this.instance.silentBugReport) {
-      this.instance.takeScreenshotAndSend();
+      this.instance.checkReplayLoaded();
     } else {
       if (this.instance.disableUserScreenshot) {
         this.instance.createBugReportingDialog();
@@ -301,7 +302,8 @@ class BugBattle {
       ];
       self.addLog(message, "error");
 
-      if (self.enabledCrashDetector) {
+      if (self.enabledCrashDetector && !self.crashedWaitingForReload) {
+        self.crashedWaitingForReload = true;
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
@@ -581,8 +583,23 @@ class BugBattle {
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
 
-      self.takeScreenshotAndSend();
+      self.checkReplayLoaded();
     };
+  }
+
+  checkReplayLoaded(retries = 0) {
+    if (
+      this.replaysEnabled &&
+      !(this.replay && this.replay.result) &&
+      retries < 5
+    ) {
+      // Replay is not ready yet.
+      setTimeout(() => {
+        this.checkReplayLoaded(++retries);
+      }, 1000);
+    } else {
+      this.takeScreenshotAndSend();
+    }
   }
 
   takeScreenshotAndSend() {

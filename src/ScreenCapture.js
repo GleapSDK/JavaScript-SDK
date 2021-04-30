@@ -167,14 +167,25 @@ const fetchCSSResource = (url, proxy = false) => {
     if (url) {
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        var reader = new FileReader();
-        reader.onloadend = function () {
-          resolve(reader.result);
-        };
-        reader.onerror = function () {
-          reject();
-        };
-        reader.readAsDataURL(xhr.response);
+        if (proxy) {
+          xhr.response
+            .text()
+            .then((text) => {
+              resolve(text);
+            })
+            .catch(() => {
+              reject();
+            });
+        } else {
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject();
+          };
+          reader.readAsDataURL(xhr.response);
+        }
       };
       xhr.onerror = function (err) {
         // Retry with proxy.
@@ -202,26 +213,44 @@ const fetchCSSResource = (url, proxy = false) => {
   });
 };
 
+const progressResource = (data, elem, resolve, reject) => {
+  resizeImage(data, 500, 500)
+    .then((data) => {
+      console.log(elem.src);
+      console.log("Used proxy: " + data);
+      console.log(data);
+      elem.src = data;
+      resolve();
+    })
+    .catch(() => {
+      reject();
+    });
+};
+
 const fetchItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     if (elem && elem.src) {
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        var reader = new FileReader();
-        reader.onloadend = function () {
-          resizeImage(reader.result, 500, 500)
-            .then((data) => {
-              elem.src = data;
-              resolve();
+        if (proxy) {
+          xhr.response
+            .text()
+            .then((text) => {
+              progressResource(text, elem, resolve, reject);
             })
             .catch(() => {
               reject();
             });
-        };
-        reader.onerror = function () {
-          reject();
-        };
-        reader.readAsDataURL(xhr.response);
+        } else {
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            progressResource(reader.result, elem, resolve, reject);
+          };
+          reader.onerror = function () {
+            resolve();
+          };
+          reader.readAsDataURL(xhr.response);
+        }
       };
       xhr.onerror = function (err) {
         if (proxy === false) {
