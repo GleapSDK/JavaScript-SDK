@@ -75,6 +75,7 @@ class BugBattle {
   }
 
   static enableReplays(enabled) {
+    console.log("Replay: " + enabled);
     this.instance.replaysEnabled = enabled;
     if (enabled) {
       if (this.instance.replay) {
@@ -304,7 +305,6 @@ class BugBattle {
 
       if (self.enabledCrashDetector && !self.crashedWaitingForReload) {
         self.crashedWaitingForReload = true;
-        console.log("CRASHED.");
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
@@ -695,6 +695,7 @@ class BugBattle {
 
     setInterval(() => {
       if (this.replay && this.replay.isFull()) {
+        console.log("Replay full.");
         BugBattle.enableReplays(this.replaysEnabled);
       }
     }, 1000);
