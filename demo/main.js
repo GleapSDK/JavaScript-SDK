@@ -16,7 +16,7 @@ BugBattle.enablePoweredByBugbattle(true);
 
 BugBattle.enableNetworkLogger();
 
-BugBattle.enableCrashDetector(true, true);
+BugBattle.enableCrashDetector(false, true);
 
 // Sets the app's build number.
 BugBattle.setAppBuildNumber(5);

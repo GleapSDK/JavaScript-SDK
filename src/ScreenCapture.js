@@ -216,9 +216,6 @@ const fetchCSSResource = (url, proxy = false) => {
 const progressResource = (data, elem, resolve, reject) => {
   resizeImage(data, 500, 500)
     .then((data) => {
-      console.log(elem.src);
-      console.log("Used proxy: " + data);
-      console.log(data);
       elem.src = data;
       resolve();
     })

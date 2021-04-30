@@ -1,7 +1,7 @@
 class BugBattleNetworkIntercepter {
   requestId = 0;
   requests = {};
-  maxRequests = 10;
+  maxRequests = 15;
   stopped = false;
 
   getRequests() {
@@ -41,12 +41,7 @@ class BugBattleNetworkIntercepter {
   start() {
     this.interceptNetworkRequests({
       onFetch: (params, bbRequestId) => {
-        if (
-          this.stopped ||
-          !bbRequestId ||
-          !this.requests ||
-          !this.requests[bbRequestId]
-        ) {
+        if (this.stopped || !bbRequestId || !this.requests) {
           return;
         }
 
@@ -116,8 +111,7 @@ class BugBattleNetworkIntercepter {
           request &&
           request.bbRequestId &&
           args.length >= 2 &&
-          this.requests &&
-          this.requests[request.bbRequestId]
+          this.requests
         ) {
           this.requests[request.bbRequestId] = {
             type: args[0],
