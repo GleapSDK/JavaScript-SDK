@@ -75,7 +75,6 @@ class BugBattle {
   }
 
   static enableReplays(enabled) {
-    console.log("Replay: " + enabled);
     this.instance.replaysEnabled = enabled;
     if (enabled) {
       if (this.instance.replay) {
@@ -695,7 +694,6 @@ class BugBattle {
 
     setInterval(() => {
       if (this.replay && this.replay.isFull()) {
-        console.log("Replay full.");
         BugBattle.enableReplays(this.replaysEnabled);
       }
     }, 1000);

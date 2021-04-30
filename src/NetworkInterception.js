@@ -112,7 +112,13 @@ class BugBattleNetworkIntercepter {
           return;
         }
 
-        if (request && request.bbRequestId && args.length >= 2) {
+        if (
+          request &&
+          request.bbRequestId &&
+          args.length >= 2 &&
+          this.requests &&
+          this.requests[request.bbRequestId]
+        ) {
           this.requests[request.bbRequestId] = {
             type: args[0],
             url: args[1],
@@ -127,31 +133,37 @@ class BugBattleNetworkIntercepter {
           return;
         }
 
-        if (request && request.bbRequestId && args.length > 0) {
+        if (
+          request &&
+          request.bbRequestId &&
+          args.length > 0 &&
+          this.requests &&
+          this.requests[request.bbRequestId]
+        ) {
           this.requests[request.bbRequestId]["request"] = {
             payload: args[0],
             headers: request.requestHeaders,
           };
+          this.calcRequestTime(request.bbRequestId);
         }
 
-        this.calcRequestTime(request.bbRequestId);
         this.cleanRequests();
       },
       onError: (request, args) => {
-        if (this.stopped || !this.requests) {
-          return;
-        }
-
         if (
+          !this.stopped &&
+          this.requests &&
           request &&
           request.currentTarget &&
-          request.currentTarget.bbRequestId
+          request.currentTarget.bbRequestId &&
+          this.requests[request.currentTarget.bbRequestId]
         ) {
           var target = request.currentTarget;
           this.requests[target.bbRequestId]["success"] = false;
           this.calcRequestTime(request.bbRequestId);
-          this.cleanRequests();
         }
+
+        this.cleanRequests();
       },
       onLoad: (request, args) => {
         if (this.stopped) {
