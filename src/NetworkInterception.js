@@ -142,7 +142,8 @@ class BugBattleNetworkIntercepter {
         if (
           this.stopped ||
           !this.requests ||
-          !this.requests[target.bbRequestId]
+          !request.bbRequestId ||
+          !this.requests[request.bbRequestId]
         ) {
           return;
         }
