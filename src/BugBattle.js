@@ -212,8 +212,8 @@ class BugBattle {
    * @param {*} silent
    */
   static enableCrashDetector(enabled, silent = false) {
-    this.instance.enabledCrashDetector = enabled;
-    this.instance.enabledCrashDetectorSilent = silent;
+    // this.instance.enabledCrashDetector = enabled;
+    // this.instance.enabledCrashDetectorSilent = silent;
   }
 
   /**
@@ -259,10 +259,11 @@ class BugBattle {
 
     this.instance.currentlySendingBug = true;
     this.instance.silentBugReport = silentBugReport;
+
+    this.instance.networkIntercepter.setStopped(true);
     if (this.instance.replay) {
       this.instance.replay.stop();
     }
-    this.instance.networkIntercepter.setStopped(true);
 
     if (!this.instance.silentBugReport) {
       this.instance.registerEscapeListener();
