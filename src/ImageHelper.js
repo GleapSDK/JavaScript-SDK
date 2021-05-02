@@ -12,11 +12,12 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       var MAX_HEIGHT = maxHeight;
 
       // Adjust max width / height based on image props
-      if (maxWidth > (img.width / 5)) {
-        maxWidth = (img.width / 5);
+      if (maxWidth > img.width / 4) {
+        MAX_WIDTH = img.width / 4;
       }
-      if (maxHeight > (img.height / 5)) {
-        maxHeight = (img.height / 5);
+
+      if (maxHeight > img.height / 4) {
+        MAX_HEIGHT = img.height / 4;
       }
 
       var width = img.width;

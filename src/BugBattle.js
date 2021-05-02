@@ -212,8 +212,8 @@ class BugBattle {
    * @param {*} silent
    */
   static enableCrashDetector(enabled, silent = false) {
-    // this.instance.enabledCrashDetector = enabled;
-    // this.instance.enabledCrashDetectorSilent = silent;
+    this.instance.enabledCrashDetector = enabled;
+    this.instance.enabledCrashDetectorSilent = silent;
   }
 
   /**
@@ -303,7 +303,7 @@ class BugBattle {
       ];
       self.addLog(message, "error");
 
-      if (self.enabledCrashDetector && !self.crashedWaitingForReload) {
+      if (self.enabledCrashDetector && !self.crashedWaitingForReload && !self.currentlySendingBug) {
         self.crashedWaitingForReload = true;
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
