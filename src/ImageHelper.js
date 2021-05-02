@@ -8,8 +8,17 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
     };
     img.onload = () => {
       var canvas = document.createElement("canvas");
-      const MAX_WIDTH = maxWidth;
-      const MAX_HEIGHT = maxHeight;
+      var MAX_WIDTH = maxWidth;
+      var MAX_HEIGHT = maxHeight;
+
+      // Adjust max width / height based on image props
+      if (maxWidth > (img.width / 5)) {
+        maxWidth = (img.width / 5);
+      }
+      if (maxHeight > (img.height / 5)) {
+        maxHeight = (img.height / 5);
+      }
+
       var width = img.width;
       var height = img.height;
 
