@@ -262,7 +262,7 @@ class BugBattle {
 
     this.instance.networkIntercepter.setStopped(true);
     if (this.instance.replay) {
-      this.instance.replay.stop();
+      this.instance.replay.stop(true);
     }
 
     if (!this.instance.silentBugReport) {
@@ -303,7 +303,11 @@ class BugBattle {
       ];
       self.addLog(message, "error");
 
-      if (self.enabledCrashDetector && !self.crashedWaitingForReload && !self.currentlySendingBug) {
+      if (
+        self.enabledCrashDetector &&
+        !self.crashedWaitingForReload &&
+        !self.currentlySendingBug
+      ) {
         self.crashedWaitingForReload = true;
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(

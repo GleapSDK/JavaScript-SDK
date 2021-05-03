@@ -10,6 +10,7 @@ import {
   REPLAYREC_TEXT,
 } from "./ReplayConstants";
 import { isMobile, resizeImage } from "./ImageHelper";
+import { isBlacklisted } from "./ResourceExclusionList";
 
 export default class ReplayRecorder {
   constructor() {
@@ -29,7 +30,7 @@ export default class ReplayRecorder {
   }
 
   isFull() {
-    if (this.actions && this.actions.length > 15000) {
+    if (this.actions && this.actions.length > 10000) {
       return true;
     }
     return false;
@@ -138,7 +139,9 @@ export default class ReplayRecorder {
               resourcePath = basePath + "/" + matchedUrl;
             }
 
+            console.log(resourcePath);
             return this.fetchCSSResource(resourcePath).then((resourceData) => {
+              console.log(resourceData);
               return resolve("url(" + resourceData + ")");
             });
           } catch (exp) {
@@ -151,6 +154,7 @@ export default class ReplayRecorder {
   };
 
   progressResource = (data, src, resolve, reject) => {
+    console.log(data);
     if (data && data.indexOf("data:text/css") === 0) {
       this.validateStylesheetResources(data, src).then((data) => {
         this.resourcesToResolve[src] = data;
@@ -229,13 +233,15 @@ export default class ReplayRecorder {
     let resolvePromises = [];
     let resourceKeys = Object.keys(this.resourcesToResolve);
     for (var i = 0; i < resourceKeys.length; i++) {
-      resolvePromises.push(this.fetchItemResource(resourceKeys[i]));
+      if (!isBlacklisted(resourceKeys[i])) {
+        resolvePromises.push(this.fetchItemResource(resourceKeys[i]));
+      }
     }
 
     return Promise.all(resolvePromises);
   }
 
-  stop() {
+  stop(fetchResources = false) {
     if (!this.rootFrame) {
       this.clearFakeFocus();
       this.rootFrame = null;
@@ -259,10 +265,15 @@ export default class ReplayRecorder {
     this.rootFrame = null;
 
     this.finalizingResult = true;
-    return this.fetchImageResources().then(() => {
+    if (fetchResources) {
+      return this.fetchImageResources().then(() => {
+        this.result = ret;
+        this.finalizingResult = false;
+      });
+    } else {
       this.result = ret;
       this.finalizingResult = false;
-    });
+    }
   }
 
   clearFakeFocus() {
