@@ -139,9 +139,7 @@ export default class ReplayRecorder {
               resourcePath = basePath + "/" + matchedUrl;
             }
 
-            console.log(resourcePath);
             return this.fetchCSSResource(resourcePath).then((resourceData) => {
-              console.log(resourceData);
               return resolve("url(" + resourceData + ")");
             });
           } catch (exp) {
@@ -154,7 +152,6 @@ export default class ReplayRecorder {
   };
 
   progressResource = (data, src, resolve, reject) => {
-    console.log(data);
     if (data && data.indexOf("data:text/css") === 0) {
       this.validateStylesheetResources(data, src).then((data) => {
         this.resourcesToResolve[src] = data;
