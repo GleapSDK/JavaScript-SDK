@@ -1,0 +1,16 @@
+{
+  "feedback_btn_title": "Feedback",
+  "click_and_drag": "Klik of sleep om commentaar toe te voegen",
+  "report_bug_title": "Verstuur terugkoppeling",
+  "your_email": "Je e-mailadres",
+  "email_placeholder": "E-mailadres",
+  "what_went_wrong": "Wat gaat er mis?",
+  "what_went_wrong_subtitle": "Omschrijf het probleem",
+  "send_feedback": "Verstuur terugkoppeling",
+  "send_success": "Dank voor de terugkoppeling",
+  "apikey_wrong": "BUGBATTLE: Voer een geldig API key in",
+  "provide_email": "Voer een geldig e-mailadres in.",
+  "accept_policy_alert": "Graag de privacy voorwaarden lezen en accorderen.",
+  "accept_policy_text": "Ik ga akkoord met de",
+  "privacy_policy": " privacy voorwaarden"
+}
