@@ -133,6 +133,44 @@ export const applyBugbattleBaseCSS = () => {
       object-fit: contain;
       text-align: center;
     }
+
+    .bugbattle--feedback-types {
+      margin: 40px 0px;
+      border-top: 1px solid #e9f1fd;
+    }
+    
+    .bugbattle--feedback-type {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding: 20px;
+      cursor: pointer;
+      border-bottom: 1px solid #e9f1fd;
+    }
+
+    .bugbattle--feedback-type:hover {
+      background-color: #e9f1fd;
+    }
+
+    .bugbattle--feedback-type-icon {
+      width: 44px;
+      height: 44px;
+      background-color: red;
+      border-radius: 44px;
+      margin-right: 20px;
+    }
+
+    .bugbattle--feedback-type-text {
+      flex-grow: 1;
+    }
+    
+    .bugbattle--feedback-type-title {
+      font-weight: bold
+    }
+    
+    .bugbattle--feedback-type-description {
+
+    }
     
     .bugbattle--feedback-dialog-info-text {
       color: #666;
