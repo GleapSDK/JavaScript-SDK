@@ -5,10 +5,25 @@ BugBattle.initialize(
   BugBattle.FEEDBACK_BUTTON
 );
 
-// BugBattle.setApiUrl("http://localhost:9000");
-
-// Sets the app's build number.
-BugBattle.setMainColor("#FEAB39");
+// Sample for feedback type options
+BugBattle.setFeedbackTypeOptions([
+  {
+    title: "Support",
+    description: "Get in touch with us. We are here to help.",
+    icon: "https://jssdk.bugbattle.io/res/support.svg",
+    action: () => {
+      alert("Open Intercom for example.");
+    },
+  },
+  {
+    title: "Report an issue",
+    description: "Something is broken? Let us know!",
+    icon: "https://jssdk.bugbattle.io/res/bug.svg",
+    action: () => {
+      BugBattle.startBugReporting();
+    },
+  },
+]);
 
 BugBattle.enableReplays(true);
 

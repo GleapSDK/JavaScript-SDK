@@ -35,25 +35,7 @@ class BugBattle {
   appVersionCode = "";
   appBuildNumber = "";
   mainColor = "#398CFE";
-  feedbackTypeSelection = true;
-  feedbackTypeActions = [
-    {
-      title: "Support",
-      description: "Get in touch with our support team.",
-      icon: "",
-      action: () => {
-        console.log("Support team.");
-      },
-    },
-    {
-      title: "Report an issue",
-      description: "Get in touch with our support team.",
-      icon: "",
-      action: () => {
-        BugBattle.startBugReporting();
-      },
-    },
-  ];
+  feedbackTypeActions = [];
   previousBodyOverflow;
   networkIntercepter = new BugBattleNetworkIntercepter();
   replay = null;
@@ -275,6 +257,16 @@ class BugBattle {
     this.instance.createFeedbackTypeDialog();
   }
 
+  /**
+   * Adds a feedback type option.
+   */
+  static setFeedbackTypeOptions(feedbackTypeOptions) {
+    this.instance.feedbackTypeActions = feedbackTypeOptions;
+  }
+
+  /**
+   * Creates the feedback type dialog
+   */
   createFeedbackTypeDialog() {
     const self = this;
 
@@ -284,7 +276,7 @@ class BugBattle {
     for (var i = 0; i < self.feedbackTypeActions.length; i++) {
       var action = self.feedbackTypeActions[i];
       optionsHTML += `<div id="bugbattle--feedback-type-${i}" class="bugbattle--feedback-type">
-        <img class="bugbattle--feedback-type-icon" src="">
+        <img class="bugbattle--feedback-type-icon" src="${action.icon}">
         <div class="bugbattle--feedback-type-text">
           <div class="bugbattle--feedback-type-title">${action.title}</div>
           <div class="bugbattle--feedback-type-description">${action.description}</div>
@@ -369,7 +361,6 @@ class BugBattle {
     }
 
     if (!this.instance.silentBugReport) {
-      this.instance.registerEscapeListener();
       this.instance.disableScroll();
       const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
       if (feedbackBtn) {
@@ -766,6 +757,7 @@ class BugBattle {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
+    this.registerEscapeListener();
 
     const self = this;
     if (
@@ -840,7 +832,7 @@ class BugBattle {
     elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${feedbackButtonText}</span></div>`;
 
     elem.onclick = function () {
-      if (self.feedbackTypeSelection) {
+      if (self.feedbackTypeActions.length > 0) {
         BugBattle.startFeedbackTypeSelection();
       } else {
         BugBattle.startBugReporting();
@@ -866,25 +858,23 @@ class BugBattle {
     }
   }
 
-  detectEscapePress(evt) {
-    evt = evt || window.event;
-    var isEscape = false;
-    if ("key" in evt) {
-      isEscape = evt.key === "Escape" || evt.key === "Esc";
-    } else {
-      isEscape = evt.keyCode === 27;
-    }
-    if (isEscape) {
-      this.closeBugBattle();
-    }
-  }
-
   registerEscapeListener() {
-    document.onkeydown = this.detectEscapePress.bind(this);
+    const self = this;
+    document.addEventListener("keydown", (evt) => {
+      evt = evt || window.event;
+      var isEscape = false;
+      if ("key" in evt) {
+        isEscape = evt.key === "Escape" || evt.key === "Esc";
+      } else {
+        isEscape = evt.keyCode === 27;
+      }
+      if (isEscape) {
+        self.closeBugBattle();
+      }
+    });
   }
 
   closeBugBattle() {
-    document.onkeydown = null;
     this.hide();
   }
 

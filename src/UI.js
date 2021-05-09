@@ -155,9 +155,10 @@ export const applyBugbattleBaseCSS = () => {
     .bugbattle--feedback-type-icon {
       width: 44px;
       height: 44px;
-      background-color: red;
+      background-color: #398cfe;
       border-radius: 44px;
       margin-right: 20px;
+      padding: 10px;
     }
 
     .bugbattle--feedback-type-text {
@@ -165,11 +166,14 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-type-title {
-      font-weight: bold
+      font-weight: bold;
+      font-size: 16px;
     }
     
     .bugbattle--feedback-type-description {
-
+      color: #666;
+      font-size: 15px;
+      font-family: sans-serif;
     }
     
     .bugbattle--feedback-dialog-info-text {
@@ -533,6 +537,9 @@ export const setColor = (color) => {
       background-color: ${color};
     }
     .bugbattle--feedback-dialog-header-button-cancel {
+      background-color: ${color};
+    }
+    .bugbattle--feedback-type-icon {
       background-color: ${color};
     }
     `;

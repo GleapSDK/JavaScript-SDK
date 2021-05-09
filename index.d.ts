@@ -6,8 +6,19 @@ declare module "bugbattle" {
       key: string,
       activationMethod: "NONE" | "FEEDBACK_BUTTON"
     ): void;
+
+    interface FeedbackTypeOption {
+      title: string;
+      description: string;
+      icon: string;
+      action: () => void;
+    }
+
     function startBugReporting(): void;
-    function startSilentBugReporting(senderEmail: string, description: string): void;
+    function startSilentBugReporting(
+      senderEmail: string,
+      description: string
+    ): void;
     function setCustomerEmail(email: string): void;
     function attachCustomData(customData: any): void;
     function enablePrivacyPolicy(enable: boolean): void;
@@ -24,6 +35,9 @@ declare module "bugbattle" {
     function enableShortcuts(enabled: boolean): void;
     function enableReplays(enabled: boolean): void;
     function disableUserScreenshot(disableUserScreenshot: boolean): void;
+    function setFeedbackTypeOptions(
+      feedbackTypeOptions: FeedbackTypeOption[]
+    ): void;
   }
   export default BugBattle;
 }
