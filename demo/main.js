@@ -60,3 +60,7 @@ if (feedbackButton) {
     BugBattle.xxx();
   };
 }
+
+console.warn("DEMO!");
+
+console.log("HI!");

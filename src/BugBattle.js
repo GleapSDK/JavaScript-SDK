@@ -428,7 +428,7 @@ class BugBattle {
     };
   }
 
-  addLog(args, type) {
+  addLog(args, priority) {
     if (!args) {
       return;
     }
@@ -438,9 +438,9 @@ class BugBattle {
       log += args[i] + " ";
     }
     this.logArray.push({
-      log: log,
+      log,
       date: new Date(),
-      type: type,
+      priority,
     });
   }
 
@@ -459,19 +459,19 @@ class BugBattle {
 
       return {
         log: function () {
-          self.addLog(arguments, "log");
+          self.addLog(arguments, "INFO");
           origConsole.log && origConsole.log.apply(origConsole, arguments);
         },
         warn: function () {
-          self.addLog(arguments, "warns");
+          self.addLog(arguments, "WARNING");
           origConsole.warn && origConsole.warn.apply(origConsole, arguments);
         },
         error: function () {
-          self.addLog(arguments, "error");
+          self.addLog(arguments, "ERROR");
           origConsole.error && origConsole.error.apply(origConsole, arguments);
         },
         info: function (v) {
-          self.addLog(arguments, "info");
+          self.addLog(arguments, "INFO");
           origConsole.info && origConsole.info.apply(origConsole, arguments);
         },
       };
