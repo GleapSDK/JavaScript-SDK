@@ -242,8 +242,9 @@ class BugBattle {
    * @param {*} senderEmail
    * @param {*} description
    */
-  static startSilentBugReporting(senderEmail, description) {
+  static sendSilentBugReport(senderEmail, description, priority) {
     this.instance.description = description;
+    this.instance.severity = priority;
     if (senderEmail) {
       this.instance.email = senderEmail;
     }
@@ -412,7 +413,7 @@ class BugBattle {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
           )}\n`;
-          BugBattle.startSilentBugReporting(null, errorMessage);
+          BugBattle.sendSilentBugReport(null, errorMessage);
         } else {
           BugBattle.startBugReporting();
         }

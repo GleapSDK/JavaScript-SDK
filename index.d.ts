@@ -15,9 +15,10 @@ declare module "bugbattle" {
     }
 
     function startBugReporting(): void;
-    function startSilentBugReporting(
+    function sendSilentBugReport(
       senderEmail: string,
-      description: string
+      description: string,
+      priority: "LOW" | "MEDIUM" | "HIGH"
     ): void;
     function setCustomerEmail(email: string): void;
     function attachCustomData(customData: any): void;
