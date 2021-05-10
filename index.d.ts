@@ -2,6 +2,10 @@ declare module "bugbattle" {
   export namespace BugBattle {
     const NONE: "NONE";
     const FEEDBACK_BUTTON: "FEEDBACK_BUTTON";
+    const PRIORITY_LOW: "LOW";
+    const PRIORITY_MEDIUM: "MEDIUM";
+    const PRIORITY_HIGH: "HIGH";
+
     function initialize(
       key: string,
       activationMethod: "NONE" | "FEEDBACK_BUTTON"

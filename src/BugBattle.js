@@ -48,6 +48,11 @@ class BugBattle {
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
 
+  // Bug priorities
+  static PRIORITY_LOW = "LOW";
+  static PRIORITY_MEDIUM = "MEDIUM";
+  static PRIORITY_HIGH = "HIGH";
+
   // Bugbattle singleton instance
   static instance;
 
