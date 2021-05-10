@@ -14,6 +14,7 @@ import { isBlacklisted } from "./ResourceExclusionList";
 
 export default class ReplayRecorder {
   constructor() {
+    this.stopped = false;
     this.startDate = Date.now();
     this.node = document.documentElement;
     this.nextID = 1;
@@ -239,6 +240,7 @@ export default class ReplayRecorder {
   }
 
   stop(fetchResources = false) {
+    this.stopped = true;
     if (!this.rootFrame) {
       this.clearFakeFocus();
       this.rootFrame = null;

@@ -254,6 +254,7 @@ class BugBattle {
    * Starts the feedback type selection flow.
    */
   static startFeedbackTypeSelection() {
+    this.instance.stopBugReportingAnalytics();
     this.instance.createFeedbackTypeDialog();
   }
 
@@ -344,6 +345,13 @@ class BugBattle {
     self.hookDialogCloseButton();
   }
 
+  stopBugReportingAnalytics() {
+    this.networkIntercepter.setStopped(true);
+    if (this.replay && !this.replay.stopped) {
+      this.replay.stop(true);
+    }
+  }
+
   /**
    * Starts the bug reporting flow.
    */
@@ -355,10 +363,7 @@ class BugBattle {
     this.instance.currentlySendingBug = true;
     this.instance.silentBugReport = silentBugReport;
 
-    this.instance.networkIntercepter.setStopped(true);
-    if (this.instance.replay) {
-      this.instance.replay.stop(true);
-    }
+    this.instance.stopBugReportingAnalytics();
 
     if (!this.instance.silentBugReport) {
       this.instance.disableScroll();
