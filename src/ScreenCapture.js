@@ -1,4 +1,5 @@
 import { isMobile, resizeImage } from "./ImageHelper";
+import { isBlacklisted } from "./ResourceExclusionList";
 
 export const startScreenCapture = (snapshotPosition) => {
   return checkOnlineStatus(window.location.origin)
@@ -118,6 +119,10 @@ const fetchLinkItemResource = (elem, proxy = false) => {
       elem.href.includes(".css") ||
       (elem.rel && elem.rel.includes("stylesheet"));
     if (elem && elem.href && isCSS) {
+      if (isBlacklisted(elem.href)) {
+        return resolve();
+      }
+
       var basePath = elem.href.substring(0, elem.href.lastIndexOf("/"));
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
@@ -227,6 +232,10 @@ const progressResource = (data, elem, resolve, reject) => {
 const fetchItemResource = (elem, proxy = false) => {
   return new Promise((resolve, reject) => {
     if (elem && elem.src) {
+      if (isBlacklisted(elem.src)) {
+        return resolve();
+      }
+
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
         if (proxy) {

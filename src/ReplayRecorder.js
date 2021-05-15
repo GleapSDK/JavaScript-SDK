@@ -242,7 +242,6 @@ export default class ReplayRecorder {
   stop(fetchResources = false) {
     this.stopped = true;
     if (!this.rootFrame) {
-      this.clearFakeFocus();
       this.rootFrame = null;
       return;
     }
@@ -260,12 +259,12 @@ export default class ReplayRecorder {
     };
 
     this.rootFrame.stop();
-    this.clearFakeFocus();
     this.rootFrame = null;
 
     this.finalizingResult = true;
     if (fetchResources) {
       return this.fetchImageResources().then(() => {
+        this.cleanupResources();
         this.result = ret;
         this.finalizingResult = false;
       });
@@ -275,19 +274,11 @@ export default class ReplayRecorder {
     }
   }
 
-  clearFakeFocus() {
-    if (!this.focusedElement) {
-      return;
-    }
-    this.focusedElement.removeAttribute("fakeFocus");
-    let ancestor = this.focusedElement;
-    while (ancestor) {
-      ancestor.removeAttribute("fakeFocusWithin");
-      const nextAncestor = ancestor.parentElement;
-      if (!nextAncestor) {
-        ancestor = ancestor.ownerDocument.ReplayRecInner.iframeElement;
-      } else {
-        ancestor = nextAncestor;
+  cleanupResources() {
+    let resourceKeys = Object.keys(this.resourcesToResolve);
+    for (var i = 0; i < resourceKeys.length; i++) {
+      if (this.resourcesToResolve[resourceKeys[i]] === "--") {
+        delete this.resourcesToResolve[resourceKeys[i]];
       }
     }
   }
@@ -311,11 +302,8 @@ export default class ReplayRecorder {
     if (e === this.focusedElement) {
       return;
     }
-    this.clearFakeFocus();
-    e.setAttribute("fakeFocus", "");
     let ancestor = e;
     while (ancestor) {
-      ancestor.setAttribute("fakeFocusWithin", "");
       const nextAncestor = ancestor.parentElement;
       if (!nextAncestor) {
         ancestor.ownerDocument.ReplayRecInner.flushObserver();
@@ -508,7 +496,6 @@ export default class ReplayRecorder {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     observer
   ) {
-    // Observer callbacks can nest when we flush while detaching from an IFRAME
     if (this.nestedObserverCallbacks === 0) {
       const now = Date.now();
       if (now > this.lastActionTime) {
@@ -520,10 +507,6 @@ export default class ReplayRecorder {
     ++this.nestedObserverCallbacks;
 
     try {
-      // A node has a ReplayRecID if and only if it was in the non-excluded DOM at the start of the records
-      // batch.
-      // If a node has a ReplayRecID and is not our root, then its parent must also
-      // have a ReplayRecID.
       for (const r of records) {
         if (r.target.ReplayRecID && r.type === "childList") {
           for (const child of r.removedNodes) {
@@ -538,16 +521,12 @@ export default class ReplayRecorder {
           }
         }
       }
-      // A node has a ReplayRecID if and only if it was in the non-excluded DOM at the start of the records
-      // batch, and was not ever removed during this records batch.
-      // If a node has a ReplayRecID and is not our root, then its parent must also
-      // have a ReplayRecID.
+      
       const nodesWithAddedChildren = [];
       for (const r of records) {
         const target = r.target;
         const id = target.ReplayRecID;
         if (!id) {
-          // Node not in non-excluded DOM at the start of the records batch.
           continue;
         }
         // eslint-disable-next-line default-case
@@ -616,10 +595,6 @@ export default class ReplayRecorder {
     }
     --this.nestedObserverCallbacks;
     if (this.nestedObserverCallbacks === 0) {
-      // Ignore time spent doing ReplayRec recording.
-      // Note that during this processing, the browser might be downloading stuff or
-      // doing other off-main-thread work, so this could give an optimistic picture
-      // of actual performance. Doesn't really matter.
       this.lastActionTime = Date.now();
     }
   }

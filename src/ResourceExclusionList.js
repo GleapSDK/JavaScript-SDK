@@ -1,9 +1,10 @@
 const blacklist = [
-  "https://fonts.googleapis.com",
-  "https://cdn.jsdelivr.net",
-  "https://cdnjs.cloudflare.com",
-  "https://ajax.googleapis.com",
-  "https://use.typekit.net",
+  "//fonts.googleapis.com",
+  "//cdn.jsdelivr.net",
+  "//cdnjs.cloudflare.com",
+  "//ajax.googleapis.com",
+  "//use.typekit.net",
+  ".amazonaws.com",
 ];
 
 export const isBlacklisted = function (url) {
