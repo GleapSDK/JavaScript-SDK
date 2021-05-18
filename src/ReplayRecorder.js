@@ -31,7 +31,7 @@ export default class ReplayRecorder {
   }
 
   isFull() {
-    if (this.actions && this.actions.length > 5000) {
+    if (this.actions && this.actions.length > 7000) {
       return true;
     }
     return false;
