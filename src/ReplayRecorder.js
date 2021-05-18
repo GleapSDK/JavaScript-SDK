@@ -31,7 +31,7 @@ export default class ReplayRecorder {
   }
 
   isFull() {
-    if (this.actions && this.actions.length > 10000) {
+    if (this.actions && this.actions.length > 5000) {
       return true;
     }
     return false;
@@ -521,7 +521,7 @@ export default class ReplayRecorder {
           }
         }
       }
-      
+
       const nodesWithAddedChildren = [];
       for (const r of records) {
         const target = r.target;
@@ -554,7 +554,9 @@ export default class ReplayRecorder {
           }
           case "characterData": {
             const a = {};
-            a[REPLAYREC_TEXT] = [id, target.data];
+            if (target.nodeType === Node.TEXT_NODE) {
+              a[REPLAYREC_TEXT] = [id, target.data];
+            }
             this.actions.push(a);
             break;
           }
