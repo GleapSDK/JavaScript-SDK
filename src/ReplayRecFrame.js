@@ -111,7 +111,9 @@ export default class ReplayRecFrame {
       }
     };
 
-    this.focusListener = () => this.rec.evaluateFocus();
+    this.focusListener = () => {
+      // this.rec.evaluateFocus()
+    };
 
     node.ownerDocument.ReplayRecInner = this;
 

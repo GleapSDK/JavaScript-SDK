@@ -281,6 +281,10 @@ export default class ReplayRecorder {
     }
   }
 
+  evaluateFocus() {
+    this.rootFrame.flushObserver();
+  }
+
   allowAttribute(e, name) {
     // eslint-disable-next-line default-case
     switch (name) {
