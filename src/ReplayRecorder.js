@@ -340,7 +340,11 @@ export default class ReplayRecorder {
           case "INPUT":
           case "TEXTAREA": {
             const a = {};
-            a[REPLAYREC_INPUT] = [id, node.value];
+            var val = node.value;
+            if (node.type && node.type === "password" && val && val.length) {
+              val = new Array(val.length + 1).join("*");
+            }
+            a[REPLAYREC_INPUT] = [id, val];
             actions.push(a);
             const listener = node.ownerDocument.ReplayRecInner.scrollListener;
             node.addEventListener("scroll", listener, { passive: true });
