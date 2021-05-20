@@ -21,11 +21,9 @@ export default class ReplayRecorder {
     this.actions = [];
     this.lastActionTime = Date.now();
     this.nestedObserverCallbacks = 0;
-    this.focusedElement = null;
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
-    this.evaluateFocus();
     this.result = null;
     this.finalizingResult = false;
   }
@@ -281,40 +279,6 @@ export default class ReplayRecorder {
         delete this.resourcesToResolve[resourceKeys[i]];
       }
     }
-  }
-
-  evaluateFocus() {
-    let frame = this.rootFrame;
-    let e;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      e = frame.win.document.activeElement;
-      if (!frame.node.contains(e)) {
-        e = null;
-        break;
-      }
-      if (e.tagName === "IFRAME") {
-        frame = e.contentDocument.ReplayRecInner;
-      } else {
-        break;
-      }
-    }
-    if (e === this.focusedElement) {
-      return;
-    }
-    let ancestor = e;
-    while (ancestor) {
-      const nextAncestor = ancestor.parentElement;
-      if (!nextAncestor) {
-        ancestor.ownerDocument.ReplayRecInner.flushObserver();
-        ancestor = ancestor.ownerDocument.ReplayRecInner.iframeElement;
-      } else {
-        ancestor = nextAncestor;
-      }
-    }
-    // Flush observer so that during startup we have the right set of actions
-    this.rootFrame.flushObserver();
-    this.focusedElement = e;
   }
 
   allowAttribute(e, name) {

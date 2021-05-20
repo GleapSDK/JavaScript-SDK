@@ -4,12 +4,15 @@ import es from "./i18n/es.json";
 import fr from "./i18n/fr.json";
 import it from "./i18n/it.json";
 import nl from "./i18n/nl.json";
+import cz from "./i18n/cz.json";
 
 export const translateText = (key, overrideLanguage) => {
   let language = navigator.language;
   if (overrideLanguage !== "") {
     language = overrideLanguage;
   }
+
+  console.log(language);
 
   let languagePack = en;
   if (/^de\b/.test(language)) {
@@ -29,6 +32,9 @@ export const translateText = (key, overrideLanguage) => {
   }
   if (/^nl\b/.test(language)) {
     languagePack = nl;
+  }
+  if (/^cs\b/.test(language)) {
+    languagePack = cz;
   }
 
   return languagePack[key];

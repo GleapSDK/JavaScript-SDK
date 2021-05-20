@@ -1,0 +1,16 @@
+{
+  "feedback_btn_title": "Feedback",
+  "click_and_drag": "Kliknutím nebo přetažením komentujete",
+  "report_bug_title": "Odeslat zpětnou vazbu",
+  "your_email": "Váš e-mail",
+  "email_placeholder": "E-mail",
+  "what_went_wrong": "Co se stalo?",
+  "what_went_wrong_subtitle": "Popište svůj problém",
+  "send_feedback": "Odeslat zpětnou vazbu",
+  "send_success": "Děkujeme za zpětnou vazbu!",
+  "apikey_wrong": "BUGBATTLE: Uveďte platný klíč API!",
+  "provide_email": "Uveďte prosím e-mailovou adresu.",
+  "accept_policy_alert": "Přečtěte si a přijměte zásady ochrany osobních údajů.",
+  "accept_policy_text": "Přečetl (a) jsem si ",
+  "privacy_policy": "zásady ochrany osobních údajů"
+}
