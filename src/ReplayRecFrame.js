@@ -81,8 +81,12 @@ export default class ReplayRecFrame {
 
       const id = this.prepEvent(event);
       if (id && "value" in event.target) {
+        var val = event.target.value;
+        if (event.target.type === "password" && val && val.length) {
+          val = new Array(val.length + 1).join("*");
+        }
         this.rec.actions.push({
-          [REPLAYREC_INPUT]: [id, event.target.value],
+          [REPLAYREC_INPUT]: [id, val],
         });
       }
     };

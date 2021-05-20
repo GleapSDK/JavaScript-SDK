@@ -24,6 +24,7 @@ export default class ReplayRecorder {
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
+    this.evaluateFocus();
     this.result = null;
     this.finalizingResult = false;
   }

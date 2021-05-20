@@ -11,9 +11,7 @@ export const translateText = (key, overrideLanguage) => {
   if (overrideLanguage !== "") {
     language = overrideLanguage;
   }
-
-  console.log(language);
-
+  
   let languagePack = en;
   if (/^de\b/.test(language)) {
     languagePack = de;
