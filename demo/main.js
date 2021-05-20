@@ -1,10 +1,5 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.initialize(
-  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
-  BugBattle.FEEDBACK_BUTTON
-);
-
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
@@ -24,6 +19,8 @@ BugBattle.setFeedbackTypeOptions([
     },
   },
 ]);
+
+BugBattle.setAppBuildNumber("2345");
 
 BugBattle.enableReplays(true);
 
@@ -49,7 +46,8 @@ BugBattle.attachCustomData({
 BugBattle.enableShortcuts(true);
 
 // Turn the privacy policy check on or off.
-BugBattle.enablePrivacyPolicy(false);
+BugBattle.enablePrivacyPolicy(true);
+BugBattle.setPrivacyPolicyUrl("htpp...");
 
 // Sets weather to enable or disable the user screenshot step within the bug reporting flow.
 BugBattle.disableUserScreenshot(false);
@@ -62,5 +60,18 @@ if (feedbackButton) {
 }
 
 console.warn("DEMO!");
-
 console.log("HI!");
+
+var xhttp = new XMLHttpRequest();
+xhttp.onreadystatechange = function () {
+  if (this.readyState == 4 && this.status == 200) {
+    document.getElementById("demo").innerHTML = this.responseText;
+  }
+};
+xhttp.open("GET", "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52", true);
+xhttp.send();
+
+BugBattle.initialize(
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
+  BugBattle.FEEDBACK_BUTTON
+);

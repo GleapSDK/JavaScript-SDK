@@ -29,6 +29,7 @@ class BugBattle {
   shortcutsEnabled = true;
   privacyPolicyCheckEnabled = false;
   silentBugReport = false;
+  initialized = false;
   originalConsoleLog;
   description = "";
   severity = "LOW";
@@ -53,8 +54,16 @@ class BugBattle {
   static PRIORITY_MEDIUM = "MEDIUM";
   static PRIORITY_HIGH = "HIGH";
 
-  // Bugbattle singleton instance
+  // BugBattle singleton
   static instance;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new BugBattle();
+      return this.instance;
+    } else {
+      return this.instance;
+    }
+  }
 
   /**
    * Initializes the SDK
@@ -62,10 +71,27 @@ class BugBattle {
    * @param {*} activation
    */
   static initialize(sdkKey, activation) {
-    if (!this.instance) {
-      this.instance = new BugBattle(sdkKey, activation);
-    } else {
+    const instance = this.getInstance();
+
+    if (instance.initialized) {
       console.warn("Bugbattle already initialized.");
+      return;
+    }
+
+    instance.initialized = true;
+    instance.sdkKey = sdkKey;
+    instance.activation = activation;
+
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
+    ) {
+      instance.checkForInitType();
+    } else {
+      document.addEventListener("DOMContentLoaded", function (event) {
+        instance.checkForInitType();
+      });
     }
   }
 
@@ -81,17 +107,19 @@ class BugBattle {
   }
 
   static enableReplays(enabled) {
-    this.instance.replaysEnabled = enabled;
+    const instance = this.getInstance();
+
+    instance.replaysEnabled = enabled;
     if (enabled) {
-      if (this.instance.replay) {
-        this.instance.replay.stop();
-        this.instance.replay = null;
+      if (instance.replay) {
+        instance.replay.stop();
+        instance.replay = null;
       }
-      this.instance.replay = new ReplayRecorder();
+      instance.replay = new ReplayRecorder();
     } else {
-      if (this.instance.replay) {
-        this.instance.replay.stop();
-        this.instance.replay = null;
+      if (instance.replay) {
+        instance.replay.stop();
+        instance.replay = null;
       }
     }
   }
@@ -101,7 +129,7 @@ class BugBattle {
    * @param {boolean} disableUserScreenshot
    */
   static disableUserScreenshot(disableUserScreenshot) {
-    this.instance.disableUserScreenshot = disableUserScreenshot;
+    this.getInstance().disableUserScreenshot = disableUserScreenshot;
   }
 
   /**
@@ -109,7 +137,7 @@ class BugBattle {
    * @param {boolean} enabled
    */
   static enableShortcuts(enabled) {
-    this.instance.shortcutsEnabled = enabled;
+    this.getInstance().shortcutsEnabled = enabled;
   }
 
   /**
@@ -117,7 +145,7 @@ class BugBattle {
    * @param {boolean} hide
    */
   static enablePoweredByBugbattle(enabled) {
-    this.instance.poweredByHidden = !enabled;
+    this.getInstance().poweredByHidden = !enabled;
   }
 
   /**
@@ -125,14 +153,14 @@ class BugBattle {
    * @param {string} overrideButtonText
    */
   static setFeedbackButtonText(overrideButtonText) {
-    this.instance.overrideButtonText = overrideButtonText;
+    this.getInstance().overrideButtonText = overrideButtonText;
   }
 
   /**
    * Enables the network logger.
    */
   static enableNetworkLogger() {
-    this.instance.networkIntercepter.start();
+    this.getInstance().networkIntercepter.start();
   }
 
   /**
@@ -140,7 +168,7 @@ class BugBattle {
    * @param {string} logoUrl
    */
   static setLogoUrl(logoUrl) {
-    this.instance.customLogoUrl = logoUrl;
+    this.getInstance().customLogoUrl = logoUrl;
   }
 
   /**
@@ -148,7 +176,7 @@ class BugBattle {
    * @param {boolean} enabled
    */
   static enablePrivacyPolicy(enabled) {
-    this.instance.privacyPolicyCheckEnabled = enabled;
+    this.getInstance().privacyPolicyCheckEnabled = enabled;
   }
 
   /**
@@ -156,7 +184,7 @@ class BugBattle {
    * @param {string} privacyPolicyUrl
    */
   static setPrivacyPolicyUrl(privacyPolicyUrl) {
-    this.instance.privacyPolicyUrl = privacyPolicyUrl;
+    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
   }
 
   /**
@@ -164,7 +192,7 @@ class BugBattle {
    * @param {string} email
    */
   static setCustomerEmail(email) {
-    this.instance.email = email;
+    this.getInstance().email = email;
   }
 
   /**
@@ -172,7 +200,7 @@ class BugBattle {
    * @param {string} appVersionCode
    */
   static setAppVersionCode(appVersionCode) {
-    this.instance.appVersionCode = appVersionCode;
+    this.getInstance().appVersionCode = appVersionCode;
   }
 
   /**
@@ -180,7 +208,7 @@ class BugBattle {
    * @param {string} appVersionCode
    */
   static setAppBuildNumber(appBuildNumber) {
-    this.instance.appBuildNumber = appBuildNumber;
+    this.getInstance().appBuildNumber = appBuildNumber;
   }
 
   /**
@@ -188,7 +216,7 @@ class BugBattle {
    * @param {string} apiUrl
    */
   static setApiUrl(apiUrl) {
-    this.instance.apiUrl = apiUrl;
+    this.getInstance().apiUrl = apiUrl;
   }
 
   /**
@@ -196,7 +224,7 @@ class BugBattle {
    * @param {*} data
    */
   static attachCustomData(data) {
-    this.instance.customData = data;
+    this.getInstance().customData = data;
   }
 
   /**
@@ -209,7 +237,7 @@ class BugBattle {
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
-    this.instance.overrideLanguage = language;
+    this.getInstance().overrideLanguage = language;
   }
 
   /**
@@ -218,8 +246,9 @@ class BugBattle {
    * @param {*} silent
    */
   static enableCrashDetector(enabled, silent = false) {
-    this.instance.enabledCrashDetector = enabled;
-    this.instance.enabledCrashDetectorSilent = silent;
+    const instance = this.getInstance();
+    instance.enabledCrashDetector = enabled;
+    instance.enabledCrashDetectorSilent = silent;
   }
 
   /**
@@ -227,7 +256,7 @@ class BugBattle {
    * @param {string} color
    */
   static setMainColor(color) {
-    this.instance.mainColor = color;
+    this.getInstance().mainColor = color;
 
     if (
       document.readyState === "complete" ||
@@ -248,10 +277,12 @@ class BugBattle {
    * @param {*} description
    */
   static sendSilentBugReport(senderEmail, description, priority) {
-    this.instance.description = description;
-    this.instance.severity = priority;
+    const instance = this.getInstance();
+
+    instance.description = description;
+    instance.severity = priority;
     if (senderEmail) {
-      this.instance.email = senderEmail;
+      instance.email = senderEmail;
     }
     this.startBugReporting(true);
   }
@@ -260,15 +291,16 @@ class BugBattle {
    * Starts the feedback type selection flow.
    */
   static startFeedbackTypeSelection() {
-    this.instance.stopBugReportingAnalytics();
-    this.instance.createFeedbackTypeDialog();
+    const instance = this.getInstance();
+    instance.stopBugReportingAnalytics();
+    instance.createFeedbackTypeDialog();
   }
 
   /**
    * Adds a feedback type option.
    */
   static setFeedbackTypeOptions(feedbackTypeOptions) {
-    this.instance.feedbackTypeActions = feedbackTypeOptions;
+    this.getInstance().feedbackTypeActions = feedbackTypeOptions;
   }
 
   /**
@@ -337,14 +369,13 @@ class BugBattle {
     // Hook actions
     for (var i = 0; i < self.feedbackTypeActions.length; i++) {
       const index = i;
-      document.getElementById(
-        `bugbattle--feedback-type-${index}`
-      ).onclick = function () {
-        elem.remove();
-        if (self.feedbackTypeActions[index].action) {
-          self.feedbackTypeActions[index].action();
-        }
-      };
+      document.getElementById(`bugbattle--feedback-type-${index}`).onclick =
+        function () {
+          elem.remove();
+          if (self.feedbackTypeActions[index].action) {
+            self.feedbackTypeActions[index].action();
+          }
+        };
     }
 
     self.validatePoweredBy();
@@ -362,17 +393,18 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting(silentBugReport = false) {
-    if (this.instance.currentlySendingBug) {
+    const instance = this.getInstance();
+    if (instance.currentlySendingBug) {
       return;
     }
 
-    this.instance.currentlySendingBug = true;
-    this.instance.silentBugReport = silentBugReport;
+    instance.currentlySendingBug = true;
+    instance.silentBugReport = silentBugReport;
 
-    this.instance.stopBugReportingAnalytics();
+    instance.stopBugReportingAnalytics();
 
-    if (!this.instance.silentBugReport) {
-      this.instance.disableScroll();
+    if (!instance.silentBugReport) {
+      instance.disableScroll();
       const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
       if (feedbackBtn) {
         feedbackBtn.style.display = "none";
@@ -380,18 +412,18 @@ class BugBattle {
     }
 
     // Set snapshot position
-    this.instance.snapshotPosition = {
+    instance.snapshotPosition = {
       x: window.scrollX,
       y: window.scrollY,
     };
 
-    if (this.instance.silentBugReport) {
-      this.instance.checkReplayLoaded();
+    if (instance.silentBugReport) {
+      instance.checkReplayLoaded();
     } else {
-      if (this.instance.disableUserScreenshot) {
-        this.instance.createBugReportingDialog();
+      if (instance.disableUserScreenshot) {
+        instance.createBugReportingDialog();
       } else {
-        this.instance.showBugReportEditor();
+        instance.showBugReportEditor();
       }
     }
   }
@@ -445,7 +477,7 @@ class BugBattle {
   }
 
   static disableConsoleLogOverwrite() {
-    window.console = this.instance.originalConsoleLog;
+    window.console = this.getInstance().originalConsoleLog;
   }
 
   overwriteConsoleLog() {
@@ -630,9 +662,8 @@ class BugBattle {
     );
     if (this.privacyPolicyCheckEnabled) {
       privacyPolicyContainer.style.display = "flex";
-      document.querySelector(
-        "#bugbattle-privacy-policy-link"
-      ).href = this.privacyPolicyUrl;
+      document.querySelector("#bugbattle-privacy-policy-link").href =
+        this.privacyPolicyUrl;
     } else {
       privacyPolicyContainer.style.display = "none";
     }
@@ -769,19 +800,6 @@ class BugBattle {
     this.startCrashDetection();
     this.registerKeyboardListener();
     this.registerEscapeListener();
-
-    const self = this;
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
-      self.checkForInitType();
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
-        self.checkForInitType();
-      });
-    }
   }
 
   registerKeyboardListener() {
