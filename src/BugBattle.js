@@ -9,7 +9,7 @@ class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
   privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
-  email = localStorage.getItem("bugbattle-sender-email") ?? "";
+  email = "";
   activation = "";
   overrideLanguage = "";
   overrideButtonText = undefined;
@@ -59,6 +59,11 @@ class BugBattle {
   static getInstance() {
     if (!this.instance) {
       this.instance = new BugBattle();
+
+      try {
+        this.instance.email = localStorage.getItem("bugbattle-sender-email");
+      } catch (exp) {} 
+
       return this.instance;
     } else {
       return this.instance;

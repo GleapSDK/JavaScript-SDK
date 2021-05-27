@@ -20,7 +20,6 @@ export default class ReplayRecorder {
     this.nextID = 1;
     this.actions = [];
     this.lastActionTime = Date.now();
-    this.nestedObserverCallbacks = 0;
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
@@ -469,15 +468,13 @@ export default class ReplayRecorder {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     observer
   ) {
-    if (this.nestedObserverCallbacks === 0) {
-      const now = Date.now();
-      if (now > this.lastActionTime) {
-        const a = {};
-        a[REPLAYREC_DELAY] = now - this.lastActionTime;
-        this.actions.push(a);
-      }
+    const now = Date.now();
+    if (now > this.lastActionTime) {
+      const a = {};
+      a[REPLAYREC_DELAY] = now - this.lastActionTime;
+      this.actions.push(a);
     }
-    ++this.nestedObserverCallbacks;
+    this.lastActionTime = Date.now();
 
     try {
       for (const r of records) {
@@ -564,13 +561,7 @@ export default class ReplayRecorder {
         }
       }
     } catch (ex) {
-      --this.nestedObserverCallbacks;
-      // eslint-disable-next-line no-console
       throw ex;
-    }
-    --this.nestedObserverCallbacks;
-    if (this.nestedObserverCallbacks === 0) {
-      this.lastActionTime = Date.now();
     }
   }
 }
