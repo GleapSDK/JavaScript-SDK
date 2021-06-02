@@ -1,42 +1,8 @@
 import { isMobile, resizeImage } from "./ImageHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
 
-export const startScreenCapture = (snapshotPosition) => {
-  return checkOnlineStatus(window.location.origin)
-    .then((status) => {
-      if (status && status.up) {
-        return prepareScreenshotData(snapshotPosition, true);
-      } else {
-        return prepareScreenshotData(snapshotPosition, false);
-      }
-    })
-    .catch((err) => {
-      return prepareScreenshotData(snapshotPosition, false);
-    });
-};
-
-const checkOnlineStatus = (url) => {
-  return new Promise((resolve, reject) => {
-    var xhr = new XMLHttpRequest();
-    xhr.onreadystatechange = function () {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        const status = JSON.parse(xhr.responseText);
-        resolve(status);
-      }
-    };
-    xhr.ontimeout = function () {
-      reject();
-    };
-    xhr.onerror = function () {
-      reject();
-    };
-    xhr.open(
-      "GET",
-      "https://uptime.bugbattle.io/?url=" + encodeURIComponent(url),
-      true
-    );
-    xhr.send();
-  });
+export const startScreenCapture = (snapshotPosition, isLiveSite) => {
+  return prepareScreenshotData(snapshotPosition, isLiveSite);
 };
 
 const documentToHTML = (clone) => {
@@ -354,6 +320,12 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       elem.setAttribute("bb-height", height);
     }
 
+    // Prepare canvas
+    const canvasElems = window.document.querySelectorAll("canvas");
+    for (var i = 0; i < canvasElems.length; ++i) {
+      canvasElems[i].setAttribute("bb-canvas-data", canvasElems[i].toDataURL());
+    }
+
     const divElems = window.document.querySelectorAll("div");
     for (var i = 0; i < divElems.length; ++i) {
       const elem = divElems[i];
@@ -391,6 +363,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       const elem = allElems[i];
       elem.setAttribute("bb-element", null);
       elem.setAttribute("bb-height", null);
+      elem.setAttribute("bb-canvas-data", null);
     }
 
     // Remove all scripts

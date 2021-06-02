@@ -9,8 +9,8 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
       rel="stylesheet"
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
   </head>
 
   <body>
@@ -31,7 +31,15 @@
         comprehensive in-app bug reporting. BugBattle offers affordable In-App
         Bug Reporting for Apps, WebApps & Websites.</span
       >
-      <iframe width="560" height="315" src="https://www.youtube.com/embed/ak6LFoHPO6k" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      <iframe
+        width="560"
+        height="315"
+        src="https://www.youtube.com/embed/ak6LFoHPO6k"
+        title="YouTube video player"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+      ></iframe>
       <br /><br />
       <span
         >No more wasting time trying to reproduce a bug. Bugbattle reports
@@ -53,6 +61,16 @@
       <input type="password" placeholder="Secure" />
       <br />
       <a class="buttonlink" href="https://www.bugbattle.io/">Get started</a>
+    </div>
+    <div>
+      <canvas id="myCanvas" width="200" height="100"></canvas>
+      <script>
+        var c = document.getElementById("myCanvas");
+        var ctx = c.getContext("2d");
+        ctx.beginPath();
+        ctx.arc(95, 50, 40, 0, 2 * Math.PI);
+        ctx.stroke();
+      </script>
     </div>
     <!-- index.js as found in build/index.js -->
     <script src="index.js"></script>

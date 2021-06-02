@@ -24,6 +24,7 @@ class BugBattle {
   enabledCrashDetectorSilent = false;
   crashedWaitingForReload = false;
   currentlySendingBug = false;
+  isLiveSite = false;
   replaysEnabled = false;
   customLogoUrl = null;
   shortcutsEnabled = true;
@@ -62,7 +63,7 @@ class BugBattle {
 
       try {
         this.instance.email = localStorage.getItem("bugbattle-sender-email");
-      } catch (exp) {} 
+      } catch (exp) {}
 
       return this.instance;
     } else {
@@ -102,12 +103,8 @@ class BugBattle {
 
   /**
    * Main constructor
-   * @param {*} sdkKey
-   * @param {*} activation
    */
-  constructor(sdkKey, activation) {
-    this.sdkKey = sdkKey;
-    this.activation = activation;
+  constructor() {
     this.init();
   }
 
@@ -390,7 +387,7 @@ class BugBattle {
   stopBugReportingAnalytics() {
     this.networkIntercepter.setStopped(true);
     if (this.replay && !this.replay.stopped) {
-      this.replay.stop(true);
+      this.replay.stop(!this.isLiveSite);
     }
   }
 
@@ -431,6 +428,30 @@ class BugBattle {
         instance.showBugReportEditor();
       }
     }
+  }
+
+  checkOnlineStatus(url) {
+    return new Promise((resolve, reject) => {
+      var xhr = new XMLHttpRequest();
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          const status = JSON.parse(xhr.responseText);
+          resolve(status);
+        }
+      };
+      xhr.ontimeout = function () {
+        reject();
+      };
+      xhr.onerror = function () {
+        reject();
+      };
+      xhr.open(
+        "GET",
+        "https://uptime.bugbattle.io/?url=" + encodeURIComponent(url),
+        true
+      );
+      xhr.send();
+    });
   }
 
   startCrashDetection() {
@@ -761,7 +782,7 @@ class BugBattle {
   }
 
   takeScreenshotAndSend() {
-    return startScreenCapture(this.snapshotPosition)
+    return startScreenCapture(this.snapshotPosition, this.isLiveSite)
       .then((data) => {
         this.sendBugReportToServer(data);
       })
@@ -801,10 +822,26 @@ class BugBattle {
   }
 
   init() {
+    const self = this;
+
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
     this.registerEscapeListener();
+
+    if (window && window.location && window.location.origin) {
+      this.checkOnlineStatus(window.location.origin)
+        .then(function(status) {
+          if (status && status.up) {
+            self.isLiveSite = true;
+          } else {
+            self.isLiveSite = false;
+          }
+        })
+        .catch(function() {
+          self.isLiveSite = false;
+        });
+    }
   }
 
   registerKeyboardListener() {

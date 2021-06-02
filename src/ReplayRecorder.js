@@ -244,7 +244,7 @@ export default class ReplayRecorder {
       return;
     }
 
-    const ret = {
+    const replayResult = {
       startDate: this.startDate,
       initialState: this.rootFrame.initialState,
       initialActions: this.rootFrame.initialActions,
@@ -262,14 +262,17 @@ export default class ReplayRecorder {
     this.finalizingResult = true;
     if (fetchResources) {
       return this.fetchImageResources().then(() => {
-        this.cleanupResources();
-        this.result = ret;
-        this.finalizingResult = false;
+        this.cleanupAfterStop(replayResult);
       });
     } else {
-      this.result = ret;
-      this.finalizingResult = false;
+      this.cleanupAfterStop(replayResult);
     }
+  }
+
+  cleanupAfterStop(replayResult) {
+    this.cleanupResources();
+    this.result = replayResult;
+    this.finalizingResult = false;
   }
 
   cleanupResources() {
