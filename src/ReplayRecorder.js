@@ -139,6 +139,9 @@ export default class ReplayRecorder {
             }
 
             return this.fetchCSSResource(resourcePath).then((resourceData) => {
+              if (matchedUrl.indexOf("data:text/html") === 0) {
+                return resolve(matchedData);
+              }
               return resolve("url(" + resourceData + ")");
             });
           } catch (exp) {
