@@ -64,6 +64,8 @@ if (feedbackButton) {
   };
 }
 
+BugBattle.setCustomerEmail("luxkas@bugbattle.io");
+
 console.warn("DEMO!");
 console.log("HI!");
 
