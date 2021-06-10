@@ -289,7 +289,7 @@ const getStyleSheetContentForStyle = (styleElement) => {
               cssTextContent += cssRules[cssRuleItem].cssText;
             }
           }
-          styleSheet.ownerNode.setAttribute("bb-styleid", null);
+          styleSheet.ownerNode.removeAttribute("bb-styleid");
           return cssTextContent;
         }
       }
@@ -305,13 +305,13 @@ const downloadAllCSSUrlResources = (clone) => {
   const styleTags = clone.querySelectorAll("style");
   for (const style of styleTags) {
     if (style) {
-      debugger;
       const stylesheetContent = getStyleSheetContentForStyle(style);
       const basePath = style.getAttribute("bb-basepath");
       promises.push(
         loadCSSUrlResources(stylesheetContent, basePath).then(
           (replacedStyle) => {
-            return (style.innerHTML = replacedStyle);
+            style.innerHTML = replacedStyle;
+            return;
           }
         )
       );
@@ -407,9 +407,9 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     const allElems = window.document.querySelectorAll("*");
     for (var i = 0; i < allElems.length; ++i) {
       const elem = allElems[i];
-      elem.setAttribute("bb-element", null);
-      elem.setAttribute("bb-height", null);
-      elem.setAttribute("bb-canvas-data", null);
+      elem.removeAttribute("bb-element");
+      elem.removeAttribute("bb-height");
+      elem.removeAttribute("bb-canvas-data");
     }
 
     // Remove all scripts
