@@ -262,17 +262,58 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
+const getStyleSheetContentForStyle = (styleElement) => {
+  const styleSheets = document.styleSheets;
+  if (styleSheets) {
+    for (var i = 0; i < styleSheets.length; i++) {
+      const styleSheet = styleSheets[i];
+      if (
+        styleSheet &&
+        styleElement &&
+        styleSheet.ownerNode &&
+        styleElement.getAttribute("bb-styleid") &&
+        styleSheet.ownerNode.getAttribute("bb-styleid") &&
+        styleElement.getAttribute("bb-styleid") ===
+          styleSheet.ownerNode.getAttribute("bb-styleid")
+      ) {
+        var cssRules = null;
+        if (styleSheet.cssRules) {
+          cssRules = styleSheet.cssRules;
+        } else if (styleSheet.rules) {
+          cssRules = styleSheet.rules;
+        }
+        if (cssRules) {
+          var cssTextContent = "";
+          for (var cssRuleItem in cssRules) {
+            if (cssRules[cssRuleItem].cssText) {
+              cssTextContent += cssRules[cssRuleItem].cssText;
+            }
+          }
+          styleSheet.ownerNode.setAttribute("bb-styleid", null);
+          return cssTextContent;
+        }
+      }
+    }
+  }
+
+  return styleElement.innerHTML;
+};
+
 const downloadAllCSSUrlResources = (clone) => {
   var promises = [];
 
   const styleTags = clone.querySelectorAll("style");
   for (const style of styleTags) {
     if (style) {
+      debugger;
+      const stylesheetContent = getStyleSheetContentForStyle(style);
       const basePath = style.getAttribute("bb-basepath");
       promises.push(
-        loadCSSUrlResources(style.innerHTML, basePath).then((replacedStyle) => {
-          return (style.innerHTML = replacedStyle);
-        })
+        loadCSSUrlResources(stylesheetContent, basePath).then(
+          (replacedStyle) => {
+            return (style.innerHTML = replacedStyle);
+          }
+        )
       );
     }
   }
@@ -324,6 +365,11 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     const canvasElems = window.document.querySelectorAll("canvas");
     for (var i = 0; i < canvasElems.length; ++i) {
       canvasElems[i].setAttribute("bb-canvas-data", canvasElems[i].toDataURL());
+    }
+
+    const styleTags = window.document.querySelectorAll("style");
+    for (var i = 0; i < styleTags.length; ++i) {
+      styleTags[i].setAttribute("bb-styleid", i);
     }
 
     const divElems = window.document.querySelectorAll("div");
