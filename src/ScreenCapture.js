@@ -324,7 +324,10 @@ const downloadAllCSSUrlResources = (clone) => {
 const optionallyPrepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
-      resolve();
+      // Always download CSS.
+      return downloadAllCSSUrlResources(clone).then(() => {
+        resolve();
+      });
     } else {
       return downloadAllImages(clone).then(() => {
         return downloadAllScripts(clone).then(() => {
