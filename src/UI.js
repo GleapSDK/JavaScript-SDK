@@ -245,7 +245,7 @@ export const applyBugbattleBaseCSS = () => {
       background-color: #398cfe;
       border-radius: 8px;
       box-sizing: border-box;
-      padding: 10px 19px;
+      padding: 12px 19px;
       font-size: 16px;
       font-weight: bold;
       color: #fff;
@@ -315,8 +315,8 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-emojigroup li div {
-      width: 40px;
-      height: 40px;
+      width: 45px;
+      height: 45px;
       position: relative;
       transform: perspective(240px) translateZ(4px);
     }
@@ -345,20 +345,20 @@ export const applyBugbattleBaseCSS = () => {
     .bugbattle--feedback-emojigroup li div svg.bugbattle--feedback-eye {
       --s: var(--e, var(--normal-eye));
       --t: 17px;
-      --w: 7px;
+      --w: 10px;
       --h: 4px;
     }
     
     .bugbattle--feedback-emojigroup li div svg.bugbattle--feedback-eye.bugbattle--feedback-right {
-      --l: 23px;
+      --l: 28px;
     }
     
     .bugbattle--feedback-emojigroup li div svg.bugbattle--feedback-mouth {
       --s: var(--m, var(--normal-mouth));
-      --l: 11px;
-      --t: 23px;
+      --l: 14px;
+      --t: 25px;
       --w: 18px;
-      --h: 7px;
+      --h: 10px;
     }
     
     .bugbattle--feedback-emojigroup li div:before,
@@ -379,11 +379,15 @@ export const applyBugbattleBaseCSS = () => {
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-angry div:before {
       --r: 20deg;
+      top: 12px;
+      left: 11px;
     }
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-angry div:after {
       --l: 23px;
       --r: -20deg;
+      top: 12px;
+      left: 28px;
     }
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-angry div svg.bugbattle--feedback-eye {
@@ -436,7 +440,7 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-sad div svg.bugbattle--feedback-mouth {
-      --t: 24px;
+      --t: 25px;
       stroke-dasharray: 9.5;
       stroke-dashoffset: 33.25;
     }
@@ -458,8 +462,8 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-ok div:before {
-      --l: 12px;
-      --t: 17px;
+      --l: 15px;
+      --t: 15px;
       --h: 4px;
       --w: 4px;
       --br: 50%;
@@ -467,8 +471,8 @@ export const applyBugbattleBaseCSS = () => {
     }
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-ok div:after {
-      --l: 13px;
-      --t: 26px;
+      --l: 16px;
+      --t: 27px;
       --w: 14px;
       --h: 2px;
       --br: 1px;
@@ -544,8 +548,8 @@ export const applyBugbattleBaseCSS = () => {
     
     .bugbattle--feedback-emojigroup li.bugbattle--feedback-happy div:after {
       --b: var(--m, var(--normal-mouth));
-      --l: 11px;
-      --t: 23px;
+      --l: 14px;
+      --t: 25px;
       --w: 18px;
       --h: 8px;
       --br: 0 0 8px 8px;

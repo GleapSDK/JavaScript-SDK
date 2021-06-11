@@ -17,8 +17,8 @@ BugBattle.setFeedbackTypeOptions([
   },
   {
     title: "Rate your experience",
-    description: "Something is broken? Let us know!",
-    icon: "https://jssdk.bugbattle.io/res/bug.svg",
+    description: "Let us know how we could improve!",
+    icon: "https://jssdk.bugbattle.io/res/star.svg",
     action: () => {
       BugBattle.startBugReporting({
         title: "Feedback",
