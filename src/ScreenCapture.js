@@ -262,17 +262,58 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
+const getStyleSheetContentForStyle = (styleElement) => {
+  const styleSheets = document.styleSheets;
+  if (styleSheets) {
+    for (var i = 0; i < styleSheets.length; i++) {
+      const styleSheet = styleSheets[i];
+      if (
+        styleSheet &&
+        styleElement &&
+        styleSheet.ownerNode &&
+        styleElement.getAttribute("bb-styleid") &&
+        styleSheet.ownerNode.getAttribute("bb-styleid") &&
+        styleElement.getAttribute("bb-styleid") ===
+          styleSheet.ownerNode.getAttribute("bb-styleid")
+      ) {
+        var cssRules = null;
+        if (styleSheet.cssRules) {
+          cssRules = styleSheet.cssRules;
+        } else if (styleSheet.rules) {
+          cssRules = styleSheet.rules;
+        }
+        if (cssRules) {
+          var cssTextContent = "";
+          for (var cssRuleItem in cssRules) {
+            if (cssRules[cssRuleItem].cssText) {
+              cssTextContent += cssRules[cssRuleItem].cssText;
+            }
+          }
+          styleSheet.ownerNode.removeAttribute("bb-styleid");
+          return cssTextContent;
+        }
+      }
+    }
+  }
+
+  return styleElement.innerHTML;
+};
+
 const downloadAllCSSUrlResources = (clone) => {
   var promises = [];
 
   const styleTags = clone.querySelectorAll("style");
   for (const style of styleTags) {
     if (style) {
+      const stylesheetContent = getStyleSheetContentForStyle(style);
       const basePath = style.getAttribute("bb-basepath");
       promises.push(
-        loadCSSUrlResources(style.innerHTML, basePath).then((replacedStyle) => {
-          return (style.innerHTML = replacedStyle);
-        })
+        loadCSSUrlResources(stylesheetContent, basePath).then(
+          (replacedStyle) => {
+            style.innerHTML = replacedStyle;
+            return;
+          }
+        )
       );
     }
   }
@@ -283,7 +324,10 @@ const downloadAllCSSUrlResources = (clone) => {
 const optionallyPrepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
-      resolve();
+      // Always download CSS.
+      return downloadAllCSSUrlResources(clone).then(() => {
+        resolve();
+      });
     } else {
       return downloadAllImages(clone).then(() => {
         return downloadAllScripts(clone).then(() => {
@@ -326,6 +370,11 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       canvasElems[i].setAttribute("bb-canvas-data", canvasElems[i].toDataURL());
     }
 
+    const styleTags = window.document.querySelectorAll("style");
+    for (var i = 0; i < styleTags.length; ++i) {
+      styleTags[i].setAttribute("bb-styleid", i);
+    }
+
     const divElems = window.document.querySelectorAll("div");
     for (var i = 0; i < divElems.length; ++i) {
       const elem = divElems[i];
@@ -361,9 +410,9 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     const allElems = window.document.querySelectorAll("*");
     for (var i = 0; i < allElems.length; ++i) {
       const elem = allElems[i];
-      elem.setAttribute("bb-element", null);
-      elem.setAttribute("bb-height", null);
-      elem.setAttribute("bb-canvas-data", null);
+      elem.removeAttribute("bb-element");
+      elem.removeAttribute("bb-height");
+      elem.removeAttribute("bb-canvas-data");
     }
 
     // Remove all scripts

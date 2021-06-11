@@ -139,6 +139,9 @@ export default class ReplayRecorder {
             }
 
             return this.fetchCSSResource(resourcePath).then((resourceData) => {
+              if (matchedUrl.indexOf("data:text/html") === 0) {
+                return resolve(matchedData);
+              }
               return resolve("url(" + resourceData + ")");
             });
           } catch (exp) {
@@ -423,8 +426,46 @@ export default class ReplayRecorder {
 
       case Node.TEXT_NODE:
       case Node.CDATA_SECTION_NODE: {
+        // Check if it's a child of a style node.
+        const parentNode = node.parentNode;
+        if (
+          node.parentNode &&
+          parentNode.tagName &&
+          parentNode.tagName === "STYLE" &&
+          parentNode.ownerDocument
+        ) {
+          const styleSheets = parentNode.ownerDocument.styleSheets;
+          if (styleSheets) {
+            for (var i = 0; i < styleSheets.length; i++) {
+              const styleSheet = styleSheets[i];
+              if (
+                styleSheet.ownerNode &&
+                styleSheet.ownerNode.ReplayRecID &&
+                parentNode.ReplayRecID === styleSheet.ownerNode.ReplayRecID
+              ) {
+                var cssRules = null;
+                if (styleSheet.cssRules) {
+                  cssRules = styleSheet.cssRules;
+                } else if (styleSheet.rules) {
+                  cssRules = styleSheet.rules;
+                }
+                if (cssRules) {
+                  var cssTextContent = "";
+                  for (var cssRuleItem in cssRules) {
+                    if (cssRules[cssRuleItem].cssText) {
+                      cssTextContent += cssRules[cssRuleItem].cssText;
+                    }
+                  }
+                  obj.d = cssTextContent;
+                }
+              }
+            }
+          }
+        }
+
+        // Simply pass the data of the text.
         const data = node.data;
-        if (data.length > 0) {
+        if (data.length > 0 && !obj.d) {
           obj.d = data;
         }
         break;

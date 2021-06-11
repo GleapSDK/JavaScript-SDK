@@ -383,7 +383,7 @@ class BugBattle {
   stopBugReportingAnalytics() {
     this.networkIntercepter.setStopped(true);
     if (this.replay && !this.replay.stopped) {
-      this.replay.stop(!this.isLiveSite);
+      this.replay.stop(true);
     }
   }
 
