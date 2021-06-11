@@ -35,5 +35,9 @@ export const translateText = (key, overrideLanguage) => {
     languagePack = cz;
   }
 
-  return languagePack[key];
+  if (languagePack[key]) {
+    return languagePack[key];
+  }
+
+  return key;
 };

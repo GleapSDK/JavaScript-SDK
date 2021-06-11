@@ -55,7 +55,7 @@ BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
 // Sets weather to enable or disable the user screenshot step within the bug reporting flow.
-BugBattle.disableUserScreenshot(false);
+BugBattle.disableUserScreenshot(true);
 
 const feedbackButton = document.querySelector("#feedback-button");
 if (feedbackButton) {

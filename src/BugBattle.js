@@ -9,7 +9,6 @@ class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
   privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
-  email = "";
   activation = "";
   overrideLanguage = "";
   overrideButtonText = undefined;
@@ -19,7 +18,6 @@ class BugBattle {
   customData = {};
   sessionStart = new Date();
   poweredByHidden = false;
-  disableUserScreenshot = false;
   enabledCrashDetector = false;
   enabledCrashDetectorSilent = false;
   crashedWaitingForReload = false;
@@ -28,11 +26,9 @@ class BugBattle {
   replaysEnabled = false;
   customLogoUrl = null;
   shortcutsEnabled = true;
-  privacyPolicyCheckEnabled = false;
   silentBugReport = false;
   initialized = false;
   originalConsoleLog;
-  description = "";
   severity = "LOW";
   appVersionCode = "";
   appBuildNumber = "";
@@ -131,7 +127,7 @@ class BugBattle {
    * @param {boolean} disableUserScreenshot
    */
   static disableUserScreenshot(disableUserScreenshot) {
-    this.getInstance().disableUserScreenshot = disableUserScreenshot;
+    console.log("BugBattle.disableUserScreenshot() has been deprecated.");
   }
 
   /**
@@ -178,7 +174,7 @@ class BugBattle {
    * @param {boolean} enabled
    */
   static enablePrivacyPolicy(enabled) {
-    this.getInstance().privacyPolicyCheckEnabled = enabled;
+    console.log("enablePrivacyPolicy() has been deprecated.");
   }
 
   /**
@@ -286,7 +282,7 @@ class BugBattle {
     if (senderEmail) {
       instance.email = senderEmail;
     }
-    this.startBugReporting(true);
+    this.startBugReporting({}, false);
   }
 
   /**
@@ -394,7 +390,41 @@ class BugBattle {
   /**
    * Starts the bug reporting flow.
    */
-  static startBugReporting(silentBugReport = false) {
+  static startBugReporting(
+    feedbackOptions = {
+      title: "Feedback",
+      form: [
+        {
+          title: "Rate your experience",
+          type: "rating",
+        },
+        {
+          placeholder: "Ihre E-Mail Adresse",
+          type: "text",
+          inputtype: "email",
+          name: "email",
+          required: true,
+          remember: true,
+          defaultValue: "lukas@bugbattle.io",
+        },
+        {
+          placeholder: "Wo wohnst du?",
+          type: "text",
+          inputtype: "text",
+          name: "location",
+        },
+        {
+          placeholder: "Was ist schief gelaufen?",
+          type: "textarea",
+          name: "description",
+        },
+      ],
+      enablePrivacyPolicy: true,
+      privacyPolicyUrl: "",
+      disableUserScreenshot: false,
+    },
+    silentBugReport = false
+  ) {
     const instance = this.getInstance();
     if (instance.currentlySendingBug) {
       return;
@@ -422,11 +452,7 @@ class BugBattle {
     if (instance.silentBugReport) {
       instance.checkReplayLoaded();
     } else {
-      if (instance.disableUserScreenshot) {
-        instance.createBugReportingDialog();
-      } else {
-        instance.showBugReportEditor();
-      }
+      instance.showBugReportEditor(feedbackOptions);
     }
   }
 
@@ -563,8 +589,9 @@ class BugBattle {
     return headerImage;
   }
 
-  createBugReportingDialog() {
+  createBugReportingDialog(feedbackOptions) {
     const self = this;
+    const formHTML = this.buildForm(feedbackOptions.form);
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
@@ -580,7 +607,7 @@ class BugBattle {
           ${self.getHeaderImage()}
         </div>
         <div class="bugbattle--feedback-dialog-header-title">${translateText(
-          "report_bug_title",
+          feedbackOptions.title,
           this.overrideLanguage
         )}</div>
       </div>
@@ -615,18 +642,7 @@ class BugBattle {
         )}</div>
       </div>
       <div class="bugbattle--feedback-dialog-body">
-        <div class="bugbattle--feedback-inputgroup">
-          <input class="bugbattle--feedback-email" type="text" placeholder="${translateText(
-            "your_email",
-            this.overrideLanguage
-          )}" />
-        </div>
-        <div class="bugbattle--feedback-inputgroup">
-          <textarea class="bugbattle--feedback-description" placeholder="${translateText(
-            "what_went_wrong",
-            this.overrideLanguage
-          )}"></textarea>
-        </div>
+        ${formHTML}
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
           <input type="checkbox" required name="terms"> <span class="bugbattle--feedback-inputgroup--privacy-policy-label">${translateText(
             "accept_policy_text",
@@ -642,6 +658,7 @@ class BugBattle {
             this.overrideLanguage
           )}</div>
         </div>
+
         <div class="bugbattle--feedback-poweredbycontainer">
           <span>Powered by</span>
           <svg width="173px" height="30px" viewBox="0 0 173 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -667,16 +684,153 @@ class BugBattle {
     </div>`;
     document.body.appendChild(elem);
 
-    self.validatePoweredBy();
-    self.hookDialogCloseButton();
+    this.resetLoadingCircle();
+    this.validatePoweredBy();
+    this.hookDialogCloseButton();
+    this.hookPrivacyPolicy(feedbackOptions);
+    this.hookForm(feedbackOptions.form);
 
-    const circle = document.querySelector(".bugbattle--progress-ring__circle");
-    const circumference = 213.628300444;
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    const sendButton = document.querySelector(
+      ".bugbattle--feedback-send-button"
+    );
+    sendButton.onclick = function () {
+      if (!self.validateForm(feedbackOptions.form)) {
+        return;
+      }
 
-    const offset = circumference - (1 / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
+      return;
 
+      // localStorage.setItem("bugbattle-sender-email", self.email);
+
+      // localStorage.setItem("bugbattle-sender-email", self.email);
+
+      if (!self.email || self.email.length === 0) {
+        alert(translateText("provide_email", self.overrideLanguage));
+        return;
+      }
+
+      // Privacy policy check
+      const privacyPolicyInput = document.querySelector(
+        ".bugbattle--feedback-inputgroup--privacy-policy input"
+      );
+      if (feedbackOptions.enablePrivacyPolicy && !privacyPolicyInput.checked) {
+        alert(translateText("accept_policy_alert", self.overrideLanguage));
+        return;
+      }
+
+      // Check API key
+      if (!self.sdkKey) {
+        return alert(translateText("apikey_wrong", self.overrideLanguage));
+      }
+
+      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+      self.toggleLoading(true);
+
+      // Send form
+      self.checkReplayLoaded();
+    };
+  }
+
+  validateForm(form) {
+    var formValid = true;
+    for (let i = 0; i < form.length; i++) {
+      const formItem = form[i];
+      if (!this.validateFormItem(formItem)) {
+        formValid = false;
+      }
+    }
+    return formValid;
+  }
+
+  validateFormItem(formItem) {
+    const formElement = document.querySelector(
+      `.bugbattle--feedback-${formItem.name}`
+    );
+    if (formItem.type === "text" && formItem.required) {
+      if (!formElement.value || formElement.value === "") {
+        formElement.classList.add("bugbattle--feedback-required");
+        return false;
+      } else {
+        formElement.classList.remove("bugbattle--feedback-required");
+      }
+    }
+    return true;
+  }
+
+  hookForm(form) {
+    const self = this;
+    for (let i = 0; i < form.length; i++) {
+      const formItem = form[i];
+      if (!formItem) {
+        break;
+      }
+      if (formItem.type === "text") {
+        const textField = document.querySelector(
+          `.bugbattle--feedback-${formItem.name}`
+        );
+        if (formItem.defaultValue) {
+          textField.value = formItem.defaultValue;
+        }
+        if (formItem.remember) {
+          try {
+            const rememberedValue = localStorage.getItem(
+              `bugbattle-remember-${formItem.name}`
+            );
+            if (rememberedValue) {
+              textField.value = rememberedValue;
+            }
+          } catch (exp) {}
+        }
+        textField.oninput = function () {
+          self.validateFormItem(formItem);
+        };
+      }
+      if (formItem.type === "textarea") {
+        const textArea = document.querySelector(
+          `.bugbattle--feedback-${formItem.name}`
+        );
+        textArea.oninput = function () {
+          textArea.style.height = "inherit";
+          textArea.style.height = textArea.scrollHeight + "px";
+          self.validateFormItem(formItem);
+        };
+      }
+    }
+  }
+
+  buildForm(form) {
+    var formHTML = "";
+    for (let i = 0; i < form.length; i++) {
+      const formItem = form[i];
+      if (!formItem) {
+        break;
+      }
+      if (formItem.type === "text") {
+        formHTML += `<div class="bugbattle--feedback-inputgroup">
+          <input class="bugbattle--feedback-${formItem.name}" type="${
+          formItem.inputtype
+        }" placeholder="${translateText(
+          formItem.placeholder,
+          this.overrideLanguage
+        )}${formItem.required ? "*" : ""}" />
+        </div>`;
+      }
+      if (formItem.type === "textarea") {
+        formHTML += `<div class="bugbattle--feedback-inputgroup">
+          <textarea class="bugbattle--feedback-${
+            formItem.name
+          }" placeholder="${translateText(
+          formItem.placeholder,
+          this.overrideLanguage
+        )}${formItem.required ? "*" : ""}"></textarea>
+        </div>`;
+      }
+    }
+
+    return formHTML;
+  }
+
+  hookPrivacyPolicy(feedbackOptions) {
     const privacyPolicyContainer = document.querySelector(
       ".bugbattle--feedback-inputgroup--privacy-policy"
     );
@@ -686,58 +840,17 @@ class BugBattle {
     const privacyPolicyInput = document.querySelector(
       ".bugbattle--feedback-inputgroup--privacy-policy input"
     );
-    if (this.privacyPolicyCheckEnabled) {
+
+    if (feedbackOptions.enablePrivacyPolicy) {
       privacyPolicyContainer.style.display = "flex";
       document.querySelector("#bugbattle-privacy-policy-link").href =
-        this.privacyPolicyUrl;
+        feedbackOptions.privacyPolicyUrl;
     } else {
       privacyPolicyContainer.style.display = "none";
     }
 
     privacyPolicyInputLabel.onclick = function () {
       privacyPolicyInput.checked = !privacyPolicyInput.checked;
-    };
-
-    const sendButton = document.querySelector(
-      ".bugbattle--feedback-send-button"
-    );
-
-    const emailField = document.querySelector(".bugbattle--feedback-email");
-    const textArea = document.querySelector(".bugbattle--feedback-description");
-
-    textArea.oninput = function () {
-      textArea.style.height = "inherit";
-      textArea.style.height = textArea.scrollHeight + "px";
-    };
-
-    emailField.value = this.email;
-
-    sendButton.onclick = function () {
-      self.email = emailField.value;
-
-      if (!self.email || self.email.length === 0) {
-        alert(translateText("provide_email", self.overrideLanguage));
-        return;
-      }
-
-      if (self.privacyPolicyCheckEnabled && !privacyPolicyInput.checked) {
-        alert(translateText("accept_policy_alert", self.overrideLanguage));
-        return;
-      }
-
-      self.description = textArea.value;
-
-      localStorage.setItem("bugbattle-sender-email", self.email);
-
-      self.toggleLoading(true);
-
-      if (!self.sdkKey) {
-        return alert(translateText("apikey_wrong", self.overrideLanguage));
-      }
-
-      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
-
-      self.checkReplayLoaded();
     };
   }
 
@@ -751,6 +864,15 @@ class BugBattle {
     cancelButton.onclick = function () {
       self.closeBugBattle();
     };
+  }
+
+  resetLoadingCircle() {
+    const circle = document.querySelector(".bugbattle--progress-ring__circle");
+    const circumference = 213.628300444;
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+
+    const offset = circumference - (1 / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
   }
 
   validatePoweredBy() {
@@ -831,14 +953,14 @@ class BugBattle {
 
     if (window && window.location && window.location.origin) {
       this.checkOnlineStatus(window.location.origin)
-        .then(function(status) {
+        .then(function (status) {
           if (status && status.up) {
             self.isLiveSite = true;
           } else {
             self.isLiveSite = false;
           }
         })
-        .catch(function() {
+        .catch(function () {
           self.isLiveSite = false;
         });
     }
@@ -1135,7 +1257,12 @@ class BugBattle {
     };
   }
 
-  showBugReportEditor() {
+  showBugReportEditor(feedbackOptions) {
+    if (feedbackOptions.disableUserScreenshot) {
+      this.createBugReportingDialog(feedbackOptions);
+      return;
+    }
+
     const self = this;
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bugbattle-screenshot-editor";
@@ -1258,7 +1385,7 @@ class BugBattle {
 
       addedMarker = true;
 
-      self.createBugReportingDialog();
+      self.createBugReportingDialog(feedbackOptions);
     }
 
     function mouseMoveEventHandler(e) {

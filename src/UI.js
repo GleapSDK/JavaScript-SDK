@@ -267,6 +267,11 @@ export const applyBugbattleBaseCSS = () => {
       border-radius: 8px;
       box-sizing: border-box;
     }
+
+    .bugbattle--feedback-inputgroup>input.bugbattle--feedback-required, .bugbattle--feedback-inputgroup input.bugbattle--feedback-required {
+      border: 1px solid #da0e07;
+      background-color: #da0e0710;
+    }
     
     .bugbattle--feedback-inputgroup textarea {
       outline: none;

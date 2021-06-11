@@ -57,6 +57,14 @@ BugBattle.initialize("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
 
 Congrats, you are now all set! Report your first bug by using the feedback button.
 
+### Types of reports
+
+- Bug report
+- Feature request
+- Rate your experience
+- General feedback
+- Contact support
+
 ## 🤝 Need help?
 
 We are here to help! hello@bugbattle.io
