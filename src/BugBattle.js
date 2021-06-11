@@ -4,6 +4,13 @@ import { setColor, applyBugbattleBaseCSS } from "./UI";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
 import { isMobile } from "./ImageHelper";
+import {
+  buildForm,
+  getFormData,
+  hookForm,
+  rememberForm,
+  validateForm,
+} from "./FeedbackForm";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -16,6 +23,8 @@ class BugBattle {
   actionLog = [];
   logArray = [];
   customData = {};
+  formData = {};
+  feedbackType = "BUG";
   sessionStart = new Date();
   poweredByHidden = false;
   enabledCrashDetector = false;
@@ -277,11 +286,12 @@ class BugBattle {
   static sendSilentBugReport(senderEmail, description, priority) {
     const instance = this.getInstance();
 
-    instance.description = description;
+    instance.formData = {
+      email: senderEmail,
+      description: description,
+    };
     instance.severity = priority;
-    if (senderEmail) {
-      instance.email = senderEmail;
-    }
+
     this.startBugReporting({}, false);
   }
 
@@ -395,33 +405,19 @@ class BugBattle {
       title: "Feedback",
       form: [
         {
-          title: "Rate your experience",
-          type: "rating",
-        },
-        {
           placeholder: "Ihre E-Mail Adresse",
           type: "text",
           inputtype: "email",
-          name: "email",
+          name: "reportedBy",
           required: true,
           remember: true,
-          defaultValue: "lukas@bugbattle.io",
-        },
-        {
-          placeholder: "Wo wohnst du?",
-          type: "text",
-          inputtype: "text",
-          name: "location",
         },
         {
           placeholder: "Was ist schief gelaufen?",
           type: "textarea",
           name: "description",
         },
-      ],
-      enablePrivacyPolicy: true,
-      privacyPolicyUrl: "",
-      disableUserScreenshot: false,
+      ]
     },
     silentBugReport = false
   ) {
@@ -591,7 +587,7 @@ class BugBattle {
 
   createBugReportingDialog(feedbackOptions) {
     const self = this;
-    const formHTML = this.buildForm(feedbackOptions.form);
+    const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
@@ -688,26 +684,19 @@ class BugBattle {
     this.validatePoweredBy();
     this.hookDialogCloseButton();
     this.hookPrivacyPolicy(feedbackOptions);
-    this.hookForm(feedbackOptions.form);
+    hookForm(feedbackOptions.form);
 
     const sendButton = document.querySelector(
       ".bugbattle--feedback-send-button"
     );
     sendButton.onclick = function () {
-      if (!self.validateForm(feedbackOptions.form)) {
+      // Validate form
+      if (!validateForm(feedbackOptions.form)) {
         return;
       }
 
-      return;
-
-      // localStorage.setItem("bugbattle-sender-email", self.email);
-
-      // localStorage.setItem("bugbattle-sender-email", self.email);
-
-      if (!self.email || self.email.length === 0) {
-        alert(translateText("provide_email", self.overrideLanguage));
-        return;
-      }
+      // Remember form items
+      rememberForm(feedbackOptions.form);
 
       // Privacy policy check
       const privacyPolicyInput = document.querySelector(
@@ -727,107 +716,13 @@ class BugBattle {
       self.toggleLoading(true);
 
       // Send form
+      const formData = getFormData(feedbackOptions.form);
+      self.formData = formData;
+      self.feedbackType = feedbackOptions.feedbackType
+        ? feedbackOptions.feedbackType
+        : "BUG";
       self.checkReplayLoaded();
     };
-  }
-
-  validateForm(form) {
-    var formValid = true;
-    for (let i = 0; i < form.length; i++) {
-      const formItem = form[i];
-      if (!this.validateFormItem(formItem)) {
-        formValid = false;
-      }
-    }
-    return formValid;
-  }
-
-  validateFormItem(formItem) {
-    const formElement = document.querySelector(
-      `.bugbattle--feedback-${formItem.name}`
-    );
-    if (formItem.type === "text" && formItem.required) {
-      if (!formElement.value || formElement.value === "") {
-        formElement.classList.add("bugbattle--feedback-required");
-        return false;
-      } else {
-        formElement.classList.remove("bugbattle--feedback-required");
-      }
-    }
-    return true;
-  }
-
-  hookForm(form) {
-    const self = this;
-    for (let i = 0; i < form.length; i++) {
-      const formItem = form[i];
-      if (!formItem) {
-        break;
-      }
-      if (formItem.type === "text") {
-        const textField = document.querySelector(
-          `.bugbattle--feedback-${formItem.name}`
-        );
-        if (formItem.defaultValue) {
-          textField.value = formItem.defaultValue;
-        }
-        if (formItem.remember) {
-          try {
-            const rememberedValue = localStorage.getItem(
-              `bugbattle-remember-${formItem.name}`
-            );
-            if (rememberedValue) {
-              textField.value = rememberedValue;
-            }
-          } catch (exp) {}
-        }
-        textField.oninput = function () {
-          self.validateFormItem(formItem);
-        };
-      }
-      if (formItem.type === "textarea") {
-        const textArea = document.querySelector(
-          `.bugbattle--feedback-${formItem.name}`
-        );
-        textArea.oninput = function () {
-          textArea.style.height = "inherit";
-          textArea.style.height = textArea.scrollHeight + "px";
-          self.validateFormItem(formItem);
-        };
-      }
-    }
-  }
-
-  buildForm(form) {
-    var formHTML = "";
-    for (let i = 0; i < form.length; i++) {
-      const formItem = form[i];
-      if (!formItem) {
-        break;
-      }
-      if (formItem.type === "text") {
-        formHTML += `<div class="bugbattle--feedback-inputgroup">
-          <input class="bugbattle--feedback-${formItem.name}" type="${
-          formItem.inputtype
-        }" placeholder="${translateText(
-          formItem.placeholder,
-          this.overrideLanguage
-        )}${formItem.required ? "*" : ""}" />
-        </div>`;
-      }
-      if (formItem.type === "textarea") {
-        formHTML += `<div class="bugbattle--feedback-inputgroup">
-          <textarea class="bugbattle--feedback-${
-            formItem.name
-          }" placeholder="${translateText(
-          formItem.placeholder,
-          this.overrideLanguage
-        )}${formItem.required ? "*" : ""}"></textarea>
-        </div>`;
-      }
-    }
-
-    return formHTML;
   }
 
   hookPrivacyPolicy(feedbackOptions) {
@@ -1134,14 +1029,13 @@ class BugBattle {
     };
 
     const bugReportData = {
-      reportedBy: this.email,
-      description: this.description,
       priority: this.severity,
       customData: this.customData,
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
-      type: "BUG",
       networkLogs: this.networkIntercepter.getRequests(),
+      type: this.feedbackType,
+      formData: this.formData,
     };
 
     if (screenshotData.fileUrl) {

@@ -9,10 +9,48 @@ BugBattle.initialize(
 BugBattle.setFeedbackTypeOptions([
   {
     title: "Support",
-    description: "Get in touch with us. We are here to help.",
+    description: "Get in touch with us.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
     action: () => {
       alert("Open Intercom for example.");
+    },
+  },
+  {
+    title: "Rate your experience",
+    description: "Something is broken? Let us know!",
+    icon: "https://jssdk.bugbattle.io/res/bug.svg",
+    action: () => {
+      BugBattle.startBugReporting({
+        title: "Feedback",
+        form: [
+          {
+            title: "Rate your experience",
+            type: "rating",
+            ratingtype: "emoji",
+            name: "pagerating",
+            required: true,
+          },
+          {
+            placeholder: "Ihre E-Mail Adresse",
+            type: "text",
+            inputtype: "email",
+            name: "reportedBy",
+            required: true,
+            remember: true,
+            defaultValue: "lukas@bugbattle.io",
+            showAfter: "pagerating",
+          },
+          {
+            placeholder: "Wie können wir uns verbessern?",
+            type: "textarea",
+            name: "description",
+            showAfter: "pagerating",
+          },
+        ],
+        enablePrivacyPolicy: false,
+        privacyPolicyUrl: "",
+        disableUserScreenshot: true,
+      });
     },
   },
   {
@@ -24,6 +62,8 @@ BugBattle.setFeedbackTypeOptions([
     },
   },
 ]);
+
+BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.setAppBuildNumber("2345");
 
@@ -64,8 +104,6 @@ if (feedbackButton) {
   };
 }
 
-BugBattle.setCustomerEmail("luxkas@bugbattle.io");
-
 console.warn("DEMO!");
 console.log("HI!");
 
@@ -75,5 +113,9 @@ xhttp.onreadystatechange = function () {
     console.log(this.responseText);
   }
 };
-xhttp.open("GET", "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52", true);
+xhttp.open(
+  "GET",
+  "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
+  true
+);
 xhttp.send();
