@@ -60,7 +60,7 @@ module.exports = {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
           exec(
-            "cp ./build/index.js v2/latest/index.js",
+            "cp ./build/index.js published/v2/index.js",
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
