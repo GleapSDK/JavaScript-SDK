@@ -20,37 +20,7 @@ BugBattle.setFeedbackTypeOptions([
     description: "Let us know how we could improve!",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
     action: () => {
-      BugBattle.startBugReporting({
-        title: "Feedback",
-        form: [
-          {
-            title: "Rate your experience",
-            type: "rating",
-            ratingtype: "emoji",
-            name: "pagerating",
-            required: true,
-          },
-          {
-            placeholder: "Ihre E-Mail Adresse",
-            type: "text",
-            inputtype: "email",
-            name: "reportedBy",
-            required: true,
-            remember: true,
-            defaultValue: "lukas@bugbattle.io",
-            showAfter: "pagerating",
-          },
-          {
-            placeholder: "Wie können wir uns verbessern?",
-            type: "textarea",
-            name: "description",
-            showAfter: "pagerating",
-          },
-        ],
-        enablePrivacyPolicy: false,
-        privacyPolicyUrl: "",
-        disableUserScreenshot: true,
-      });
+      BugBattle.startBugReporting(BugBattle.FLOW_RATING);
     },
   },
   {

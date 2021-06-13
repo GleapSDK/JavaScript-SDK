@@ -54,6 +54,53 @@ class BugBattle {
   // Activation methods
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
+  static FLOW_DEFAULT = {
+    title: "Feedback",
+    form: [
+      {
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        required: true,
+        remember: true,
+      },
+      {
+        placeholder: "What went wrong?",
+        type: "textarea",
+        name: "description",
+      },
+    ],
+  };
+  static FLOW_RATING = {
+    title: "Feedback",
+    form: [
+      {
+        title: "Rate your experience",
+        type: "rating",
+        ratingtype: "emoji",
+        name: "pagerating",
+        required: true,
+      },
+      {
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        required: true,
+        remember: true,
+        showAfter: "pagerating",
+      },
+      {
+        placeholder: "How can we improve?",
+        type: "textarea",
+        name: "description",
+        showAfter: "pagerating",
+      },
+    ],
+    feedbackType: "RATING",
+    disableUserScreenshot: true,
+  };
 
   // Bug priorities
   static PRIORITY_LOW = "LOW";
@@ -401,24 +448,7 @@ class BugBattle {
    * Starts the bug reporting flow.
    */
   static startBugReporting(
-    feedbackOptions = {
-      title: "Feedback",
-      form: [
-        {
-          placeholder: "Ihre E-Mail Adresse",
-          type: "text",
-          inputtype: "email",
-          name: "reportedBy",
-          required: true,
-          remember: true,
-        },
-        {
-          placeholder: "Was ist schief gelaufen?",
-          type: "textarea",
-          name: "description",
-        },
-      ]
-    },
+    feedbackOptions = this.FLOW_DEFAULT,
     silentBugReport = false
   ) {
     const instance = this.getInstance();
@@ -633,7 +663,7 @@ class BugBattle {
             </g>
         </svg>
         <div class="bugbattle--feedback-dialog-info-text">${translateText(
-          "send_success",
+          "Thank you for your feedback!",
           this.overrideLanguage
         )}</div>
       </div>
@@ -650,7 +680,7 @@ class BugBattle {
         </div>
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup-button">
           <div class="bugbattle--feedback-send-button">${translateText(
-            "send_feedback",
+            "Send feedback",
             this.overrideLanguage
           )}</div>
         </div>
@@ -694,7 +724,7 @@ class BugBattle {
       if (!validateForm(feedbackOptions.form)) {
         return;
       }
-
+      
       // Remember form items
       rememberForm(feedbackOptions.form);
 

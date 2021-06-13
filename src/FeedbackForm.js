@@ -58,7 +58,7 @@ export const buildForm = function (form, overrideLanguage) {
         formItem.name
       }" type="hidden" />
           <ul class="bugbattle--feedback-emojigroup">
-            <li class="bugbattle--feedback-angry" data-value="1">
+            <li class="bugbattle--feedback-angry" data-value="0">
               <div>
                 <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
                     <use xlink:href="#eye">
@@ -71,7 +71,7 @@ export const buildForm = function (form, overrideLanguage) {
                 </svg>
               </div>
             </li>
-            <li class="bugbattle--feedback-sad" data-value="3">
+            <li class="bugbattle--feedback-sad" data-value="2.5">
               <div>
                 <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
                     <use xlink:href="#eye">
@@ -87,7 +87,7 @@ export const buildForm = function (form, overrideLanguage) {
             <li class="bugbattle--feedback-ok" data-value="5">
                 <div></div>
             </li>
-            <li class="bugbattle--feedback-good" data-value="8">
+            <li class="bugbattle--feedback-good" data-value="7.5">
               <div>
                 <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
                     <use xlink:href="#eye">
@@ -206,7 +206,7 @@ export const validateFormItem = function (formItem) {
     }
   }
 
-  return true;
+  return valid;
 };
 
 export const hookForm = function (form) {
