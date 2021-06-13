@@ -12,5 +12,11 @@
   "apikey_wrong": "BUGBATTLE: Voer een geldig API key in",
   "accept_policy_alert": "Graag de privacy voorwaarden lezen en accorderen.",
   "accept_policy_text": "Ik ga akkoord met de",
-  "privacy_policy": " privacy voorwaarden"
+  "privacy_policy": " privacy voorwaarden",
+  "Support": "Support",
+  "Get in touch with us.": "Neem contact met ons op.",
+  "Rate your experience": "Beoordeel uw ervaring",
+  "Let us know how we could improve!": "Laat ons weten hoe we kunnen verbeteren!",
+  "Report an issue": "Meld een probleem",
+  "Something is broken? Let us know!": "Is er iets kapot? Laat het ons weten!"
 }

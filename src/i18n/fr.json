@@ -12,5 +12,11 @@
   "apikey_wrong": "BUGBATTLE: Veuillez fournir un API key valide!",
   "accept_policy_alert": "Lire et accepter la politique privacité.",
   "accept_policy_text": "J'ai lu et j'accepte la",
-  "privacy_policy": " politique de privacité"
+  "privacy_policy": " politique de privacité",
+  "Support": "Soutien",
+  "Get in touch with us.": "Contactez-nous.",
+  "Rate your experience": "Évaluez votre expérience",
+  "Let us know how we could improve!": "Dites-nous comment nous pourrions nous améliorer.",
+  "Report an issue": "Signaler un problème",
+  "Something is broken? Let us know!": "Quelque chose est cassé? Faites-le nous savoir!"
 }

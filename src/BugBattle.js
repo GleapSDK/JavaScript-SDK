@@ -372,8 +372,14 @@ class BugBattle {
       optionsHTML += `<div id="bugbattle--feedback-type-${i}" class="bugbattle--feedback-type">
         <img class="bugbattle--feedback-type-icon" src="${action.icon}">
         <div class="bugbattle--feedback-type-text">
-          <div class="bugbattle--feedback-type-title">${action.title}</div>
-          <div class="bugbattle--feedback-type-description">${action.description}</div>
+          <div class="bugbattle--feedback-type-title">${translateText(
+            action.title,
+            self.overrideLanguage
+          )}</div>
+          <div class="bugbattle--feedback-type-description">${translateText(
+            action.description,
+            self.overrideLanguage
+          )}</div>
         </div>
       </div>`;
     }
@@ -724,7 +730,7 @@ class BugBattle {
       if (!validateForm(feedbackOptions.form)) {
         return;
       }
-      
+
       // Remember form items
       rememberForm(feedbackOptions.form);
 

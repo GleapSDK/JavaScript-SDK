@@ -2,12 +2,15 @@ import { translateText } from "./Translation";
 
 const showAfterClass = "bugbattle--feedback-showafter";
 
-const getTitleHTML = function (title) {
+const getTitleHTML = function (title, overrideLanguage) {
   if (title === undefined) {
     return "";
   }
 
-  return `<div class="bugbattle--feedback-elementtitle">${title}</div>`;
+  return `<div class="bugbattle--feedback-elementtitle">${translateText(
+    title,
+    overrideLanguage
+  )}</div>`;
 };
 
 const getShowAfterHTML = function (showAfter) {
@@ -28,7 +31,7 @@ export const buildForm = function (form, overrideLanguage) {
     if (formItem.type === "text") {
       formHTML += `<div class="bugbattle--feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
-      )}">${getTitleHTML(formItem.title)}
+      )}">${getTitleHTML(formItem.title, overrideLanguage)}
           <input class="bugbattle--feedback-formdata bugbattle--feedback-${
             formItem.name
           }" type="${formItem.inputtype}" placeholder="${translateText(
@@ -40,7 +43,7 @@ export const buildForm = function (form, overrideLanguage) {
     if (formItem.type === "textarea") {
       formHTML += `<div class="bugbattle--feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
-      )}">${getTitleHTML(formItem.title)}
+      )}">${getTitleHTML(formItem.title, overrideLanguage)}
           <textarea class="bugbattle--feedback-formdata bugbattle--feedback-${
             formItem.name
           }" placeholder="${translateText(
@@ -53,7 +56,8 @@ export const buildForm = function (form, overrideLanguage) {
       formHTML += `<div class="bugbattle--feedback-rating ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(
-        formItem.title
+        formItem.title,
+        overrideLanguage
       )}<input class="bugbattle--feedback-formdata bugbattle--feedback-${
         formItem.name
       }" type="hidden" />
