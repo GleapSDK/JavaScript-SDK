@@ -158,6 +158,7 @@ export const applyBugbattleBaseCSS = () => {
       border-radius: 44px;
       margin-right: 20px;
       padding: 10px;
+      box-sizing: border-box;
     }
 
     .bugbattle--feedback-type-text {
@@ -270,6 +271,7 @@ export const applyBugbattleBaseCSS = () => {
       background-color: #fafbfd;
       border-radius: 8px;
       box-sizing: border-box;
+      color: #000;
     }
 
     input.bugbattle--feedback-required {
@@ -649,6 +651,7 @@ export const applyBugbattleBaseCSS = () => {
       background-color: #fafbfd;
       border-radius: 8px;
       box-sizing: border-box;
+      color: #000;
     }
     
     .bugbattle--feedback-inputgroup--privacy-policy {
