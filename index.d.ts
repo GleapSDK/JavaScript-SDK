@@ -7,6 +7,7 @@ declare module "bugbattle" {
     const PRIORITY_HIGH: "HIGH";
     const FLOW_DEFAULT: "FLOW_DEFAULT";
     const FLOW_RATING: "FLOW_RATING";
+    const FLOW_FEATUREREQUEST: "FLOW_FEATUREREQUEST";
 
     function initialize(
       key: string,

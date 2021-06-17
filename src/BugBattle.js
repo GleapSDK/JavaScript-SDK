@@ -101,6 +101,33 @@ class BugBattle {
     feedbackType: "RATING",
     disableUserScreenshot: true,
   };
+  static FLOW_FEATUREREQUEST = {
+    title: "Feedback",
+    form: [
+      {
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        required: true,
+        remember: true,
+      },
+      {
+        placeholder: "What feature would you like to see next?",
+        type: "text",
+        inputtype: "text",
+        name: "featureTitle",
+        required: true,
+      },
+      {
+        placeholder: "Describe the feature",
+        type: "textarea",
+        name: "featureDescription",
+      },
+    ],
+    feedbackType: "FEATUREREQUEST",
+    disableUserScreenshot: true,
+  };
 
   // Bug priorities
   static PRIORITY_LOW = "LOW";
