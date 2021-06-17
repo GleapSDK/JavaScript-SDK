@@ -124,7 +124,7 @@ class BugBattle {
         required: true,
       },
     ],
-    feedbackType: "FEATUREREQUEST",
+    feedbackType: "FEATURE_REQUEST",
     disableUserScreenshot: true,
   };
 
