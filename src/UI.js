@@ -114,7 +114,7 @@ export const applyBugbattleBaseCSS = () => {
       color: #192027;
       font-size: 16px;
       text-align: center;
-      margin-top: 20px;
+      margin-top: 35px;
       margin-bottom: 20px;
       font-weight: bold;
     }
@@ -903,6 +903,12 @@ export const setColor = (color) => {
     }
     .bugbattle--feedback-type-icon {
       background-color: ${color};
+    }
+    .bugbattle--feedback-type:hover {
+      background-color: ${color}10;
+    }
+    .bugbattle--feedback-type:hover {
+      border-bottom: 1px solid ${color}10;
     }
     `;
 
