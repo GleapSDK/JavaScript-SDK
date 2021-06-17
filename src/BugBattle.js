@@ -38,6 +38,7 @@ class BugBattle {
   shortcutsEnabled = true;
   silentBugReport = false;
   initialized = false;
+  email = null;
   originalConsoleLog;
   severity = "LOW";
   appVersionCode = "";
@@ -56,7 +57,7 @@ class BugBattle {
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
   static FLOW_DEFAULT = {
-    title: "Feedback",
+    title: "Report an issue",
     form: [
       {
         placeholder: "Your e-mail",
@@ -65,6 +66,7 @@ class BugBattle {
         name: "reportedBy",
         required: true,
         remember: true,
+        hideOnDefaultSet: true,
       },
       {
         placeholder: "What went wrong?",
@@ -74,10 +76,9 @@ class BugBattle {
     ],
   };
   static FLOW_RATING = {
-    title: "Feedback",
+    title: "Rate your experience",
     form: [
       {
-        title: "Rate your experience",
         type: "rating",
         ratingtype: "emoji",
         name: "pagerating",
@@ -90,6 +91,7 @@ class BugBattle {
         name: "reportedBy",
         required: true,
         remember: true,
+        hideOnDefaultSet: true,
         showAfter: "pagerating",
       },
       {
@@ -103,13 +105,14 @@ class BugBattle {
     disableUserScreenshot: true,
   };
   static FLOW_FEATUREREQUEST = {
-    title: "Feedback",
+    title: "Request a feature",
     form: [
       {
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
         name: "reportedBy",
+        hideOnDefaultSet: true,
         required: true,
         remember: true,
       },
@@ -135,11 +138,6 @@ class BugBattle {
   static getInstance() {
     if (!this.instance) {
       this.instance = new BugBattle();
-
-      try {
-        this.instance.email = localStorage.getItem("bugbattle-sender-email");
-      } catch (exp) {}
-
       return this.instance;
     } else {
       return this.instance;
@@ -491,6 +489,21 @@ class BugBattle {
     }
     if (instance.privacyPolicyUrl) {
       feedbackOptions.privacyPolicyUrl = instance.privacyPolicyUrl;
+    }
+
+    // Default form data.
+    if (
+      instance.email &&
+      feedbackOptions.form &&
+      feedbackOptions.form.length > 0
+    ) {
+      // Search for email field
+      for (var i = 0; i < feedbackOptions.form.length; i++) {
+        var feedbackOption = feedbackOptions.form[i];
+        if (feedbackOption.name === "email") {
+          feedbackOption.defaultValue = instance.email;
+        }
+      }
     }
 
     instance.currentlySendingBug = true;
