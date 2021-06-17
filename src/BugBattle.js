@@ -119,11 +119,6 @@ class BugBattle {
         name: "featureTitle",
         required: true,
       },
-      {
-        placeholder: "Describe the feature",
-        type: "textarea",
-        name: "featureDescription",
-      },
     ],
     feedbackType: "FEATUREREQUEST",
     disableUserScreenshot: true,
