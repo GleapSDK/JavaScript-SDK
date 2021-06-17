@@ -15,7 +15,8 @@ import {
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
-  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
+  privacyPolicyUrl = null;
+  privacyPolicyEnabled = false;
   activation = "";
   overrideLanguage = "";
   overrideButtonText = undefined;
@@ -252,7 +253,7 @@ class BugBattle {
    * @param {boolean} enabled
    */
   static enablePrivacyPolicy(enabled) {
-    console.log("enablePrivacyPolicy() has been deprecated.");
+    this.getInstance().privacyPolicyEnabled = enabled;
   }
 
   /**
@@ -482,6 +483,14 @@ class BugBattle {
     const instance = this.getInstance();
     if (instance.currentlySendingBug) {
       return;
+    }
+
+    // Hook privacy policy global settings.
+    if (instance.privacyPolicyEnabled) {
+      feedbackOptions.privacyPolicyEnabled = instance.privacyPolicyEnabled;
+    }
+    if (instance.privacyPolicyUrl) {
+      feedbackOptions.privacyPolicyUrl = instance.privacyPolicyUrl;
     }
 
     instance.currentlySendingBug = true;
@@ -760,7 +769,7 @@ class BugBattle {
       const privacyPolicyInput = document.querySelector(
         ".bugbattle--feedback-inputgroup--privacy-policy input"
       );
-      if (feedbackOptions.enablePrivacyPolicy && !privacyPolicyInput.checked) {
+      if (feedbackOptions.privacyPolicyEnabled && !privacyPolicyInput.checked) {
         alert(translateText("accept_policy_alert", self.overrideLanguage));
         return;
       }
@@ -794,7 +803,7 @@ class BugBattle {
       ".bugbattle--feedback-inputgroup--privacy-policy input"
     );
 
-    if (feedbackOptions.enablePrivacyPolicy) {
+    if (feedbackOptions.privacyPolicyEnabled) {
       privacyPolicyContainer.style.display = "flex";
       document.querySelector("#bugbattle-privacy-policy-link").href =
         feedbackOptions.privacyPolicyUrl;
