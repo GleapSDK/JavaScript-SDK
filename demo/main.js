@@ -12,7 +12,7 @@ BugBattle.setFeedbackTypeOptions([
     description: "Get in touch with us.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
     action: () => {
-      alert("Open Intercom for example.");
+      BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
     },
   },
   {
@@ -64,15 +64,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-// Sets weather to enable or disable the user screenshot step within the bug reporting flow.
-BugBattle.disableUserScreenshot(true);
-
-const feedbackButton = document.querySelector("#feedback-button");
-if (feedbackButton) {
-  feedbackButton.onclick = function () {
-    BugBattle.xxx();
-  };
-}
+BugBattle.setCustomerEmail("asdf@asdf.de");
 
 console.warn("DEMO!");
 console.log("HI!");

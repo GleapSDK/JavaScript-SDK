@@ -500,7 +500,7 @@ class BugBattle {
       // Search for email field
       for (var i = 0; i < feedbackOptions.form.length; i++) {
         var feedbackOption = feedbackOptions.form[i];
-        if (feedbackOption.name === "email") {
+        if (feedbackOption.name === "reportedBy") {
           feedbackOption.defaultValue = instance.email;
         }
       }

@@ -223,12 +223,6 @@ export const hookForm = function (form) {
       `.bugbattle--feedback-${formItem.name}`
     );
     if (formItem.type === "text") {
-      if (formItem.defaultValue) {
-        formInput.value = formItem.defaultValue;
-      }
-      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
-        formInput.style.display = "none";
-      }
       if (formItem.remember) {
         try {
           const rememberedValue = localStorage.getItem(
@@ -238,6 +232,12 @@ export const hookForm = function (form) {
             formInput.value = rememberedValue;
           }
         } catch (exp) {}
+      }
+      if (formItem.defaultValue) {
+        formInput.value = formItem.defaultValue;
+      }
+      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
+        formInput.style.display = "none";
       }
       formInput.oninput = function () {
         validateFormItem(formItem);

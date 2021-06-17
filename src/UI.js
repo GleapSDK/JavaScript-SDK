@@ -906,8 +906,6 @@ export const setColor = (color) => {
     }
     .bugbattle--feedback-type:hover {
       background-color: ${color}10;
-    }
-    .bugbattle--feedback-type:hover {
       border-bottom: 1px solid ${color}10;
     }
     `;
