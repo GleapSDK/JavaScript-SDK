@@ -120,7 +120,7 @@ class BugBattle {
         placeholder: "What feature would you like to see next?",
         type: "text",
         inputtype: "text",
-        name: "featureTitle",
+        name: "description",
         required: true,
       },
     ],
