@@ -2,12 +2,16 @@ const path = require("path");
 const webpack = require("webpack");
 const exec = require("child_process").exec;
 const TerserPlugin = require("terser-webpack-plugin");
+const minify = require("@node-minify/core");
+const cleanCSS = require("@node-minify/clean-css");
 
 module.exports = {
   mode: "production",
-  entry: "./src/index.js",
+  entry: {
+    index: "./src/index.js",
+  },
   output: {
-    filename: "index.js",
+    filename: "[name].js",
     path: path.resolve(__dirname, "build"),
     library: "BugBattle",
     libraryTarget: "umd",
@@ -59,11 +63,20 @@ module.exports = {
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
+          const nodeVersion = process.env.npm_package_version;
+
           exec(
-            "cp ./build/index.js published/v2/index.js",
+            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
+
+              // Using UglifyJS
+              minify({
+                compressor: cleanCSS,
+                input: "./src/css/index.css",
+                output: `published/v2/${nodeVersion}/bugbattle.core.min.css`,
+              });
             }
           );
         });

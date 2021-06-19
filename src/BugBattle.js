@@ -1,6 +1,6 @@
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
-import { setColor, applyBugbattleBaseCSS } from "./UI";
+import { setColor } from "./UI";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
 import { isMobile } from "./ImageHelper";
@@ -970,8 +970,6 @@ class BugBattle {
   }
 
   checkForInitType() {
-    applyBugbattleBaseCSS();
-
     setInterval(() => {
       if (this.replay && this.replay.isFull()) {
         BugBattle.enableReplays(this.replaysEnabled);

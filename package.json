@@ -1,6 +1,6 @@
 {
   "name": "bugbattle",
-  "version": "3.5.10",
+  "version": "4.0.1",
   "main": "build/index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -50,5 +50,9 @@
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/scripts/testMock.js",
       "\\.(css|less)$": "<rootDir>/scripts/testMock.js"
     }
+  },
+  "dependencies": {
+    "@node-minify/clean-css": "^6.2.0",
+    "@node-minify/core": "^6.2.0"
   }
 }
