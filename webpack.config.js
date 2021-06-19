@@ -75,7 +75,7 @@ module.exports = {
               minify({
                 compressor: cleanCSS,
                 input: "./src/css/index.css",
-                output: `published/v2/${nodeVersion}/bugbattle.core.min.css`,
+                output: `published/v2/${nodeVersion}/index.min.css`,
               });
             }
           );
