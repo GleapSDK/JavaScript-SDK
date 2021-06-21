@@ -5,6 +5,7 @@ const blacklist = [
   "//ajax.googleapis.com",
   "//use.typekit.net",
   ".amazonaws.com",
+  "//jssdk.bugbattle.io",
 ];
 
 export const isBlacklisted = function (url) {
