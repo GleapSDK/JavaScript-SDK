@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bugbattle</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      media="screen"
+      href="appwidget.css"
+    />
+  </head>
+
+  <body>
+    <!-- index.js as found in build/index.js -->
+    <script src="appwidget.js"></script>
+    <script src="main.js"></script>
+    <script>
+      BugBattle.widgetCallback(function (name, data) {
+        if (
+          window.webkit &&
+          window.webkit.messageHandlers &&
+          window.webkit.messageHandlers[name]
+        ) {
+          console.log("POST?");
+          window.webkit.messageHandlers[name].postMessage(data);
+        }
+      });
+    </script>
+  </body>
+</html>

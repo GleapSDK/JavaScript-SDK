@@ -7,66 +7,20 @@
 }
 
 .bugbattle--feedback-button {
-  padding: 0px;
-  margin: 0px;
-  position: fixed;
-  top: calc(50% - 58px);
-  right: 0px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
-  cursor: pointer;
-  background-color: #398cfe;
-  color: #fff;
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 916777260;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  box-sizing: border-box;
-}
-
-.bugbattle--feedback-button:hover {
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.25);
-}
-
-.bugbattle--feedback-button-inner {
-  position: relative;
-  width: 38px;
-  height: 116px;
-  padding: 0px;
-  margin: 0px;
-  position: relative;
-}
-
-.bugbattle--feedback-button-inner-text {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%) rotate(-90deg);
-  background: none;
-  text-align: center;
-  font-weight: bold;
-  font-size: 16px;
+  display: none;
 }
 
 .bugbattle--feedback-dialog-container {
-  position: fixed;
-  left: 0px;
-  top: 0px;
   width: 100vw;
   height: 100vh;
-  height: -webkit-fill-available;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 916777282;
-  background-color: rgba(105, 117, 129, 0.5);
 }
 
 .bugbattle--feedback-dialog {
   width: 90%;
   max-width: 400px;
-  background-color: #fff;
-  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
   box-sizing: border-box;
   position: relative;
 }
@@ -96,6 +50,7 @@
   background-color: #398cfe;
   box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.2);
   border-radius: 100%;
+  display: none;
 }
 
 .bugbattle--feedback-dialog-header-button-cancel svg {
@@ -135,7 +90,6 @@
 
 .bugbattle--feedback-types {
   margin: 40px 0px;
-  border-top: 1px solid #e9f1fd;
 }
 
 .bugbattle--feedback-type {
@@ -144,7 +98,12 @@
   align-items: center;
   padding: 20px;
   cursor: pointer;
-  border-bottom: 1px solid #e9f1fd;
+  border-radius: 8px;
+  box-shadow: 0px 3px 12px 0px rgba(0, 0, 0, 0.05);
+  margin-bottom: 15px;
+  margin-left: 30px;
+  margin-right: 30px;
+  border: 1px solid rgb(238, 236, 236);
 }
 
 .bugbattle--feedback-type:hover {
@@ -264,12 +223,16 @@
 
 .bugbattle--feedback-inputgroup > input,
 .bugbattle--feedback-inputgroup input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 1px solid #bfc0c2;
+  box-shadow: 2px 2px 8px 5px rgba(0, 0, 0, 0.02);
   width: auto;
   padding: 15px 12px;
   font-size: 15px;
   outline: none;
-  border: 1px solid #e9f1fd;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
   color: #000;
@@ -701,11 +664,15 @@ input.bugbattle--feedback-required {
   line-height: 17px;
   margin: 0px;
   box-sizing: border-box;
-  border: 1px solid #e9f1fd;
   background-color: #fafbfd;
   border-radius: 8px;
   box-sizing: border-box;
   color: #000;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border: 1px solid #bfc0c2;
+  box-shadow: 2px 2px 8px 5px rgba(0, 0, 0, 0.02);
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy {
@@ -713,15 +680,8 @@ input.bugbattle--feedback-required {
   font-size: 14px;
   flex-direction: row;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
-}
-
-.bugbattle--feedback-inputgroup--privacy-policy a {
-  color: #398cfe;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  display: inline;
 }
 
 .bugbattle--feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
@@ -740,7 +700,7 @@ input.bugbattle--feedback-required {
   position: relative;
   padding-left: 2.3em;
   font-size: 1.05em;
-  line-height: 1.7;
+  line-height: 1.2;
   cursor: pointer;
 }
 
@@ -794,6 +754,13 @@ input.bugbattle--feedback-required {
   opacity: 1;
   -webkit-transform: scale(1) rotate(0);
   transform: scale(1) rotate(0);
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy a {
+  color: #398cfe;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  display: inline;
 }
 
 .bugbattle-feedback-importance {
@@ -949,13 +916,21 @@ input.bugbattle--feedback-required {
     border-radius: 0px;
     box-sizing: border-box;
     max-width: inherit;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: column;
+    margin-top: 0px;
+  }
+  .bugbattle--feedback-dialog-header-button-cancel {
+    top: 20px;
+    right: 20px;
   }
   .bugbattle--feedback-dialog-header {
     border-radius: 0px;
+  }
+  .bugbattle--feedback-dialog-body {
+    width: 100%;
   }
   .bugbattle--feedback-button-inner {
     width: 32px;

@@ -64,8 +64,6 @@ BugBattle.enableShortcuts(true);
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setCustomerEmail("asdf@asdf.de");
-
 console.warn("DEMO!");
 console.log("HI!");
 
