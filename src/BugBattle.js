@@ -35,6 +35,7 @@ class BugBattle {
   formData = {};
   feedbackType = "BUG";
   sessionStart = new Date();
+  customActionCallbacks = [];
   poweredByHidden = false;
   enabledCrashDetector = false;
   enabledCrashDetectorSilent = false;
@@ -395,6 +396,41 @@ class BugBattle {
         }
       }
     );
+  }
+
+  /**
+   * Register custom action
+   */
+  static registerCustomAction(customAction) {
+    const instance = this.getInstance();
+
+    if (instance.customActionCallbacks) {
+      instance.customActionCallbacks.push(customAction);
+    }
+  }
+
+  /**
+   * Triggers a custom action
+   */
+  static triggerCustomAction(name) {
+    const instance = this.getInstance();
+
+    if (instance.widgetOnly && instance.widgetCallback) {
+      instance.widgetCallback("customActionCalled", {
+        name,
+      });
+    }
+
+    if (instance.customActionCallbacks) {
+      for (var i = 0; i < instance.customActionCallbacks.length; i++) {
+        var callback = instance.customActionCallbacks[i];
+        if (callback) {
+          callback({
+            name,
+          });
+        }
+      }
+    }
   }
 
   /**
