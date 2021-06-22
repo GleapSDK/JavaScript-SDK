@@ -700,7 +700,7 @@ input.bugbattle--feedback-required {
   position: relative;
   padding-left: 2.3em;
   font-size: 1.05em;
-  line-height: 1.2;
+  line-height: 22px;
   cursor: pointer;
 }
 
@@ -731,7 +731,7 @@ input.bugbattle--feedback-required {
   + label:after {
   content: "✕";
   position: absolute;
-  top: 0.525em;
+  top: .58em;
   left: 0.18em;
   font-size: 1.375em;
   color: #398cfe;
