@@ -78,6 +78,11 @@ module.exports = {
                 input: "./src/css/index.css",
                 output: `published/v2/${nodeVersion}/index.min.css`,
               });
+              minify({
+                compressor: cleanCSS,
+                input: "./demo/appwidget.css",
+                output: `published/v2/${nodeVersion}/appwidget.min.css`,
+              });
             }
           );
         });
