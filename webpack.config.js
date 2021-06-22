@@ -9,7 +9,6 @@ module.exports = {
   mode: "production",
   entry: {
     index: "./src/index.js",
-    appwidget: "./src/AppWidget.js",
   },
   output: {
     filename: "[name].js",
@@ -67,7 +66,7 @@ module.exports = {
           const nodeVersion = process.env.npm_package_version;
 
           exec(
-            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js & cp ./build/appwidget.js published/v2/${nodeVersion}/appwidget.js`,
+            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js & cp ./build/appwidget.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
