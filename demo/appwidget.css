@@ -664,7 +664,7 @@ input.bugbattle--feedback-required {
   line-height: 17px;
   margin: 0px;
   box-sizing: border-box;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
   color: #000;
@@ -921,6 +921,7 @@ input.bugbattle--feedback-required {
     align-items: center;
     flex-direction: column;
     margin-top: 0px;
+    margin-bottom: 60px;
   }
   .bugbattle--feedback-dialog-header-button-cancel {
     top: 20px;

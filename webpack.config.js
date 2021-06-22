@@ -66,7 +66,7 @@ module.exports = {
           const nodeVersion = process.env.npm_package_version;
 
           exec(
-            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js & cp ./build/appwidget.js`,
+            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
