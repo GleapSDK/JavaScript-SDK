@@ -921,7 +921,7 @@ input.bugbattle--feedback-required {
     align-items: center;
     flex-direction: column;
     margin-top: 0px;
-    margin-bottom: 60px;
+    margin-bottom: 64px;
   }
   .bugbattle--feedback-dialog-header-button-cancel {
     top: 20px;
