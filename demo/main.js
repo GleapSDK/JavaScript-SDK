@@ -1,7 +1,9 @@
 const BugBattle = window.BugBattle.default;
 
-/*BugBattle.isWidgetOnly(true);
+BugBattle.isWidgetOnly(true);
 BugBattle.widgetCallback(function (name, data) {
+  console.log(name);
+  console.log(data);
   if (
     typeof window.webkit !== 'undefined' &&
     window.webkit.messageHandlers &&
@@ -12,7 +14,15 @@ BugBattle.widgetCallback(function (name, data) {
   if (typeof BugBattleJSBridge !== 'undefined' && BugBattleJSBridge[name]) {
     BugBattleJSBridge[name](JSON.stringify(data));
   }
-});*/
+});
+
+BugBattle.initialize(
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
+  BugBattle.FEEDBACK_BUTTON
+);
+
+
+/*
 
 BugBattle.initialize(
   "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
@@ -92,4 +102,4 @@ xhttp.open(
   "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
   true
 );
-xhttp.send();
+xhttp.send();*/
