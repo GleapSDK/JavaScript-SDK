@@ -1201,7 +1201,9 @@ class BugBattle {
     }
 
     if (this.widgetOnly && this.widgetCallback) {
-      this.widgetCallback("openScreenshotEditor", {});
+      this.widgetCallback("openScreenshotEditor", {
+        screenshotEditorIsFirstStep: true
+      });
       this.createBugReportingDialog(feedbackOptions);
       return;
     }
