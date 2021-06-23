@@ -1208,9 +1208,7 @@ class BugBattle {
 
     if (this.widgetOnly && this.widgetCallback) {
       this.widgetCallback("openScreenshotEditor", {
-        screenshotEditorIsFirstStep: !(
-          feedbackOptions.form && feedbackOptions.form.length > 0
-        ),
+        screenshotEditorIsFirstStep: this.feedbackTypeActions.length > 0,
       });
       this.createBugReportingDialog(feedbackOptions);
       return;
