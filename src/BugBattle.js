@@ -945,8 +945,14 @@ class BugBattle {
 
     if (this.activation === BugBattle.FEEDBACK_BUTTON && !this.widgetOnly) {
       this.injectFeedbackButton();
-    } else {
-      BugBattle.startFeedbackTypeSelection();
+    }
+
+    if (this.widgetOnly) {
+      if (this.feedbackTypeActions.length > 0) {
+        BugBattle.startFeedbackTypeSelection();
+      } else {
+        BugBattle.startBugReporting();
+      }
     }
   }
 
