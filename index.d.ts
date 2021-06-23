@@ -21,7 +21,7 @@ declare module "bugbattle" {
       action: () => void;
     }
 
-    function startBugReporting(): void;
+    function startBugReporting(feedbackOptions?: any, silentBugReport?: boolean): void;
     function sendSilentBugReport(
       senderEmail: string,
       description: string,
@@ -29,6 +29,9 @@ declare module "bugbattle" {
     ): void;
     function setCustomerEmail(email: string): void;
     function attachCustomData(customData: any): void;
+    function setCustomData(key: string, value: string): void;
+    function removeCustomData(key: string): void;
+    function clearCustomData(): void;
     function enablePrivacyPolicy(enable: boolean): void;
     function setPrivacyPolicyUrl(privacyUrl: string): void;
     function setApiUrl(apiUrl: string): void;

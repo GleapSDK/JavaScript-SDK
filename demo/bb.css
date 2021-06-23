@@ -717,12 +717,6 @@ input.bugbattle--feedback-required {
   align-items: center;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy-label {
-  cursor: pointer;
-  align-items: center;
-  margin-left: 10px;
-}
-
 .bugbattle--feedback-inputgroup--privacy-policy a {
   color: #398cfe;
   margin-top: 0px;
@@ -730,11 +724,76 @@ input.bugbattle--feedback-required {
   display: inline;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy input {
-  width: auto;
-  border: none;
-  font-size: 15px;
-  outline: none;
+.bugbattle--feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
+.bugbattle--feedback-inputgroup--privacy-policy [type="checkbox"]:checked {
+  position: absolute;
+  left: 0;
+  opacity: 0.01;
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label,
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label {
+  position: relative;
+  padding-left: 2.3em;
+  font-size: 1.05em;
+  line-height: 1.7;
+  cursor: pointer;
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label:before,
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.4em;
+  height: 1.4em;
+  border: 1px solid #aaa;
+  background: #fff;
+  border-radius: 0.2em;
+  -webkit-transition: all 0.275s;
+  transition: all 0.275s;
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label:after,
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label:after {
+  content: "✕";
+  position: absolute;
+  top: 0.525em;
+  left: 0.18em;
+  font-size: 1.375em;
+  color: #398cfe;
+  line-height: 0;
+  -webkit-transition: all 0.2s;
+  transition: all 0.2s;
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label:after {
+  opacity: 0;
+  -webkit-transform: scale(0) rotate(45deg);
+  transform: scale(0) rotate(45deg);
+}
+
+.bugbattle--feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label:after {
+  opacity: 1;
+  -webkit-transform: scale(1) rotate(0);
+  transform: scale(1) rotate(0);
 }
 
 .bugbattle-feedback-importance {

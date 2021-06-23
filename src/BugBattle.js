@@ -312,7 +312,32 @@ class BugBattle {
    * @param {*} data
    */
   static attachCustomData(data) {
-    this.getInstance().customData = data;
+    const instance = this.getInstance();
+    instance.customData = Object.assign(instance.customData, data);
+  }
+
+  /**
+   * Add one key value pair to the custom data object
+   * @param {*} key The key of the custom data entry you want to add.
+   * @param {*} value The custom data you want to add.
+   */
+   static setCustomData(key, value) {
+    this.getInstance().customData[key] = value;
+  }
+
+  /**
+   * Remove one key value pair of the custom data object
+   * @param {*} key The key of the custom data entry you want to remove.
+   */
+   static removeCustomData(key) {
+    delete this.getInstance().customData[key];
+  }
+
+  /**
+   * Clear the custom data
+   */
+   static clearCustomData() {
+    this.getInstance().customData = {};
   }
 
   /**
