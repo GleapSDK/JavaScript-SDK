@@ -321,7 +321,7 @@ class BugBattle {
    * @param {*} key The key of the custom data entry you want to add.
    * @param {*} value The custom data you want to add.
    */
-   static setCustomData(key, value) {
+  static setCustomData(key, value) {
     this.getInstance().customData[key] = value;
   }
 
@@ -329,14 +329,14 @@ class BugBattle {
    * Remove one key value pair of the custom data object
    * @param {*} key The key of the custom data entry you want to remove.
    */
-   static removeCustomData(key) {
+  static removeCustomData(key) {
     delete this.getInstance().customData[key];
   }
 
   /**
    * Clear the custom data
    */
-   static clearCustomData() {
+  static clearCustomData() {
     this.getInstance().customData = {};
   }
 
@@ -1208,7 +1208,9 @@ class BugBattle {
 
     if (this.widgetOnly && this.widgetCallback) {
       this.widgetCallback("openScreenshotEditor", {
-        screenshotEditorIsFirstStep: true
+        screenshotEditorIsFirstStep: !(
+          feedbackOptions.form && feedbackOptions.form.length > 0
+        ),
       });
       this.createBugReportingDialog(feedbackOptions);
       return;
