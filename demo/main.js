@@ -5,14 +5,6 @@ BugBattle.initialize(
   BugBattle.FEEDBACK_BUTTON
 );
 
-
-/*
-
-BugBattle.initialize(
-  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
-  BugBattle.FEEDBACK_BUTTON
-);
-
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
@@ -86,4 +78,4 @@ xhttp.open(
   "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
   true
 );
-xhttp.send();*/
+xhttp.send();

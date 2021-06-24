@@ -654,6 +654,7 @@ class BugBattle {
 
   createBugReportingDialog(feedbackOptions) {
     const self = this;
+    
     const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
 
     var elem = document.createElement("div");
@@ -1210,7 +1211,10 @@ class BugBattle {
       this.widgetCallback("openScreenshotEditor", {
         screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
       });
-      this.createBugReportingDialog(feedbackOptions);
+      const self = this;
+      setTimeout(function () {
+        self.createBugReportingDialog(feedbackOptions);
+      });
       return;
     }
 
