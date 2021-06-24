@@ -974,3 +974,9 @@ input.bugbattle--feedback-required {
     border-width: 5px;
   }
 }
+
+@media print {
+  .bugbattle--feedback-button {
+    display: none !important;
+  }
+}
