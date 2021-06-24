@@ -492,7 +492,6 @@ class BugBattle {
       feedbackOptions.privacyPolicyUrl = instance.privacyPolicyUrl;
     }
 
-    // Default form data.
     if (
       instance.email &&
       feedbackOptions.form &&
@@ -654,7 +653,7 @@ class BugBattle {
 
   createBugReportingDialog(feedbackOptions) {
     const self = this;
-    
+
     const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
 
     var elem = document.createElement("div");
@@ -949,7 +948,9 @@ class BugBattle {
     }
 
     if (this.widgetOnly) {
-      if (this.feedbackTypeActions.length > 0) {
+      const self = this;
+
+      if (self.feedbackTypeActions.length > 0) {
         BugBattle.startFeedbackTypeSelection();
       } else {
         BugBattle.startBugReporting();
@@ -1211,10 +1212,7 @@ class BugBattle {
       this.widgetCallback("openScreenshotEditor", {
         screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
       });
-      const self = this;
-      setTimeout(function () {
-        self.createBugReportingDialog(feedbackOptions);
-      });
+      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 

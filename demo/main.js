@@ -1,5 +1,34 @@
 const BugBattle = window.BugBattle.default;
 
+/*BugBattle.isWidgetOnly(true);
+BugBattle.widgetCallback(function (name, data) {
+  if (
+    typeof window.webkit !== "undefined" &&
+    window.webkit.messageHandlers &&
+    window.webkit.messageHandlers[name]
+  ) {
+    window.webkit.messageHandlers[name].postMessage(data);
+  }
+  if (typeof BugBattleJSBridge !== "undefined" && BugBattleJSBridge[name]) {
+    BugBattleJSBridge[name](JSON.stringify(data));
+  }
+});
+BugBattle.setLogoUrl(
+  "https://bugbattlev2.s3.eu-central-1.amazonaws.com/gfeedback_widgets/ritKExt7RdrdwcFDMTJ0bO1S5olcEn.png"
+);
+BugBattle.setMainColor("#398cfe");
+BugBattle.enablePrivacyPolicy(true);
+BugBattle.setPrivacyPolicyUrl("https://www.bugbattle.io/privacy-policy/");
+BugBattle.enableReplays(true);
+BugBattle.enableShortcuts(true);
+BugBattle.enableNetworkLogger();
+BugBattle.setCustomerEmail("nklas@bbros.dev");
+BugBattle.setLanguage("de");
+BugBattle.initialize(
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
+  BugBattle.FEEDBACK_BUTTON
+);*/
+
 BugBattle.initialize(
   "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
   BugBattle.FEEDBACK_BUTTON
