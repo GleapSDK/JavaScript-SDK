@@ -11,8 +11,8 @@
   "Thank you for your feedback!": "Dank voor de terugkoppeling",
   "apikey_wrong": "BUGBATTLE: Voer een geldig API key in",
   "accept_policy_alert": "Graag de privacy voorwaarden lezen en accorderen.",
-  "accept_policy_text": "Ik ga akkoord met de",
-  "privacy_policy": " privacy voorwaarden",
+  "accept_policy_text": "Ik ga akkoord met de ",
+  "privacy_policy": "privacy voorwaarden",
   "Support": "Support",
   "Get in touch with us.": "Neem contact met ons op.",
   "Rate your experience": "Beoordeel uw ervaring",
@@ -20,5 +20,7 @@
   "Report an issue": "Meld een probleem",
   "Something is broken? Let us know!": "Is er iets kapot? Laat het ons weten!",
   "What feature would you like to see next?": "Welke functie zou je hierna willen zien?",
-  "Request a feature": "Vraag een functie aan"
+  "Request a feature": "Vraag een functie aan",
+  "Problems detected": "Problemen gedetecteerd",
+  "We are always here to help, please let us know what happened.": "We zijn altijd hier om te helpen, laat het ons weten wat er is gebeurd."
 }

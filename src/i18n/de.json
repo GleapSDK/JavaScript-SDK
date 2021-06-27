@@ -11,8 +11,8 @@
   "Thank you for your feedback!": "Vielen Dank für Ihr Feedback!",
   "apikey_wrong": "BUGBATTLE: Bitte gib einen gültigen API Key ein!",
   "accept_policy_alert": "Bitte lesen und akzeptieren Sie die Datenschutzerklärung.",
-  "accept_policy_text": "Ich akzeptiere die",
-  "privacy_policy": " Datenschutzerklärung",
+  "accept_policy_text": "Ich akzeptiere die ",
+  "privacy_policy": "Datenschutzerklärung",
   "Support": "Support",
   "Get in touch with us.": "Nimm Kontakt mit uns auf.",
   "Rate your experience": "Bewerte deine Erfahrung",
@@ -20,5 +20,7 @@
   "Report an issue": "Problem melden",
   "Something is broken? Let us know!": "Etwas funktioniert nicht? Lass es uns wissen!",
   "What feature would you like to see next?": "Welches Feature möchtest du als nächstes sehen?",
-  "Request a feature": "Feature Request"
+  "Request a feature": "Feature Request",
+  "Problems detected": "Probleme erkannt",
+  "We are always here to help, please let us know what happened.": "Wir sind immer für dich da, bitte teile uns mit was passiert ist."
 }

@@ -11,8 +11,8 @@
   "Thank you for your feedback!": "Merci pour votre feedback!",
   "apikey_wrong": "BUGBATTLE: Veuillez fournir un API key valide!",
   "accept_policy_alert": "Lire et accepter la politique privacité.",
-  "accept_policy_text": "J'ai lu et j'accepte la",
-  "privacy_policy": " politique de privacité",
+  "accept_policy_text": "J'ai lu et j'accepte la ",
+  "privacy_policy": "politique de privacité",
   "Support": "Supporto",
   "Get in touch with us.": "Contattaci.",
   "Rate your experience": "Vota la tua esperienza",
@@ -20,5 +20,7 @@
   "Report an issue": "Segnala un problema",
   "Something is broken? Let us know!": "Qualcosa si è rotto? Fatecelo sapere!",
   "What feature would you like to see next?": "Quelle fonctionnalité aimeriez-vous voir ensuite ?",
-  "Request a feature": "Richiedi una funzionalità"
+  "Request a feature": "Richiedi una funzionalità",
+  "Problems detected": "Problemi rilevati",
+  "We are always here to help, please let us know what happened.": "Siamo sempre qui per aiutarti, facci sapere cosa è successo."
 }

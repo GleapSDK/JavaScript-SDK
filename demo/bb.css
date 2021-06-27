@@ -116,6 +116,19 @@
   margin-top: 35px;
   margin-bottom: 20px;
   font-weight: bold;
+  line-height: 18px;
+}
+
+.bugbattle--feedback-dialog-header-description {
+  font-weight: normal;
+  text-align: center;
+  color: #192027;
+  font-size: 14px;
+  text-align: center;
+  margin-top: -14px;
+  margin-bottom: 20px;
+  font-weight: normal;
+  line-height: 18px;
 }
 
 .bugbattle--feedback-dialog-header-logo {
@@ -713,7 +726,7 @@ input.bugbattle--feedback-required {
   font-size: 14px;
   flex-direction: row;
   width: 100%;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
 }
 
@@ -738,8 +751,8 @@ input.bugbattle--feedback-required {
   [type="checkbox"]:checked
   + label {
   position: relative;
-  padding-left: 2.3em;
-  font-size: 1.05em;
+  padding-left: 2em;
+  font-size: 14px;
   line-height: 1.7;
   cursor: pointer;
 }

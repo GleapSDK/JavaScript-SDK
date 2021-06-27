@@ -17,6 +17,7 @@ import {
   rememberForm,
   validateForm,
 } from "./FeedbackForm";
+import { startRageClickDetector } from "./UXDetectors";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -39,6 +40,8 @@ class BugBattle {
   poweredByHidden = false;
   enabledCrashDetector = false;
   enabledCrashDetectorSilent = false;
+  enabledRageClickDetector = false;
+  enabledRageClickDetectorSilent = false;
   crashedWaitingForReload = false;
   currentlySendingBug = false;
   isLiveSite = false;
@@ -65,6 +68,29 @@ class BugBattle {
   // Activation methods
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
+  static FLOW_CRASH = {
+    title: "Problems detected",
+    description:
+      "We are always here to help, please let us know what happened.",
+    form: [
+      {
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        required: true,
+        remember: true,
+        hideOnDefaultSet: true,
+      },
+      {
+        placeholder: "What went wrong?",
+        type: "textarea",
+        name: "description",
+      },
+    ],
+    feedbackType: "BUG",
+    disableUserScreenshot: true,
+  };
   static FLOW_DEFAULT = {
     title: "Report an issue",
     form: [
@@ -365,6 +391,31 @@ class BugBattle {
   }
 
   /**
+   * Enables rage click detection.
+   * @param {*} silent
+   */
+  static enableRageClickDetector(silent = false) {
+    const instance = this.getInstance();
+
+    if (instance.enabledRageClickDetector) {
+      return;
+    }
+
+    instance.enabledRageClickDetector = true;
+    instance.enabledRageClickDetectorSilent = silent;
+
+    startRageClickDetector(function (target) {
+      console.log(instance.enabledRageClickDetectorSilent);
+      console.log(`Bugbattle: Rage clicked on element '${target}'`);
+      if (instance.enabledRageClickDetectorSilent) {
+        BugBattle.sendSilentBugReport(null, "Rage click detected.");
+      } else {
+        BugBattle.startBugReporting(BugBattle.FLOW_CRASH);
+      }
+    });
+  }
+
+  /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
    * @param {string} color
    */
@@ -389,16 +440,25 @@ class BugBattle {
    * @param {*} senderEmail
    * @param {*} description
    */
-  static sendSilentBugReport(senderEmail, description, priority) {
+  static sendSilentBugReport(
+    senderEmail,
+    description,
+    priority = BugBattle.PRIORITY_MEDIUM
+  ) {
     const instance = this.getInstance();
 
-    instance.formData = {
-      email: senderEmail,
-      description: description,
-    };
-    instance.severity = priority;
+    instance.formData = {};
+    if (senderEmail) {
+      instance.formData.reportedBy = senderEmail;
+    }
+    if (description) {
+      instance.formData.description = description;
+    }
 
-    this.startBugReporting({}, false);
+    instance.severity = priority;
+    instance.feedbackType = "BUG";
+    
+    this.startBugReporting({}, true);
   }
 
   /**
@@ -566,8 +626,8 @@ class BugBattle {
         "Column: " + columnNo,
         "Error object: " + JSON.stringify(error),
       ];
-      self.addLog(message, "error");
-
+      self.addLog(message, "ERROR");
+      
       if (
         self.enabledCrashDetector &&
         !self.crashedWaitingForReload &&
@@ -580,7 +640,7 @@ class BugBattle {
           )}\n`;
           BugBattle.sendSilentBugReport(null, errorMessage);
         } else {
-          BugBattle.startBugReporting();
+          BugBattle.startBugReporting(BugBattle.FLOW_CRASH);
         }
       }
 
@@ -651,10 +711,25 @@ class BugBattle {
     }
   }
 
+  buildDescription(feedbackOptions) {
+    var description = "";
+
+    if (feedbackOptions.description && feedbackOptions.description.length > 0) {
+      description = `<div class="bugbattle--feedback-dialog-header-description">${translateText(
+        feedbackOptions.description,
+        this.overrideLanguage
+      )}</div>`;
+    }
+
+    return description;
+  }
+
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
     const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
+
+    const description = this.buildDescription(feedbackOptions);
 
     var elem = document.createElement("div");
     elem.className = "bugbattle--feedback-dialog-container";
@@ -673,6 +748,7 @@ class BugBattle {
           feedbackOptions.title,
           this.overrideLanguage
         )}</div>
+        ${description}
       </div>
       <div class="bugbattle--feedback-dialog-loading">
         <svg
