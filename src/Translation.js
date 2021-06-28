@@ -3,6 +3,7 @@ import fr from "./i18n/fr.json";
 import it from "./i18n/it.json";
 import nl from "./i18n/nl.json";
 import cz from "./i18n/cz.json";
+import en from "./i18n/en.json";
 
 export const translateText = (key, overrideLanguage) => {
   let language = navigator.language;
@@ -10,7 +11,7 @@ export const translateText = (key, overrideLanguage) => {
     language = overrideLanguage;
   }
 
-  let languagePack = de;
+  let languagePack = en;
   if (/^de\b/.test(language)) {
     languagePack = de;
   }

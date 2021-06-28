@@ -46,6 +46,7 @@ declare module "bugbattle" {
     function enableNetworkLogger(): void;
     function enableShortcuts(enabled: boolean): void;
     function enableReplays(enabled: boolean): void;
+    function setLanguage(language: string): void;
     function setFeedbackButtonText(overrideButtonText: string): void;
     function setFeedbackTypeOptions(
       feedbackTypeOptions: FeedbackTypeOption[]
