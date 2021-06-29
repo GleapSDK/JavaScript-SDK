@@ -30,7 +30,7 @@ export const startRageClickDetector = function (callback) {
     },
     {
       interval: 750,
-      limit: 3,
+      limit: 4,
     }
   );
 };

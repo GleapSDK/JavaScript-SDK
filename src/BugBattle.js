@@ -972,6 +972,7 @@ class BugBattle {
     if (window && window.location && window.location.origin) {
       this.checkOnlineStatus(window.location.origin)
         .then(function (status) {
+          console.log(status);
           if (status && status.up) {
             self.isLiveSite = true;
           } else {

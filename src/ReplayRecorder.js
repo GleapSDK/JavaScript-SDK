@@ -35,50 +35,24 @@ export default class ReplayRecorder {
     return false;
   }
 
-  fetchCSSResource = (url, proxy = false) => {
+  fetchCSSResource = (url) => {
     var self = this;
     return new Promise((resolve, reject) => {
       if (url) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
-          if (proxy) {
-            xhr.response
-              .text()
-              .then((text) => {
-                resolve(text);
-              })
-              .catch(() => {
-                reject();
-              });
-          } else {
-            var reader = new FileReader();
-            reader.onloadend = function () {
-              resolve(reader.result);
-            };
-            reader.onerror = function () {
-              reject();
-            };
-            reader.readAsDataURL(xhr.response);
-          }
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            resolve(reader.result);
+          };
+          reader.onerror = function () {
+            reject();
+          };
+          reader.readAsDataURL(xhr.response);
         };
         xhr.onerror = function (err) {
-          // Retry with proxy.
-          if (proxy === false) {
-            self
-              .fetchCSSResource(url, true)
-              .then(() => {
-                resolve();
-              })
-              .catch(() => {
-                resolve();
-              });
-          } else {
-            resolve();
-          }
+          resolve();
         };
-        if (proxy) {
-          url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(url);
-        }
         xhr.open("GET", url);
         xhr.responseType = "blob";
         xhr.send();
@@ -174,51 +148,26 @@ export default class ReplayRecorder {
     }
   };
 
-  fetchItemResource = (src, proxy = false) => {
+  fetchItemResource = (src) => {
     const self = this;
 
     return new Promise((resolve, reject) => {
       if (src) {
         var xhr = new XMLHttpRequest();
         xhr.onload = function () {
-          if (proxy) {
-            xhr.response
-              .text()
-              .then((text) => {
-                self.progressResource(text, src, resolve, reject);
-              })
-              .catch(() => {
-                reject();
-              });
-          } else {
-            var reader = new FileReader();
-            reader.onloadend = function () {
-              self.progressResource(reader.result, src, resolve, reject);
-            };
-            reader.onerror = function () {
-              resolve();
-            };
-            reader.readAsDataURL(xhr.response);
-          }
+          var reader = new FileReader();
+          reader.onloadend = function () {
+            self.progressResource(reader.result, src, resolve, reject);
+          };
+          reader.onerror = function () {
+            resolve();
+          };
+          reader.readAsDataURL(xhr.response);
         };
         xhr.onerror = function (err) {
-          if (proxy === false) {
-            self
-              .fetchItemResource(src, true)
-              .then(() => {
-                resolve();
-              })
-              .catch(() => {
-                resolve();
-              });
-          } else {
-            reject();
-          }
+          reject();
         };
         var url = src;
-        if (proxy) {
-          url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(src);
-        }
         xhr.open("GET", url);
         xhr.responseType = "blob";
         xhr.send();

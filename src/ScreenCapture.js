@@ -69,6 +69,8 @@ const loadCSSUrlResources = (data, basePath) => {
             resourcePath = basePath + "/" + matchedUrl;
           }
 
+          console.log(resourcePath);
+
           return fetchCSSResource(resourcePath).then((resourceData) => {
             return resolve("url(" + resourceData + ")");
           });
@@ -79,7 +81,7 @@ const loadCSSUrlResources = (data, basePath) => {
   );
 };
 
-const fetchLinkItemResource = (elem, proxy = false) => {
+const fetchLinkItemResource = (elem) => {
   return new Promise((resolve, reject) => {
     var isCSS =
       elem.href.includes(".css") ||
@@ -101,18 +103,7 @@ const fetchLinkItemResource = (elem, proxy = false) => {
         resolve();
       };
       xhr.onerror = function (err) {
-        // Retry with proxy.
-        if (proxy === false) {
-          fetchLinkItemResource(elem, true)
-            .then(() => {
-              resolve();
-            })
-            .catch(() => {
-              resolve();
-            });
-        } else {
-          resolve();
-        }
+        resolve();
       };
       xhr.open("GET", elem.href);
       xhr.send();
@@ -122,7 +113,7 @@ const fetchLinkItemResource = (elem, proxy = false) => {
   });
 };
 
-const downloadAllScripts = (dom) => {
+const downloadAllLinkRefs = (dom) => {
   const linkItems = dom.querySelectorAll("link");
   const linkItemsPromises = [];
   for (var i = 0; i < linkItems.length; i++) {
@@ -133,48 +124,23 @@ const downloadAllScripts = (dom) => {
   return Promise.all(linkItemsPromises);
 };
 
-const fetchCSSResource = (url, proxy = false) => {
+const fetchCSSResource = (url) => {
   return new Promise((resolve, reject) => {
     if (url) {
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        if (proxy) {
-          xhr.response
-            .text()
-            .then((text) => {
-              resolve(text);
-            })
-            .catch(() => {
-              reject();
-            });
-        } else {
-          var reader = new FileReader();
-          reader.onloadend = function () {
-            resolve(reader.result);
-          };
-          reader.onerror = function () {
-            reject();
-          };
-          reader.readAsDataURL(xhr.response);
-        }
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          resolve(reader.result);
+        };
+        reader.onerror = function () {
+          reject();
+        };
+        reader.readAsDataURL(xhr.response);
       };
       xhr.onerror = function (err) {
-        // Retry with proxy.
-        if (proxy === false) {
-          fetchCSSResource(url, true)
-            .then(() => {
-              resolve();
-            })
-            .catch(() => {
-              resolve();
-            });
-        } else {
-          resolve();
-        }
+        resolve();
       };
-      if (proxy) {
-        url = "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(url);
-      }
       xhr.open("GET", url);
       xhr.responseType = "blob";
       xhr.send();
@@ -195,7 +161,7 @@ const progressResource = (data, elem, resolve, reject) => {
     });
 };
 
-const fetchItemResource = (elem, proxy = false) => {
+const fetchItemResource = (elem) => {
   return new Promise((resolve, reject) => {
     if (elem && elem.src) {
       if (isBlacklisted(elem.src)) {
@@ -204,44 +170,19 @@ const fetchItemResource = (elem, proxy = false) => {
 
       var xhr = new XMLHttpRequest();
       xhr.onload = function () {
-        if (proxy) {
-          xhr.response
-            .text()
-            .then((text) => {
-              progressResource(text, elem, resolve, reject);
-            })
-            .catch(() => {
-              reject();
-            });
-        } else {
-          var reader = new FileReader();
-          reader.onloadend = function () {
-            progressResource(reader.result, elem, resolve, reject);
-          };
-          reader.onerror = function () {
-            resolve();
-          };
-          reader.readAsDataURL(xhr.response);
-        }
+        var reader = new FileReader();
+        reader.onloadend = function () {
+          progressResource(reader.result, elem, resolve, reject);
+        };
+        reader.onerror = function () {
+          resolve();
+        };
+        reader.readAsDataURL(xhr.response);
       };
       xhr.onerror = function (err) {
-        if (proxy === false) {
-          fetchItemResource(elem, true)
-            .then(() => {
-              resolve();
-            })
-            .catch(() => {
-              resolve();
-            });
-        } else {
-          resolve();
-        }
+        resolve();
       };
       var url = elem.src;
-      if (proxy) {
-        url =
-          "https://jsproxy.bugbattle.io/?url=" + encodeURIComponent(elem.src);
-      }
       xhr.open("GET", url);
       xhr.responseType = "blob";
       xhr.send();
@@ -299,7 +240,7 @@ const getStyleSheetContentForStyle = (styleElement) => {
   return styleElement.innerHTML;
 };
 
-const downloadAllCSSUrlResources = (clone) => {
+const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
 
   const styleTags = clone.querySelectorAll("style");
@@ -307,14 +248,20 @@ const downloadAllCSSUrlResources = (clone) => {
     if (style) {
       const stylesheetContent = getStyleSheetContentForStyle(style);
       const basePath = style.getAttribute("bb-basepath");
-      promises.push(
-        loadCSSUrlResources(stylesheetContent, basePath).then(
-          (replacedStyle) => {
-            style.innerHTML = replacedStyle;
-            return;
-          }
-        )
-      );
+
+      if (remote) {
+        // No need to fetch resources.
+        style.innerHTML = stylesheetContent;
+      } else {
+        promises.push(
+          loadCSSUrlResources(stylesheetContent, basePath).then(
+            (replacedStyle) => {
+              style.innerHTML = replacedStyle;
+              return;
+            }
+          )
+        );
+      }
     }
   }
 
@@ -325,13 +272,13 @@ const optionallyPrepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
-      return downloadAllCSSUrlResources(clone).then(() => {
+      return downloadAllCSSUrlResources(clone, remote).then(() => {
         resolve();
       });
     } else {
       return downloadAllImages(clone).then(() => {
-        return downloadAllScripts(clone).then(() => {
-          return downloadAllCSSUrlResources(clone).then(() => {
+        return downloadAllLinkRefs(clone).then(() => {
+          return downloadAllCSSUrlResources(clone, remote).then(() => {
             resolve();
           });
         });

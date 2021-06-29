@@ -81,7 +81,3 @@ xhttp.open(
   true
 );
 xhttp.send();
-
-setTimeout(() => {
-  x = y;
-}, 5000);

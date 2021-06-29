@@ -181,6 +181,7 @@
 .bugbattle--feedback-type-title {
   font-weight: bold;
   font-size: 16px;
+  color: #000;
 }
 
 .bugbattle--feedback-elementtitle {
@@ -193,6 +194,7 @@
 .bugbattle--feedback-type-description {
   color: #666;
   font-size: 15px;
+  line-height: 1.2em;
 }
 
 .bugbattle--feedback-dialog-info-text {
@@ -709,6 +711,7 @@ input.bugbattle--feedback-required {
   box-shadow: none;
   resize: none;
   width: auto;
+  height: auto;
   padding: 12px;
   font-size: 15px;
   line-height: 17px;
