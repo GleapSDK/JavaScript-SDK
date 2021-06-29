@@ -405,8 +405,6 @@ class BugBattle {
     instance.enabledRageClickDetectorSilent = silent;
 
     startRageClickDetector(function (target) {
-      console.log(instance.enabledRageClickDetectorSilent);
-      console.log(`Bugbattle: Rage clicked on element '${target}'`);
       if (instance.enabledRageClickDetectorSilent) {
         BugBattle.sendSilentBugReport(null, "Rage click detected.");
       } else {
@@ -972,7 +970,6 @@ class BugBattle {
     if (window && window.location && window.location.origin) {
       this.checkOnlineStatus(window.location.origin)
         .then(function (status) {
-          console.log(status);
           if (status && status.up) {
             self.isLiveSite = true;
           } else {

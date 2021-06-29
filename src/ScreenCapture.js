@@ -68,9 +68,7 @@ const loadCSSUrlResources = (data, basePath) => {
           if (basePath) {
             resourcePath = basePath + "/" + matchedUrl;
           }
-
-          console.log(resourcePath);
-
+          
           return fetchCSSResource(resourcePath).then((resourceData) => {
             return resolve("url(" + resourceData + ")");
           });
