@@ -250,7 +250,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
       const basePath = style.getAttribute("bb-basepath");
 
       if (remote) {
-        // No need to fetch resources.
+        // No need to resolve nested resources.
         style.innerHTML = stylesheetContent;
       } else {
         promises.push(
@@ -268,7 +268,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   return Promise.all(promises);
 };
 
-const optionallyPrepareRemoteData = (clone, remote) => {
+const prepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
@@ -394,7 +394,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
     }
 
-    optionallyPrepareRemoteData(clone, remote).then(() => {
+    prepareRemoteData(clone, remote).then(() => {
       const html = documentToHTML(clone);
 
       resolve({
