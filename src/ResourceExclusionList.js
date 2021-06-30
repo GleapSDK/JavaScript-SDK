@@ -6,6 +6,7 @@ const blacklist = [
   "//use.typekit.net",
   ".amazonaws.com",
   "//jssdk.bugbattle.io",
+  ".gstatic.com",
 ];
 
 export const isBlacklisted = function (url) {
