@@ -271,19 +271,13 @@ const prepareRemoteData = (clone, remote) => {
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
-      console.log("Downloading CSS...");
       return downloadAllCSSUrlResources(clone, remote).then(() => {
-        console.log("Done...");
         resolve();
       });
     } else {
-      console.log("Downloading Images...");
       return downloadAllImages(clone).then(() => {
-        console.log("Downloading CSS...");
         return downloadAllLinkRefs(clone).then(() => {
-          console.log("Downloading LINK...");
           return downloadAllCSSUrlResources(clone, remote).then(() => {
-            console.log("Done...");
             resolve();
           });
         });

@@ -33,6 +33,15 @@ BugBattle.setFeedbackTypeOptions([
   },
 ]);
 
+BugBattle.enableNetworkLogger();
+
+fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then((data) => {
+  console.log(data);
+  data.arrayBuffer().then((d) => {
+    console.log(d);
+  });
+});
+
 // BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.setAppBuildNumber("2345");
@@ -40,8 +49,6 @@ BugBattle.setAppBuildNumber("2345");
 BugBattle.enableReplays(true);
 
 BugBattle.enablePoweredByBugbattle(true);
-
-BugBattle.enableNetworkLogger();
 
 BugBattle.enableCrashDetector(true, false);
 

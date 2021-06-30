@@ -234,14 +234,27 @@ class BugBattleNetworkIntercepter {
           return originalFetch
             .apply(this, arguments)
             .then(function (data) {
-              return data.text().then((textData) => {
+              return data.blob().then((blobData) => {
+
                 data.text = function () {
-                  return Promise.resolve(textData);
+                  return self.blobToTextPromise(blobData);
                 };
 
                 data.json = function () {
-                  return Promise.resolve(JSON.parse(textData));
+                  return self
+                    .blobToTextPromise(blobData)
+                    .then(function (textData) {
+                      return JSON.parse(textData);
+                    });
                 };
+
+                data.blob = function () {
+                  return Promise.resolve(blobData);
+                };
+
+                data.arrayBuffer = function () {
+                  return blobData.arrayBuffer();
+                }
 
                 callback.onFetchLoad(data, bbRequestId);
 
@@ -257,6 +270,23 @@ class BugBattleNetworkIntercepter {
     }
 
     return callback;
+  }
+
+  blobToTextPromise(blob) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onload = function (evt) {
+        if (evt && evt.target && evt.target.result) {
+          resolve(evt.target.result);
+        } else {
+          reject();
+        }
+      };
+      fr.onerror = function (err) {
+        reject(err);
+      };
+      fr.readAsText(blob);
+    });
   }
 }
 
