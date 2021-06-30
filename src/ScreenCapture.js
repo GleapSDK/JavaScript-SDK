@@ -68,7 +68,7 @@ const loadCSSUrlResources = (data, basePath) => {
           if (basePath) {
             resourcePath = basePath + "/" + matchedUrl;
           }
-          
+
           return fetchCSSResource(resourcePath).then((resourceData) => {
             return resolve("url(" + resourceData + ")");
           });
@@ -267,16 +267,23 @@ const downloadAllCSSUrlResources = (clone, remote) => {
 };
 
 const prepareRemoteData = (clone, remote) => {
+  console.log("Preparing remote data... " + remote);
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
+      console.log("Downloading CSS...");
       return downloadAllCSSUrlResources(clone, remote).then(() => {
+        console.log("Done...");
         resolve();
       });
     } else {
+      console.log("Downloading Images...");
       return downloadAllImages(clone).then(() => {
+        console.log("Downloading CSS...");
         return downloadAllLinkRefs(clone).then(() => {
+          console.log("Downloading LINK...");
           return downloadAllCSSUrlResources(clone, remote).then(() => {
+            console.log("Done...");
             resolve();
           });
         });
