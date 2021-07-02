@@ -306,10 +306,7 @@ export default class ReplayRecorder {
           }
           case "PRE":
           case "DIV": {
-            if (
-              node.classList.contains("hidden") &&
-              window.REPLAYREC_SKIP_HIDDEN_IDS.indexOf(node.id) >= 0
-            ) {
+            if (node.classList.contains("bb-hidden")) {
               delete node.ReplayRecID;
               return null;
             }
