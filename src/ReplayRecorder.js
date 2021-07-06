@@ -46,7 +46,7 @@ export default class ReplayRecorder {
             resolve(reader.result);
           };
           reader.onerror = function () {
-            reject();
+            resolve();
           };
           reader.readAsDataURL(xhr.response);
         };
