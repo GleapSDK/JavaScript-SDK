@@ -76,20 +76,6 @@ BugBattle.setPrivacyPolicyUrl("htpp...");
 console.warn("DEMO!");
 console.log("HI!");
 
-BugBattle.setCustomTranslation({
-  xx: {
-    "Rate your experience": "XX translation goes here..."
-  },
-  en: {
-    "Rate your experience": "English translation goes here..."
-  },
-  es: {
-    "Rate your experience": "Spanish translation goes here..."
-  }
-});
-
-BugBattle.setLanguage("xx");
-
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function () {
   if (this.readyState == 4 && this.status == 200) {
