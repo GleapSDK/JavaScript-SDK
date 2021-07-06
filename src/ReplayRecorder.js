@@ -165,7 +165,7 @@ export default class ReplayRecorder {
           reader.readAsDataURL(xhr.response);
         };
         xhr.onerror = function (err) {
-          reject();
+          resolve();
         };
         var url = src;
         xhr.open("GET", url);

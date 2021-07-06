@@ -267,21 +267,28 @@ const downloadAllCSSUrlResources = (clone, remote) => {
 };
 
 const prepareRemoteData = (clone, remote) => {
-  console.log("Preparing remote data... " + remote);
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
-      return downloadAllCSSUrlResources(clone, remote).then(() => {
-        resolve();
-      });
-    } else {
-      return downloadAllImages(clone).then(() => {
-        return downloadAllLinkRefs(clone).then(() => {
-          return downloadAllCSSUrlResources(clone, remote).then(() => {
-            resolve();
-          });
+      return downloadAllCSSUrlResources(clone, remote)
+        .then(() => {
+          resolve();
+        })
+        .catch(() => {
+          reject();
         });
-      });
+    } else {
+      return downloadAllImages(clone)
+        .then(() => {
+          return downloadAllLinkRefs(clone).then(() => {
+            return downloadAllCSSUrlResources(clone, remote).then(() => {
+              resolve();
+            });
+          });
+        })
+        .catch(() => {
+          reject();
+        });
     }
   });
 };
@@ -392,7 +399,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     for (var i = 0; i < bbElems.length; ++i) {
       bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
     }
-
+    
     prepareRemoteData(clone, remote).then(() => {
       const html = documentToHTML(clone);
 
