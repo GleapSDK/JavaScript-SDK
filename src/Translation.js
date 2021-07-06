@@ -13,12 +13,15 @@ const translations = {
   cz,
   en,
 };
-const translationKeys = Object.keys(translations);
 
 import BugBattle from "./BugBattle";
 
 export const translateText = (key, overrideLanguage) => {
   const instance = BugBattle.getInstance();
+  const translationKeys = Object.keys(translations).concat(
+    Object.keys(instance.customTranslation)
+  );
+
   var language = navigator.language;
   if (overrideLanguage !== "") {
     language = overrideLanguage;
@@ -33,10 +36,7 @@ export const translateText = (key, overrideLanguage) => {
       if (translations[translationKey]) {
         languagePack = translations[translationKey];
       }
-      if (
-        instance.customTranslation &&
-        instance.customTranslation[translationKey]
-      ) {
+      if (instance.customTranslation[translationKey]) {
         customTranslation = instance.customTranslation[translationKey];
       }
     }
