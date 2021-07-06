@@ -58,6 +58,7 @@ class BugBattle {
   mainColor = "#398CFE";
   feedbackTypeActions = [];
   previousBodyOverflow;
+  customTranslation = {};
   networkIntercepter = new BugBattleNetworkIntercepter();
   replay = null;
   snapshotPosition = {
@@ -235,13 +236,21 @@ class BugBattle {
   }
 
   /**
+   * Set a custom translation object
+   * @param {any} customTranslation
+   */
+   static setCustomTranslation(customTranslation) {
+    this.getInstance().customTranslation = customTranslation;
+  }
+
+  /**
    * Set widget only
    * @param {boolean} widgetOnly
    */
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
   }
-
+  
   static widgetCallback(widgetCallback) {
     this.getInstance().widgetCallback = widgetCallback;
   }
@@ -783,10 +792,10 @@ class BugBattle {
         <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
           <input id="bugbattlePrivacyPolicy" type="checkbox" required />
           <label for="bugbattlePrivacyPolicy" class="bugbattle--feedback-inputgroup--privacy-policy-label">${translateText(
-            "accept_policy_text",
+            "I read and accept the",
             this.overrideLanguage
           )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${translateText(
-      "privacy_policy",
+      " privacy policy",
       this.overrideLanguage
     )}</a>.</label>
         </div>
@@ -845,13 +854,13 @@ class BugBattle {
         ".bugbattle--feedback-inputgroup--privacy-policy input"
       );
       if (feedbackOptions.privacyPolicyEnabled && !privacyPolicyInput.checked) {
-        alert(translateText("accept_policy_alert", self.overrideLanguage));
+        alert(translateText("Please read and accept the privacy policy.", self.overrideLanguage));
         return;
       }
 
       // Check API key
       if (!self.sdkKey) {
-        return alert(translateText("apikey_wrong", self.overrideLanguage));
+        return alert(translateText("Wrong API key", self.overrideLanguage));
       }
 
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
@@ -1036,7 +1045,7 @@ class BugBattle {
     const self = this;
 
     var feedbackButtonText = translateText(
-      "feedback_btn_title",
+      "Feedback",
       self.overrideLanguage
     );
 
@@ -1301,7 +1310,7 @@ class BugBattle {
           <div class='bugbattle-screenshot-editor-dot'></div>
           <div class='bugbattle-screenshot-editor-rectangle'></div>
           <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
-            "click_and_drag",
+            "Click or drag to comment",
             self.overrideLanguage
           )}</div>
         </div>

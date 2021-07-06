@@ -5,30 +5,45 @@ import nl from "./i18n/nl.json";
 import cz from "./i18n/cz.json";
 import en from "./i18n/en.json";
 
+const translations = {
+  de,
+  fr,
+  it,
+  nl,
+  cz,
+  en,
+};
+const translationKeys = Object.keys(translations);
+
+import BugBattle from "./BugBattle";
+
 export const translateText = (key, overrideLanguage) => {
-  let language = navigator.language;
+  const instance = BugBattle.getInstance();
+  var language = navigator.language;
   if (overrideLanguage !== "") {
     language = overrideLanguage;
   }
 
-  let languagePack = en;
-  if (/^de\b/.test(language)) {
-    languagePack = de;
+  var languagePack = en;
+  var customTranslation = {};
+
+  for (let i = 0; i < translationKeys.length; i++) {
+    const translationKey = translationKeys[i];
+    if (language && language.includes(translationKey)) {
+      if (translations[translationKey]) {
+        languagePack = translations[translationKey];
+      }
+      if (
+        instance.customTranslation &&
+        instance.customTranslation[translationKey]
+      ) {
+        customTranslation = instance.customTranslation[translationKey];
+      }
+    }
   }
-  if (/^it\b/.test(language)) {
-    languagePack = it;
-  }
-  if (/^fr\b/.test(language)) {
-    languagePack = fr;
-  }
-  if (/^it\b/.test(language)) {
-    languagePack = it;
-  }
-  if (/^nl\b/.test(language)) {
-    languagePack = nl;
-  }
-  if (/^cs\b/.test(language)) {
-    languagePack = cz;
+
+  if (customTranslation[key]) {
+    return customTranslation[key];
   }
 
   if (languagePack[key]) {

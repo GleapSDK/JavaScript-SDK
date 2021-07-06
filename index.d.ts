@@ -37,6 +37,7 @@ declare module "bugbattle" {
     function setApiUrl(apiUrl: string): void;
     function enableRageClickDetector(silent?: boolean): void;
     function setLogoUrl(logoUrl: string): void;
+    function setCustomTranslation(customTranslation: any): void;
     function enableCrashDetector(enabled: boolean, silent?: boolean): void;
     function setAppBuildNumber(buildNumber: string): void;
     function setAppVersionCode(versionCode: string): void;
