@@ -32,6 +32,7 @@ class BugBattle {
   screenshot = null;
   actionLog = [];
   logArray = [];
+  eventArray = [];
   customData = {};
   formData = {};
   feedbackType = "BUG";
@@ -236,11 +237,12 @@ class BugBattle {
   }
 
   /**
-   * Set a custom translation object
-   * @param {any} customTranslation
+   * Logs a custom event
+   * @param {string} name
+   * @param {any} data
    */
-   static setCustomTranslation(customTranslation) {
-    this.getInstance().customTranslation = customTranslation;
+  static logEvent(name, data) {
+    this.getInstance().logEvent(name, data);
   }
 
   /**
@@ -250,7 +252,7 @@ class BugBattle {
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
   }
-  
+
   static widgetCallback(widgetCallback) {
     this.getInstance().widgetCallback = widgetCallback;
   }
@@ -464,7 +466,7 @@ class BugBattle {
 
     instance.severity = priority;
     instance.feedbackType = "BUG";
-    
+
     this.startBugReporting({}, true);
   }
 
@@ -530,6 +532,21 @@ class BugBattle {
    */
   static setFeedbackTypeOptions(feedbackTypeOptions) {
     this.getInstance().feedbackTypeActions = feedbackTypeOptions;
+  }
+
+  logEvent(name, data) {
+    if (this.eventArray.length > 1000) {
+      this.eventArray.shift();
+    }
+
+    let log = {
+      name,
+      date: new Date(),
+    };
+    if (data) {
+      log.data = data;
+    }
+    this.eventArray.push(log);
   }
 
   stopBugReportingAnalytics() {
@@ -634,7 +651,7 @@ class BugBattle {
         "Error object: " + JSON.stringify(error),
       ];
       self.addLog(message, "ERROR");
-      
+
       if (
         self.enabledCrashDetector &&
         !self.crashedWaitingForReload &&
@@ -854,7 +871,12 @@ class BugBattle {
         ".bugbattle--feedback-inputgroup--privacy-policy input"
       );
       if (feedbackOptions.privacyPolicyEnabled && !privacyPolicyInput.checked) {
-        alert(translateText("Please read and accept the privacy policy.", self.overrideLanguage));
+        alert(
+          translateText(
+            "Please read and accept the privacy policy.",
+            self.overrideLanguage
+          )
+        );
         return;
       }
 
@@ -1044,10 +1066,7 @@ class BugBattle {
   injectFeedbackButton() {
     const self = this;
 
-    var feedbackButtonText = translateText(
-      "Feedback",
-      self.overrideLanguage
-    );
+    var feedbackButtonText = translateText("Feedback", self.overrideLanguage);
 
     if (this.overrideButtonText) {
       feedbackButtonText = this.overrideButtonText;
@@ -1168,6 +1187,7 @@ class BugBattle {
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
       networkLogs: this.networkIntercepter.getRequests(),
+      customEventLog: this.eventArray,
       type: this.feedbackType,
       formData: this.formData,
     };

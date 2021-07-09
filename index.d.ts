@@ -35,6 +35,7 @@ declare module "bugbattle" {
     function enablePrivacyPolicy(enable: boolean): void;
     function setPrivacyPolicyUrl(privacyUrl: string): void;
     function setApiUrl(apiUrl: string): void;
+    function logEvent(name: string, data: any): void;
     function enableRageClickDetector(silent?: boolean): void;
     function setLogoUrl(logoUrl: string): void;
     function setCustomTranslation(customTranslation: any): void;

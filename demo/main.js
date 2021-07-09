@@ -5,6 +5,8 @@ BugBattle.initialize(
   BugBattle.FEEDBACK_BUTTON
 );
 
+BugBattle.logEvent("Booted");
+
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
@@ -64,6 +66,8 @@ BugBattle.attachCustomData({
   data2: "Unicorn",
 });
 
+BugBattle.logEvent("Booted");
+
 BugBattle.enableRageClickDetector(true);
 
 // Disable shortcuts
@@ -88,3 +92,22 @@ xhttp.open(
   true
 );
 xhttp.send();
+
+var xhttpa = new XMLHttpRequest();
+xhttpa.onreadystatechange = function () {
+  if (this.readyState == 4 && this.status == 200) {
+    console.log(this.responseText);
+  }
+};
+xhttpa.open(
+  "GET",
+  "https://runa.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
+  true
+);
+xhttpa.send();
+
+BugBattle.logEvent("Sample", {
+  userId: 1234
+});
+
+console.error("Demo error");
