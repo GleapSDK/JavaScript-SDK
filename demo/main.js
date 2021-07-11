@@ -111,3 +111,17 @@ BugBattle.logEvent("Sample", {
 });
 
 console.error("Demo error");
+
+BugBattle.logEvent("User signed in", {
+  userId: 1242,
+  name: "Isabella",
+  skillLevel: "🤩"
+});
+
+setTimeout(() => {
+  BugBattle.logEvent("User signed out", {
+    userId: 1242,
+    name: "Isabella",
+    skillLevel: "🤩"
+});
+}, 5000);

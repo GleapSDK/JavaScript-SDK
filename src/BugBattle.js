@@ -961,8 +961,12 @@ class BugBattle {
   }
 
   reportCleanup() {
-    BugBattle.enableReplays(this.replaysEnabled);
-    this.networkIntercepter.setStopped(false);
+    try {
+      BugBattle.enableReplays(this.replaysEnabled);
+    } catch (exp) {}
+    try {
+      this.networkIntercepter.setStopped(false);
+    } catch (exp) {}
     this.currentlySendingBug = false;
   }
 
