@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <script src="/htmlimports.js"></script>
     <title>Bugbattle</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,13 +13,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="bb.css" />
+    <link rel="import" href="https://dev.webcomponent.calenso.com/booking.html">
   </head>
 
   <body>
     <img class="logo" src="./bugbattlelogo.png" />
     <div class="header">
       <div class="header-container">
-        <h1>JavaScript Demo</h1>
+        <h1>JavaScript Damo</h1>
         <h2>Bugbattle SDK for the Web</h2>
       </div>
       <div class="header-container-image">
@@ -43,14 +45,10 @@
         >In less than a minute you can add our Bugbattle SDK to your App or
         WebApp. Install our SDK, build and run. A piece of cake.</span
       >
-      <br /><br />
-      <a id="feedback-button" onclick="BugBattle.logEvent('Booted');">Report feedback</a>
       <br />
       <br />
       <span>What are you waiting for?</span>
       <br />
-      <input type="text" placeholder="Demo" />
-      <input type="password" placeholder="Secure" />
       <br />
       <a class="buttonlink" href="https://www.bugbattle.io/">Get started</a>
     </div>
@@ -62,6 +60,8 @@
         ctx.beginPath();
         ctx.arc(95, 50, 40, 0, 2 * Math.PI);
         ctx.stroke();
+
+
       </script>
     </div>
     <!-- index.js as found in build/index.js -->

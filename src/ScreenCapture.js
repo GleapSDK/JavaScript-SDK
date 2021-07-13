@@ -155,7 +155,8 @@ const progressResource = (data, elem, resolve, reject) => {
       resolve();
     })
     .catch(() => {
-      reject();
+      console.warn("BB: Image resize failed.");
+      resolve();
     });
 };
 
@@ -275,7 +276,7 @@ const prepareRemoteData = (clone, remote) => {
           resolve();
         })
         .catch(() => {
-          reject();
+          resolve();
         });
     } else {
       return downloadAllImages(clone)
@@ -287,7 +288,8 @@ const prepareRemoteData = (clone, remote) => {
           });
         })
         .catch(() => {
-          reject();
+          console.warn("BB: Failed with resolving local resources. Please contact the Bugbattle support team.")
+          resolve();
         });
     }
   });
@@ -340,6 +342,33 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
     const clone = window.document.documentElement.cloneNode(true);
 
+    // Fix for web imports (depracted).
+    /*const linkImportElems = clone.querySelectorAll("link[rel=import]");
+    for (var i = 0; i < linkImportElems.length; ++i) {
+      const referenceNode = linkImportElems[i];
+      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
+
+        console.log("REF:");
+        console.log(referenceNode);
+        console.log(referenceNode.childNodes);
+        console.log(referenceNode.children);
+        console.log(referenceNode.childNodes.length);
+
+        for (var j = 0; j < referenceNode.childNodes.length; ++j) {
+          console.log("insertBefore:");
+          console.log(referenceNode.childNodes.length);
+          console.log(j);
+          console.log(referenceNode.childNodes[j]);
+          referenceNode.parentNode.insertBefore(referenceNode.childNodes[j], referenceNode);
+        }
+        referenceNode.remove();
+      }
+    }
+
+    console.log(clone.outerHTML);
+
+    return;*/
+
     // Copy values
     const selectElems = clone.querySelectorAll("select, textarea, input");
     for (var i = 0; i < selectElems.length; ++i) {
@@ -373,7 +402,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     for (var i = 0; i < scriptElems.length; ++i) {
       scriptElems[i].remove();
     }
-
+    
     // Cleanup base path
     const baseElems = clone.querySelectorAll("base");
     for (var i = 0; i < baseElems.length; ++i) {
