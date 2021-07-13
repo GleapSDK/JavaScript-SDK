@@ -343,16 +343,31 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     const clone = window.document.documentElement.cloneNode(true);
 
     // Fix for web imports (depracted).
-    const linkImportElems = clone.querySelectorAll("link[rel=import]");
+    /*const linkImportElems = clone.querySelectorAll("link[rel=import]");
     for (var i = 0; i < linkImportElems.length; ++i) {
-      if (linkImportElems[i] && linkImportElems[i].childNodes && linkImportElems[i].childNodes.length > 0) {
-        for (var j = 0; j < linkImportElems[i].childNodes.length; ++j) {
-          const referenceNode = linkImportElems[i];
-          referenceNode.parentNode.insertBefore(linkImportElems[i].childNodes[j], referenceNode.nextSibling);
+      const referenceNode = linkImportElems[i];
+      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
+
+        console.log("REF:");
+        console.log(referenceNode);
+        console.log(referenceNode.childNodes);
+        console.log(referenceNode.children);
+        console.log(referenceNode.childNodes.length);
+
+        for (var j = 0; j < referenceNode.childNodes.length; ++j) {
+          console.log("insertBefore:");
+          console.log(referenceNode.childNodes.length);
+          console.log(j);
+          console.log(referenceNode.childNodes[j]);
+          referenceNode.parentNode.insertBefore(referenceNode.childNodes[j], referenceNode);
         }
-        linkImportElems[i].remove();
+        referenceNode.remove();
       }
     }
+
+    console.log(clone.outerHTML);
+
+    return;*/
 
     // Copy values
     const selectElems = clone.querySelectorAll("select, textarea, input");
