@@ -867,7 +867,7 @@ input.bugbattle--feedback-required {
 }
 
 .bugbattle--progress-ring__circle {
-  transition: 0.35s stroke-dashoffset;
+  transition: 0.2s stroke-dashoffset;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
 }

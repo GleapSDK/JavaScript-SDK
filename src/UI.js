@@ -183,3 +183,15 @@ export const hookDialogCloseButton = function (closeBugBattle) {
 
   cancelButton.onclick = closeBugBattle;
 };
+
+export const setLoadingIndicatorProgress = function (percentComplete) {
+  const circle = window.document.querySelector(
+    ".bugbattle--progress-ring__circle"
+  );
+  const circumference = 213.628300444;
+  const offset = circumference - (percentComplete / 100) * circumference;
+  if (circle) {
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = offset;
+  }
+};

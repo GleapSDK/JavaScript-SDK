@@ -3,6 +3,7 @@ export const REPLAYREC_CANVAS_DATA = "c";
 export const REPLAYREC_DELAY = "o";
 export const REPLAYREC_FORCE_STYLE_FLUSH = "f";
 export const REPLAYREC_INPUT = "i";
+export const REPLAYREC_INPUTCHECK = "z";
 export const REPLAYREC_MOUSE_MOVE = "m";
 export const REPLAYREC_MOUSE_DOWN = "n";
 export const REPLAYREC_ATTR = "r";

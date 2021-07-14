@@ -5,6 +5,7 @@ import {
   getHeaderImage,
   hookDialogCloseButton,
   setColor,
+  setLoadingIndicatorProgress,
   validatePoweredBy,
 } from "./UI";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
@@ -62,6 +63,8 @@ class BugBattle {
   customTranslation = {};
   networkIntercepter = new BugBattleNetworkIntercepter();
   replay = null;
+  fakeLoading = null;
+  fakeLoadingProgress = 0;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -748,6 +751,17 @@ class BugBattle {
     return description;
   }
 
+  resetLoading(resetProgress) {
+    if (this.fakeLoading) {
+      clearInterval(this.fakeLoading);
+    }
+    this.fakeLoading = null;
+    this.fakeLoadingProgress = 0;
+    if (resetProgress) {
+      setLoadingIndicatorProgress(1);
+    }
+  }
+
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
@@ -848,7 +862,7 @@ class BugBattle {
     </div>`;
     document.body.appendChild(elem);
 
-    this.resetLoadingCircle();
+    this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
     hookDialogCloseButton(this.closeBugBattle.bind(this));
     this.hookPrivacyPolicy(feedbackOptions);
@@ -888,6 +902,16 @@ class BugBattle {
       window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
       self.toggleLoading(true);
 
+      // Start fake loading
+      self.fakeLoading = setInterval(function () {
+        if (self.fakeLoadingProgress > 50) {
+          self.resetLoading(false);
+          return;
+        }
+        self.fakeLoadingProgress += 2;
+        setLoadingIndicatorProgress(self.fakeLoadingProgress);
+      }, 200);
+      
       // Send form
       const formData = getFormData(feedbackOptions.form);
       self.formData = formData;
@@ -924,15 +948,6 @@ class BugBattle {
     } else {
       privacyPolicyContainer.style.display = "none";
     }
-  }
-
-  resetLoadingCircle() {
-    const circle = document.querySelector(".bugbattle--progress-ring__circle");
-    const circumference = 213.628300444;
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
-
-    const offset = circumference - (1 / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
   }
 
   checkReplayLoaded(retries = 0) {
@@ -1158,13 +1173,12 @@ class BugBattle {
 
       if (e.lengthComputable) {
         const percentComplete = parseInt((e.loaded / e.total) * 100);
-        const circle = window.document.querySelector(
-          ".bugbattle--progress-ring__circle"
-        );
-        const circumference = 213.628300444;
-        const offset = circumference - (percentComplete / 100) * circumference;
-        if (circle) {
-          circle.style.strokeDashoffset = offset;
+
+        if (percentComplete > 25 && percentComplete > self.fakeLoadingProgress) {
+          if (self.fakeLoading) {
+            self.resetLoading(false);
+          }
+          setLoadingIndicatorProgress(percentComplete);
         }
       }
     };

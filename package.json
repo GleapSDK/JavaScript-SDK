@@ -1,6 +1,6 @@
 {
   "name": "bugbattle",
-  "version": "4.1.5",
+  "version": "4.1.6",
   "main": "build/index.js",
   "types": "index.d.ts",
   "scripts": {

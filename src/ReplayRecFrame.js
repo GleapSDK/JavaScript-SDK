@@ -2,6 +2,7 @@ import {
   REPLAYREC_CANVAS_DATA,
   REPLAYREC_FORCE_STYLE_FLUSH,
   REPLAYREC_INPUT,
+  REPLAYREC_INPUTCHECK,
   REPLAYREC_MOUSE_DOWN,
   REPLAYREC_MOUSE_MOVE,
   REPLAYREC_MOUSE_UP,
@@ -87,6 +88,13 @@ export default class ReplayRecFrame {
         }
         this.rec.actions.push({
           [REPLAYREC_INPUT]: [id, val],
+        });
+      }
+
+      if (id && "type" in event.target && event.target.type === "checkbox") {
+        var checked = event.target.checked;
+        this.rec.actions.push({
+          [REPLAYREC_INPUTCHECK]: [id, checked],
         });
       }
     };
