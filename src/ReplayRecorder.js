@@ -332,7 +332,7 @@ export default class ReplayRecorder {
             }
 
             // HTML Imports
-            if (nodeRel.rel && nodeRel.rel === "import") {
+            if (nodeRel && nodeRel === "import") {
               break;
             }
 
@@ -368,6 +368,7 @@ export default class ReplayRecorder {
             children.push(serialized);
           }
         }
+
         if (children.length > 0) {
           obj.c = children;
         }
