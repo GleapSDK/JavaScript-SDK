@@ -318,14 +318,21 @@ export default class ReplayRecorder {
           case "SCRIPT":
           case "LINK":
             delete node.ReplayRecID;
+            const nodeRel = node.getAttribute("rel");
 
+            // Stylesheets
             if (
               node &&
               node.href &&
               (node.href.includes(".css") ||
-                (node.rel && node.rel.includes("stylesheet")))
+                (nodeRel && nodeRel.includes("stylesheet")))
             ) {
               this.resourcesToResolve[node.getAttribute("href")] = "--";
+              break;
+            }
+
+            // HTML Imports
+            if (nodeRel.rel && nodeRel.rel === "import") {
               break;
             }
 
