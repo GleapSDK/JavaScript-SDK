@@ -281,7 +281,7 @@ export default class ReplayRecorder {
 
   serializeNode(node, actions) {
     if ("ReplayRecID" in node) {
-      throw new Error(`Already serialized ${node.ReplayRecID}`);
+      return null;
     }
     const id = this.nextID++;
     const obj = { id };
