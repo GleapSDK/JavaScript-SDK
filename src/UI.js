@@ -2,10 +2,10 @@ import { translateText } from "./Translation";
 
 export const setColor = (color) => {
   const colorStyleSheet = `
-    .bugbattle--feedback-button {
+    .bugbattle-feedback-button-icon {
         background-color: ${color};
     }
-    .bugbattle--feedback-dialog-header-button {
+    .bugbattle-feedback-dialog-header-button {
         color: ${color};
     }
     .bugbattle-screenshot-editor-borderlayer {
@@ -14,13 +14,16 @@ export const setColor = (color) => {
     .bugbattle-screenshot-editor-dot {
       background-color: ${color};
     }
+    .bugbattle-feedback-dialog-header {
+      background-color: ${color};
+    }
     .bugbattle-screenshot-editor-rectangle {
       border-color: ${color};
     }
-    .bugbattle--feedback-send-button {
+    .bugbattle-feedback-send-button {
       background-color: ${color};
     }
-    .bugbattle--feedback-inputgroup--privacy-policy a {
+    .bugbattle-feedback-inputgroup--privacy-policy a {
       color: ${color};
     }
     .bugbattle-screenshot-editor-drag-info {
@@ -30,21 +33,21 @@ export const setColor = (color) => {
     .bugbattle-double-bounce2 {
       background-color: ${color};
     }
-    .bugbattle--feedback-dialog-header-button-cancel {
+    .bugbattle-feedback-dialog-header-button-cancel {
       background-color: ${color};
     }
-    .bugbattle--feedback-type-icon {
+    .bugbattle-feedback-type-icon {
       background-color: ${color};
     }
-    .bugbattle--feedback-type:hover {
+    .bugbattle-feedback-type:hover {
       background-color: ${color}10;
       border-bottom: 1px solid ${color}10;
     }
 
-  .bugbattle--feedback-inputgroup--privacy-policy
+  .bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:not(:checked)
   + label:after,
-  .bugbattle--feedback-inputgroup--privacy-policy
+  .bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label:after {
   color: ${color};
@@ -57,69 +60,47 @@ export const setColor = (color) => {
 };
 
 export const getHeaderImage = function (customLogoUrl) {
-  var headerImage = `<svg width="100px" height="100px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-      <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-          <g id="Artboard" transform="translate(-1.000000, -1.000000)" fill="#398CFE">
-              <path d="M100.524809,33.1304992 C99.5584401,31.4524034 97.6257019,31.0672666 95.6112987,32.208922 C92.7530239,33.8457531 89.8675274,35.4413196 87.0773068,37.1744349 C85.9748294,37.8621791 85.4984502,37.7383851 84.8723519,36.5967298 C81.537698,30.5858457 78.0669358,24.6299811 74.718671,18.7153812 C74.4311065,18.0635671 74.0141725,17.4783635 73.4936961,16.9960208 C72.9047419,16.5919655 72.2174285,16.3588504 71.5065145,16.3220315 L49.3344686,16.3220315 C48.3953212,16.3220315 48.5042078,15.6205324 48.5042078,14.9465431 C48.5042078,11.535332 48.5042078,8.06910137 48.5042078,4.6991549 C48.6443929,3.65838853 48.2429786,2.61822784 47.4425629,1.94817819 C46.8629771,1.34219441 46.06476,1 45.2308027,1 C44.3968453,1 43.5986283,1.34219441 43.0190424,1.94817819 C42.244452,2.63601536 41.8528356,3.66396625 41.9710083,4.6991549 C41.8485108,8.55052229 42.0935058,12.4156446 41.7668458,16.267012 L26.4954919,16.1982375 C25.8641184,16.2921775 25.2655819,16.5426319 24.7533054,16.9272464 C24.322815,17.2345018 23.9495608,17.6163632 23.6508279,18.0551468 L1.560447,56.4862914 C0.813184334,57.6689833 0.813184334,59.1824767 1.560447,60.3651686 L23.5419413,99.043901 C23.9232891,99.8640262 24.6556491,100.462198 25.5291228,100.666977 C25.9337297,100.744459 26.3429353,100.795003 26.7540977,100.818281 L70.5401455,100.98334 C71.2137764,101.044697 71.8919396,100.935988 72.5137161,100.666977 C73.3121387,100.380903 73.9576397,99.7733873 74.2967352,98.9888815 C81.5558458,86.3068789 88.8603258,73.6248763 96.2101753,60.9428737 C97.1317051,59.5530829 97.1317051,57.7385333 96.2101753,56.3487426 C93.9779988,52.5523947 91.8683198,48.6735176 89.6225324,44.8909246 C89.0508775,43.9280827 89.2958725,43.5979655 90.1533549,43.1302995 C93.1069055,41.4797135 96.0332345,39.760353 98.9731743,38.0409926 C99.8632114,37.6405423 100.541726,36.8751197 100.838091,35.9372062 C101.134456,34.9992927 101.020475,33.9781259 100.524809,33.1304992 Z M82.697238,61.0280456 C82.1277368,62.0143675 81.5853548,62.9595927 81.0022941,63.9185168 L81.0022941,63.9185168 L73.4496243,77.0557772 L73.4496243,77.0557772 C71.4428108,80.5763986 69.3817591,84.0833211 67.4427433,87.6176414 C66.9491122,88.5498928 65.9486463,89.0904001 64.9071073,88.987533 C54.1589034,88.9236047 43.4016597,88.8688091 32.6353764,88.823146 C31.7564295,88.8606451 30.940112,88.3647425 30.5607651,87.5628457 C25.1369448,78.0740633 19.7402435,68.5807146 14.3706614,59.0827995 C13.9190214,58.4345022 13.8768077,57.5815513 14.262185,56.890973 L20.3233042,46.4934958 C20.3169536,46.4526494 20.3169536,46.4110519 20.3233042,46.3702055 L28.1607246,32.6712896 L28.1607246,32.6712896 C28.7166662,31.6849676 29.326846,30.3972695 29.7743111,29.6301302 C30.2217763,28.8629909 30.4929673,28.8629909 31.1302662,29.2739584 C38.0727562,33.3836332 45.0423654,37.493308 51.9984149,41.5207893 C62.0053634,47.3839253 72.0168318,53.242495 82.03282,59.0964984 C83.0769054,59.808842 83.2531795,60.0417236 82.6701189,61.0280456 L82.697238,61.0280456 Z" id="Shape"></path>
-          </g>
-      </g>
-  </svg>`;
+  var headerImage = loadIcon("bblogo", "#fff");
   if (customLogoUrl) {
     headerImage = `<img src="${customLogoUrl}" alt="bugbattle-logo" />`;
   }
   return headerImage;
 };
 
-/**
- * Creates the feedback type dialog
- */
-export const createFeedbackTypeDialog = function (
-  feedbackTypeActions,
-  overrideLanguage,
+export const createWidgetDialog = function (
+  title,
+  description,
   customLogoUrl,
-  poweredByHidden,
-  closeBugBattle,
-  selectedMenuOption
+  content,
+  back
 ) {
-  // Generate options
-  var optionsHTML = "";
-
-  for (var i = 0; i < feedbackTypeActions.length; i++) {
-    var action = feedbackTypeActions[i];
-    optionsHTML += `<div id="bugbattle--feedback-type-${i}" class="bugbattle--feedback-type">
-        <img class="bugbattle--feedback-type-icon" src="${action.icon}">
-        <div class="bugbattle--feedback-type-text">
-          <div class="bugbattle--feedback-type-title">${translateText(
-            action.title,
-            overrideLanguage
-          )}</div>
-          <div class="bugbattle--feedback-type-description">${translateText(
-            action.description,
-            overrideLanguage
-          )}</div>
-        </div>
-      </div>`;
-  }
-
   var elem = document.createElement("div");
-  elem.className = "bugbattle--feedback-dialog-container";
-  elem.setAttribute("data-html2canvas-ignore", "true");
-  elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
-      <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
-        <svg fill="#ffffff" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
-        </svg>
-      </div>
-      <div class="bugbattle--feedback-dialog-header">
-        <div class="bugbattle--feedback-dialog-header-logo">
-          ${getHeaderImage(customLogoUrl)}
+  elem.className = "bugbattle-feedback-dialog-container";
+  elem.innerHTML = `<div class='bugbattle-feedback-dialog bugbattle-anim-fadein'>
+      <div class="bugbattle-feedback-dialog-header${
+        back ? " bugbattle-feedback-dialog-header--back" : ""
+      }">
+        ${
+          back
+            ? `<div class="bugbattle-feedback-dialog-header-back">
+        ${loadIcon("arrowleft", "#fff")}
+      </div>`
+            : `<div class="bugbattle-feedback-dialog-header-logo">
+        ${getHeaderImage(customLogoUrl)}
+      </div>`
+        }
+        <div class="bugbattle-feedback-dialog-header-text">
+          <div class="bugbattle-feedback-dialog-header-title">
+            ${title}
+          </div>
+          <div class="bugbattle-feedback-dialog-header-description">
+            ${description}
+          </div>
         </div>
       </div>
-      <div class="bugbattle--feedback-dialog-body">
-        <div class="bugbattle--feedback-types">
-          ${optionsHTML}
-        </div>
-        <div class="bugbattle--feedback-poweredbycontainer">
+      <div class="bugbattle-feedback-dialog-body">
+        ${content}
+        <div class="bugbattle-feedback-poweredbycontainer">
           <span>Powered by</span>
           <svg width="173px" height="30px" viewBox="0 0 173 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
               <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -144,12 +125,64 @@ export const createFeedbackTypeDialog = function (
     </div>`;
   document.body.appendChild(elem);
 
+  // Hook back action
+  if (back) {
+    const backButton = document.querySelector(
+      ".bugbattle-feedback-dialog-header-back"
+    );
+    backButton.onclick = function () {
+      back();
+    };
+  }
+
+  return elem;
+};
+
+/**
+ * Creates the feedback type dialog
+ */
+export const createFeedbackTypeDialog = function (
+  feedbackTypeActions,
+  overrideLanguage,
+  customLogoUrl,
+  poweredByHidden,
+  selectedMenuOption
+) {
+  // Generate options
+  var optionsHTML = `<div class="bugbattle-feedback-types">`;
+
+  for (var i = 0; i < feedbackTypeActions.length; i++) {
+    var action = feedbackTypeActions[i];
+    optionsHTML += `<div id="bugbattle-feedback-type-${i}" class="bugbattle-feedback-type">
+        <img class="bugbattle-feedback-type-icon" src="${action.icon}">
+        <div class="bugbattle-feedback-type-text">
+          <div class="bugbattle-feedback-type-title">${translateText(
+            action.title,
+            overrideLanguage
+          )}</div>
+          <div class="bugbattle-feedback-type-description">${translateText(
+            action.description,
+            overrideLanguage
+          )}</div>
+        </div>
+      </div>`;
+  }
+
+  optionsHTML += "</div>";
+
+  const dialog = createWidgetDialog(
+    "Feedback",
+    "asdf asdfasdf asdf asdf",
+    customLogoUrl,
+    optionsHTML
+  );
+
   // Hook actions
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     const index = i;
-    document.getElementById(`bugbattle--feedback-type-${index}`).onclick =
+    document.getElementById(`bugbattle-feedback-type-${index}`).onclick =
       function () {
-        elem.remove();
+        dialog.remove();
         if (feedbackTypeActions[index].action) {
           feedbackTypeActions[index].action();
         }
@@ -160,12 +193,11 @@ export const createFeedbackTypeDialog = function (
   }
 
   validatePoweredBy(poweredByHidden);
-  hookDialogCloseButton(closeBugBattle);
 };
 
 export const validatePoweredBy = function (poweredByHidden) {
   const poweredByContainer = document.querySelector(
-    ".bugbattle--feedback-poweredbycontainer"
+    ".bugbattle-feedback-poweredbycontainer"
   );
   if (poweredByHidden) {
     poweredByContainer.style.display = "none";
@@ -174,14 +206,6 @@ export const validatePoweredBy = function (poweredByHidden) {
       window.open("https://www.bugbattle.io/", "_blank");
     };
   }
-};
-
-export const hookDialogCloseButton = function (closeBugBattle) {
-  const cancelButton = document.querySelector(
-    ".bugbattle--feedback-dialog-header-button-cancel"
-  );
-
-  cancelButton.onclick = closeBugBattle;
 };
 
 export const setLoadingIndicatorProgress = function (percentComplete) {
@@ -193,5 +217,48 @@ export const setLoadingIndicatorProgress = function (percentComplete) {
   if (circle) {
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = offset;
+  }
+};
+
+export const loadIcon = function (name, color) {
+  if (name === "bblogo") {
+    return `<svg class="bugbattle-logo-logo" width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <title>Shape</title>
+        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="Artboard" transform="translate(-1597.000000, -901.000000)" fill="${color}">
+                <g id="Group" transform="translate(1414.000000, 889.000000)">
+                    <g id="Group-3" transform="translate(173.000000, 5.000000)">
+                        <path d="M24.154396,7 C24.4219361,7 24.6780524,7.10959637 24.8642549,7.30376026 C25.1173585,7.52012059 25.2437873,7.85201732 25.1995869,8.18406327 L25.1995869,8.18406327 L25.1995869,11.463192 C25.1995869,11.6788662 25.1647472,11.9033435 25.4652396,11.9033435 L25.4652396,11.9033435 L32.5594731,11.9033435 C32.7869392,11.9151254 33.006854,11.9897214 33.1952976,12.1190177 C33.3618307,12.2733657 33.4952342,12.4606289 33.5872442,12.6692071 C34.6585649,14.5618586 35.7690802,16.4677146 36.836046,18.3911767 C37.0363742,18.7565025 37.1887979,18.7961161 37.5415498,18.5760403 C38.4343171,18.0214494 39.3575691,17.5108737 40.2721112,16.9870934 C40.9166456,16.6217677 41.5350502,16.7450101 41.8442525,17.2819949 C42.0039198,17.5509838 42.0429229,17.875891 41.9515323,18.1756656 C41.8601417,18.4754402 41.6469743,18.7218173 41.3652067,18.8533358 C40.4245348,19.4035252 39.488218,19.9537146 38.5431912,20.4818964 C38.2688285,20.6315479 38.1947942,20.7371842 38.3733476,21.0452903 C39.0919164,22.2557069 39.7669355,23.4969342 40.4811493,24.7117523 C40.7760048,25.1564806 40.7760048,25.7371301 40.4811493,26.1818584 C38.1294697,30.2400553 35.7821451,34.2982522 33.4391754,38.3564491 C33.3306775,38.6074882 33.124141,38.8018912 32.8686754,38.8934339 C32.6697299,38.9795163 32.4527428,39.0143029 32.2372059,38.9946687 L32.2372059,38.9946687 L18.2272924,38.9418506 C18.0957357,38.9344016 17.9648051,38.9182279 17.8353458,38.8934339 C17.5607735,38.824309 17.3318583,38.6333947 17.2125862,38.3740551 L17.2125862,38.3740551 L10.1793223,25.9969947 C9.94022591,25.6185374 9.94022591,25.1342248 10.1793223,24.7557675 L10.1793223,24.7557675 L17.2474259,12.4579344 C17.3430094,12.3175252 17.4624369,12.1953308 17.6001779,12.0970102 C17.7640874,11.9739349 17.9555969,11.8937903 18.157613,11.8637299 L18.157613,11.8637299 L23.0438806,11.8857374 C23.1483997,10.6533132 23.0700104,9.41648749 23.1092051,8.18406327 C23.0713942,7.85280649 23.1966969,7.52386577 23.4445372,7.30376026 C23.6307396,7.10959637 23.8868559,7 24.154396,7 Z M19.660075,16.1067904 C19.433617,15.9747449 19.3465177,15.9747449 19.202804,16.2212298 C19.0590902,16.4677146 18.8631169,16.881457 18.6845635,17.1983661 L18.6845635,17.1983661 L16.1673953,21.5998812 C16.1653557,21.6130053 16.1653557,21.6263707 16.1673953,21.6394948 L16.1673953,21.6394948 L14.2207272,24.9802448 C14.0969544,25.2021303 14.1105123,25.4761867 14.2555669,25.6844872 C15.9801319,28.7362043 17.7134069,31.7864542 19.4553918,34.835237 C19.5772278,35.0928895 19.839407,35.252225 20.121701,35.2401764 C23.579541,35.2548481 27.0344777,35.2724542 30.4865111,35.2929946 C30.8210253,35.3260462 31.142348,35.1523791 31.300889,34.8528431 C31.9236486,33.7172522 32.5856029,32.5904643 33.2301373,31.4592749 L33.2301373,31.4592749 L35.6384314,27.238222 C35.8256947,26.9301159 35.9998932,26.6264114 36.1828016,26.3095023 L36.1828016,26.3095023 C36.3613551,25.9925932 36.3047406,25.9177675 36.0086031,25.6888887 C32.7917377,23.8079746 29.576324,21.9255933 26.3623619,20.0417449 C24.1282662,18.7476994 21.8898157,17.4272449 19.660075,16.1067904 Z" id="Shape"></path>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </svg>`;
+  }
+
+  if (name === "arrowdown") {
+    return `<svg class="bugbattle-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z"/>
+   </svg>`;
+  }
+
+  if (name === "arrowleft") {
+    return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <path d="m70.988 1.6211c2.1875-2.168 5.7344-2.168 7.9297 0 2.1836 2.168 2.1836 5.7227 0 7.8906l-46.016 40.445 46.016 40.5c2.1836 2.168 2.1836 5.668 0 7.8906-2.1953 2.168-5.7383 2.168-7.9297 0l-50.039-44.109c-1.168-1.168-1.668-2.7227-1.5898-4.2773-0.078125-1.5 0.42188-3.0547 1.5898-4.2227l50.039-44.109z" fill-rule="evenodd"/>
+   </svg>`;
+  }
+
+  return "";
+};
+
+export const toggleLoading = function (loading) {
+  const form = document.querySelector(".bugbattle-feedback-form");
+  const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
+  if (loading) {
+    form.style.display = "none";
+    loader.style.display = "flex";
+  } else {
+    form.style.display = "block";
+    loader.style.display = "none";
   }
 };

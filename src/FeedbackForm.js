@@ -1,13 +1,13 @@
 import { translateText } from "./Translation";
 
-const showAfterClass = "bugbattle--feedback-showafter";
+const showAfterClass = "bugbattle-feedback-showafter";
 
 const getTitleHTML = function (title, overrideLanguage) {
   if (title === undefined) {
     return "";
   }
 
-  return `<div class="bugbattle--feedback-elementtitle">${translateText(
+  return `<div class="bugbattle-feedback-elementtitle">${translateText(
     title,
     overrideLanguage
   )}</div>`;
@@ -22,17 +22,17 @@ const getShowAfterHTML = function (showAfter) {
 };
 
 export const buildForm = function (form, overrideLanguage) {
-  var formHTML = "";
+  var formHTML = '';
   for (let i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
     }
     if (formItem.type === "text") {
-      formHTML += `<div class="bugbattle--feedback-inputgroup ${getShowAfterHTML(
+      formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(formItem.title, overrideLanguage)}
-          <input class="bugbattle--feedback-formdata bugbattle--feedback-${
+          <input class="bugbattle-feedback-formdata bugbattle-feedback-${
             formItem.name
           }" type="${formItem.inputtype}" placeholder="${translateText(
         formItem.placeholder,
@@ -41,10 +41,10 @@ export const buildForm = function (form, overrideLanguage) {
         </div>`;
     }
     if (formItem.type === "textarea") {
-      formHTML += `<div class="bugbattle--feedback-inputgroup ${getShowAfterHTML(
+      formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(formItem.title, overrideLanguage)}
-          <textarea class="bugbattle--feedback-formdata bugbattle--feedback-${
+          <textarea class="bugbattle-feedback-formdata bugbattle-feedback-${
             formItem.name
           }" placeholder="${translateText(
         formItem.placeholder,
@@ -53,63 +53,63 @@ export const buildForm = function (form, overrideLanguage) {
         </div>`;
     }
     if (formItem.type === "rating") {
-      formHTML += `<div class="bugbattle--feedback-rating ${getShowAfterHTML(
+      formHTML += `<div class="bugbattle-feedback-rating ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(
         formItem.title,
         overrideLanguage
-      )}<input class="bugbattle--feedback-formdata bugbattle--feedback-${
+      )}<input class="bugbattle-feedback-formdata bugbattle-feedback-${
         formItem.name
       }" type="hidden" />
-          <ul class="bugbattle--feedback-emojigroup">
-            <li class="bugbattle--feedback-angry" data-value="0">
+          <ul class="bugbattle-feedback-emojigroup">
+            <li class="bugbattle-feedback-angry" data-value="0">
               <div>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-right">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-mouth">
+                <svg class="bugbattle-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle--feedback-sad" data-value="2.5">
+            <li class="bugbattle-feedback-sad" data-value="2.5">
               <div>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-right">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-mouth">
+                <svg class="bugbattle-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle--feedback-ok" data-value="5">
+            <li class="bugbattle-feedback-ok" data-value="5">
                 <div></div>
             </li>
-            <li class="bugbattle--feedback-good" data-value="7.5">
+            <li class="bugbattle-feedback-good" data-value="7.5">
               <div>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-right">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-mouth">
+                <svg class="bugbattle-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle--feedback-happy" data-value="10">
+            <li class="bugbattle-feedback-happy" data-value="10">
               <div>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-left">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle--feedback-eye bugbattle--feedback-right">
+                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
               </div>
@@ -135,7 +135,7 @@ export const getFormData = function (form) {
   for (let i = 0; i < form.length; i++) {
     const formItem = form[i];
     const formElement = document.querySelector(
-      `.bugbattle--feedback-${formItem.name}`
+      `.bugbattle-feedback-${formItem.name}`
     );
     if (formElement && formElement.value) {
       formData[formItem.name] = formElement.value;
@@ -149,7 +149,7 @@ export const rememberForm = function (form) {
     const formItem = form[i];
     if (formItem.remember) {
       const formElement = document.querySelector(
-        `.bugbattle--feedback-${formItem.name}`
+        `.bugbattle-feedback-${formItem.name}`
       );
       if (formElement && formElement.value) {
         try {
@@ -177,26 +177,26 @@ export const validateForm = function (form) {
 export const validateFormItem = function (formItem) {
   var valid = true;
   const formElement = document.querySelector(
-    `.bugbattle--feedback-${formItem.name}`
+    `.bugbattle-feedback-${formItem.name}`
   );
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
     formItem.required
   ) {
     if (!formElement.value || formElement.value === "") {
-      formElement.classList.add("bugbattle--feedback-required");
+      formElement.classList.add("bugbattle-feedback-required");
       valid = false;
     } else {
-      formElement.classList.remove("bugbattle--feedback-required");
+      formElement.classList.remove("bugbattle-feedback-required");
     }
   }
   if (formItem.type === "rating" && formItem.required) {
     if (!formElement.value || formElement.value === "") {
-      formElement.parentElement.classList.add("bugbattle--feedback-required");
+      formElement.parentElement.classList.add("bugbattle-feedback-required");
       valid = false;
     } else {
       formElement.parentElement.classList.remove(
-        "bugbattle--feedback-required"
+        "bugbattle-feedback-required"
       );
     }
   }
@@ -220,7 +220,7 @@ export const hookForm = function (form) {
       break;
     }
     const formInput = document.querySelector(
-      `.bugbattle--feedback-${formItem.name}`
+      `.bugbattle-feedback-${formItem.name}`
     );
     if (formItem.type === "text") {
       if (formItem.remember) {
@@ -252,7 +252,7 @@ export const hookForm = function (form) {
     }
     if (formItem.type === "rating") {
       const ratingItems = document.querySelectorAll(
-        ".bugbattle--feedback-emojigroup li"
+        ".bugbattle-feedback-emojigroup li"
       );
       for (var j = 0; j < ratingItems.length; j++) {
         const ratingItem = ratingItems[j];
@@ -260,12 +260,12 @@ export const hookForm = function (form) {
           formInput.value = ratingItem.getAttribute("data-value");
           validateFormItem(formItem);
           const lastActiveItem = document.querySelector(
-            ".bugbattle--feedback-emojigroup li.bugbattle--feedback-active"
+            ".bugbattle-feedback-emojigroup li.bugbattle-feedback-active"
           );
           if (lastActiveItem) {
-            lastActiveItem.classList.remove("bugbattle--feedback-active");
+            lastActiveItem.classList.remove("bugbattle-feedback-active");
           }
-          ratingItem.classList.add("bugbattle--feedback-active");
+          ratingItem.classList.add("bugbattle-feedback-active");
           e.preventDefault();
         });
       }
