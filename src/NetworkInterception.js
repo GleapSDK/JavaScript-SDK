@@ -138,7 +138,6 @@ class BugBattleNetworkIntercepter {
             payload: args[0],
             headers: request.requestHeaders,
           };
-          this.calcRequestTime(request.bbRequestId);
         }
 
         this.cleanRequests();
@@ -181,6 +180,8 @@ class BugBattleNetworkIntercepter {
                 ? target.responseText
                 : "<" + target.responseType + ">",
           };
+
+          this.calcRequestTime(target.bbRequestId);
         }
 
         this.cleanRequests();
