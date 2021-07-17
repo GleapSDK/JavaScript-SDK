@@ -68,7 +68,7 @@ BugBattle.attachCustomData({
 
 BugBattle.logEvent("Booted");
 
-BugBattle.enableRageClickDetector(true);
+BugBattle.enableRageClickDetector();
 
 // Disable shortcuts
 BugBattle.enableShortcuts(true);
@@ -77,7 +77,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#1B998B");
+BugBattle.setMainColor("#8AA1B1");
 
 console.warn("DEMO!");
 console.log("HI!");
@@ -108,6 +108,8 @@ xhttpa.open(
 );
 xhttpa.send();
 
+BugBattle.setCustomerEmail("asdf@asdf.de");
+
 BugBattle.logEvent("Sample", {
   userId: 1234
 });
@@ -127,3 +129,7 @@ setTimeout(() => {
     skillLevel: "🤩"
 });
 }, 5000);
+
+var x = [];
+
+x[0].as = 1;

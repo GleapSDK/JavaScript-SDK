@@ -1,9 +1,14 @@
 import { translateText } from "./Translation";
 
 export const setColor = (color) => {
+  const darkerShade = shadeColor(color, -25);
+  const lightShade = shadeColor(color, 40);
   const colorStyleSheet = `
     .bugbattle-feedback-button-icon {
         background-color: ${color};
+    }
+    .bugbattle-feedback-button-icon:hover {
+        background-color: ${darkerShade};
     }
     .bugbattle-feedback-dialog-header-button {
         color: ${color};
@@ -15,7 +20,7 @@ export const setColor = (color) => {
       background-color: ${color};
     }
     .bugbattle-feedback-dialog-header {
-      background-color: ${color};
+      background: linear-gradient(135deg, ${color} 0%,  ${darkerShade} 100%);
     }
     .bugbattle-screenshot-editor-rectangle {
       border-color: ${color};
@@ -40,18 +45,22 @@ export const setColor = (color) => {
       background-color: ${color};
     }
     .bugbattle-feedback-type:hover {
-      background-color: ${color}10;
-      border-bottom: 1px solid ${color}10;
+      border: 1px solid ${color};
     }
-
-  .bugbattle-feedback-inputgroup--privacy-policy
-  [type="checkbox"]:not(:checked)
-  + label:after,
-  .bugbattle-feedback-inputgroup--privacy-policy
-  [type="checkbox"]:checked
-  + label:after {
-  color: ${color};
-  }
+    .bugbattle-feedback-type:first-of-type, .bugbattle-feedback-type:first-of-type:hover {
+      border-top: 3px solid ${color}77;
+    }
+    .bugbattle-feedback-type:hover .bugbattle-feedback-type-title {
+      color: ${color};
+    }
+    .bugbattle-feedback-inputgroup--privacy-policy
+    [type="checkbox"]:not(:checked)
+    + label:after,
+    .bugbattle-feedback-inputgroup--privacy-policy
+    [type="checkbox"]:checked
+    + label:after {
+    color: ${color};
+    }
     `;
 
   const node = document.createElement("style");
@@ -72,14 +81,16 @@ export const createWidgetDialog = function (
   description,
   customLogoUrl,
   content,
-  back
+  back,
+  showBack = true,
+  appendClass = ''
 ) {
   var elem = document.createElement("div");
   elem.className = "bugbattle-feedback-dialog-container";
-  elem.innerHTML = `<div class='bugbattle-feedback-dialog bugbattle-anim-fadein'>
+  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-anim-fadein ${appendClass}'>
       <div class="bugbattle-feedback-dialog-header${
         back ? " bugbattle-feedback-dialog-header--back" : ""
-      }">
+      }${!showBack ? " bugbattle-feedback-dialog-header--backhidden" : ""}">
         ${
           back
             ? `<div class="bugbattle-feedback-dialog-header-back">
@@ -262,3 +273,19 @@ export const toggleLoading = function (loading) {
     loader.style.display = "none";
   }
 };
+
+function shadeColor(color, percent) {
+  var R = parseInt(color.substring(1, 3), 16);
+  var G = parseInt(color.substring(3, 5), 16);
+  var B = parseInt(color.substring(5, 7), 16);
+  R = parseInt((R * (100 + percent)) / 100);
+  G = parseInt((G * (100 + percent)) / 100);
+  B = parseInt((B * (100 + percent)) / 100);
+  R = R < 255 ? R : 255;
+  G = G < 255 ? G : 255;
+  B = B < 255 ? B : 255;
+  var RR = R.toString(16).length == 1 ? "0" + R.toString(16) : R.toString(16);
+  var GG = G.toString(16).length == 1 ? "0" + G.toString(16) : G.toString(16);
+  var BB = B.toString(16).length == 1 ? "0" + B.toString(16) : B.toString(16);
+  return "#" + RR + GG + BB;
+}

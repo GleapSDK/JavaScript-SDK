@@ -22,11 +22,15 @@ const getShowAfterHTML = function (showAfter) {
 };
 
 export const buildForm = function (form, overrideLanguage) {
-  var formHTML = '';
+  var formHTML = "";
+  var formContainsShowAfter = false;
   for (let i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
+    }
+    if (formItem.showAfter) {
+      formContainsShowAfter = true;
     }
     if (formItem.type === "text") {
       formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
@@ -127,7 +131,34 @@ export const buildForm = function (form, overrideLanguage) {
     }
   }
 
-  return formHTML;
+  return {
+    formHTML,
+    formContainsShowAfter,
+  };
+};
+
+export const showSendButton = function (show) {
+  const privacyCheck = document.querySelector(
+    `.bugbattle-feedback-inputgroup--privacy-policy`
+  );
+  if (privacyCheck) {
+    if (show) {
+      privacyCheck.style.display = "flex";
+    } else {
+      privacyCheck.style.display = "none";
+    }
+  }
+
+  const sendButton = document.querySelector(
+    `.bugbattle-feedback-inputgroup-button`
+  );
+  if (sendButton) {
+    if (show) {
+      sendButton.style.display = "flex";
+    } else {
+      sendButton.style.display = "none";
+    }
+  }
 };
 
 export const getFormData = function (form) {
@@ -195,12 +226,9 @@ export const validateFormItem = function (formItem) {
       formElement.parentElement.classList.add("bugbattle-feedback-required");
       valid = false;
     } else {
-      formElement.parentElement.classList.remove(
-        "bugbattle-feedback-required"
-      );
+      formElement.parentElement.classList.remove("bugbattle-feedback-required");
     }
   }
-
   const elementsToShow = document.querySelectorAll(
     `.${showAfterClass}-${formItem.name}`
   );
@@ -210,6 +238,10 @@ export const validateFormItem = function (formItem) {
     }
   }
 
+  if (valid) {
+    showSendButton(true);
+  }
+  
   return valid;
 };
 

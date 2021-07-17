@@ -17,6 +17,7 @@ import {
   getFormData,
   hookForm,
   rememberForm,
+  showSendButton,
   validateForm,
 } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
@@ -45,7 +46,8 @@ class BugBattle {
   enabledCrashDetectorSilent = false;
   enabledRageClickDetector = false;
   enabledRageClickDetectorSilent = false;
-  crashedWaitingForReload = false;
+  appCrashDetected = false;
+  rageClickDetected = false;
   currentlySendingBug = false;
   isLiveSite = false;
   replaysEnabled = false;
@@ -68,6 +70,7 @@ class BugBattle {
   fakeLoading = null;
   fakeLoadingProgress = 0;
   widgetOpened = false;
+  openedMenu = false;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -422,6 +425,7 @@ class BugBattle {
     instance.enabledRageClickDetectorSilent = silent;
 
     startRageClickDetector(function (target) {
+      instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
         BugBattle.sendSilentBugReport(null, "Rage click detected.");
       } else {
@@ -483,6 +487,7 @@ class BugBattle {
     const instance = this.getInstance();
     instance.stopBugReportingAnalytics();
     instance.widgetOpened = true;
+    instance.openedMenu = true;
     instance.updateFeedbackButtonState();
 
     // Start feedback type dialog
@@ -577,8 +582,10 @@ class BugBattle {
 
     instance.closeModalUI();
     instance.currentlySendingBug = true;
-    instance.widgetOpened = true;
     instance.silentBugReport = silentBugReport;
+    if (!silentBugReport) {
+      instance.widgetOpened = true;
+    }
 
     // Hook privacy policy global settings.
     if (instance.privacyPolicyEnabled) {
@@ -604,7 +611,7 @@ class BugBattle {
 
     instance.stopBugReportingAnalytics();
 
-    if (!instance.silentBugReport) {
+    if (!instance.silentBugReport && !feedbackOptions.disableUserScreenshot) {
       instance.disableScroll();
     }
 
@@ -661,10 +668,10 @@ class BugBattle {
 
       if (
         self.enabledCrashDetector &&
-        !self.crashedWaitingForReload &&
+        !self.appCrashDetected &&
         !self.currentlySendingBug
       ) {
-        self.crashedWaitingForReload = true;
+        self.appCrashDetected = true;
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
@@ -769,7 +776,7 @@ class BugBattle {
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
-    const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
+    const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
 
@@ -804,7 +811,7 @@ class BugBattle {
     )}</div>
   </div>
   <div class="bugbattle-feedback-form">
-    ${formHTML}
+    ${formData.formHTML}
     <div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup--privacy-policy">
       <input id="bugbattlePrivacyPolicy" type="checkbox" required />
       <label for="bugbattlePrivacyPolicy" class="bugbattle-feedback-inputgroup--privacy-policy-label">${translateText(
@@ -823,6 +830,13 @@ class BugBattle {
     </div>
   </div>`;
 
+    const getWidgetDialogClass = () => {
+      if (this.appCrashDetected || this.rageClickDetected) {
+        return "bugbattle-feedback-dialog--crashed";
+      }
+      return "";
+    };
+
     createWidgetDialog(
       title,
       description,
@@ -833,8 +847,14 @@ class BugBattle {
         if (self.feedbackTypeActions.length > 0) {
           BugBattle.startFeedbackTypeSelection();
         }
-      }
+      },
+      this.openedMenu,
+      getWidgetDialogClass()
     );
+    this.openedMenu = true;
+
+    // Checks the send button visibility
+    showSendButton(!formData.formContainsShowAfter);
 
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
@@ -857,7 +877,11 @@ class BugBattle {
       const privacyPolicyInput = document.querySelector(
         ".bugbattle-feedback-inputgroup--privacy-policy input"
       );
-      if (feedbackOptions.privacyPolicyEnabled && !privacyPolicyInput.checked) {
+      if (
+        feedbackOptions.privacyPolicyEnabled &&
+        privacyPolicyInput &&
+        !privacyPolicyInput.checked
+      ) {
         alert(
           translateText(
             "Please read and accept the privacy policy.",
@@ -907,19 +931,15 @@ class BugBattle {
     const privacyPolicyContainer = document.querySelector(
       ".bugbattle-feedback-inputgroup--privacy-policy"
     );
-    const privacyPolicyInputLabel = document.querySelector(
-      ".bugbattle-feedback-inputgroup--privacy-policy-label"
-    );
-    const privacyPolicyInput = document.querySelector(
-      ".bugbattle-feedback-inputgroup--privacy-policy input"
-    );
+    if (!privacyPolicyContainer) {
+      return;
+    }
 
     if (feedbackOptions.privacyPolicyEnabled) {
-      privacyPolicyContainer.style.display = "flex";
       document.querySelector("#bugbattle-privacy-policy-link").href =
         feedbackOptions.privacyPolicyUrl;
     } else {
-      privacyPolicyContainer.style.display = "none";
+      privacyPolicyContainer.remove();
     }
   }
 
@@ -957,6 +977,9 @@ class BugBattle {
     } catch (exp) {}
     this.currentlySendingBug = false;
     this.widgetOpened = false;
+    this.openedMenu = false;
+    this.appCrashDetected = false;
+    this.rageClickDetected = false;
     this.updateFeedbackButtonState();
   }
 
@@ -972,19 +995,15 @@ class BugBattle {
   closeBugBattle() {
     this.reportCleanup();
 
+    // Remove editor.
     const editorContainer = document.querySelector(
       ".bugbattle-screenshot-editor"
     );
     if (editorContainer) {
       editorContainer.remove();
     }
+
     this.closeModalUI();
-
-    const feedbackBtn = document.querySelector(".bugbattle-feedback-button");
-    if (feedbackBtn) {
-      feedbackBtn.style.display = "flex";
-    }
-
     this.enableScroll();
   }
 
@@ -1065,7 +1084,6 @@ class BugBattle {
     const self = this;
 
     var feedbackButtonText = translateText("Feedback", self.overrideLanguage);
-
     if (this.overrideButtonText) {
       feedbackButtonText = this.overrideButtonText;
     }
@@ -1097,8 +1115,13 @@ class BugBattle {
     }
   }
 
-  updateFeedbackButtonState() {
+  updateFeedbackButtonState(retry = false) {
     if (this.feedbackButton === null) {
+      if (!retry) {
+        setTimeout(() => {
+          this.updateFeedbackButtonState(true);
+        }, 500);
+      }
       return;
     }
 
@@ -1109,8 +1132,24 @@ class BugBattle {
       this.feedbackButton.classList.remove(sendingClass);
     }
 
-    // currentlySendingBug
-    // Update...
+    const crashedClass = "bugbattle-feedback-button--crashed";
+    if (this.appCrashDetected || this.rageClickDetected) {
+      this.feedbackButton.classList.add(crashedClass);
+    } else {
+      this.feedbackButton.classList.remove(crashedClass);
+    }
+
+    const dialogContainer = document.querySelector(
+      ".bugbattle-feedback-dialog-container"
+    );
+    const containerFocusClass = "bugbattle-feedback-dialog-container--focused";
+    if (dialogContainer) {
+      if (this.appCrashDetected || this.rageClickDetected) {
+        dialogContainer.classList.add(containerFocusClass);
+      } else {
+        dialogContainer.classList.remove(containerFocusClass);
+      }
+    }
   }
 
   registerEscapeListener() {
@@ -1134,9 +1173,7 @@ class BugBattle {
       ".bugbattle-feedback-dialog-success"
     );
     const form = document.querySelector(".bugbattle-feedback-form");
-    const loader = document.querySelector(
-      ".bugbattle-feedback-dialog-loading"
-    );
+    const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
     form.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
@@ -1318,19 +1355,26 @@ class BugBattle {
   }
 
   showBugReportEditor(feedbackOptions) {
+    // Open next step in dialog.
+    this.createBugReportingDialog(feedbackOptions);
+
+    // Stop here if we don't want to show the native screenshot tools
     if (feedbackOptions.disableUserScreenshot) {
-      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
+    // Notify for native SDK.
     if (this.widgetOnly && this.widgetCallback) {
       this.widgetCallback("openScreenshotEditor", {
         screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
       });
-      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
+    this.showScreenshotEditor(feedbackOptions);
+  }
+
+  showScreenshotEditor(feedbackOptions) {
     const self = this;
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bugbattle-screenshot-editor";
@@ -1451,8 +1495,6 @@ class BugBattle {
       screenshotEditor.appendChild(fixedRectangle);
 
       addedMarker = true;
-
-      self.createBugReportingDialog(feedbackOptions);
     }
 
     function mouseMoveEventHandler(e) {

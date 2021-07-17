@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap");
 
 .bugbattle-feedback-dialog-container input,
 .bugbattle-feedback-dialog-container label {
@@ -37,14 +37,14 @@
 }
 
 .bugbattle-feedback-button-text div:first-of-type {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 15px;
   color: #192027;
   font-weight: 600;
 }
 
 .bugbattle-feedback-button-text div:last-of-type {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 14px;
   color: #666;
 }
@@ -55,7 +55,7 @@
   border-radius: 60px;
   background-color: #398cfe;
   transition: box-shadow 0.3s ease-in-out;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
   position: relative;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .bugbattle-feedback-button-icon:hover {
-  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.35);
+  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.4);
 }
 
 .bugbattle-feedback-button--sending {
@@ -107,6 +107,22 @@
 
 .bugbattle-feedback-button--sending .bugbattle-feedback-button-text {
   animation-name: fadeOutDown;
+}
+
+.bugbattle-feedback-dialog-container .bugbattle-feedback-dialog-backdrop {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.bugbattle-feedback-dialog-container--focused .bugbattle-feedback-dialog-backdrop {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
 }
 
 .bugbattle-feedback-dialog-container--drawing {
@@ -132,6 +148,7 @@
   position: fixed;
   right: 16px;
   bottom: 92px;
+  z-index: 916777290;
 }
 
 .bugbattle-feedback-dialog-header {
@@ -145,6 +162,7 @@
   background-color: #398cfe;
   flex-direction: column;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
+  padding-bottom: 75px;
 }
 
 .bugbattle-feedback-dialog-header-button-cancel svg {
@@ -160,10 +178,10 @@
   font-weight: normal;
   text-align: center;
   color: #fff;
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 28px;
   text-align: left;
-  margin-top: 25px;
+  margin-top: 20px;
   font-weight: normal;
   line-height: 30px;
   margin-bottom: 5px;
@@ -173,7 +191,7 @@
   font-weight: normal;
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 15px;
   text-align: left;
   font-weight: 100;
@@ -197,6 +215,7 @@
 .bugbattle-feedback-dialog-header-back {
   width: 40px;
   height: 40px;
+  min-width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -219,6 +238,7 @@
   width: 100%;
   padding: 20px;
   align-items: center;
+  padding-top: 20px;
 }
 
 .bugbattle-feedback-dialog-header--back .bugbattle-feedback-dialog-header-text {
@@ -226,23 +246,35 @@
   padding-left: 16px;
 }
 
-.bugbattle-feedback-dialog-header--back .bugbattle-feedback-dialog-header-title {
-  margin-top: 0px;
-  line-height: 20px;
-  font-family: 'Open Sans', sans-serif;
-  font-size: 17px;
-  margin-bottom: 2px;
+.bugbattle-feedback-dialog-header--backhidden
+  .bugbattle-feedback-dialog-header-text {
+  padding-left: 0px;
 }
 
-.bugbattle-feedback-dialog-header--back .bugbattle-feedback-dialog-header-description {
-  font-family: 'Open Sans', sans-serif;
+.bugbattle-feedback-dialog-header--back
+  .bugbattle-feedback-dialog-header-title {
+  margin-top: 0px;
+  line-height: 20px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.bugbattle-feedback-dialog-header--back
+  .bugbattle-feedback-dialog-header-description {
+  font-family: "Open Sans", sans-serif;
   font-size: 14px;
   line-height: 18px;
 }
 
+.bugbattle-feedback-dialog-header--backhidden
+  .bugbattle-feedback-dialog-header-back {
+  display: none !important;
+}
+
 .bugbattle-feedback-types {
   margin: 35px 0px;
-  margin-bottom: 60px;
+  margin-top: -55px;
 }
 
 .bugbattle-feedback-type {
@@ -253,13 +285,18 @@
   margin: 12px 25px;
   cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.09);
-  border-radius: 8px;
+  border-radius: 4px;
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
   min-height: 81px;
+  background-color: #fff;
+}
+
+.bugbattle-feedback-type:first-of-type:hover {
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .bugbattle-feedback-type:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #fff;
 }
 
 .bugbattle-feedback-type-icon {
@@ -277,7 +314,7 @@
 }
 
 .bugbattle-feedback-type-title {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: 600;
   font-size: 16px;
   line-height: 18px;
@@ -286,14 +323,14 @@
 }
 
 .bugbattle-feedback-type-description {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   color: #666;
   font-size: 14px;
   line-height: 16px;
 }
 
 .bugbattle-feedback-elementtitle {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-size: 15px;
   text-align: center;
   margin-bottom: 10px;
@@ -301,7 +338,7 @@
 }
 
 .bugbattle-feedback-dialog-info-text {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   color: #666;
   font-size: 16px;
   padding-top: 20px;
@@ -352,14 +389,14 @@
 }
 
 .bugbattle-feedback-inputgroup-text {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   color: #192027;
   font-size: 16px;
   font-weight: normal;
 }
 
 .bugbattle-feedback-inputgroup-label {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   padding: 0px;
   margin-bottom: 5px;
   color: #192027;
@@ -368,7 +405,7 @@
 }
 
 .bugbattle-feedback-send-button {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   background-color: #398cfe;
   border-radius: 8px;
   box-sizing: border-box;
@@ -390,7 +427,7 @@
 
 .bugbattle-feedback-inputgroup > input,
 .bugbattle-feedback-inputgroup input {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   width: auto;
   padding: 15px 12px;
   font-size: 15px;
@@ -817,7 +854,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-inputgroup textarea {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   outline: none;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
@@ -838,7 +875,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   padding: 8px 0px;
   font-size: 14px;
   flex-direction: row;
@@ -927,7 +964,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-importance {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   margin: 20px;
   margin-bottom: -8px;
   font-weight: 600;
@@ -955,7 +992,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-poweredbycontainer span {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   font-weight: normal;
   font-size: 13px;
   color: #aaa;
@@ -1033,7 +1070,7 @@ input.bugbattle-feedback-required {
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
-  border: 12px solid #398cfe;
+  border: 5px solid #398cfe;
   cursor: crosshair;
   z-index: 916777272;
   box-sizing: border-box;
@@ -1054,7 +1091,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-screenshot-editor-drag-info {
-  font-family: 'Open Sans', sans-serif;
+  font-family: "Open Sans", sans-serif;
   position: absolute;
   top: -100px;
   left: -100px;
@@ -1103,8 +1140,37 @@ input.bugbattle-feedback-required {
     right: 20px;
   }
   .bugbattle-screenshot-editor-borderlayer {
-    border-width: 5px;
+    border-width: 4px;
   }
+}
+
+.bugbattle-feedback-button--crashed .bugbattle-feedback-button-icon {
+  background-color: #ed4337;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-header {
+  background: linear-gradient(135deg, #ed4337 0%, #c7372d 100%);
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-send-button {
+  background-color: #ed4337;
+}
+
+.bugbattle-feedback-dialog--crashed
+  .bugbattle-feedback-inputgroup--privacy-policy
+  a {
+  color: #ed4337;
+}
+
+.bugbattle-feedback-dialog--crashed
+  .bugbattle-feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label:after,
+.bugbattle-feedback-dialog--crashed
+  .bugbattle-feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label:after {
+  color: #ed4337;
 }
 
 @media print {
