@@ -28,9 +28,6 @@ export const setColor = (color) => {
     .bugbattle-feedback-send-button {
       background-color: ${color};
     }
-    .bugbattle-feedback-inputgroup--privacy-policy a {
-      color: ${color};
-    }
     .bugbattle-screenshot-editor-drag-info {
       background-color: ${color};
     }

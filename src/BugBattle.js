@@ -17,7 +17,6 @@ import {
   getFormData,
   hookForm,
   rememberForm,
-  showSendButton,
   validateForm,
 } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
@@ -25,8 +24,6 @@ import { startRageClickDetector } from "./UXDetectors";
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
-  privacyPolicyUrl = null;
-  privacyPolicyEnabled = false;
   widgetOnly = false;
   widgetCallback = null;
   activation = "";
@@ -98,6 +95,11 @@ class BugBattle {
         type: "textarea",
         name: "description",
       },
+      {
+        title: "Send feedback",
+        type: "submit",
+        name: "send",
+      },
     ],
     feedbackType: "BUG",
     disableUserScreenshot: true,
@@ -118,6 +120,11 @@ class BugBattle {
         placeholder: "What went wrong?",
         type: "textarea",
         name: "description",
+      },
+      {
+        title: "Send feedback",
+        type: "submit",
+        name: "send",
       },
     ],
   };
@@ -146,6 +153,12 @@ class BugBattle {
         name: "description",
         showAfter: "pagerating",
       },
+      {
+        title: "Send feedback",
+        type: "submit",
+        name: "send",
+        showAfter: "pagerating",
+      },
     ],
     feedbackType: "RATING",
     disableUserScreenshot: true,
@@ -168,6 +181,11 @@ class BugBattle {
         inputtype: "text",
         name: "description",
         required: true,
+      },
+      {
+        title: "Send feedback",
+        type: "submit",
+        name: "send",
       },
     ],
     feedbackType: "FEATURE_REQUEST",
@@ -306,20 +324,18 @@ class BugBattle {
   }
 
   /**
+   * @deprecated Since v5.0 of the widget
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {
-    this.getInstance().privacyPolicyEnabled = enabled;
-  }
+  static enablePrivacyPolicy(enabled) {}
 
   /**
+   * @deprecated Since v5.0 of the widget
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {
-    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
-  }
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
 
   /**
    * Sets the customers email.
@@ -587,14 +603,6 @@ class BugBattle {
       instance.widgetOpened = true;
     }
 
-    // Hook privacy policy global settings.
-    if (instance.privacyPolicyEnabled) {
-      feedbackOptions.privacyPolicyEnabled = instance.privacyPolicyEnabled;
-    }
-    if (instance.privacyPolicyUrl) {
-      feedbackOptions.privacyPolicyUrl = instance.privacyPolicyUrl;
-    }
-
     if (
       instance.email &&
       feedbackOptions.form &&
@@ -779,7 +787,6 @@ class BugBattle {
     const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
-
     const htmlContent = `<div class="bugbattle-feedback-dialog-loading">
     <svg
       class="bugbattle--progress-ring"
@@ -812,26 +819,10 @@ class BugBattle {
   </div>
   <div class="bugbattle-feedback-form">
     ${formData.formHTML}
-    <div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup--privacy-policy">
-      <input id="bugbattlePrivacyPolicy" type="checkbox" required />
-      <label for="bugbattlePrivacyPolicy" class="bugbattle-feedback-inputgroup--privacy-policy-label">${translateText(
-        "I read and accept the",
-        this.overrideLanguage
-      )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${translateText(
-      " privacy policy",
-      this.overrideLanguage
-    )}</a>.</label>
-    </div>
-    <div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-button">
-      <div class="bugbattle-feedback-send-button">${translateText(
-        "Send feedback",
-        this.overrideLanguage
-      )}</div>
-    </div>
   </div>`;
 
     const getWidgetDialogClass = () => {
-      if (this.appCrashDetected || this.rageClickDetected) {
+      if (this.appCrashDetected || this.rageClickDetected) {
         return "bugbattle-feedback-dialog--crashed";
       }
       return "";
@@ -851,95 +842,63 @@ class BugBattle {
       this.openedMenu,
       getWidgetDialogClass()
     );
+
     this.openedMenu = true;
-
-    // Checks the send button visibility
-    showSendButton(!formData.formContainsShowAfter);
-
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    this.hookPrivacyPolicy(feedbackOptions);
     hookForm(feedbackOptions.form);
 
     const sendButton = document.querySelector(
       ".bugbattle-feedback-send-button"
     );
     sendButton.onclick = function () {
-      // Validate form
-      if (!validateForm(feedbackOptions.form)) {
-        return;
-      }
-
-      // Remember form items
-      rememberForm(feedbackOptions.form);
-
-      // Privacy policy check
-      const privacyPolicyInput = document.querySelector(
-        ".bugbattle-feedback-inputgroup--privacy-policy input"
-      );
-      if (
-        feedbackOptions.privacyPolicyEnabled &&
-        privacyPolicyInput &&
-        !privacyPolicyInput.checked
-      ) {
-        alert(
-          translateText(
-            "Please read and accept the privacy policy.",
-            self.overrideLanguage
-          )
-        );
-        return;
-      }
-
-      // Check API key
-      if (!self.sdkKey) {
-        return alert(translateText("Wrong API key", self.overrideLanguage));
-      }
-
-      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
-      toggleLoading(true);
-
-      // Start fake loading
-      self.fakeLoading = setInterval(function () {
-        if (self.fakeLoadingProgress > 50) {
-          self.resetLoading(false);
-          return;
-        }
-        self.fakeLoadingProgress += 2;
-        setLoadingIndicatorProgress(self.fakeLoadingProgress);
-      }, 200);
-
-      // Send form
-      const formData = getFormData(feedbackOptions.form);
-      self.formData = formData;
-      self.feedbackType = feedbackOptions.feedbackType
-        ? feedbackOptions.feedbackType
-        : "BUG";
-
-      if (self.widgetOnly && self.widgetCallback) {
-        self.widgetCallback("sendFeedback", {
-          type: self.feedbackType,
-          formData: self.formData,
-        });
-      } else {
-        self.checkReplayLoaded();
-      }
+      self.formSubmitAction(feedbackOptions);
     };
   }
 
-  hookPrivacyPolicy(feedbackOptions) {
-    const privacyPolicyContainer = document.querySelector(
-      ".bugbattle-feedback-inputgroup--privacy-policy"
-    );
-    if (!privacyPolicyContainer) {
+  formSubmitAction(feedbackOptions) {
+    const self = this;
+
+    // Validate form
+    if (!validateForm(feedbackOptions.form)) {
       return;
     }
 
-    if (feedbackOptions.privacyPolicyEnabled) {
-      document.querySelector("#bugbattle-privacy-policy-link").href =
-        feedbackOptions.privacyPolicyUrl;
+    // Remember form items
+    rememberForm(feedbackOptions.form);
+
+    // Check API key
+    if (!self.sdkKey) {
+      return alert(translateText("Wrong API key", self.overrideLanguage));
+    }
+
+    window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+    toggleLoading(true);
+
+    // Start fake loading
+    self.fakeLoading = setInterval(function () {
+      if (self.fakeLoadingProgress > 50) {
+        self.resetLoading(false);
+        return;
+      }
+      self.fakeLoadingProgress += 2;
+      setLoadingIndicatorProgress(self.fakeLoadingProgress);
+    }, 200);
+
+    // Send form
+    const formData = getFormData(feedbackOptions.form);
+    self.formData = formData;
+    self.feedbackType = feedbackOptions.feedbackType
+      ? feedbackOptions.feedbackType
+      : "BUG";
+
+    if (self.widgetOnly && self.widgetCallback) {
+      self.widgetCallback("sendFeedback", {
+        type: self.feedbackType,
+        formData: self.formData,
+      });
     } else {
-      privacyPolicyContainer.remove();
+      self.checkReplayLoaded();
     }
   }
 

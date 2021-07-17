@@ -77,7 +77,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#8AA1B1");
+BugBattle.setMainColor("#3BB273");
 
 console.warn("DEMO!");
 console.log("HI!");

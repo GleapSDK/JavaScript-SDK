@@ -114,7 +114,8 @@
   transition: opacity 1s;
 }
 
-.bugbattle-feedback-dialog-container--focused .bugbattle-feedback-dialog-backdrop {
+.bugbattle-feedback-dialog-container--focused
+  .bugbattle-feedback-dialog-backdrop {
   position: fixed;
   top: 0px;
   left: 0px;
@@ -236,8 +237,8 @@
   display: flex;
   flex-direction: row;
   width: 100%;
-  padding: 20px;
   align-items: center;
+  padding: 20px;
   padding-top: 20px;
 }
 
@@ -251,12 +252,17 @@
   padding-left: 0px;
 }
 
+.bugbattle-feedback-dialog-header--backhidden {
+  padding: 32px;
+  padding-top: 32px;
+}
+
 .bugbattle-feedback-dialog-header--back
   .bugbattle-feedback-dialog-header-title {
   margin-top: 0px;
-  line-height: 20px;
+  line-height: 22px;
   font-family: "Open Sans", sans-serif;
-  font-size: 20px;
+  font-size: 21px;
   margin-bottom: 5px;
 }
 
@@ -885,10 +891,12 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy a {
-  color: #398cfe;
   margin-top: 0px;
   margin-bottom: 0px;
   display: inline;
+  text-decoration: underline;
+  font-family: "Open Sans", sans-serif;
+  color: #192027;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
@@ -904,9 +912,11 @@ input.bugbattle-feedback-required {
 .bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label {
+  font-family: "Open Sans", sans-serif;
   position: relative;
   padding-left: 2em;
   font-size: 14px;
+  color: #192027;
   line-height: 1.7;
   cursor: pointer;
 }
@@ -961,6 +971,17 @@ input.bugbattle-feedback-required {
   opacity: 1;
   -webkit-transform: scale(1) rotate(0);
   transform: scale(1) rotate(0);
+}
+
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required
+  [type="checkbox"]:not(:checked)
+  + label,
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required
+  [type="checkbox"]:checked
+  + label
+  .bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required,
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required a {
+  color: #da0e07;
 }
 
 .bugbattle-feedback-importance {
@@ -1148,18 +1169,16 @@ input.bugbattle-feedback-required {
   background-color: #ed4337;
 }
 
+.bugbattle-feedback-button--crashed .bugbattle-feedback-button-icon:hover {
+  background-color: #c7372d;
+}
+
 .bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-header {
   background: linear-gradient(135deg, #ed4337 0%, #c7372d 100%);
 }
 
 .bugbattle-feedback-dialog--crashed .bugbattle-feedback-send-button {
   background-color: #ed4337;
-}
-
-.bugbattle-feedback-dialog--crashed
-  .bugbattle-feedback-inputgroup--privacy-policy
-  a {
-  color: #ed4337;
 }
 
 .bugbattle-feedback-dialog--crashed

@@ -44,6 +44,34 @@ export const buildForm = function (form, overrideLanguage) {
       )}${formItem.required ? "*" : ""}" />
         </div>`;
     }
+    if (formItem.type === "privacypolicy") {
+      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup--privacy-policy ${getShowAfterHTML(
+        formItem.showAfter
+      )}">
+        <input id="bugbattlePrivacyPolicy" class="bugbattle-feedback-${
+          formItem.name
+        }" type="checkbox" required />
+        <label for="bugbattlePrivacyPolicy" class="bugbattle-feedback-inputgroup--privacy-policy-label">${translateText(
+          "I read and accept the",
+          overrideLanguage
+        )}<a id="bugbattle-privacy-policy-link" href="${
+        formItem.url
+      }" target="_blank">${translateText(
+        " privacy policy",
+        overrideLanguage
+      )}</a>.</label>
+      </div>`;
+    }
+    if (formItem.type === "submit") {
+      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-button ${getShowAfterHTML(
+        formItem.showAfter
+      )}">
+        <div class="bugbattle-feedback-send-button">${translateText(
+          formItem.title,
+          overrideLanguage
+        )}</div>
+      </div>`;
+    }
     if (formItem.type === "textarea") {
       formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
@@ -137,30 +165,6 @@ export const buildForm = function (form, overrideLanguage) {
   };
 };
 
-export const showSendButton = function (show) {
-  const privacyCheck = document.querySelector(
-    `.bugbattle-feedback-inputgroup--privacy-policy`
-  );
-  if (privacyCheck) {
-    if (show) {
-      privacyCheck.style.display = "flex";
-    } else {
-      privacyCheck.style.display = "none";
-    }
-  }
-
-  const sendButton = document.querySelector(
-    `.bugbattle-feedback-inputgroup-button`
-  );
-  if (sendButton) {
-    if (show) {
-      sendButton.style.display = "flex";
-    } else {
-      sendButton.style.display = "none";
-    }
-  }
-};
-
 export const getFormData = function (form) {
   var formData = {};
   for (let i = 0; i < form.length; i++) {
@@ -229,6 +233,14 @@ export const validateFormItem = function (formItem) {
       formElement.parentElement.classList.remove("bugbattle-feedback-required");
     }
   }
+  if (formItem.type === "privacypolicy" && formItem.required) {
+    if (!formElement.checked) {
+      formElement.parentElement.classList.add("bugbattle-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bugbattle-feedback-required");
+    }
+  }
   const elementsToShow = document.querySelectorAll(
     `.${showAfterClass}-${formItem.name}`
   );
@@ -238,10 +250,6 @@ export const validateFormItem = function (formItem) {
     }
   }
 
-  if (valid) {
-    showSendButton(true);
-  }
-  
   return valid;
 };
 
@@ -251,6 +259,7 @@ export const hookForm = function (form) {
     if (!formItem) {
       break;
     }
+    console.log(formItem);
     const formInput = document.querySelector(
       `.bugbattle-feedback-${formItem.name}`
     );
@@ -272,6 +281,11 @@ export const hookForm = function (form) {
         formInput.style.display = "none";
       }
       formInput.oninput = function () {
+        validateFormItem(formItem);
+      };
+    }
+    if (formItem.type === "privacypolicy") {
+      formInput.onchange = function () {
         validateFormItem(formItem);
       };
     }
