@@ -1,7 +1,7 @@
 import { translateText } from "./Translation";
 
 export const setColor = (color) => {
-  const darkerShade = shadeColor(color, -25);
+  const darkerShade = shadeColor(color, -20);
   const lightShade = shadeColor(color, 40);
   const colorStyleSheet = `
     .bugbattle-feedback-button-icon {
