@@ -24,6 +24,14 @@
   padding: 0px;
 }
 
+.bugbattle-feedback-button--disabled .bugbattle-feedback-button-icon {
+  display: none;
+}
+
+.bugbattle-feedback-button--disabled .bugbattle-feedback-button-text {
+  display: none;
+}
+
 .bugbattle-feedback-button-text {
   padding-left: 12px;
   padding-right: 14px;
@@ -107,6 +115,10 @@
 
 .bugbattle-feedback-button--sending .bugbattle-feedback-button-text {
   animation-name: fadeOutDown;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-feedback-button-icon {
+  display: flex;
 }
 
 .bugbattle-feedback-dialog-container .bugbattle-feedback-dialog-backdrop {

@@ -261,7 +261,6 @@ export const hookForm = function (form) {
     if (!formItem) {
       break;
     }
-    console.log(formItem);
     const formInput = document.querySelector(
       `.bugbattle-feedback-${formItem.name}`
     );

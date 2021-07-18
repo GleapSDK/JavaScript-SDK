@@ -1039,7 +1039,7 @@ class BugBattle {
       }
     }, 1000);
 
-    if (this.activation === BugBattle.FEEDBACK_BUTTON && !this.widgetOnly) {
+    if (!this.widgetOnly) {
       this.injectFeedbackButton();
     }
 
@@ -1073,6 +1073,11 @@ class BugBattle {
       self.feedbackButtonPressed();
     };
     document.body.appendChild(elem);
+
+    if (this.activation !== BugBattle.FEEDBACK_BUTTON) {
+      elem.classList.add("bugbattle-feedback-button--disabled");
+    }
+
     this.feedbackButton = elem;
   }
 
