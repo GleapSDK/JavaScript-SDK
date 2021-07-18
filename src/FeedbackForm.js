@@ -2,7 +2,7 @@ import { translateText } from "./Translation";
 
 const showAfterClass = "bugbattle-feedback-showafter";
 
-const getTitleHTML = function (title, overrideLanguage) {
+const getTitleHTML = function (title, overrideLanguage, required) {
   if (title === undefined) {
     return "";
   }
@@ -10,7 +10,7 @@ const getTitleHTML = function (title, overrideLanguage) {
   return `<div class="bugbattle-feedback-elementtitle">${translateText(
     title,
     overrideLanguage
-  )}</div>`;
+  )}${required ? "*" : ""}</div>`;
 };
 
 const getShowAfterHTML = function (showAfter) {
@@ -35,13 +35,13 @@ export const buildForm = function (form, overrideLanguage) {
     if (formItem.type === "text") {
       formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
-      )}">${getTitleHTML(formItem.title, overrideLanguage)}
+      )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <input class="bugbattle-feedback-formdata bugbattle-feedback-${
             formItem.name
           }" type="${formItem.inputtype}" placeholder="${translateText(
         formItem.placeholder,
         overrideLanguage
-      )}${formItem.required ? "*" : ""}" />
+      )}" />
         </div>`;
     }
     if (formItem.type === "privacypolicy") {
@@ -68,20 +68,21 @@ export const buildForm = function (form, overrideLanguage) {
       )}">
         <div class="bugbattle-feedback-send-button">${translateText(
           formItem.title,
-          overrideLanguage
+          overrideLanguage,
+          formItem.required
         )}</div>
       </div>`;
     }
     if (formItem.type === "textarea") {
       formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
-      )}">${getTitleHTML(formItem.title, overrideLanguage)}
+      )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <textarea class="bugbattle-feedback-formdata bugbattle-feedback-${
             formItem.name
           }" placeholder="${translateText(
         formItem.placeholder,
         overrideLanguage
-      )}${formItem.required ? "*" : ""}"></textarea>
+      )}"></textarea>
         </div>`;
     }
     if (formItem.type === "rating") {
@@ -89,7 +90,8 @@ export const buildForm = function (form, overrideLanguage) {
         formItem.showAfter
       )}">${getTitleHTML(
         formItem.title,
-        overrideLanguage
+        overrideLanguage,
+        formItem.required
       )}<input class="bugbattle-feedback-formdata bugbattle-feedback-${
         formItem.name
       }" type="hidden" />
@@ -278,7 +280,7 @@ export const hookForm = function (form) {
         formInput.value = formItem.defaultValue;
       }
       if (formItem.defaultValue && formItem.hideOnDefaultSet) {
-        formInput.style.display = "none";
+        formInput.parentElement.classList.add("bugbattle-feedback-form--hidden");
       }
       formInput.oninput = function () {
         validateFormItem(formItem);

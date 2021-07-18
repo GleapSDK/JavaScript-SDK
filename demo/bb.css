@@ -16,7 +16,7 @@
   border-radius: 30px;
   cursor: pointer;
   background-color: transparent;
-  color: #000;
+  color: #192027;
   z-index: 916777260;
   box-sizing: border-box;
   display: flex;
@@ -152,6 +152,27 @@
   z-index: 916777290;
 }
 
+.bugbattle-feedback-dialog-infoitem {
+  background-color: #eff4f7;
+  padding: 16px;
+  margin: 32px;
+  margin-bottom: -16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #6e6e7f;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
+}
+
+.bugbattle-feedback-form--hidden {
+  display: none !important;
+}
+
+.bugbattle-feedback-form {
+  margin: 32px;
+  position: relative;
+}
+
 .bugbattle-feedback-dialog-header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
@@ -185,7 +206,6 @@
   margin-top: 20px;
   font-weight: normal;
   line-height: 30px;
-  margin-bottom: 5px;
 }
 
 .bugbattle-feedback-dialog-header-description {
@@ -197,6 +217,7 @@
   text-align: left;
   font-weight: 100;
   line-height: 18px;
+  margin-top: 5px;
 }
 
 .bugbattle-feedback-dialog-header-logo {
@@ -238,8 +259,8 @@
   flex-direction: row;
   width: 100%;
   align-items: center;
-  padding: 20px;
-  padding-top: 20px;
+  padding: 12px;
+  padding-top: 12px;
 }
 
 .bugbattle-feedback-dialog-header--back .bugbattle-feedback-dialog-header-text {
@@ -253,8 +274,8 @@
 }
 
 .bugbattle-feedback-dialog-header--backhidden {
-  padding: 32px;
-  padding-top: 32px;
+  padding: 21px;
+  padding-top: 21px;
 }
 
 .bugbattle-feedback-dialog-header--back
@@ -262,8 +283,7 @@
   margin-top: 0px;
   line-height: 22px;
   font-family: "Open Sans", sans-serif;
-  font-size: 21px;
-  margin-bottom: 5px;
+  font-size: 19px;
 }
 
 .bugbattle-feedback-dialog-header--back
@@ -271,6 +291,7 @@
   font-family: "Open Sans", sans-serif;
   font-size: 14px;
   line-height: 18px;
+  margin-top: 5px;
 }
 
 .bugbattle-feedback-dialog-header--backhidden
@@ -325,7 +346,7 @@
   font-size: 16px;
   line-height: 18px;
   margin-bottom: 4px;
-  color: #000;
+  color: #192027;
 }
 
 .bugbattle-feedback-type-description {
@@ -337,10 +358,11 @@
 
 .bugbattle-feedback-elementtitle {
   font-family: "Open Sans", sans-serif;
-  font-size: 15px;
-  text-align: center;
-  margin-bottom: 10px;
-  margin-top: 10px;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+  margin-top: 0px;
+  font-weight: bold;
 }
 
 .bugbattle-feedback-dialog-info-text {
@@ -371,10 +393,6 @@
 
 .bugbattle-feedback-dialog-body {
   display: block;
-}
-
-.bugbattle-feedback-form {
-  margin: 32px;
 }
 
 .bugbattle-feedback-inputgroup {
@@ -416,15 +434,15 @@
   border-radius: 8px;
   box-sizing: border-box;
   padding: 12px 19px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: #fff;
   text-align: center;
-  width: auto;
+  width: 100%;
   margin-top: 5px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   cursor: pointer;
-  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.05);
 }
 
 .bugbattle-feedback-send-button:hover {
@@ -436,13 +454,13 @@
   font-family: "Open Sans", sans-serif;
   width: auto;
   padding: 15px 12px;
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
   border: 1px solid #e9f1fd;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #000;
+  color: #192027;
 }
 
 input.bugbattle-feedback-required {
@@ -869,15 +887,15 @@ input.bugbattle-feedback-required {
   width: auto;
   height: auto;
   padding: 12px;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 17px;
   margin: 0px;
   box-sizing: border-box;
   border: 1px solid #e9f1fd;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #000;
+  color: #192027;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy {
@@ -1179,6 +1197,14 @@ input.bugbattle-feedback-required {
 
 .bugbattle-feedback-dialog--crashed .bugbattle-feedback-send-button {
   background-color: #ed4337;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {
+  border-top: 3px solid #ed433777;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {
+  background-color: #ed433709;
 }
 
 .bugbattle-feedback-dialog--crashed

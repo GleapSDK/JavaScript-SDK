@@ -44,8 +44,11 @@ export const setColor = (color) => {
     .bugbattle-feedback-type:hover {
       border: 1px solid ${color};
     }
-    .bugbattle-feedback-type:first-of-type, .bugbattle-feedback-type:first-of-type:hover {
+    .bugbattle-feedback-type:first-of-type, .bugbattle-feedback-type:first-of-type:hover, .bugbattle-feedback-dialog-infoitem {
       border-top: 3px solid ${color}77;
+    }
+    .bugbattle-feedback-dialog-infoitem {
+      background-color: ${color}09;
     }
     .bugbattle-feedback-type:hover .bugbattle-feedback-type-title {
       color: ${color};
@@ -80,11 +83,11 @@ export const createWidgetDialog = function (
   content,
   back,
   showBack = true,
-  appendClass = ''
+  appendClass = ""
 ) {
   var elem = document.createElement("div");
   elem.className = "bugbattle-feedback-dialog-container";
-  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-anim-fadein ${appendClass}'>
+  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-feedback-dialog--chat bugbattle-anim-fadein ${appendClass}'>
       <div class="bugbattle-feedback-dialog-header${
         back ? " bugbattle-feedback-dialog-header--back" : ""
       }${!showBack ? " bugbattle-feedback-dialog-header--backhidden" : ""}">
@@ -101,9 +104,13 @@ export const createWidgetDialog = function (
           <div class="bugbattle-feedback-dialog-header-title">
             ${title}
           </div>
-          <div class="bugbattle-feedback-dialog-header-description">
-            ${description}
-          </div>
+          ${
+            description === null
+              ? ""
+              : `<div class="bugbattle-feedback-dialog-header-description">
+          ${description}
+        </div>`
+          }
         </div>
       </div>
       <div class="bugbattle-feedback-dialog-body">
@@ -261,11 +268,20 @@ export const loadIcon = function (name, color) {
 
 export const toggleLoading = function (loading) {
   const form = document.querySelector(".bugbattle-feedback-form");
+  const infoItem = document.querySelector(
+    ".bugbattle-feedback-dialog-infoitem"
+  );
   const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
   if (loading) {
+    if (infoItem) {
+      infoItem.style.display = "none";
+    }
     form.style.display = "none";
     loader.style.display = "flex";
   } else {
+    if (infoItem) {
+      infoItem.style.display = "block";
+    }
     form.style.display = "block";
     loader.style.display = "none";
   }

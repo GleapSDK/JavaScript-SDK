@@ -79,7 +79,7 @@ class BugBattle {
   static FLOW_CRASH = {
     title: "Problems detected",
     description:
-      "We are always here to help, please let us know what happened.",
+      "We detected problems with our webapp. It would be amazing if you help us fix the problems by submitting this form.",
     form: [
       {
         placeholder: "Your e-mail",
@@ -91,12 +91,13 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        placeholder: "What went wrong?",
+        title: "What went wrong?",
+        placeholder: "Optional",
         type: "textarea",
         name: "description",
       },
       {
-        title: "Send feedback",
+        title: "Report issue",
         type: "submit",
         name: "send",
       },
@@ -106,6 +107,8 @@ class BugBattle {
   };
   static FLOW_DEFAULT = {
     title: "Report an issue",
+    description:
+      "Your feedback means a lot to us. Use our marker tools to add more details to your screenshot.",
     form: [
       {
         placeholder: "Your e-mail",
@@ -117,7 +120,8 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        placeholder: "What went wrong?",
+        title: "What went wrong?",
+        placeholder: "Optional",
         type: "textarea",
         name: "description",
       },
@@ -138,6 +142,7 @@ class BugBattle {
         required: true,
       },
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -148,7 +153,8 @@ class BugBattle {
         showAfter: "pagerating",
       },
       {
-        placeholder: "How can we improve?",
+        title: "How can we improve?",
+        placeholder: "Optional",
         type: "textarea",
         name: "description",
         showAfter: "pagerating",
@@ -165,6 +171,7 @@ class BugBattle {
   };
   static FLOW_FEATUREREQUEST = {
     title: "Request a feature",
+    description: "What feature or improvement would you like to see?",
     form: [
       {
         placeholder: "Your e-mail",
@@ -176,11 +183,18 @@ class BugBattle {
         remember: true,
       },
       {
-        placeholder: "What feature would you like to see next?",
+        placeholder: "Title",
+        title: "Title",
         type: "text",
         inputtype: "text",
-        name: "description",
+        name: "title",
         required: true,
+      },
+      {
+        title: "Description",
+        placeholder: "Optional",
+        type: "textarea",
+        name: "description",
       },
       {
         title: "Send feedback",
@@ -761,7 +775,7 @@ class BugBattle {
     var description = "";
 
     if (feedbackOptions.description && feedbackOptions.description.length > 0) {
-      description = `<div class="bugbattle-feedback-dialog-header-description">${translateText(
+      description = `<div class="bugbattle-feedback-dialog-infoitem">${translateText(
         feedbackOptions.description,
         this.overrideLanguage
       )}</div>`;
@@ -817,6 +831,7 @@ class BugBattle {
       this.overrideLanguage
     )}</div>
   </div>
+  ${description}
   <div class="bugbattle-feedback-form">
     ${formData.formHTML}
   </div>`;
@@ -830,7 +845,7 @@ class BugBattle {
 
     createWidgetDialog(
       title,
-      description,
+      null,
       this.customLogoUrl,
       htmlContent,
       function () {
@@ -1132,10 +1147,16 @@ class BugBattle {
       ".bugbattle-feedback-dialog-success"
     );
     const form = document.querySelector(".bugbattle-feedback-form");
+    const infoItem = document.querySelector(
+      ".bugbattle-feedback-dialog-infoitem"
+    );
     const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
     form.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
+    if (infoItem) {
+      infoItem.style.display = "none";
+    }
   }
 
   sendBugReportToServer(screenshotData) {
