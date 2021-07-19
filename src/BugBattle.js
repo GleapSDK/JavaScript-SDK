@@ -1320,7 +1320,7 @@ class BugBattle {
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
-        }, 3000);
+        }, 1500);
       }
     };
 
