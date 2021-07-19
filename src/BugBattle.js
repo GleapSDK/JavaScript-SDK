@@ -315,6 +315,35 @@ class BugBattle {
   }
 
   /**
+   * Automatically prompt the user for a user feedback rating.
+   * @param {Number} daysDelayed
+   */
+  static autoPromptForRating(daysDelayed = 5) {
+    try {
+      var ftv = localStorage.getItem("bugbattle-ftv");
+      if (!ftv) {
+        ftv = new Date().toString();
+        localStorage.setItem("bugbattle-ftv", ftv);
+      }
+
+      // Convert to date
+      ftv = new Date(ftv);
+
+      // Calculate date when to show the widget
+      var d = new Date();
+      d.setDate(d.getDate() - daysDelayed);
+
+      if (d >= ftv) {
+        const showAfter = 8000 + Math.floor(Math.random() * 8000);
+        setTimeout(() => {
+          localStorage.setItem("bugbattle-ftv", new Date().toString());
+          BugBattle.startBugReporting(BugBattle.FLOW_RATING);
+        }, showAfter);
+      }
+    } catch (exp) {}
+  }
+
+  /**
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
    */
@@ -569,7 +598,10 @@ class BugBattle {
       `Hi ${
         instance.customerInfo.name ? instance.customerInfo.name : "there"
       } 👋`,
-      translateText(instance.widgetInfo.dialogSubtitle, instance.overrideLanguage)
+      translateText(
+        instance.widgetInfo.dialogSubtitle,
+        instance.overrideLanguage
+      )
     );
   }
 

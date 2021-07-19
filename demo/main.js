@@ -140,3 +140,5 @@ setTimeout(() => {
 
 x[0].as = 1;
 }, 5000);*/
+
+BugBattle.autoPromptForRating();
