@@ -339,6 +339,7 @@ class BugBattle {
       Intercom("onHide", function () {
         BugBattle.showFeedbackButton(true);
       });
+      Intercom('hide');
     } else {
       if (retries > 10) {
         return;
