@@ -52,7 +52,12 @@ class BugBattle {
   shortcutsEnabled = true;
   silentBugReport = false;
   initialized = false;
-  email = null;
+  customerInfo = {};
+  widgetInfo = {
+    title: "Feedback",
+    subtitle: "How can we help you?",
+    dialogSubtitle: "We are here to help",
+  };
   originalConsoleLog;
   severity = "LOW";
   appVersionCode = "";
@@ -82,6 +87,7 @@ class BugBattle {
       "We detected problems with our webapp. It would be amazing if you help us fix the problems by submitting this form.",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -111,6 +117,7 @@ class BugBattle {
       "Your feedback means a lot to us. Use our marker tools to add more details to your screenshot.",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -174,6 +181,7 @@ class BugBattle {
     description: "What feature or improvement would you like to see?",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -183,8 +191,8 @@ class BugBattle {
         remember: true,
       },
       {
-        placeholder: "Title",
-        title: "Title",
+        placeholder: "",
+        title: "Subject",
         type: "text",
         inputtype: "text",
         name: "title",
@@ -356,7 +364,34 @@ class BugBattle {
    * @param {string} email
    */
   static setCustomerEmail(email) {
-    this.getInstance().email = email;
+    this.getInstance().customerInfo.email = email;
+  }
+
+  /**
+   * Sets the customers info.
+   * @param {string} customerInfo
+   */
+  static setCustomerInfo(customerInfo) {
+    if (!customerInfo) {
+      return;
+    }
+
+    this.getInstance().customerInfo = customerInfo;
+  }
+
+  /**
+   * Sets the widget info texts.
+   * @param {string} widgetInfo
+   */
+  static setWidgetInfo(widgetInfo) {
+    if (!widgetInfo) {
+      return;
+    }
+
+    this.getInstance().widgetInfo = Object.assign(
+      this.getInstance().widgetInfo,
+      widgetInfo
+    );
   }
 
   /**
@@ -530,7 +565,11 @@ class BugBattle {
         if (instance.widgetOnly && instance.widgetCallback) {
           instance.widgetCallback("selectedMenuOption", {});
         }
-      }
+      },
+      `Hi ${
+        instance.customerInfo.name ? instance.customerInfo.name : "there"
+      } 👋`,
+      translateText(instance.widgetInfo.dialogSubtitle, instance.overrideLanguage)
     );
   }
 
@@ -618,7 +657,7 @@ class BugBattle {
     }
 
     if (
-      instance.email &&
+      instance.customerInfo.email &&
       feedbackOptions.form &&
       feedbackOptions.form.length > 0
     ) {
@@ -626,7 +665,7 @@ class BugBattle {
       for (var i = 0; i < feedbackOptions.form.length; i++) {
         var feedbackOption = feedbackOptions.form[i];
         if (feedbackOption.name === "reportedBy") {
-          feedbackOption.defaultValue = instance.email;
+          feedbackOption.defaultValue = instance.customerInfo.email;
         }
       }
     }
@@ -1057,14 +1096,15 @@ class BugBattle {
   injectFeedbackButton() {
     const self = this;
 
-    var feedbackButtonText = translateText("Feedback", self.overrideLanguage);
-    if (this.overrideButtonText) {
-      feedbackButtonText = this.overrideButtonText;
-    }
-
     var elem = document.createElement("div");
     elem.className = "bugbattle-feedback-button";
-    elem.innerHTML = `<div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title">Feedback</div><div class="bugbattle-feedback-button-text-subtitle">Your feedback matters</div></div><div class="bugbattle-feedback-button-icon">${loadIcon(
+    elem.innerHTML = `<div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title">${translateText(
+      self.widgetInfo.title,
+      self.overrideLanguage
+    )}</div><div class="bugbattle-feedback-button-text-subtitle">${translateText(
+      self.widgetInfo.subtitle,
+      self.overrideLanguage
+    )}</div></div><div class="bugbattle-feedback-button-icon">${loadIcon(
       "bblogo",
       "#fff"
     )}${loadIcon("arrowdown", "#fff")}</div>`;
@@ -1340,16 +1380,15 @@ class BugBattle {
   }
 
   showBugReportEditor(feedbackOptions) {
-    // Open next step in dialog.
-    this.createBugReportingDialog(feedbackOptions);
-
     // Stop here if we don't want to show the native screenshot tools
     if (feedbackOptions.disableUserScreenshot) {
+      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
     // Notify for native SDK.
     if (this.widgetOnly && this.widgetCallback) {
+      this.createBugReportingDialog(feedbackOptions);
       this.widgetCallback("openScreenshotEditor", {
         screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
       });
@@ -1366,6 +1405,15 @@ class BugBattle {
     bugReportingEditor.innerHTML = `
       <div class="bugbattle-screenshot-editor-container">
         <div class='bugbattle-screenshot-editor-container-inner'>
+          <svg class="bugbattle-screenshot-editor-svg" width="100%" height="100%">
+            <defs>
+              <mask id="bbmask">
+                <rect width="100%" height="100%" fill="white"/>
+                <rect id="bugbattle-markercut" x="0" y="0" width="0" height="0" />
+              </mask>
+            </defs>
+            <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.4);" mask="url(#bbmask)" />
+          </svg>
           <div class='bugbattle-screenshot-editor-borderlayer'></div>
           <div class='bugbattle-screenshot-editor-dot'></div>
           <div class='bugbattle-screenshot-editor-rectangle'></div>
@@ -1378,13 +1426,23 @@ class BugBattle {
     `;
     document.body.appendChild(bugReportingEditor);
 
-    const editorRectangle = document.querySelector(
+    const editorBorderLayer = document.querySelector(
       ".bugbattle-screenshot-editor-borderlayer"
     );
-    if (editorRectangle) {
-      editorRectangle.style.height = `${window.innerHeight}px`;
-    }
+    const editorDot = window.document.querySelector(
+      ".bugbattle-screenshot-editor-dot"
+    );
+    const editorRectangle = window.document.querySelector(
+      ".bugbattle-screenshot-editor-rectangle"
+    );
+    const editorSVG = window.document.querySelector(
+      ".bugbattle-screenshot-editor-svg"
+    );
+    const rectangleMarker = window.document.getElementById(
+      "bugbattle-markercut"
+    );
 
+    editorBorderLayer.style.height = `${window.innerHeight}px`;
     var addedMarker = false;
     var clickStartX = -1;
     var clickStartY = -1;
@@ -1394,11 +1452,8 @@ class BugBattle {
         return;
       }
 
-      const editorDot = document.querySelector(
-        ".bugbattle-screenshot-editor-dot"
-      );
-      editorDot.style.left = x - editorDot.offsetWidth / 2 + "px";
-      editorDot.style.top = y - editorDot.offsetHeight / 2 + "px";
+      editorDot.style.left = x + 3 - editorDot.offsetWidth / 2 + "px";
+      editorDot.style.top = y + 3 - editorDot.offsetHeight / 2 + "px";
     }
 
     function setMouseMove(x, y) {
@@ -1416,10 +1471,6 @@ class BugBattle {
       const width = x - clickStartX;
       const height = y - clickStartY;
 
-      const editorRectangle = document.querySelector(
-        ".bugbattle-screenshot-editor-rectangle"
-      );
-
       var left = width < 0 ? clickStartX + width : clickStartX;
       var top = height < 0 ? clickStartY + height : clickStartY;
       var heightAbs = height < 0 ? height * -1 : height;
@@ -1429,6 +1480,10 @@ class BugBattle {
       editorRectangle.style.top = `${top}px`;
       editorRectangle.style.width = `${widthAbs}px`;
       editorRectangle.style.height = `${heightAbs}px`;
+      rectangleMarker.setAttribute("x", left);
+      rectangleMarker.setAttribute("y", top);
+      rectangleMarker.setAttribute("width", `${widthAbs}`);
+      rectangleMarker.setAttribute("height", `${heightAbs}`);
     }
 
     function mouseDownEventHandler(e) {
@@ -1443,45 +1498,6 @@ class BugBattle {
       setStartPoint(clickStartX, clickStartY);
     }
 
-    function mouseUpEventHandler(e) {
-      const dragInfo = document.querySelector(
-        ".bugbattle-screenshot-editor-drag-info"
-      );
-      dragInfo.style.display = "none";
-
-      const fixedDot = window.document.querySelector(
-        ".bugbattle-screenshot-editor-dot"
-      );
-      const fixedRectangle = window.document.querySelector(
-        ".bugbattle-screenshot-editor-rectangle"
-      );
-
-      fixedRectangle.style.top = `${
-        fixedRectangle.offsetTop + document.documentElement.scrollTop
-      }px`;
-      fixedRectangle.style.left = `${
-        fixedRectangle.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      fixedDot.style.top = `${
-        fixedDot.offsetTop + document.documentElement.scrollTop
-      }px`;
-      fixedDot.style.left = `${
-        fixedDot.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      fixedDot.parentNode.removeChild(fixedDot);
-      fixedRectangle.parentNode.removeChild(fixedRectangle);
-
-      const screenshotEditor = window.document.querySelector(
-        ".bugbattle-screenshot-editor"
-      );
-      screenshotEditor.appendChild(fixedDot);
-      screenshotEditor.appendChild(fixedRectangle);
-
-      addedMarker = true;
-    }
-
     function mouseMoveEventHandler(e) {
       const x = e.pageX - document.documentElement.scrollLeft;
       const y = e.pageY - document.documentElement.scrollTop;
@@ -1493,6 +1509,61 @@ class BugBattle {
       const y = e.touches[0].pageY - document.documentElement.scrollTop;
       setMouseMove(x, y);
       e.preventDefault();
+    }
+
+    function mouseUpEventHandler(e) {
+      const dragInfo = document.querySelector(
+        ".bugbattle-screenshot-editor-drag-info"
+      );
+      dragInfo.style.display = "none";
+
+      editorRectangle.style.top = `${
+        editorRectangle.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorRectangle.style.left = `${
+        editorRectangle.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+      editorDot.style.top = `${
+        editorDot.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorDot.style.left = `${
+        editorDot.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+      editorSVG.style.top = `${
+        editorSVG.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorSVG.style.left = `${
+        editorSVG.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+
+      editorDot.parentNode.removeChild(editorDot);
+      editorRectangle.parentNode.removeChild(editorRectangle);
+
+      bugReportingEditor.appendChild(editorDot);
+      bugReportingEditor.appendChild(editorRectangle);
+      bugReportingEditor.classList.add("bugbattle-screenshot-editor--marked");
+      addedMarker = true;
+
+      bugReportingEditor.removeEventListener("mouseup", mouseUpEventHandler);
+      bugReportingEditor.removeEventListener(
+        "mousemove",
+        mouseMoveEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "mousedown",
+        mouseDownEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "touchstart",
+        touchstartEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "touchmove",
+        touchMoveEventHandler
+      );
+      bugReportingEditor.removeEventListener("touchend", mouseUpEventHandler);
+
+      self.createBugReportingDialog(feedbackOptions);
     }
 
     bugReportingEditor.addEventListener("mouseup", mouseUpEventHandler);

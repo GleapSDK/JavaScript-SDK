@@ -1,13 +1,16 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES", BugBattle.FEEDBACK_BUTTON);
+BugBattle.initialize(
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
+  BugBattle.FEEDBACK_BUTTON
+);
 
 BugBattle.logEvent("Booted");
 
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
-    title: "Support",
+    title: "Request a feature",
     description: "Get in touch with us.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
     action: () => {
@@ -76,7 +79,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#F55536");
+BugBattle.setMainColor("#2A9D8F");
 
 console.warn("DEMO!");
 console.log("HI!");
@@ -107,7 +110,10 @@ xhttpa.open(
 );
 xhttpa.send();
 
-BugBattle.setCustomerEmail("asdf@asdf.de");
+BugBattle.setCustomerInfo({
+  email: "asdf@asdf.de",
+  name: "Lukas",
+});
 
 BugBattle.logEvent("Sample", {
   userId: 1234,
@@ -129,6 +135,8 @@ setTimeout(() => {
   });
 }, 5000);
 
-// var x = [];
+/*setTimeout(() => {
+  var x = [];
 
-// x[0].as = 1;
+x[0].as = 1;
+}, 5000);*/

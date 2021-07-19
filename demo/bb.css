@@ -17,7 +17,7 @@
   cursor: pointer;
   background-color: transparent;
   color: #192027;
-  z-index: 916777260;
+  z-index: 916777290;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -375,6 +375,17 @@
   margin-bottom: 8px;
   margin-top: 0px;
   font-weight: bold;
+}
+
+.bugbattle-feedback-elementtitle span {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+  margin-top: 0px;
+  font-weight: bold;
+  color: #ed4337;
+  margin-left: 3px;
 }
 
 .bugbattle-feedback-dialog-info-text {
@@ -1103,6 +1114,17 @@ input.bugbattle-feedback-required {
   height: -webkit-fill-available;
 }
 
+.bugbattle-screenshot-editor-svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair;
+  z-index: 916777268;
+  box-sizing: border-box;
+}
+
 .bugbattle-screenshot-editor-canvas {
   position: absolute;
   top: 0px;
@@ -1125,6 +1147,12 @@ input.bugbattle-feedback-required {
   cursor: crosshair;
   z-index: 916777272;
   box-sizing: border-box;
+}
+
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-svg,
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-canvas,
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-borderlayer {
+  cursor: default;
 }
 
 .bugbattle-screenshot-editor-dot {
@@ -1212,7 +1240,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {
-  border-top: 3px solid #ed433777;
+  border-top: 2px solid #ed433777;
 }
 
 .bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {

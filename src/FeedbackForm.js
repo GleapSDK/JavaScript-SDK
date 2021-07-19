@@ -10,7 +10,7 @@ const getTitleHTML = function (title, overrideLanguage, required) {
   return `<div class="bugbattle-feedback-elementtitle">${translateText(
     title,
     overrideLanguage
-  )}${required ? "*" : ""}</div>`;
+  )}${required ? "<span>*</span>" : ""}</div>`;
 };
 
 const getShowAfterHTML = function (showAfter) {

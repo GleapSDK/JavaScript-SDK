@@ -45,7 +45,7 @@ export const setColor = (color) => {
       border: 1px solid ${color};
     }
     .bugbattle-feedback-type:first-of-type, .bugbattle-feedback-type:first-of-type:hover, .bugbattle-feedback-dialog-infoitem {
-      border-top: 3px solid ${color}77;
+      border-top: 2px solid ${color}77;
     }
     .bugbattle-feedback-dialog-infoitem {
       background-color: ${color}09;
@@ -161,7 +161,9 @@ export const createFeedbackTypeDialog = function (
   overrideLanguage,
   customLogoUrl,
   poweredByHidden,
-  selectedMenuOption
+  selectedMenuOption,
+  title,
+  subtitle
 ) {
   // Generate options
   var optionsHTML = `<div class="bugbattle-feedback-types">`;
@@ -186,8 +188,8 @@ export const createFeedbackTypeDialog = function (
   optionsHTML += "</div>";
 
   const dialog = createWidgetDialog(
-    "Feedback",
-    "asdf asdfasdf asdf asdf",
+    title,
+    subtitle,
     customLogoUrl,
     optionsHTML
   );
