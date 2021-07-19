@@ -11,13 +11,13 @@
 .bugbattle-feedback-button {
   margin: 0px;
   position: fixed;
-  bottom: 16px;
-  right: 16px;
+  bottom: 20px;
+  right: 20px;
   border-radius: 30px;
   cursor: pointer;
   background-color: transparent;
   color: #192027;
-  z-index: 916777290;
+  z-index: 2147483100;
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -161,7 +161,7 @@
   position: fixed;
   right: 16px;
   bottom: 92px;
-  z-index: 916777290;
+  z-index: 2147483100;
 }
 
 .bugbattle-feedback-dialog-infoitem {

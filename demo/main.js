@@ -10,28 +10,25 @@ BugBattle.logEvent("Booted");
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
-    title: "Request a feature",
+    title: "Contact us",
     description: "Get in touch with us.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
     action: () => {
-      BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
+      //BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
+      Intercom("showNewMessage");
     },
   },
   {
     title: "Rate your experience",
     description: "Let us know how we could improve!",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
-    action: () => {
-      BugBattle.startBugReporting(BugBattle.FLOW_RATING);
-    },
+    actionFlow: BugBattle.FLOW_RATING,
   },
   {
     title: "Report an issue",
     description: "Something is broken? Let us know!",
     icon: "https://jssdk.bugbattle.io/res/bug.svg",
-    action: () => {
-      BugBattle.startBugReporting();
-    },
+    actionFlow: BugBattle.FLOW_DEFAULT,
   },
 ]);
 
@@ -75,11 +72,13 @@ BugBattle.enableRageClickDetector();
 // Disable shortcuts
 BugBattle.enableShortcuts(true);
 
+BugBattle.enableIntercomCompatibilityMode();
+
 // Turn the privacy policy check on or off.
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#2A9D8F");
+BugBattle.setMainColor("#398cfe");
 
 console.warn("DEMO!");
 console.log("HI!");

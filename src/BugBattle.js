@@ -314,6 +314,42 @@ class BugBattle {
     this.getInstance().shortcutsEnabled = enabled;
   }
 
+  static enableIntercomCompatibilityMode() {
+    this.getInstance().enableIntercomCompatibilityMode();
+  }
+
+  static showFeedbackButton(show) {
+    const feedbackButton = this.getInstance().feedbackButton;
+    if (!feedbackButton) {
+      return;
+    }
+
+    if (show) {
+      feedbackButton.style.display = "flex";
+    } else {
+      feedbackButton.style.display = "none";
+    }
+  }
+
+  enableIntercomCompatibilityMode(retries = 0) {
+    if (window.Intercom) {
+      Intercom("onShow", function () {
+        BugBattle.showFeedbackButton(false);
+      });
+      Intercom("onHide", function () {
+        BugBattle.showFeedbackButton(true);
+      });
+    } else {
+      if (retries > 10) {
+        return;
+      } else {
+        setTimeout(() => {
+          this.enableIntercomCompatibilityMode(++retries);
+        }, 1000);
+      }
+    }
+  }
+
   /**
    * Automatically prompt the user for a user feedback rating.
    * @param {Number} daysDelayed

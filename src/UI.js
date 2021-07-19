@@ -1,8 +1,8 @@
+import BugBattle from "./BugBattle";
 import { translateText } from "./Translation";
 
 export const setColor = (color) => {
   const darkerShade = shadeColor(color, -20);
-  const lightShade = shadeColor(color, 40);
   const colorStyleSheet = `
     .bugbattle-feedback-button-icon {
         background-color: ${color};
@@ -201,7 +201,16 @@ export const createFeedbackTypeDialog = function (
       function () {
         dialog.remove();
         if (feedbackTypeActions[index].action) {
+          // Cleanup widget.
+          BugBattle.getInstance().reportCleanup();
+
+          // Call custom action.
           feedbackTypeActions[index].action();
+        }
+        if (feedbackTypeActions[index].actionFlow) {
+          BugBattle.startBugReporting(
+            feedbackTypeActions[index].actionFlow
+          );
         }
         if (selectedMenuOption) {
           selectedMenuOption();
