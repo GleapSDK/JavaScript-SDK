@@ -202,6 +202,7 @@
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
+  font-family: "Open Sans", sans-serif;
   color: #6e6e7f;
   border: 1px solid rgba(0, 0, 0, 0.09);
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
@@ -265,16 +266,11 @@
   margin-top: 5px;
 }
 
-.bugbattle-feedback-dialog-header-logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  max-width: 65%;
-}
-
-.bugbattle-feedback-dialog-header-logo svg {
+.bugbattle-feedback-dialog-header-logo svg,
+.bugbattle-feedback-dialog-header-logo img {
   height: 40px;
-  width: 100%;
+  width: auto;
+  max-width: 200px;
   object-fit: contain;
   text-align: left;
 }
