@@ -403,7 +403,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
     // Do further cleanup.
     const dialogElems = clone.querySelectorAll(
-      ".bugbattle--feedback-dialog-container, .bugbattle-screenshot-editor-borderlayer"
+      ".bugbattle-feedback-dialog-container, .bugbattle-screenshot-editor-borderlayer"
     );
     for (var i = 0; i < dialogElems.length; ++i) {
       dialogElems[i].remove();

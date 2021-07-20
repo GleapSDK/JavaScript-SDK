@@ -1,16 +1,16 @@
-.bugbattle--feedback-dialog-container input,
-.bugbattle--feedback-dialog-container label {
+.bugbattle-feedback-dialog-container input,
+.bugbattle-feedback-dialog-container label {
   margin: 0;
   padding: 0;
   border: none;
   background-color: #fff;
 }
 
-.bugbattle--feedback-button {
+.bugbattle-feedback-button {
   display: none;
 }
 
-.bugbattle--feedback-dialog-container {
+.bugbattle-feedback-dialog-container {
   width: 100vw;
   height: 100vh;
   display: flex;
@@ -18,14 +18,14 @@
   align-items: center;
 }
 
-.bugbattle--feedback-dialog {
+.bugbattle-feedback-dialog {
   width: 90%;
   max-width: 400px;
   box-sizing: border-box;
   position: relative;
 }
 
-.bugbattle--feedback-dialog-header {
+.bugbattle-feedback-dialog-header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   display: flex;
@@ -37,7 +37,7 @@
   flex-direction: column;
 }
 
-.bugbattle--feedback-dialog-header-button-cancel {
+.bugbattle-feedback-dialog-header-button-cancel {
   width: 26px;
   height: 26px;
   cursor: pointer;
@@ -53,16 +53,16 @@
   display: none;
 }
 
-.bugbattle--feedback-dialog-header-button-cancel svg {
+.bugbattle-feedback-dialog-header-button-cancel svg {
   width: 10px;
   height: 10px;
 }
 
-.bugbattle--feedback-dialog-header-button-cancel:hover svg {
+.bugbattle-feedback-dialog-header-button-cancel:hover svg {
   opacity: 0.6;
 }
 
-.bugbattle--feedback-dialog-header-title {
+.bugbattle-feedback-dialog-header-title {
   font-weight: normal;
   text-align: center;
   color: #192027;
@@ -73,14 +73,14 @@
   font-weight: bold;
 }
 
-.bugbattle--feedback-dialog-header-logo {
+.bugbattle-feedback-dialog-header-logo {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.bugbattle--feedback-dialog-header-logo svg,
-.bugbattle--feedback-dialog-header-logo img {
+.bugbattle-feedback-dialog-header-logo svg,
+.bugbattle-feedback-dialog-header-logo img {
   height: 40px;
   width: 100%;
   max-width: 65%;
@@ -88,11 +88,11 @@
   text-align: center;
 }
 
-.bugbattle--feedback-types {
+.bugbattle-feedback-types {
   margin: 40px 0px;
 }
 
-.bugbattle--feedback-type {
+.bugbattle-feedback-type {
   display: flex;
   justify-content: flex-start;
   align-items: center;
@@ -106,11 +106,11 @@
   border: 1px solid rgb(238, 236, 236);
 }
 
-.bugbattle--feedback-type:hover {
+.bugbattle-feedback-type:hover {
   background-color: #e9f1fd;
 }
 
-.bugbattle--feedback-type-icon {
+.bugbattle-feedback-type-icon {
   width: 44px;
   height: 44px;
   background-color: #398cfe;
@@ -120,35 +120,35 @@
   box-sizing: border-box;
 }
 
-.bugbattle--feedback-type-text {
+.bugbattle-feedback-type-text {
   flex-grow: 1;
 }
 
-.bugbattle--feedback-type-title {
+.bugbattle-feedback-type-title {
   font-weight: bold;
   font-size: 16px;
 }
 
-.bugbattle--feedback-elementtitle {
+.bugbattle-feedback-elementtitle {
   font-size: 15px;
   text-align: center;
   margin-bottom: 10px;
   margin-top: 10px;
 }
 
-.bugbattle--feedback-type-description {
+.bugbattle-feedback-type-description {
   color: #666;
   font-size: 15px;
 }
 
-.bugbattle--feedback-dialog-info-text {
+.bugbattle-feedback-dialog-info-text {
   color: #666;
   font-size: 16px;
   padding-top: 20px;
   text-align: center;
 }
 
-.bugbattle--feedback-dialog-success {
+.bugbattle-feedback-dialog-success {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -157,20 +157,20 @@
   display: none;
 }
 
-.bugbattle--feedback-dialog-success svg {
+.bugbattle-feedback-dialog-success svg {
   width: 30px;
   height: auto;
 }
 
-.bugbattle--feedback-dialog-loading {
+.bugbattle-feedback-dialog-loading {
   display: none;
 }
 
-.bugbattle--feedback-dialog-body {
+.bugbattle-feedback-dialog-body {
   display: block;
 }
 
-.bugbattle--feedback-inputgroup {
+.bugbattle-feedback-inputgroup {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
@@ -178,22 +178,22 @@
   flex-direction: column;
 }
 
-.bugbattle--feedback-inputgroup.bugbattle--feedback-showafter {
+.bugbattle-feedback-inputgroup.bugbattle-feedback-showafter {
   display: none;
 }
 
-.bugbattle--feedback-inputgroup-button {
+.bugbattle-feedback-inputgroup-button {
   display: flex;
   align-items: center;
 }
 
-.bugbattle--feedback-inputgroup-text {
+.bugbattle-feedback-inputgroup-text {
   color: #192027;
   font-size: 16px;
   font-weight: normal;
 }
 
-.bugbattle--feedback-inputgroup-label {
+.bugbattle-feedback-inputgroup-label {
   padding: 0px;
   margin-bottom: 5px;
   color: #192027;
@@ -201,7 +201,7 @@
   font-weight: 600;
 }
 
-.bugbattle--feedback-send-button {
+.bugbattle-feedback-send-button {
   background-color: #398cfe;
   border-radius: 8px;
   box-sizing: border-box;
@@ -217,12 +217,12 @@
   box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.15);
 }
 
-.bugbattle--feedback-send-button:hover {
+.bugbattle-feedback-send-button:hover {
   opacity: 0.9;
 }
 
-.bugbattle--feedback-inputgroup > input,
-.bugbattle--feedback-inputgroup input {
+.bugbattle-feedback-inputgroup > input,
+.bugbattle-feedback-inputgroup input {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -238,12 +238,12 @@
   color: #000;
 }
 
-input.bugbattle--feedback-required {
+input.bugbattle-feedback-required {
   border: 1px solid #da0e07;
   background-color: #da0e0710;
 }
 
-.bugbattle--feedback-emojigroup {
+.bugbattle-feedback-emojigroup {
   --normal: #eceaf3;
   --normal-shadow: #d9d8e3;
   --normal-mouth: #9795a4;
@@ -262,12 +262,12 @@ input.bugbattle--feedback-required {
   margin-bottom: 20px;
 }
 
-.bugbattle--feedback-required .bugbattle--feedback-emojigroup {
+.bugbattle-feedback-required .bugbattle-feedback-emojigroup {
   --normal: #fde6e6;
   --normal-shadow: #ffbdbd;
 }
 
-.bugbattle--feedback-emojigroup li {
+.bugbattle-feedback-emojigroup li {
   position: relative;
   border-radius: 50%;
   background: var(--sb, var(--normal));
@@ -276,20 +276,20 @@ input.bugbattle--feedback-required {
   -webkit-tap-highlight-color: transparent;
 }
 
-.bugbattle--feedback-emojigroup li:not(:last-child) {
+.bugbattle-feedback-emojigroup li:not(:last-child) {
   margin-right: 10px;
 }
 
-.bugbattle--feedback-emojigroup li div {
+.bugbattle-feedback-emojigroup li div {
   width: 45px;
   height: 45px;
   position: relative;
   transform: perspective(240px) translateZ(4px);
 }
 
-.bugbattle--feedback-emojigroup li div svg,
-.bugbattle--feedback-emojigroup li div:before,
-.bugbattle--feedback-emojigroup li div:after {
+.bugbattle-feedback-emojigroup li div svg,
+.bugbattle-feedback-emojigroup li div:before,
+.bugbattle-feedback-emojigroup li div:after {
   display: block;
   position: absolute;
   left: var(--l, 9px);
@@ -299,7 +299,7 @@ input.bugbattle--feedback-required {
   transform: rotate(var(--r, 0deg)) scale(var(--sc, 1)) translateZ(0);
 }
 
-.bugbattle--feedback-emojigroup li div svg {
+.bugbattle-feedback-emojigroup li div svg {
   fill: none;
   stroke: var(--s);
   stroke-width: 2px;
@@ -308,21 +308,21 @@ input.bugbattle--feedback-required {
   transition: stroke 0.4s;
 }
 
-.bugbattle--feedback-emojigroup li div svg.bugbattle--feedback-eye {
+.bugbattle-feedback-emojigroup li div svg.bugbattle-feedback-eye {
   --s: var(--e, var(--normal-eye));
   --t: 17px;
   --w: 10px;
   --h: 4px;
 }
 
-.bugbattle--feedback-emojigroup
+.bugbattle-feedback-emojigroup
   li
   div
-  svg.bugbattle--feedback-eye.bugbattle--feedback-right {
+  svg.bugbattle-feedback-eye.bugbattle-feedback-right {
   --l: 28px;
 }
 
-.bugbattle--feedback-emojigroup li div svg.bugbattle--feedback-mouth {
+.bugbattle-feedback-emojigroup li div svg.bugbattle-feedback-mouth {
   --s: var(--m, var(--normal-mouth));
   --l: 14px;
   --t: 25px;
@@ -330,8 +330,8 @@ input.bugbattle--feedback-required {
   --h: 10px;
 }
 
-.bugbattle--feedback-emojigroup li div:before,
-.bugbattle--feedback-emojigroup li div:after {
+.bugbattle-feedback-emojigroup li div:before,
+.bugbattle-feedback-emojigroup li div:after {
   content: "";
   z-index: var(--zi, 1);
   border-radius: var(--br, 1px);
@@ -339,67 +339,67 @@ input.bugbattle--feedback-required {
   transition: background 0.4s;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry {
   --step-1-rx: -24deg;
   --step-1-ry: 20deg;
   --step-2-rx: -24deg;
   --step-2-ry: -20deg;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry div:before {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry div:before {
   --r: 20deg;
   top: 12px;
   left: 11px;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry div:after {
   --l: 23px;
   --r: -20deg;
   top: 12px;
   left: 28px;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-angry
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-angry
   div
-  svg.bugbattle--feedback-eye {
+  svg.bugbattle-feedback-eye {
   stroke-dasharray: 4.55;
   stroke-dashoffset: 8.15;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry:hover,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-angry.bugbattle--feedback-active {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry:hover,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-angry.bugbattle-feedback-active {
   animation: angry 1s linear;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry:hover div:before,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-angry.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry:hover div:before,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-angry.bugbattle-feedback-active
   div:before {
   --middle-y: -2px;
   --middle-r: 22deg;
   animation: toggle 0.8s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-angry:hover div:after,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-angry.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-angry:hover div:after,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-angry.bugbattle-feedback-active
   div:after {
   --middle-y: 1px;
   --middle-r: -18deg;
   animation: toggle 0.8s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad {
   --step-1-rx: 20deg;
   --step-1-ry: -12deg;
   --step-2-rx: -18deg;
   --step-2-ry: 14deg;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad div:before,
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad div:before,
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad div:after {
   --b: var(--active-tear);
   --sc: 0;
   --w: 5px;
@@ -408,38 +408,38 @@ input.bugbattle--feedback-required {
   --br: 50%;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad div:after {
   --l: 25px;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-sad
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-sad
   div
-  svg.bugbattle--feedback-eye {
+  svg.bugbattle-feedback-eye {
   --t: 16px;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-sad
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-sad
   div
-  svg.bugbattle--feedback-mouth {
+  svg.bugbattle-feedback-mouth {
   --t: 25px;
   stroke-dasharray: 9.5;
   stroke-dashoffset: 33.25;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad:hover div:before,
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-sad:hover div:after,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-sad.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad:hover div:before,
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-sad:hover div:after,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-sad.bugbattle-feedback-active
   div:before,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-sad.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-sad.bugbattle-feedback-active
   div:after {
   animation: tear 0.6s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-ok {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-ok {
   --step-1-rx: 4deg;
   --step-1-ry: -22deg;
   --step-1-rz: 6deg;
@@ -448,7 +448,7 @@ input.bugbattle--feedback-required {
   --step-2-rz: -6deg;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-ok div:before {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-ok div:before {
   --l: 15px;
   --t: 15px;
   --h: 4px;
@@ -457,7 +457,7 @@ input.bugbattle--feedback-required {
   box-shadow: 12px 0 0 var(--e, var(--normal-eye));
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-ok div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-ok div:after {
   --l: 16px;
   --t: 27px;
   --w: 14px;
@@ -466,30 +466,30 @@ input.bugbattle--feedback-required {
   --b: var(--m, var(--normal-mouth));
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-ok:hover div:before,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-ok.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-ok:hover div:before,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-ok.bugbattle-feedback-active
   div:before {
   --middle-s-y: 0.35;
   animation: toggle 0.2s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-ok:hover div:after,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-ok.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-ok:hover div:after,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-ok.bugbattle-feedback-active
   div:after {
   --middle-s-x: 0.5;
   animation: toggle 0.7s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-good {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-good {
   --step-1-rx: -14deg;
   --step-1-rz: 10deg;
   --step-2-rx: 10deg;
   --step-2-rz: -8deg;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-good div:before {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-good div:before {
   --b: var(--m, var(--normal-mouth));
   --w: 5px;
   --h: 5px;
@@ -501,55 +501,55 @@ input.bugbattle--feedback-required {
   filter: blur(2px);
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-good div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-good div:after {
   --sc: 0;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-good
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-good
   div
-  svg.bugbattle--feedback-eye {
+  svg.bugbattle-feedback-eye {
   --t: 15px;
   --sc: -1;
   stroke-dasharray: 4.55;
   stroke-dashoffset: 8.15;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-good
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-good
   div
-  svg.bugbattle--feedback-mouth {
+  svg.bugbattle-feedback-mouth {
   --t: 22px;
   --sc: -1;
   stroke-dasharray: 13.3;
   stroke-dashoffset: 23.75;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-good:hover
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-good:hover
   div
-  svg.bugbattle--feedback-mouth,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-good.bugbattle--feedback-active
+  svg.bugbattle-feedback-mouth,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-good.bugbattle-feedback-active
   div
-  svg.bugbattle--feedback-mouth {
+  svg.bugbattle-feedback-mouth {
   --middle-y: 1px;
   --middle-s: -1;
   animation: toggle 0.8s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-happy div {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-happy div {
   --step-1-rx: 18deg;
   --step-1-ry: 24deg;
   --step-2-rx: 18deg;
   --step-2-ry: -24deg;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-happy div:before {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-happy div:before {
   --sc: 0;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-happy div:after {
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-happy div:after {
   --b: var(--m, var(--normal-mouth));
   --l: 14px;
   --t: 25px;
@@ -558,41 +558,41 @@ input.bugbattle--feedback-required {
   --br: 0 0 8px 8px;
 }
 
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-happy
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-happy
   div
-  svg.bugbattle--feedback-eye {
+  svg.bugbattle-feedback-eye {
   --t: 14px;
   --sc: -1;
 }
 
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-happy:hover div:after,
-.bugbattle--feedback-emojigroup
-  li.bugbattle--feedback-happy.bugbattle--feedback-active
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-happy:hover div:after,
+.bugbattle-feedback-emojigroup
+  li.bugbattle-feedback-happy.bugbattle-feedback-active
   div:after {
   --middle-s-x: 0.95;
   --middle-s-y: 0.75;
   animation: toggle 0.8s linear forwards;
 }
 
-.bugbattle--feedback-emojigroup li:not(.active) {
+.bugbattle-feedback-emojigroup li:not(.active) {
   cursor: pointer;
 }
 
-.bugbattle--feedback-emojigroup li:not(.active):active {
+.bugbattle-feedback-emojigroup li:not(.active):active {
   transform: scale(0.925);
 }
 
-.bugbattle--feedback-emojigroup li:hover,
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-active {
+.bugbattle-feedback-emojigroup li:hover,
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-active {
   --sb: var(--active);
   --sh: var(--active-shadow);
   --m: var(--active-mouth);
   --e: var(--active-eye);
 }
 
-.bugbattle--feedback-emojigroup li:hover div,
-.bugbattle--feedback-emojigroup li.bugbattle--feedback-active div {
+.bugbattle-feedback-emojigroup li:hover div,
+.bugbattle-feedback-emojigroup li.bugbattle-feedback-active div {
   animation: shake 0.8s linear forwards;
 }
 
@@ -652,7 +652,7 @@ input.bugbattle--feedback-required {
   }
 }
 
-.bugbattle--feedback-inputgroup textarea {
+.bugbattle-feedback-inputgroup textarea {
   outline: none;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
@@ -675,7 +675,7 @@ input.bugbattle--feedback-required {
   box-shadow: 2px 2px 8px 5px rgba(0, 0, 0, 0.02);
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy {
+.bugbattle-feedback-inputgroup--privacy-policy {
   padding: 8px 32px;
   font-size: 14px;
   flex-direction: row;
@@ -684,17 +684,17 @@ input.bugbattle--feedback-required {
   align-items: center;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
-.bugbattle--feedback-inputgroup--privacy-policy [type="checkbox"]:checked {
+.bugbattle-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
+.bugbattle-feedback-inputgroup--privacy-policy [type="checkbox"]:checked {
   position: absolute;
   left: 0;
   opacity: 0.01;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:not(:checked)
   + label,
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label {
   position: relative;
@@ -704,10 +704,10 @@ input.bugbattle--feedback-required {
   cursor: pointer;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:not(:checked)
   + label:before,
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label:before {
   content: "";
@@ -723,10 +723,10 @@ input.bugbattle--feedback-required {
   transition: all 0.275s;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:not(:checked)
   + label:after,
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label:after {
   content: "✕";
@@ -740,7 +740,7 @@ input.bugbattle--feedback-required {
   transition: all 0.2s;
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:not(:checked)
   + label:after {
   opacity: 0;
@@ -748,7 +748,7 @@ input.bugbattle--feedback-required {
   transform: scale(0) rotate(45deg);
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy
+.bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label:after {
   opacity: 1;
@@ -756,7 +756,7 @@ input.bugbattle--feedback-required {
   transform: scale(1) rotate(0);
 }
 
-.bugbattle--feedback-inputgroup--privacy-policy a {
+.bugbattle-feedback-inputgroup--privacy-policy a {
   color: #398cfe;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -771,11 +771,11 @@ input.bugbattle--feedback-required {
   font-size: 14px;
 }
 
-.bugbattle--feedback-image {
+.bugbattle-feedback-image {
   position: relative;
 }
 
-.bugbattle--feedback-poweredbycontainer {
+.bugbattle-feedback-poweredbycontainer {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -784,13 +784,13 @@ input.bugbattle--feedback-required {
   cursor: pointer;
 }
 
-.bugbattle--feedback-poweredbycontainer span {
+.bugbattle-feedback-poweredbycontainer span {
   font-weight: normal;
   font-size: 14px;
   color: #aaa;
 }
 
-.bugbattle--feedback-poweredbycontainer svg {
+.bugbattle-feedback-poweredbycontainer svg {
   height: 18px;
   width: auto;
   margin-left: 5px;
@@ -810,7 +810,7 @@ input.bugbattle--feedback-required {
   align-items: center;
 }
 
-.bugbattle--feedback-dialog-loading {
+.bugbattle-feedback-dialog-loading {
   padding: 20px;
   display: none;
   justify-content: center;
@@ -911,7 +911,7 @@ input.bugbattle--feedback-required {
 }
 
 @media only screen and (max-width: 600px) {
-  .bugbattle--feedback-dialog {
+  .bugbattle-feedback-dialog {
     width: 100%;
     border-radius: 0px;
     box-sizing: border-box;
@@ -923,21 +923,21 @@ input.bugbattle--feedback-required {
     margin-top: 0px;
     margin-bottom: 64px;
   }
-  .bugbattle--feedback-dialog-header-button-cancel {
+  .bugbattle-feedback-dialog-header-button-cancel {
     top: 20px;
     right: 20px;
   }
-  .bugbattle--feedback-dialog-header {
+  .bugbattle-feedback-dialog-header {
     border-radius: 0px;
   }
-  .bugbattle--feedback-dialog-body {
+  .bugbattle-feedback-dialog-body {
     width: 100%;
   }
-  .bugbattle--feedback-button-inner {
+  .bugbattle-feedback-button-inner {
     width: 32px;
     height: 100px;
   }
-  .bugbattle--feedback-button-inner-text {
+  .bugbattle-feedback-button-inner-text {
     font-size: 15px;
   }
   .bugbattle-screenshot-editor-drag-info {

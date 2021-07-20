@@ -1,6 +1,6 @@
 {
   "Feedback": "Feedback",
-  "Click or drag to comment": "Klik of sleep om commentaar toe te voegen",
+  "Click and drag to mark the bug": "Klik of sleep om commentaar toe te voegen",
   "Submit your feedback": "Verstuur terugkoppeling",
   "Your e-mail": "Je e-mailadres",
   "E-mail": "E-mailadres",
@@ -21,6 +21,6 @@
   "Something is broken? Let us know!": "Is er iets kapot? Laat het ons weten!",
   "What feature would you like to see next?": "Welke functie zou je hierna willen zien?",
   "Request a feature": "Vraag een functie aan",
-  "Problems detected": "Problemen gedetecteerd",
+  "Problems detected": "😵 Problemen gedetecteerd",
   "We are always here to help, please let us know what happened.": "We zijn altijd hier om te helpen, laat het ons weten wat er is gebeurd."
 }

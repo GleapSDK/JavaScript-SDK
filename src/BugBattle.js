@@ -2,10 +2,11 @@ import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
 import {
   createFeedbackTypeDialog,
-  getHeaderImage,
-  hookDialogCloseButton,
+  createWidgetDialog,
+  loadIcon,
   setColor,
   setLoadingIndicatorProgress,
+  toggleLoading,
   validatePoweredBy,
 } from "./UI";
 import BugBattleNetworkIntercepter from "./NetworkInterception";
@@ -23,8 +24,6 @@ import { startRageClickDetector } from "./UXDetectors";
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
   sdkKey = null;
-  privacyPolicyUrl = null;
-  privacyPolicyEnabled = false;
   widgetOnly = false;
   widgetCallback = null;
   activation = "";
@@ -44,7 +43,8 @@ class BugBattle {
   enabledCrashDetectorSilent = false;
   enabledRageClickDetector = false;
   enabledRageClickDetectorSilent = false;
-  crashedWaitingForReload = false;
+  appCrashDetected = false;
+  rageClickDetected = false;
   currentlySendingBug = false;
   isLiveSite = false;
   replaysEnabled = false;
@@ -52,7 +52,12 @@ class BugBattle {
   shortcutsEnabled = true;
   silentBugReport = false;
   initialized = false;
-  email = null;
+  customerInfo = {};
+  widgetInfo = {
+    title: "Feedback",
+    subtitle: "Let us know how we can do better.",
+    dialogSubtitle: "Report a bug, or share your feedback with us.",
+  };
   originalConsoleLog;
   severity = "LOW";
   appVersionCode = "";
@@ -63,8 +68,11 @@ class BugBattle {
   customTranslation = {};
   networkIntercepter = new BugBattleNetworkIntercepter();
   replay = null;
+  feedbackButton = null;
   fakeLoading = null;
   fakeLoadingProgress = 0;
+  widgetOpened = false;
+  openedMenu = false;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -74,11 +82,14 @@ class BugBattle {
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
   static FLOW_CRASH = {
-    title: "Problems detected",
+    title: "Problem detected",
     description:
-      "We are always here to help, please let us know what happened.",
+      "Oh, oh looks like something went wrong here. By submitting this form, you will help us fix the issue and improve big time.",
+    thanksMessage:
+      "Thanks for submitting your report. You’ve just done us a big favor.",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -88,9 +99,15 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        placeholder: "What went wrong?",
+        title: "Tell us more about the problem",
+        placeholder: "Describe what went wrong",
         type: "textarea",
         name: "description",
+      },
+      {
+        title: "Send report",
+        type: "submit",
+        name: "send",
       },
     ],
     feedbackType: "BUG",
@@ -98,8 +115,13 @@ class BugBattle {
   };
   static FLOW_DEFAULT = {
     title: "Report an issue",
+    description:
+      "Your feedback means a lot to us. Add more details to your screenshot to let us know what needs fixing.",
+    thanksMessage:
+      "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -109,14 +131,21 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        placeholder: "What went wrong?",
+        title: "Describe the issue",
+        placeholder: "The more information, the better.",
         type: "textarea",
         name: "description",
+      },
+      {
+        title: "Send report",
+        type: "submit",
+        name: "send",
       },
     ],
   };
   static FLOW_RATING = {
     title: "Rate your experience",
+    thanksMessage: "Your feedback means a lot to us. Thanks for your rating.",
     form: [
       {
         type: "rating",
@@ -125,6 +154,11 @@ class BugBattle {
         required: true,
       },
       {
+        type: "spacer",
+        showAfter: "pagerating",
+      },
+      {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -135,19 +169,29 @@ class BugBattle {
         showAfter: "pagerating",
       },
       {
-        placeholder: "How can we improve?",
+        title: "Please tell us more",
+        placeholder: "The more details, the better.",
         type: "textarea",
         name: "description",
+        showAfter: "pagerating",
+      },
+      {
+        title: "Send feedback",
+        type: "submit",
+        name: "send",
         showAfter: "pagerating",
       },
     ],
     feedbackType: "RATING",
     disableUserScreenshot: true,
   };
-  static FLOW_FEATUREREQUEST = {
-    title: "Request a feature",
+  static FLOW_CONTACT = {
+    title: "Contact us",
+    description: "Our support team is always here to help.",
+    thanksMessage: "Thanks for your message. We will be in touch shortly",
     form: [
       {
+        title: "Email",
         placeholder: "Your e-mail",
         type: "text",
         inputtype: "email",
@@ -157,11 +201,55 @@ class BugBattle {
         remember: true,
       },
       {
-        placeholder: "What feature would you like to see next?",
-        type: "text",
-        inputtype: "text",
+        title: "Message",
+        placeholder: "Your message",
+        type: "textarea",
         name: "description",
         required: true,
+      },
+      {
+        title: "Send message",
+        type: "submit",
+        name: "send",
+      },
+    ],
+    feedbackType: "GENERAL",
+    disableUserScreenshot: true,
+  };
+  static FLOW_FEATUREREQUEST = {
+    title: "Request a feature",
+    description: "What feature or improvement would you like to see?",
+    thanksMessage:
+      "We’re working full steam to constantly improve. We’ll be in touch if we have further questions or an update for you.",
+    form: [
+      {
+        title: "Email",
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        hideOnDefaultSet: true,
+        required: true,
+        remember: true,
+      },
+      {
+        placeholder: "Explain your request.",
+        title: "Subject",
+        type: "text",
+        inputtype: "text",
+        name: "title",
+        required: true,
+      },
+      {
+        title: "Description",
+        placeholder: "The more details, the better.",
+        type: "textarea",
+        name: "description",
+      },
+      {
+        title: "Send request",
+        type: "submit",
+        name: "send",
       },
     ],
     feedbackType: "FEATURE_REQUEST",
@@ -268,6 +356,75 @@ class BugBattle {
     this.getInstance().shortcutsEnabled = enabled;
   }
 
+  static enableIntercomCompatibilityMode() {
+    this.getInstance().enableIntercomCompatibilityMode();
+  }
+
+  static showFeedbackButton(show) {
+    const feedbackButton = this.getInstance().feedbackButton;
+    if (!feedbackButton) {
+      return;
+    }
+
+    if (show) {
+      feedbackButton.style.display = "flex";
+    } else {
+      feedbackButton.style.display = "none";
+    }
+  }
+
+  enableIntercomCompatibilityMode(retries = 0) {
+    if (window.Intercom) {
+      Intercom("onShow", function () {
+        BugBattle.showFeedbackButton(false);
+      });
+      Intercom("onHide", function () {
+        BugBattle.showFeedbackButton(true);
+      });
+      Intercom("hide");
+      Intercom("update", {
+        hide_default_launcher: true,
+      });
+    } else {
+      if (retries > 10) {
+        return;
+      } else {
+        setTimeout(() => {
+          this.enableIntercomCompatibilityMode(++retries);
+        }, 1000);
+      }
+    }
+  }
+
+  /**
+   * Automatically prompt the user for a user feedback rating.
+   * @param {Number} daysDelayed
+   */
+  static autoPromptForRating(daysDelayed = 5) {
+    try {
+      var ftv = localStorage.getItem("bugbattle-ftv");
+      if (!ftv) {
+        ftv = new Date().toString();
+        localStorage.setItem("bugbattle-ftv", ftv);
+      }
+
+      // Convert to date
+      ftv = new Date(ftv);
+
+      // Calculate date when to show the widget
+      var d = new Date();
+      d.setDate(d.getDate() - daysDelayed);
+
+      if (d >= ftv) {
+        const showAfter = 8000 + Math.floor(Math.random() * 8000);
+        setTimeout(() => {
+          localStorage.setItem("bugbattle-ftv", new Date().toString());
+          BugBattle.startBugReporting(BugBattle.FLOW_RATING);
+        }, showAfter);
+      }
+    } catch (exp) {}
+  }
+
   /**
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
@@ -300,27 +457,52 @@ class BugBattle {
   }
 
   /**
+   * @deprecated Since v5.0 of the widget
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {
-    this.getInstance().privacyPolicyEnabled = enabled;
-  }
+  static enablePrivacyPolicy(enabled) {}
 
   /**
+   * @deprecated Since v5.0 of the widget
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {
-    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
-  }
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
 
   /**
    * Sets the customers email.
    * @param {string} email
    */
   static setCustomerEmail(email) {
-    this.getInstance().email = email;
+    this.getInstance().customerInfo.email = email;
+  }
+
+  /**
+   * Sets the customers info.
+   * @param {string} customerInfo
+   */
+  static setCustomerInfo(customerInfo) {
+    if (!customerInfo) {
+      return;
+    }
+
+    this.getInstance().customerInfo = customerInfo;
+  }
+
+  /**
+   * Sets the widget info texts.
+   * @param {string} widgetInfo
+   */
+  static setWidgetInfo(widgetInfo) {
+    if (!widgetInfo) {
+      return;
+    }
+
+    this.getInstance().widgetInfo = Object.assign(
+      this.getInstance().widgetInfo,
+      widgetInfo
+    );
   }
 
   /**
@@ -419,6 +601,7 @@ class BugBattle {
     instance.enabledRageClickDetectorSilent = silent;
 
     startRageClickDetector(function (target) {
+      instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
         BugBattle.sendSilentBugReport(null, "Rage click detected.");
       } else {
@@ -479,6 +662,9 @@ class BugBattle {
   static startFeedbackTypeSelection() {
     const instance = this.getInstance();
     instance.stopBugReportingAnalytics();
+    instance.widgetOpened = true;
+    instance.openedMenu = true;
+    instance.updateFeedbackButtonState();
 
     // Start feedback type dialog
     createFeedbackTypeDialog(
@@ -486,12 +672,18 @@ class BugBattle {
       instance.overrideLanguage,
       instance.customLogoUrl,
       instance.poweredByHidden,
-      instance.closeBugBattle.bind(instance),
       function () {
         if (instance.widgetOnly && instance.widgetCallback) {
           instance.widgetCallback("selectedMenuOption", {});
         }
-      }
+      },
+      `Hi ${
+        instance.customerInfo.name ? instance.customerInfo.name : "there"
+      } 👋`,
+      translateText(
+        instance.widgetInfo.dialogSubtitle,
+        instance.overrideLanguage
+      )
     );
   }
 
@@ -571,16 +763,15 @@ class BugBattle {
       return;
     }
 
-    // Hook privacy policy global settings.
-    if (instance.privacyPolicyEnabled) {
-      feedbackOptions.privacyPolicyEnabled = instance.privacyPolicyEnabled;
-    }
-    if (instance.privacyPolicyUrl) {
-      feedbackOptions.privacyPolicyUrl = instance.privacyPolicyUrl;
+    instance.closeModalUI();
+    instance.currentlySendingBug = true;
+    instance.silentBugReport = silentBugReport;
+    if (!silentBugReport) {
+      instance.widgetOpened = true;
     }
 
     if (
-      instance.email &&
+      instance.customerInfo.email &&
       feedbackOptions.form &&
       feedbackOptions.form.length > 0
     ) {
@@ -588,22 +779,15 @@ class BugBattle {
       for (var i = 0; i < feedbackOptions.form.length; i++) {
         var feedbackOption = feedbackOptions.form[i];
         if (feedbackOption.name === "reportedBy") {
-          feedbackOption.defaultValue = instance.email;
+          feedbackOption.defaultValue = instance.customerInfo.email;
         }
       }
     }
 
-    instance.currentlySendingBug = true;
-    instance.silentBugReport = silentBugReport;
-
     instance.stopBugReportingAnalytics();
 
-    if (!instance.silentBugReport) {
+    if (!instance.silentBugReport && !feedbackOptions.disableUserScreenshot) {
       instance.disableScroll();
-      const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
-      if (feedbackBtn) {
-        feedbackBtn.style.display = "none";
-      }
     }
 
     // Set snapshot position
@@ -617,6 +801,8 @@ class BugBattle {
     } else {
       instance.showBugReportEditor(feedbackOptions);
     }
+
+    instance.updateFeedbackButtonState();
   }
 
   checkOnlineStatus(url) {
@@ -657,10 +843,10 @@ class BugBattle {
 
       if (
         self.enabledCrashDetector &&
-        !self.crashedWaitingForReload &&
+        !self.appCrashDetected &&
         !self.currentlySendingBug
       ) {
-        self.crashedWaitingForReload = true;
+        self.appCrashDetected = true;
         if (self.enabledCrashDetectorSilent) {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
@@ -742,7 +928,7 @@ class BugBattle {
     var description = "";
 
     if (feedbackOptions.description && feedbackOptions.description.length > 0) {
-      description = `<div class="bugbattle--feedback-dialog-header-description">${translateText(
+      description = `<div class="bugbattle-feedback-dialog-infoitem">${translateText(
         feedbackOptions.description,
         this.overrideLanguage
       )}</div>`;
@@ -765,188 +951,124 @@ class BugBattle {
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
-    const formHTML = buildForm(feedbackOptions.form, this.overrideLanguage);
-
+    const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
+    const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
-
-    var elem = document.createElement("div");
-    elem.className = "bugbattle--feedback-dialog-container";
-    elem.setAttribute("data-html2canvas-ignore", "true");
-    elem.innerHTML = `<div class='bugbattle--feedback-dialog'>
-      <div class="bugbattle--feedback-dialog-header-button bugbattle--feedback-dialog-header-button-cancel">
-        <svg fill="#ffffff" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-          <path d="m100 9.4414-9.4414-9.4414-40.344 40.344-40.773-40.344-9.4414 9.4414 40.344 40.773-40.344 40.344 9.4414 9.4414 40.773-40.344 40.344 40.344 9.4414-9.4414-40.344-40.344z" fill-rule="evenodd"/>
-        </svg>
-      </div>
-      <div class="bugbattle--feedback-dialog-header">
-        <div class="bugbattle--feedback-dialog-header-logo">
-          ${getHeaderImage(self.customLogoUrl)}
-        </div>
-        <div class="bugbattle--feedback-dialog-header-title">${translateText(
-          feedbackOptions.title,
-          this.overrideLanguage
-        )}</div>
-        ${description}
-      </div>
-      <div class="bugbattle--feedback-dialog-loading">
-        <svg
-          class="bugbattle--progress-ring"
-          width="120"
-          height="120">
-          <circle
-            class="bugbattle--progress-ring__circle"
-            stroke="${this.mainColor}"
-            stroke-width="6"
-            fill="transparent"
-            r="34"
-            cx="60"
-            cy="60"/>
-        </svg>
-      </div>
-      <div class="bugbattle--feedback-dialog-success">
-        <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g id="np_check_1807541" fill="${
-                  this.mainColor
-                }" fill-rule="nonzero">
-                    <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
-                </g>
+    const htmlContent = `<div class="bugbattle-feedback-dialog-loading">
+    <svg
+      class="bugbattle--progress-ring"
+      width="120"
+      height="120">
+      <circle
+        class="bugbattle--progress-ring__circle"
+        stroke="${this.mainColor}"
+        stroke-width="6"
+        fill="transparent"
+        r="34"
+        cx="60"
+        cy="60"/>
+    </svg>
+  </div>
+  <div class="bugbattle-feedback-dialog-success">
+    <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g id="np_check_1807541" fill="${
+              this.mainColor
+            }" fill-rule="nonzero">
+                <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
             </g>
-        </svg>
-        <div class="bugbattle--feedback-dialog-info-text">${translateText(
-          "Thank you for your feedback!",
-          this.overrideLanguage
-        )}</div>
-      </div>
-      <div class="bugbattle--feedback-dialog-body">
-        ${formHTML}
-        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup--privacy-policy">
-          <input id="bugbattlePrivacyPolicy" type="checkbox" required />
-          <label for="bugbattlePrivacyPolicy" class="bugbattle--feedback-inputgroup--privacy-policy-label">${translateText(
-            "I read and accept the",
-            this.overrideLanguage
-          )}<a id="bugbattle-privacy-policy-link" href="#" target="_blank">${translateText(
-      " privacy policy",
+        </g>
+    </svg>
+    <div class="bugbattle-feedback-dialog-info-text">${translateText(
+      feedbackOptions.thanksMessage
+        ? feedbackOptions.thanksMessage
+        : "Thank you!",
       this.overrideLanguage
-    )}</a>.</label>
-        </div>
-        <div class="bugbattle--feedback-inputgroup bugbattle--feedback-inputgroup-button">
-          <div class="bugbattle--feedback-send-button">${translateText(
-            "Send feedback",
-            this.overrideLanguage
-          )}</div>
-        </div>
+    )}</div>
+  </div>
+  ${description}
+  <div class="bugbattle-feedback-form">
+    ${formData.formHTML}
+  </div>`;
 
-        <div class="bugbattle--feedback-poweredbycontainer">
-          <span>Powered by</span>
-          <svg width="173px" height="30px" viewBox="0 0 173 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                  <g fill="#AAAAAA">
-                      <g transform="translate(147.600000, 0.000000)">
-                          <path d="M24.2859542,7.7113198 C24.0540256,7.30857681 23.5901684,7.21614399 23.1067117,7.49014127 C22.4207257,7.88298074 21.7282066,8.2659167 21.0585536,8.68186438 C20.793959,8.84692298 20.6796281,8.81721243 20.5293645,8.54321515 C19.7290475,7.10060297 18.8960646,5.67119547 18.092481,4.25169149 C18.0234655,4.09525611 17.9234014,3.95480724 17.7984871,3.83904499 C17.6571381,3.74207171 17.4921828,3.68612411 17.3215635,3.67728756 L12.0002725,3.67728756 C11.7748771,3.67728756 11.8010099,3.50892778 11.8010099,3.34717035 C11.8010099,2.52847968 11.8010099,1.69658433 11.8010099,0.887797176 C11.8346543,0.638013247 11.7383149,0.38837468 11.5462151,0.227562766 C11.4071145,0.0821266579 11.2155424,0 11.0153926,0 C10.8152429,0 10.6236708,0.0821266579 10.4845702,0.227562766 C10.2986685,0.392643686 10.2046806,0.639351901 10.233042,0.887797176 C10.2036426,1.81212535 10.2624414,2.73975469 10.184043,3.66408287 L6.51891806,3.64757701 C6.36738842,3.6701226 6.22373966,3.73023167 6.10079329,3.82253913 C5.9974756,3.89628042 5.90789458,3.98792717 5.8361987,4.09323523 L0.53450728,13.3167099 C0.35516424,13.600556 0.35516424,13.9637944 0.53450728,14.2476405 L5.81006591,23.5305363 C5.90158939,23.7273663 6.07735578,23.8709275 6.28698947,23.9200746 C6.38409512,23.9386703 6.48230448,23.9508007 6.58098345,23.9563874 L17.0896349,23.9960015 C17.2513063,24.0107273 17.4140655,23.9846371 17.5632919,23.9200746 C17.7549133,23.8514168 17.9098335,23.705613 17.9912164,23.5173316 C19.733403,20.4736509 21.4864782,17.4299703 23.2504421,14.3862897 C23.4716092,14.0527399 23.4716092,13.617248 23.2504421,13.2836982 C22.7147197,12.3725747 22.2083967,11.4416442 21.6694078,10.5338219 C21.5322106,10.3027399 21.5910094,10.2235117 21.7968052,10.1112719 C22.5056573,9.71513123 23.2079763,9.30248473 23.9135618,8.88983822 C24.1271707,8.79373014 24.2900142,8.61002873 24.3611418,8.38492949 C24.4322695,8.15983024 24.4049139,7.91475021 24.2859542,7.7113198 Z M20.0393745,14.4820237 C19.9021773,14.7197081 19.7715133,14.9474889 19.6310495,15.178571 L19.6310495,15.178571 L17.8115535,18.344395 L17.8115535,18.344395 C17.3280967,19.1927962 16.8315735,20.0378962 16.3644498,20.8895986 C16.2455303,21.114253 16.0045103,21.2445048 15.7535956,21.2197158 C13.1642709,21.2043103 10.5727684,21.1911057 7.97908815,21.1801018 C7.76734312,21.1891383 7.57068598,21.0696354 7.47929839,20.8763939 C6.17265848,18.5897821 4.87255177,16.3020699 3.57897826,14.0132572 C3.47017471,13.8570302 3.46000511,13.6514856 3.55284547,13.4850697 L5.01301556,10.9794801 C5.01148564,10.969637 5.01148564,10.9596127 5.01301556,10.9497696 L6.90111023,7.64859753 L6.90111023,7.64859753 C7.03504082,7.41091314 7.18203781,7.10060297 7.2898356,6.91573733 C7.39763339,6.7308717 7.46296539,6.7308717 7.61649558,6.82990686 C9.28899466,7.82025848 10.9680269,8.81061009 12.6437926,9.78115467 C15.0545433,11.1940563 17.4663827,12.6058576 19.8793111,14.0165584 C20.1308393,14.1882194 20.1733051,14.2443393 20.0328413,14.4820237 L20.0393745,14.4820237 Z" id="Shape"></path>
-                      </g>
-                      <path d="M17.556,15.03 C17.556,19.848 13.761,23.808 9.108,23.808 C6.77072152,23.7933743 4.54993338,22.7855117 3,21.036 L3,21.168 L2.4,23.268 L0,23.268 L0,0.168 L3,0.168 L3,9 C4.56193736,7.27275703 6.77633455,6.27927072 9.105,6.261 C13.761,6.252 17.556,10.2 17.556,15.03 Z M14.556,15.03 C14.556,11.8405556 11.9704444,9.255 8.781,9.255 C5.59155557,9.255 3.006,11.8405556 3.006,15.03 C3.006,18.2194444 5.59155557,20.805 8.781,20.805 C11.9631308,20.7885804 14.5382339,18.2121389 14.553,15.03 L14.556,15.03 Z" id="Shape" fill-rule="nonzero"></path>
-                      <path d="M32.736,23.28 L32.274,21.63 C30.1613238,23.7506367 26.978911,24.3891451 24.2117195,23.2475883 C21.4445279,22.1060314 19.6379658,19.4094081 19.635,16.416 L19.635,6.78 L22.635,6.78 L22.635,16.053 C22.635,18.6774571 24.7625429,20.805 27.387,20.805 C30.0114571,20.805 32.139,18.6774571 32.139,16.053 L32.139,6.78 L35.139,6.78 L35.139,23.28 L32.736,23.28 Z" id="Path" fill-rule="nonzero"></path>
-                      <path d="M55.044,21.102 C55.0420903,24.650847 52.9027758,27.8491651 49.623469,29.2058026 C46.3441622,30.5624401 42.5705487,29.8102793 40.062,27.3 L42.207,25.2 C43.8577662,26.8474964 46.3387667,27.3376373 48.4920171,26.4416539 C50.6452675,25.5456705 52.0462228,23.4402192 52.041,21.108 L52.041,21.042 C50.5002169,22.8021497 48.2752599,23.8124004 45.936,23.814 C41.283,23.814 37.488,19.854 37.488,15.036 C37.488,10.218 41.283,6.258 45.936,6.258 C48.2752599,6.2595996 50.5002169,7.2698503 52.041,9.03 L52.041,8.898 L52.641,6.798 L55.041,6.798 L55.044,21.102 Z M51.48,15.03 C51.48,11.862 48.972,9.255 45.936,9.255 C42.9,9.255 40.392,11.862 40.392,15.03 C40.392,18.198 42.867,20.805 45.936,20.805 C49.005,20.805 51.48,18.198 51.48,15.03 Z" id="Shape" fill-rule="nonzero"></path>
-                      <path d="M75.537,15.03 C75.537,19.848 71.742,23.808 67.089,23.808 C64.7527694,23.7925242 62.5332367,22.7847364 60.984,21.036 L60.984,21.168 L60.384,23.268 L57.984,23.268 L57.984,0.168 L60.984,0.168 L60.984,9 C62.5459374,7.27275703 64.7603345,6.27927072 67.089,6.261 C71.742,6.252 75.537,10.2 75.537,15.03 Z M72.537,15.03 C72.537,11.8405556 69.9514444,9.255 66.762,9.255 C63.5725556,9.255 60.987,11.8405556 60.987,15.03 C60.987,18.2194444 63.5725556,20.805 66.762,20.805 C69.9441308,20.7885804 72.5192339,18.2121389 72.534,15.03 L72.537,15.03 Z" id="Shape" fill-rule="nonzero"></path>
-                      <path d="M95.139,23.28 L92.739,23.28 L92.139,21.18 L92.139,21.048 C90.5807158,22.803397 88.3482532,23.8116059 86.001,23.82 C81.381,23.82 77.586,19.86 77.586,15.042 C77.586,10.224 81.381,6.264 86.001,6.264 C88.3482532,6.27239413 90.5807158,7.28060302 92.139,9.036 L92.139,8.904 L92.739,6.804 L95.139,6.804 L95.139,23.28 Z M92.139,15.03 C92.139,11.8405556 89.5534444,9.255 86.364,9.255 C83.1745556,9.255 80.589,11.8405556 80.589,15.03 C80.589,18.2194444 83.1745556,20.805 86.364,20.805 C89.5461308,20.7885804 92.1212339,18.2121389 92.136,15.03 L92.139,15.03 Z" id="Shape" fill-rule="nonzero"></path>
-                      <path d="M105.963,20.805 L105.963,23.28 L103.422,23.28 C101.143537,22.2828018 99.6773135,20.0250766 99.693,17.538 L99.693,9.453 L97.593,9.453 L97.593,6.78 L99.693,6.78 L99.693,2.325 L102.693,2.325 L102.693,6.78 L105.498,6.78 L105.498,9.453 L102.693,9.453 L102.693,17.538 C102.688982,18.4062085 103.032305,19.2399754 103.646509,19.8536163 C104.260714,20.4672572 105.094796,20.8098149 105.963,20.805 Z" id="Path" fill-rule="nonzero"></path>
-                      <path d="M115.962,20.805 L115.962,23.28 L113.421,23.28 C111.142537,22.2828018 109.676314,20.0250766 109.692,17.538 L109.692,9.453 L107.592,9.453 L107.592,6.78 L109.692,6.78 L109.692,2.325 L112.692,2.325 L112.692,6.78 L115.5,6.78 L115.5,9.453 L112.695,9.453 L112.695,17.538 C112.690988,18.4056858 113.033901,19.2389929 113.647454,19.852546 C114.261007,20.4660991 115.094314,20.8090116 115.962,20.805 Z" id="Path" fill-rule="nonzero"></path>
-                      <polygon fill-rule="nonzero" points="118.305 23.28 118.305 0.18 121.305 0.18 121.305 23.28"></polygon>
-                      <path d="M127.08,15.69 C127.330165,17.935452 128.871936,19.8263987 131.021025,20.5235752 C133.170113,21.2207517 135.528322,20.5949806 137.049,18.924 L139.194,21.069 C139.119365,21.1139793 139.051659,21.1695593 138.993,21.234 C137.350467,22.8842039 135.117322,23.8107216 132.789,23.808006 C130.468503,23.7936931 128.246259,22.869464 126.6,21.234 C124.949796,19.5914668 124.023278,17.3583215 124.025994,15.03 C124.025994,10.179 127.524,6.252 131.826,6.252 C136.128,6.252 139.626,10.179 139.626,15.03 L139.626,15.69 L127.08,15.69 Z M127.314,13.017 L136.287,13.017 C135.627,10.839 133.887,9.255 131.787,9.255 C129.687,9.255 128.004,10.839 127.314,13.017 Z" id="Shape" fill-rule="nonzero"></path>
-                  </g>
-              </g>
-          </svg>
-        </div>
-      </div>
-    </div>`;
-    document.body.appendChild(elem);
+    const getWidgetDialogClass = () => {
+      if (this.appCrashDetected || this.rageClickDetected) {
+        return "bugbattle-feedback-dialog--crashed";
+      }
+      return "";
+    };
 
+    const dialogElement = createWidgetDialog(
+      title,
+      null,
+      this.customLogoUrl,
+      htmlContent,
+      function () {
+        self.closeBugBattle();
+        if (self.feedbackTypeActions.length > 0) {
+          BugBattle.startFeedbackTypeSelection();
+        }
+      },
+      this.openedMenu,
+      getWidgetDialogClass()
+    );
+
+    this.openedMenu = true;
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    hookDialogCloseButton(this.closeBugBattle.bind(this));
-    this.hookPrivacyPolicy(feedbackOptions);
     hookForm(feedbackOptions.form);
 
     const sendButton = document.querySelector(
-      ".bugbattle--feedback-send-button"
+      ".bugbattle-feedback-send-button"
     );
     sendButton.onclick = function () {
-      // Validate form
-      if (!validateForm(feedbackOptions.form)) {
-        return;
-      }
-
-      // Remember form items
-      rememberForm(feedbackOptions.form);
-
-      // Privacy policy check
-      const privacyPolicyInput = document.querySelector(
-        ".bugbattle--feedback-inputgroup--privacy-policy input"
-      );
-      if (feedbackOptions.privacyPolicyEnabled && !privacyPolicyInput.checked) {
-        alert(
-          translateText(
-            "Please read and accept the privacy policy.",
-            self.overrideLanguage
-          )
-        );
-        return;
-      }
-
-      // Check API key
-      if (!self.sdkKey) {
-        return alert(translateText("Wrong API key", self.overrideLanguage));
-      }
-
-      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
-      self.toggleLoading(true);
-
-      // Start fake loading
-      self.fakeLoading = setInterval(function () {
-        if (self.fakeLoadingProgress > 50) {
-          self.resetLoading(false);
-          return;
-        }
-        self.fakeLoadingProgress += 2;
-        setLoadingIndicatorProgress(self.fakeLoadingProgress);
-      }, 200);
-      
-      // Send form
-      const formData = getFormData(feedbackOptions.form);
-      self.formData = formData;
-      self.feedbackType = feedbackOptions.feedbackType
-        ? feedbackOptions.feedbackType
-        : "BUG";
-
-      if (self.widgetOnly && self.widgetCallback) {
-        self.widgetCallback("sendFeedback", {
-          type: self.feedbackType,
-          formData: self.formData,
-        });
-      } else {
-        self.checkReplayLoaded();
-      }
+      self.formSubmitAction(feedbackOptions);
     };
   }
 
-  hookPrivacyPolicy(feedbackOptions) {
-    const privacyPolicyContainer = document.querySelector(
-      ".bugbattle--feedback-inputgroup--privacy-policy"
-    );
-    const privacyPolicyInputLabel = document.querySelector(
-      ".bugbattle--feedback-inputgroup--privacy-policy-label"
-    );
-    const privacyPolicyInput = document.querySelector(
-      ".bugbattle--feedback-inputgroup--privacy-policy input"
-    );
+  formSubmitAction(feedbackOptions) {
+    const self = this;
 
-    if (feedbackOptions.privacyPolicyEnabled) {
-      privacyPolicyContainer.style.display = "flex";
-      document.querySelector("#bugbattle-privacy-policy-link").href =
-        feedbackOptions.privacyPolicyUrl;
+    // Validate form
+    if (!validateForm(feedbackOptions.form)) {
+      return;
+    }
+
+    // Remember form items
+    rememberForm(feedbackOptions.form);
+
+    // Check API key
+    if (!self.sdkKey) {
+      return alert(translateText("Wrong API key", self.overrideLanguage));
+    }
+
+    window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+    toggleLoading(true);
+
+    // Start fake loading
+    self.fakeLoading = setInterval(function () {
+      if (self.fakeLoadingProgress > 50) {
+        self.resetLoading(false);
+        return;
+      }
+      self.fakeLoadingProgress += 2;
+      setLoadingIndicatorProgress(self.fakeLoadingProgress);
+    }, 200);
+
+    // Send form
+    const formData = getFormData(feedbackOptions.form);
+    self.formData = formData;
+    self.feedbackType = feedbackOptions.feedbackType
+      ? feedbackOptions.feedbackType
+      : "BUG";
+
+    if (self.widgetOnly && self.widgetCallback) {
+      self.widgetCallback("sendFeedback", {
+        type: self.feedbackType,
+        formData: self.formData,
+      });
     } else {
-      privacyPolicyContainer.style.display = "none";
+      self.checkReplayLoaded();
     }
   }
 
@@ -983,29 +1105,34 @@ class BugBattle {
       this.networkIntercepter.setStopped(false);
     } catch (exp) {}
     this.currentlySendingBug = false;
+    this.widgetOpened = false;
+    this.openedMenu = false;
+    this.appCrashDetected = false;
+    this.rageClickDetected = false;
+    this.updateFeedbackButtonState();
+  }
+
+  closeModalUI() {
+    const dialogContainer = document.querySelector(
+      ".bugbattle-feedback-dialog-container"
+    );
+    if (dialogContainer) {
+      dialogContainer.remove();
+    }
   }
 
   closeBugBattle() {
     this.reportCleanup();
 
+    // Remove editor.
     const editorContainer = document.querySelector(
       ".bugbattle-screenshot-editor"
     );
     if (editorContainer) {
       editorContainer.remove();
     }
-    const dialogContainer = document.querySelector(
-      ".bugbattle--feedback-dialog-container"
-    );
-    if (dialogContainer) {
-      dialogContainer.remove();
-    }
 
-    const feedbackBtn = document.querySelector(".bugbattle--feedback-button");
-    if (feedbackBtn) {
-      feedbackBtn.style.display = "block";
-    }
-
+    this.closeModalUI();
     this.enableScroll();
   }
 
@@ -1067,7 +1194,7 @@ class BugBattle {
       }
     }, 1000);
 
-    if (this.activation === BugBattle.FEEDBACK_BUTTON && !this.widgetOnly) {
+    if (!this.widgetOnly) {
       this.injectFeedbackButton();
     }
 
@@ -1085,40 +1212,101 @@ class BugBattle {
   injectFeedbackButton() {
     const self = this;
 
-    var feedbackButtonText = translateText("Feedback", self.overrideLanguage);
+    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${translateText(
+      self.widgetInfo.title,
+      self.overrideLanguage
+    )}</b><br />${translateText(
+      self.widgetInfo.subtitle,
+      self.overrideLanguage
+    )}</div></div></div>`;
 
-    if (this.overrideButtonText) {
-      feedbackButtonText = this.overrideButtonText;
-    }
+    // Hide the shoutout if user clicked on it.
+    try {
+      var ftv = localStorage.getItem("bugbattle-fto");
+      if (ftv) {
+        constShoutoutText = "";
+      }
+    } catch (exp) {}
 
     var elem = document.createElement("div");
-    elem.className = "bugbattle--feedback-button";
-    elem.innerHTML = `<div class="bugbattle--feedback-button-inner"><span class="bugbattle--feedback-button-inner-text">${feedbackButtonText}</span></div>`;
+    elem.className = "bugbattle-feedback-button";
+    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${loadIcon(
+      "bblogo",
+      "#fff"
+    )}${loadIcon("arrowdown", "#fff")}</div>`;
 
     elem.onclick = function () {
-      if (self.feedbackTypeActions.length > 0) {
-        BugBattle.startFeedbackTypeSelection();
-      } else {
-        BugBattle.startBugReporting();
-      }
+      self.feedbackButtonPressed();
     };
     document.body.appendChild(elem);
+
+    if (this.activation !== BugBattle.FEEDBACK_BUTTON) {
+      elem.classList.add("bugbattle-feedback-button--disabled");
+    }
+
+    this.feedbackButton = elem;
   }
 
-  toggleLoading(loading) {
-    const header = document.querySelector(".bugbattle--feedback-dialog-header");
-    const body = document.querySelector(".bugbattle--feedback-dialog-body");
-    const loader = document.querySelector(
-      ".bugbattle--feedback-dialog-loading"
-    );
-    if (loading) {
-      body.style.display = "none";
-      loader.style.display = "flex";
-      header.style.display = "none";
+  feedbackButtonPressed() {
+    if (this.widgetOpened) {
+      this.closeBugBattle();
+      return;
+    }
+
+    if (this.feedbackTypeActions.length > 0) {
+      BugBattle.startFeedbackTypeSelection();
     } else {
-      body.style.display = "block";
-      loader.style.display = "none";
-      header.style.display = "flex";
+      BugBattle.startBugReporting();
+    }
+
+    // Remove shoutout.
+    const feedbackShoutout = window.document.getElementsByClassName(
+      "bugbattle-feedback-button-shoutout"
+    );
+    if (feedbackShoutout && feedbackShoutout.length > 0) {
+      feedbackShoutout[0].remove();
+    }
+
+    // Prevent shoutout from showing again.
+    try {
+      localStorage.setItem("bugbattle-fto", true);
+    } catch (exp) {}
+  }
+
+  updateFeedbackButtonState(retry = false) {
+    if (this.feedbackButton === null) {
+      if (!retry) {
+        setTimeout(() => {
+          this.updateFeedbackButtonState(true);
+        }, 500);
+      }
+      return;
+    }
+
+    const sendingClass = "bugbattle-feedback-button--sending";
+    if (this.widgetOpened) {
+      this.feedbackButton.classList.add(sendingClass);
+    } else {
+      this.feedbackButton.classList.remove(sendingClass);
+    }
+
+    const crashedClass = "bugbattle-feedback-button--crashed";
+    if (this.appCrashDetected || this.rageClickDetected) {
+      this.feedbackButton.classList.add(crashedClass);
+    } else {
+      this.feedbackButton.classList.remove(crashedClass);
+    }
+
+    const dialogContainer = document.querySelector(
+      ".bugbattle-feedback-dialog-container"
+    );
+    const containerFocusClass = "bugbattle-feedback-dialog-container--focused";
+    if (dialogContainer) {
+      if (this.appCrashDetected || this.rageClickDetected) {
+        dialogContainer.classList.add(containerFocusClass);
+      } else {
+        dialogContainer.classList.remove(containerFocusClass);
+      }
     }
   }
 
@@ -1140,15 +1328,19 @@ class BugBattle {
 
   showSuccessMessage() {
     const success = document.querySelector(
-      ".bugbattle--feedback-dialog-success"
+      ".bugbattle-feedback-dialog-success"
     );
-    const body = document.querySelector(".bugbattle--feedback-dialog-body");
-    const loader = document.querySelector(
-      ".bugbattle--feedback-dialog-loading"
+    const form = document.querySelector(".bugbattle-feedback-form");
+    const infoItem = document.querySelector(
+      ".bugbattle-feedback-dialog-infoitem"
     );
-    body.style.display = "none";
+    const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
+    form.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
+    if (infoItem) {
+      infoItem.style.display = "none";
+    }
   }
 
   sendBugReportToServer(screenshotData) {
@@ -1174,7 +1366,10 @@ class BugBattle {
       if (e.lengthComputable) {
         const percentComplete = parseInt((e.loaded / e.total) * 100);
 
-        if (percentComplete > 25 && percentComplete > self.fakeLoadingProgress) {
+        if (
+          percentComplete > 25 &&
+          percentComplete > self.fakeLoadingProgress
+        ) {
           if (self.fakeLoading) {
             self.resetLoading(false);
           }
@@ -1195,7 +1390,7 @@ class BugBattle {
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
-        }, 1000);
+        }, 2500);
       }
     };
 
@@ -1229,7 +1424,7 @@ class BugBattle {
     if (this.silentBugReport) {
       return;
     }
-    this.toggleLoading(false);
+    toggleLoading(false);
   }
 
   getMetaData() {
@@ -1324,31 +1519,45 @@ class BugBattle {
   }
 
   showBugReportEditor(feedbackOptions) {
+    // Stop here if we don't want to show the native screenshot tools
     if (feedbackOptions.disableUserScreenshot) {
       this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
+    // Notify for native SDK.
     if (this.widgetOnly && this.widgetCallback) {
+      this.createBugReportingDialog(feedbackOptions);
       this.widgetCallback("openScreenshotEditor", {
         screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
       });
-      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
+    this.showScreenshotEditor(feedbackOptions);
+  }
+
+  showScreenshotEditor(feedbackOptions) {
     const self = this;
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bugbattle-screenshot-editor";
-    bugReportingEditor.setAttribute("data-html2canvas-ignore", "true");
     bugReportingEditor.innerHTML = `
       <div class="bugbattle-screenshot-editor-container">
         <div class='bugbattle-screenshot-editor-container-inner'>
+          <svg class="bugbattle-screenshot-editor-svg" width="100%" height="100%">
+            <defs>
+              <mask id="bbmask">
+                <rect width="100%" height="100%" fill="white"/>
+                <rect id="bugbattle-markercut" x="0" y="0" width="0" height="0" />
+              </mask>
+            </defs>
+            <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.4);" mask="url(#bbmask)" />
+          </svg>
           <div class='bugbattle-screenshot-editor-borderlayer'></div>
           <div class='bugbattle-screenshot-editor-dot'></div>
           <div class='bugbattle-screenshot-editor-rectangle'></div>
           <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
-            "Click or drag to comment",
+            "Click and drag to mark the bug",
             self.overrideLanguage
           )}</div>
         </div>
@@ -1356,13 +1565,23 @@ class BugBattle {
     `;
     document.body.appendChild(bugReportingEditor);
 
-    const editorRectangle = document.querySelector(
+    const editorBorderLayer = document.querySelector(
       ".bugbattle-screenshot-editor-borderlayer"
     );
-    if (editorRectangle) {
-      editorRectangle.style.height = `${window.innerHeight}px`;
-    }
+    const editorDot = window.document.querySelector(
+      ".bugbattle-screenshot-editor-dot"
+    );
+    const editorRectangle = window.document.querySelector(
+      ".bugbattle-screenshot-editor-rectangle"
+    );
+    const editorSVG = window.document.querySelector(
+      ".bugbattle-screenshot-editor-svg"
+    );
+    const rectangleMarker = window.document.getElementById(
+      "bugbattle-markercut"
+    );
 
+    editorBorderLayer.style.height = `${window.innerHeight}px`;
     var addedMarker = false;
     var clickStartX = -1;
     var clickStartY = -1;
@@ -1372,11 +1591,8 @@ class BugBattle {
         return;
       }
 
-      const editorDot = document.querySelector(
-        ".bugbattle-screenshot-editor-dot"
-      );
-      editorDot.style.left = x - editorDot.offsetWidth / 2 + "px";
-      editorDot.style.top = y - editorDot.offsetHeight / 2 + "px";
+      editorDot.style.left = x + 3 - editorDot.offsetWidth / 2 + "px";
+      editorDot.style.top = y + 3 - editorDot.offsetHeight / 2 + "px";
     }
 
     function setMouseMove(x, y) {
@@ -1394,10 +1610,6 @@ class BugBattle {
       const width = x - clickStartX;
       const height = y - clickStartY;
 
-      const editorRectangle = document.querySelector(
-        ".bugbattle-screenshot-editor-rectangle"
-      );
-
       var left = width < 0 ? clickStartX + width : clickStartX;
       var top = height < 0 ? clickStartY + height : clickStartY;
       var heightAbs = height < 0 ? height * -1 : height;
@@ -1407,6 +1619,10 @@ class BugBattle {
       editorRectangle.style.top = `${top}px`;
       editorRectangle.style.width = `${widthAbs}px`;
       editorRectangle.style.height = `${heightAbs}px`;
+      rectangleMarker.setAttribute("x", left);
+      rectangleMarker.setAttribute("y", top);
+      rectangleMarker.setAttribute("width", `${widthAbs}`);
+      rectangleMarker.setAttribute("height", `${heightAbs}`);
     }
 
     function mouseDownEventHandler(e) {
@@ -1421,47 +1637,6 @@ class BugBattle {
       setStartPoint(clickStartX, clickStartY);
     }
 
-    function mouseUpEventHandler(e) {
-      const dragInfo = document.querySelector(
-        ".bugbattle-screenshot-editor-drag-info"
-      );
-      dragInfo.style.display = "none";
-
-      const fixedDot = window.document.querySelector(
-        ".bugbattle-screenshot-editor-dot"
-      );
-      const fixedRectangle = window.document.querySelector(
-        ".bugbattle-screenshot-editor-rectangle"
-      );
-
-      fixedRectangle.style.top = `${
-        fixedRectangle.offsetTop + document.documentElement.scrollTop
-      }px`;
-      fixedRectangle.style.left = `${
-        fixedRectangle.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      fixedDot.style.top = `${
-        fixedDot.offsetTop + document.documentElement.scrollTop
-      }px`;
-      fixedDot.style.left = `${
-        fixedDot.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      fixedDot.parentNode.removeChild(fixedDot);
-      fixedRectangle.parentNode.removeChild(fixedRectangle);
-
-      const screenshotEditor = window.document.querySelector(
-        ".bugbattle-screenshot-editor"
-      );
-      screenshotEditor.appendChild(fixedDot);
-      screenshotEditor.appendChild(fixedRectangle);
-
-      addedMarker = true;
-
-      self.createBugReportingDialog(feedbackOptions);
-    }
-
     function mouseMoveEventHandler(e) {
       const x = e.pageX - document.documentElement.scrollLeft;
       const y = e.pageY - document.documentElement.scrollTop;
@@ -1473,6 +1648,61 @@ class BugBattle {
       const y = e.touches[0].pageY - document.documentElement.scrollTop;
       setMouseMove(x, y);
       e.preventDefault();
+    }
+
+    function mouseUpEventHandler(e) {
+      const dragInfo = document.querySelector(
+        ".bugbattle-screenshot-editor-drag-info"
+      );
+      dragInfo.style.display = "none";
+
+      editorRectangle.style.top = `${
+        editorRectangle.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorRectangle.style.left = `${
+        editorRectangle.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+      editorDot.style.top = `${
+        editorDot.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorDot.style.left = `${
+        editorDot.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+      editorSVG.style.top = `${
+        editorSVG.offsetTop + document.documentElement.scrollTop
+      }px`;
+      editorSVG.style.left = `${
+        editorSVG.offsetLeft + document.documentElement.scrollLeft
+      }px`;
+
+      editorDot.parentNode.removeChild(editorDot);
+      editorRectangle.parentNode.removeChild(editorRectangle);
+
+      bugReportingEditor.appendChild(editorDot);
+      bugReportingEditor.appendChild(editorRectangle);
+      bugReportingEditor.classList.add("bugbattle-screenshot-editor--marked");
+      addedMarker = true;
+
+      bugReportingEditor.removeEventListener("mouseup", mouseUpEventHandler);
+      bugReportingEditor.removeEventListener(
+        "mousemove",
+        mouseMoveEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "mousedown",
+        mouseDownEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "touchstart",
+        touchstartEventHandler
+      );
+      bugReportingEditor.removeEventListener(
+        "touchmove",
+        touchMoveEventHandler
+      );
+      bugReportingEditor.removeEventListener("touchend", mouseUpEventHandler);
+
+      self.createBugReportingDialog(feedbackOptions);
     }
 
     bugReportingEditor.addEventListener("mouseup", mouseUpEventHandler);

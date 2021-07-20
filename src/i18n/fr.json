@@ -1,6 +1,6 @@
 {
   "Feedback": "Feedback",
-  "Click or drag to comment": "Cliquer et glisser pour laisser votre feedback",
+  "Click and drag to mark the bug": "Cliquer et glisser pour laisser votre feedback",
   "Submit your feedback": "Remarquez votre feedback",
   "Your e-mail": "Votre adresse email",
   "E-mail": "E-mail",
@@ -21,6 +21,6 @@
   "Something is broken? Let us know!": "Quelque chose est cassé? Faites-le nous savoir!",
   "What feature would you like to see next?": "Quelle fonctionnalité aimeriez-vous voir ensuite?",
   "Request a feature": "Demander une fonctionnalité",
-  "Problems detected": "Problèmes détectés",
+  "Problems detected": "😵 Problèmes détectés",
   "We are always here to help, please let us know what happened.": "Nous sommes toujours là pour vous aider, veuillez nous faire savoir ce qui s'est passé."
 }

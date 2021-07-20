@@ -10,39 +10,45 @@ BugBattle.logEvent("Booted");
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
-    title: "Support",
-    description: "Get in touch with us.",
+    title: "Contact us",
+    description: "We are here to help.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
-    action: () => {
-      BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
-    },
+    /*action: () => {
+      //BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
+      Intercom("showNewMessage");
+    },*/
+    actionFlow: BugBattle.FLOW_CONTACT,
+  },
+  {
+    title: "Request a feature",
+    description: "Which feature would you like to see next?",
+    icon: "https://jssdk.bugbattle.io/res/star.svg",
+    actionFlow: BugBattle.FLOW_FEATUREREQUEST,
   },
   {
     title: "Rate your experience",
-    description: "Let us know how we could improve!",
+    description: "Share your opinion.",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
-    action: () => {
-      BugBattle.startBugReporting(BugBattle.FLOW_RATING);
-    },
+    actionFlow: BugBattle.FLOW_RATING,
   },
   {
     title: "Report an issue",
-    description: "Something is broken? Let us know!",
+    description: "Found a bug? Let us know.",
     icon: "https://jssdk.bugbattle.io/res/bug.svg",
-    action: () => {
-      BugBattle.startBugReporting();
-    },
+    actionFlow: BugBattle.FLOW_DEFAULT,
   },
 ]);
 
 BugBattle.enableNetworkLogger();
 
-fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then((data) => {
-  console.log(data);
-  data.arrayBuffer().then((d) => {
-    console.log(d);
-  });
-});
+fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then(
+  (data) => {
+    console.log(data);
+    data.arrayBuffer().then((d) => {
+      console.log(d);
+    });
+  }
+);
 
 // BugBattle.setApiUrl("http://localhost:9000");
 
@@ -68,14 +74,18 @@ BugBattle.attachCustomData({
 
 BugBattle.logEvent("Booted");
 
-BugBattle.enableRageClickDetector(true);
+BugBattle.enableRageClickDetector();
 
 // Disable shortcuts
 BugBattle.enableShortcuts(true);
 
+BugBattle.enableIntercomCompatibilityMode();
+
 // Turn the privacy policy check on or off.
 BugBattle.enablePrivacyPolicy(true);
 BugBattle.setPrivacyPolicyUrl("htpp...");
+
+BugBattle.setMainColor("#398cfe");
 
 console.warn("DEMO!");
 console.log("HI!");
@@ -106,22 +116,37 @@ xhttpa.open(
 );
 xhttpa.send();
 
-BugBattle.logEvent("Sample", {
-  userId: 1234
+BugBattle.setCustomerInfo({
+  email: "asdf@asdf.de",
+  name: "Lukas",
 });
+
+BugBattle.logEvent("Sample", {
+  userId: 1234,
+});
+
+BugBattle.setLanguage("en");
 
 console.error("Demo error");
 
 BugBattle.logEvent("User signed in", {
   userId: 1242,
   name: "Isabella",
-  skillLevel: "🤩"
+  skillLevel: "🤩",
 });
 
 setTimeout(() => {
   BugBattle.logEvent("User signed out", {
     userId: 1242,
     name: "Isabella",
-    skillLevel: "🤩"
-});
+    skillLevel: "🤩",
+  });
 }, 5000);
+
+/*setTimeout(() => {
+  var x = [];
+
+x[0].as = 1;
+}, 5000);*/
+
+BugBattle.autoPromptForRating();
