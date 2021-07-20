@@ -1273,6 +1273,7 @@ textarea.bugbattle-feedback-required {
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
   }
   .bugbattle-feedback-dialog-header-close svg {
     width: 24px;
