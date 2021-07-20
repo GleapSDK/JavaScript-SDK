@@ -359,6 +359,7 @@
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
   min-height: 81px;
   background-color: #fff;
+  box-sizing: border-box;
 }
 
 .bugbattle-feedback-type:first-of-type:hover {
