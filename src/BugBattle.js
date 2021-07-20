@@ -213,7 +213,7 @@ class BugBattle {
         name: "send",
       },
     ],
-    feedbackType: "BUG",
+    feedbackType: "GENERAL",
     disableUserScreenshot: true,
   };
   static FLOW_FEATUREREQUEST = {
@@ -1224,7 +1224,7 @@ class BugBattle {
     try {
       var ftv = localStorage.getItem("bugbattle-fto");
       if (ftv) {
-        // constShoutoutText = "";
+        constShoutoutText = "";
       }
     } catch (exp) {}
 

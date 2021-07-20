@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap");
+
 .bugbattle-feedback-dialog-container input,
 .bugbattle-feedback-dialog-container label {
   margin: 0;
@@ -7,47 +9,167 @@
 }
 
 .bugbattle-feedback-button {
-  padding: 0px;
   margin: 0px;
   position: fixed;
-  top: calc(50% - 58px);
-  right: 0px;
-  border-top-left-radius: 5px;
-  border-bottom-left-radius: 5px;
+  bottom: 20px;
+  right: 20px;
+  border-radius: 30px;
   cursor: pointer;
-  background-color: #398cfe;
-  color: #fff;
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 916777260;
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  background-color: transparent;
+  color: #192027;
+  z-index: 2147483100;
   box-sizing: border-box;
-}
-
-.bugbattle-feedback-button:hover {
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.25);
-}
-
-.bugbattle-feedback-button-inner {
-  position: relative;
-  width: 38px;
-  height: 116px;
+  display: flex;
+  align-items: center;
   padding: 0px;
-  margin: 0px;
+}
+
+.bugbattle-feedback-button--disabled .bugbattle-feedback-button-icon {
+  display: none;
+}
+
+.bugbattle-feedback-button--disabled .bugbattle-feedback-button-text {
+  display: none;
+}
+
+.bugbattle-feedback-button-shoutout {
+  position: fixed;
+  bottom: 22px;
+  right: 94px;
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-name: fadeInUp;
+}
+
+.bugbattle-feedback-button-text {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 14px 0px rgb(0 0 0 / 15%);
+  position: relative;
+  z-index: 99;
+}
+
+.bugbattle-feedback-button-text:before {
+  content: "";
+  position: absolute;
+  box-shadow: rgb(0 0 0 / 4%) 6px 6px 5px;
+  transform: rotate(315deg);
+  bottom: 16px;
+  right: -4px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent #fff #fff transparent;
+}
+
+.bugbattle-feedback-button-text:after {
+  content: "";
+  position: absolute;
+  bottom: 12px;
+  right: 0px;
+  background-color: #fff;
+  width: 5px;
+  height: 30px;
+}
+
+.bugbattle-feedback-button-text-title {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  color: #666;
+  line-height: 18px;
+}
+
+.bugbattle-feedback-button-text-title b {
+  color: #192027;
+  font-weight: 600;
+}
+
+.bugbattle-feedback-button-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 60px;
+  background-color: #398cfe;
+  transition: box-shadow 0.3s ease-in-out;
+  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
   position: relative;
 }
 
-.bugbattle-feedback-button-inner-text {
+.bugbattle-feedback-button .bugbattle-logo-logo {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%) rotate(-90deg);
-  background: none;
-  text-align: center;
-  font-weight: bold;
-  font-size: 16px;
+  width: 34px;
+  height: 34px;
+  top: 12px;
+  left: 14px;
+  object-fit: contain;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
 }
 
-.bugbattle-feedback-dialog-container {
+.bugbattle-feedback-button .bugbattle-logo-arrowdown {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  top: 23px;
+  left: 21px;
+  object-fit: contain;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+}
+
+.bugbattle-feedback-button .bugbattle-logo-arrowdown {
+  animation-name: zoomOut;
+}
+
+.bugbattle-feedback-button .bugbattle-logo-logo {
+  animation-name: zoomIn;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-logo-arrowdown {
+  animation-name: zoomIn;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-logo-logo {
+  animation-name: zoomOut;
+}
+
+.bugbattle-feedback-button-icon:hover {
+  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.4);
+}
+
+.bugbattle-feedback-button--sending {
+  padding-left: 5px;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-feedback-button-text {
+  animation-name: fadeOutDown;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-feedback-button-icon {
+  display: flex;
+}
+
+.bugbattle-feedback-dialog-container .bugbattle-feedback-dialog-backdrop {
+  opacity: 0;
+  transition: opacity 1s;
+}
+
+.bugbattle-feedback-dialog-container--focused
+  .bugbattle-feedback-dialog-backdrop {
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  opacity: 1;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+}
+
+.bugbattle-feedback-dialog-container--drawing {
   position: fixed;
   left: 0px;
   top: 0px;
@@ -58,44 +180,56 @@
   justify-content: center;
   align-items: center;
   z-index: 916777282;
-  background-color: rgba(105, 117, 129, 0.5);
 }
 
 .bugbattle-feedback-dialog {
   width: 90%;
-  max-width: 400px;
+  max-width: 375px;
   background-color: #fff;
   box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.3);
   border-radius: 12px;
   box-sizing: border-box;
+  position: fixed;
+  right: 16px;
+  bottom: 92px;
+  z-index: 2147483100;
+}
+
+.bugbattle-feedback-dialog-infoitem {
+  background-color: #eff4f7;
+  padding: 16px;
+  margin: 32px;
+  margin-bottom: -16px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #6e6e7f;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
+}
+
+.bugbattle-feedback-form--hidden {
+  display: none !important;
+}
+
+.bugbattle-feedback-form {
+  margin: 32px;
+  margin-bottom: 22px;
   position: relative;
+  flex-grow: 1;
 }
 
 .bugbattle-feedback-dialog-header {
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 0px 25px;
-  padding-top: 35px;
+  padding: 37px;
   box-sizing: border-box;
-  flex-direction: column;
-}
-
-.bugbattle-feedback-dialog-header-button-cancel {
-  width: 26px;
-  height: 26px;
-  cursor: pointer;
-  position: absolute;
-  top: -13px;
-  right: 13px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   background-color: #398cfe;
-  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.2);
-  border-radius: 100%;
+  flex-direction: column;
+  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
+  padding-bottom: 75px;
 }
 
 .bugbattle-feedback-dialog-header-button-cancel svg {
@@ -110,66 +244,142 @@
 .bugbattle-feedback-dialog-header-title {
   font-weight: normal;
   text-align: center;
-  color: #192027;
-  font-size: 16px;
-  text-align: center;
-  margin-top: 35px;
-  margin-bottom: 20px;
-  font-weight: bold;
-  line-height: 18px;
+  color: #fff;
+  font-family: "Open Sans", sans-serif;
+  font-size: 28px;
+  text-align: left;
+  margin-top: 20px;
+  font-weight: normal;
+  line-height: 30px;
 }
 
 .bugbattle-feedback-dialog-header-description {
   font-weight: normal;
   text-align: center;
-  color: #192027;
-  font-size: 14px;
-  text-align: center;
-  margin-top: -14px;
-  margin-bottom: 20px;
-  font-weight: normal;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Open Sans", sans-serif;
+  font-size: 15px;
+  text-align: left;
+  font-weight: 100;
   line-height: 18px;
+  margin-top: 5px;
 }
 
 .bugbattle-feedback-dialog-header-logo {
   display: flex;
   justify-content: center;
   align-items: center;
+  max-width: 65%;
 }
 
-.bugbattle-feedback-dialog-header-logo svg,
-.bugbattle-feedback-dialog-header-logo img {
+.bugbattle-feedback-dialog-header-logo svg {
   height: 40px;
   width: 100%;
-  max-width: 65%;
   object-fit: contain;
-  text-align: center;
+  text-align: left;
+}
+
+.bugbattle-feedback-dialog-header-back {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bugbattle-feedback-dialog-header-back svg {
+  width: 18px;
+  height: auto;
+}
+
+.bugbattle-feedback-dialog-header-back:hover {
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+.bugbattle-feedback-dialog-header--back {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  padding: 12px;
+  padding-top: 12px;
+}
+
+.bugbattle-feedback-dialog-header--back .bugbattle-feedback-dialog-header-text {
+  flex-grow: 1;
+  padding-left: 16px;
+}
+
+.bugbattle-feedback-dialog-header--backhidden
+  .bugbattle-feedback-dialog-header-text {
+  padding-left: 0px;
+}
+
+.bugbattle-feedback-dialog-header--backhidden {
+  padding: 21px;
+  padding-top: 21px;
+}
+
+.bugbattle-feedback-dialog-header--back
+  .bugbattle-feedback-dialog-header-title {
+  margin-top: 0px;
+  line-height: 22px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 18px;
+}
+
+.bugbattle-feedback-dialog-header--back
+  .bugbattle-feedback-dialog-header-description {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+  margin-top: 5px;
+}
+
+.bugbattle-feedback-dialog-header--backhidden
+  .bugbattle-feedback-dialog-header-back {
+  display: none !important;
 }
 
 .bugbattle-feedback-types {
-  margin: 40px 0px;
-  border-top: 1px solid #e9f1fd;
+  margin: 35px 0px;
+  margin-top: -55px;
+  margin-bottom: 20px;
+  flex-grow: 1;
 }
 
 .bugbattle-feedback-type {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding: 20px;
+  padding: 12px;
+  margin: 12px 25px;
   cursor: pointer;
-  border-bottom: 1px solid #e9f1fd;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 4px;
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
+  min-height: 81px;
+  background-color: #fff;
+}
+
+.bugbattle-feedback-type:first-of-type:hover {
+  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 .bugbattle-feedback-type:hover {
-  background-color: #e9f1fd;
+  background-color: #fff;
 }
 
 .bugbattle-feedback-type-icon {
   width: 44px;
   height: 44px;
+  min-width: 44px;
   background-color: #398cfe;
   border-radius: 44px;
-  margin-right: 20px;
+  margin-right: 12px;
   padding: 10px;
   box-sizing: border-box;
 }
@@ -179,27 +389,45 @@
 }
 
 .bugbattle-feedback-type-title {
-  font-weight: bold;
+  font-family: "Open Sans", sans-serif;
+  font-weight: 600;
   font-size: 16px;
-  color: #000;
-}
-
-.bugbattle-feedback-elementtitle {
-  font-size: 15px;
-  text-align: center;
-  margin-bottom: 10px;
-  margin-top: 10px;
+  line-height: 18px;
+  margin-bottom: 3px;
+  color: #192027;
 }
 
 .bugbattle-feedback-type-description {
+  font-family: "Open Sans", sans-serif;
   color: #666;
-  font-size: 15px;
-  line-height: 1.2em;
+  font-size: 14px;
+  line-height: 16px;
+}
+
+.bugbattle-feedback-elementtitle {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+  margin-top: 0px;
+  font-weight: bold;
+}
+
+.bugbattle-feedback-elementtitle span {
+  font-family: "Open Sans", sans-serif;
+  font-size: 14px;
+  text-align: left;
+  margin-bottom: 8px;
+  margin-top: 0px;
+  font-weight: bold;
+  color: #ed4337;
+  margin-left: 3px;
 }
 
 .bugbattle-feedback-dialog-info-text {
+  font-family: "Open Sans", sans-serif;
   color: #666;
-  font-size: 16px;
+  font-size: 15px;
   padding-top: 20px;
   text-align: center;
 }
@@ -211,6 +439,7 @@
   flex-direction: column;
   padding: 50px;
   display: none;
+  flex-grow: 1;
 }
 
 .bugbattle-feedback-dialog-success svg {
@@ -218,24 +447,27 @@
   height: auto;
 }
 
-.bugbattle-feedback-dialog-loading {
-  display: none;
-}
-
 .bugbattle-feedback-dialog-body {
-  display: block;
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
 }
 
 .bugbattle-feedback-inputgroup {
   display: flex;
   justify-content: center;
   margin-bottom: 10px;
-  padding: 0px 32px;
+  padding: 0px;
   flex-direction: column;
 }
 
 .bugbattle-feedback-inputgroup.bugbattle-feedback-showafter {
   display: none;
+}
+
+.bugbattle-feedback-inputgroup-spacer {
+  display: flex;
+  height: 10px;
 }
 
 .bugbattle-feedback-inputgroup-button {
@@ -244,12 +476,14 @@
 }
 
 .bugbattle-feedback-inputgroup-text {
+  font-family: "Open Sans", sans-serif;
   color: #192027;
   font-size: 16px;
   font-weight: normal;
 }
 
 .bugbattle-feedback-inputgroup-label {
+  font-family: "Open Sans", sans-serif;
   padding: 0px;
   margin-bottom: 5px;
   color: #192027;
@@ -258,19 +492,20 @@
 }
 
 .bugbattle-feedback-send-button {
+  font-family: "Open Sans", sans-serif;
   background-color: #398cfe;
   border-radius: 8px;
   box-sizing: border-box;
   padding: 12px 19px;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   color: #fff;
   text-align: center;
-  width: auto;
+  width: 100%;
   margin-top: 5px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   cursor: pointer;
-  box-shadow: 0px 5px 10px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.05);
 }
 
 .bugbattle-feedback-send-button:hover {
@@ -279,20 +514,25 @@
 
 .bugbattle-feedback-inputgroup > input,
 .bugbattle-feedback-inputgroup input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  font-family: "Open Sans", sans-serif;
   width: auto;
   padding: 15px 12px;
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
   border: 1px solid #e9f1fd;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #000;
+  color: #192027;
 }
 
-input.bugbattle-feedback-required {
-  border: 1px solid #da0e07;
-  background-color: #da0e0710;
+input.bugbattle-feedback-required,
+textarea.bugbattle-feedback-required {
+  border: 1px solid #da0e07 !important;
+  background-color: #da0e0710 !important;
 }
 
 .bugbattle-feedback-emojigroup {
@@ -311,7 +551,7 @@ input.bugbattle-feedback-required {
   list-style: none;
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .bugbattle-feedback-required .bugbattle-feedback-emojigroup {
@@ -705,7 +945,9 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-inputgroup textarea {
+  font-family: "Open Sans", sans-serif;
   outline: none;
+  -webkit-appearance: none;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
@@ -713,19 +955,20 @@ input.bugbattle-feedback-required {
   width: auto;
   height: auto;
   padding: 12px;
-  font-size: 15px;
+  font-size: 14px;
   line-height: 17px;
   margin: 0px;
   box-sizing: border-box;
   border: 1px solid #e9f1fd;
-  background-color: #fafbfd;
+  background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #000;
+  color: #192027;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy {
-  padding: 8px 32px;
+  font-family: "Open Sans", sans-serif;
+  padding: 8px 0px;
   font-size: 14px;
   flex-direction: row;
   width: 100%;
@@ -734,10 +977,12 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy a {
-  color: #398cfe;
   margin-top: 0px;
   margin-bottom: 0px;
   display: inline;
+  text-decoration: underline;
+  font-family: "Open Sans", sans-serif;
+  color: #192027;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
@@ -753,9 +998,11 @@ input.bugbattle-feedback-required {
 .bugbattle-feedback-inputgroup--privacy-policy
   [type="checkbox"]:checked
   + label {
+  font-family: "Open Sans", sans-serif;
   position: relative;
   padding-left: 2em;
   font-size: 14px;
+  color: #192027;
   line-height: 1.7;
   cursor: pointer;
 }
@@ -812,10 +1059,22 @@ input.bugbattle-feedback-required {
   transform: scale(1) rotate(0);
 }
 
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required
+  [type="checkbox"]:not(:checked)
+  + label,
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required
+  [type="checkbox"]:checked
+  + label
+  .bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required,
+.bugbattle-feedback-inputgroup--privacy-policy.bugbattle-feedback-required a {
+  color: #da0e07;
+}
+
 .bugbattle-feedback-importance {
+  font-family: "Open Sans", sans-serif;
   margin: 20px;
   margin-bottom: -8px;
-  font-weight: bold;
+  font-weight: 600;
   color: #222426;
   font-size: 14px;
 }
@@ -829,18 +1088,25 @@ input.bugbattle-feedback-required {
   justify-content: center;
   align-items: center;
   margin-top: 0px;
-  margin-bottom: 25px;
+  margin-bottom: 0px;
   cursor: pointer;
+  margin: 0px;
+  padding: 12px 0px;
+  background-color: rgb(255, 255, 255);
+  box-shadow: rgb(0 0 0 / 4%) 0px -10px 10px 1px;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
 }
 
 .bugbattle-feedback-poweredbycontainer span {
+  font-family: "Open Sans", sans-serif;
   font-weight: normal;
-  font-size: 14px;
+  font-size: 13px;
   color: #aaa;
 }
 
 .bugbattle-feedback-poweredbycontainer svg {
-  height: 18px;
+  height: 16px;
   width: auto;
   margin-left: 5px;
 }
@@ -864,6 +1130,7 @@ input.bugbattle-feedback-required {
   display: none;
   justify-content: center;
   align-items: center;
+  flex-grow: 1;
 }
 
 .bugbattle--progress-ring__circle {
@@ -893,6 +1160,17 @@ input.bugbattle-feedback-required {
   height: -webkit-fill-available;
 }
 
+.bugbattle-screenshot-editor-svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  cursor: crosshair;
+  z-index: 916777268;
+  box-sizing: border-box;
+}
+
 .bugbattle-screenshot-editor-canvas {
   position: absolute;
   top: 0px;
@@ -911,10 +1189,16 @@ input.bugbattle-feedback-required {
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
-  border: 12px solid #398cfe;
+  border: 5px solid #398cfe;
   cursor: crosshair;
   z-index: 916777272;
   box-sizing: border-box;
+}
+
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-svg,
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-canvas,
+.bugbattle-screenshot-editor--marked .bugbattle-screenshot-editor-borderlayer {
+  cursor: default;
 }
 
 .bugbattle-screenshot-editor-dot {
@@ -932,6 +1216,7 @@ input.bugbattle-feedback-required {
 }
 
 .bugbattle-screenshot-editor-drag-info {
+  font-family: "Open Sans", sans-serif;
   position: absolute;
   top: -100px;
   left: -100px;
@@ -959,26 +1244,49 @@ input.bugbattle-feedback-required {
   z-index: 916777269;
 }
 
+.bugbattle-anim-fadein {
+  animation-duration: 0.55s;
+  animation-fill-mode: both;
+  animation-name: fadeInUp;
+}
+
+.bugbattle-feedback-dialog-header-close {
+  display: none;
+}
+
 @media only screen and (max-width: 600px) {
   .bugbattle-feedback-dialog {
-    width: 100%;
-    border-radius: 0px;
+    width: calc(100% - 20px);
     box-sizing: border-box;
     max-width: inherit;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
   }
-  .bugbattle-feedback-dialog-header {
-    border-radius: 0px;
+  .bugbattle-feedback-dialog-header-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .bugbattle-feedback-button-inner {
-    width: 32px;
-    height: 100px;
+  .bugbattle-feedback-dialog-header-close svg {
+    width: 24px;
+    height: 24px;
   }
-  .bugbattle-feedback-button-inner-text {
-    font-size: 15px;
+  .bugbattle-feedback-dialog-backdrop {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    opacity: 1 !important;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
   }
   .bugbattle-screenshot-editor-drag-info {
     position: absolute;
@@ -987,12 +1295,112 @@ input.bugbattle-feedback-required {
     right: 20px;
   }
   .bugbattle-screenshot-editor-borderlayer {
-    border-width: 5px;
+    border-width: 4px;
   }
+  .bugbattle-anim-fadein {
+    animation-duration: 0s;
+    animation-fill-mode: both;
+    animation-name: none;
+  }
+}
+
+.bugbattle-feedback-button--crashed .bugbattle-feedback-button-icon {
+  background-color: #ed4337;
+}
+
+.bugbattle-feedback-button--crashed .bugbattle-feedback-button-icon:hover {
+  background-color: #c7372d;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-header {
+  background: linear-gradient(135deg, #ed4337 0%, #c7372d 100%);
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-send-button {
+  background-color: #ed4337;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {
+  border-top: 2px solid #ed433777;
+}
+
+.bugbattle-feedback-dialog--crashed .bugbattle-feedback-dialog-infoitem {
+  background-color: #ed433709;
+}
+
+.bugbattle-feedback-dialog--crashed
+  .bugbattle-feedback-inputgroup--privacy-policy
+  [type="checkbox"]:not(:checked)
+  + label:after,
+.bugbattle-feedback-dialog--crashed
+  .bugbattle-feedback-inputgroup--privacy-policy
+  [type="checkbox"]:checked
+  + label:after {
+  color: #ed4337;
 }
 
 @media print {
   .bugbattle-feedback-button {
     display: none !important;
+  }
+}
+
+@keyframes fadeOutRight {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+}
+
+@keyframes fadeOutDown {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 100%, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes zoomOut {
+  from {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.3, 0.3, 0.3);
+  }
+
+  50% {
+    opacity: 1;
   }
 }
