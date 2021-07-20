@@ -32,36 +32,60 @@
   display: none;
 }
 
-.bugbattle-feedback-button-text {
-  padding-left: 22px;
-  padding-right: 34px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
+.bugbattle-feedback-button-shoutout {
+  position: fixed;
+  bottom: 22px;
+  right: 94px;
   animation-duration: 0.2s;
   animation-fill-mode: both;
   animation-name: fadeInUp;
+}
+
+.bugbattle-feedback-button-text {
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
   background-color: #fff;
-  margin-right: -20px;
-  border-top-left-radius: 25px;
-  border-bottom-left-radius: 25px;
-  box-shadow: 0px 0px 14px 0px rgb(0 0 0 / 5%);
+  border-radius: 8px;
+  box-shadow: 0px 0px 14px 0px rgb(0 0 0 / 15%);
+  position: relative;
+  z-index: 99;
 }
 
-.bugbattle-feedback-button-text div:first-of-type {
-  font-family: "Open Sans", sans-serif;
-  font-size: 15px;
-  color: #192027;
-  font-weight: 600;
+.bugbattle-feedback-button-text:before {
+  content: "";
+  position: absolute;
+  box-shadow: rgb(0 0 0 / 4%) 6px 6px 5px;
+  transform: rotate(315deg);
+  bottom: 16px;
+  right: -4px;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent #fff #fff transparent;
 }
 
-.bugbattle-feedback-button-text div:last-of-type {
+.bugbattle-feedback-button-text:after {
+  content: "";
+  position: absolute;
+  bottom: 12px;
+  right: 0px;
+  background-color: #fff;
+  width: 5px;
+  height: 30px;
+}
+
+.bugbattle-feedback-button-text-title {
   font-family: "Open Sans", sans-serif;
   font-size: 14px;
   color: #666;
+  line-height: 18px;
+}
+
+.bugbattle-feedback-button-text-title b {
+  color: #192027;
+  font-weight: 600;
 }
 
 .bugbattle-feedback-button-icon {
@@ -189,6 +213,7 @@
 
 .bugbattle-feedback-form {
   margin: 32px;
+  margin-bottom: 22px;
   position: relative;
   flex-grow: 1;
 }
@@ -303,7 +328,7 @@
   margin-top: 0px;
   line-height: 22px;
   font-family: "Open Sans", sans-serif;
-  font-size: 19px;
+  font-size: 18px;
 }
 
 .bugbattle-feedback-dialog-header--back
@@ -322,6 +347,7 @@
 .bugbattle-feedback-types {
   margin: 35px 0px;
   margin-top: -55px;
+  margin-bottom: 20px;
   flex-grow: 1;
 }
 
@@ -350,6 +376,7 @@
 .bugbattle-feedback-type-icon {
   width: 44px;
   height: 44px;
+  min-width: 44px;
   background-color: #398cfe;
   border-radius: 44px;
   margin-right: 12px;
@@ -366,7 +393,7 @@
   font-weight: 600;
   font-size: 16px;
   line-height: 18px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   color: #192027;
 }
 
@@ -400,7 +427,7 @@
 .bugbattle-feedback-dialog-info-text {
   font-family: "Open Sans", sans-serif;
   color: #666;
-  font-size: 16px;
+  font-size: 15px;
   padding-top: 20px;
   text-align: center;
 }
@@ -436,6 +463,11 @@
 
 .bugbattle-feedback-inputgroup.bugbattle-feedback-showafter {
   display: none;
+}
+
+.bugbattle-feedback-inputgroup-spacer {
+  display: flex;
+  height: 10px;
 }
 
 .bugbattle-feedback-inputgroup-button {
@@ -482,6 +514,9 @@
 
 .bugbattle-feedback-inputgroup > input,
 .bugbattle-feedback-inputgroup input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   font-family: "Open Sans", sans-serif;
   width: auto;
   padding: 15px 12px;
@@ -494,9 +529,10 @@
   color: #192027;
 }
 
-input.bugbattle-feedback-required {
-  border: 1px solid #da0e07;
-  background-color: #da0e0710;
+input.bugbattle-feedback-required,
+textarea.bugbattle-feedback-required {
+  border: 1px solid #da0e07 !important;
+  background-color: #da0e0710 !important;
 }
 
 .bugbattle-feedback-emojigroup {
@@ -515,7 +551,7 @@ input.bugbattle-feedback-required {
   list-style: none;
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .bugbattle-feedback-required .bugbattle-feedback-emojigroup {
@@ -911,6 +947,7 @@ input.bugbattle-feedback-required {
 .bugbattle-feedback-inputgroup textarea {
   font-family: "Open Sans", sans-serif;
   outline: none;
+  -webkit-appearance: none;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
@@ -1207,22 +1244,49 @@ input.bugbattle-feedback-required {
   z-index: 916777269;
 }
 
+.bugbattle-anim-fadein {
+  animation-duration: 0.55s;
+  animation-fill-mode: both;
+  animation-name: fadeInUp;
+}
+
+.bugbattle-feedback-dialog-header-close {
+  display: none;
+}
+
 @media only screen and (max-width: 600px) {
   .bugbattle-feedback-dialog {
-    width: 100%;
-    border-radius: 0px;
+    width: calc(100% - 20px);
     box-sizing: border-box;
     max-width: inherit;
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    top: 0;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
     display: flex;
     flex-direction: column;
   }
-  .bugbattle-feedback-dialog-header {
-    border-radius: 0px;
+  .bugbattle-feedback-dialog-header-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .bugbattle-feedback-dialog-header-close svg {
+    width: 24px;
+    height: 24px;
+  }
+  .bugbattle-feedback-dialog-backdrop {
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    opacity: 1 !important;
+    background-color: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(8px);
   }
   .bugbattle-screenshot-editor-drag-info {
     position: absolute;
@@ -1233,12 +1297,11 @@ input.bugbattle-feedback-required {
   .bugbattle-screenshot-editor-borderlayer {
     border-width: 4px;
   }
-  .bugbattle-feedback-button--sending {
-    z-index: 2147483101;
-  }
   .bugbattle-anim-fadein {
-    animation-duration: 0.2s;
-  }  
+    animation-duration: 0s;
+    animation-fill-mode: both;
+    animation-name: none;
+  }
 }
 
 .bugbattle-feedback-button--crashed .bugbattle-feedback-button-icon {
@@ -1280,12 +1343,6 @@ input.bugbattle-feedback-required {
   .bugbattle-feedback-button {
     display: none !important;
   }
-}
-
-.bugbattle-anim-fadein {
-  animation-duration: 0.55s;
-  animation-fill-mode: both;
-  animation-name: fadeInUp;
 }
 
 @keyframes fadeOutRight {

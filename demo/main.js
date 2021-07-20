@@ -11,22 +11,29 @@ BugBattle.logEvent("Booted");
 BugBattle.setFeedbackTypeOptions([
   {
     title: "Contact us",
-    description: "Get in touch with us.",
+    description: "We are here to help.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
-    action: () => {
+    /*action: () => {
       //BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
       Intercom("showNewMessage");
-    },
+    },*/
+    actionFlow: BugBattle.FLOW_CONTACT,
+  },
+  {
+    title: "Request a feature",
+    description: "Which feature would you like to see next?",
+    icon: "https://jssdk.bugbattle.io/res/star.svg",
+    actionFlow: BugBattle.FLOW_FEATUREREQUEST,
   },
   {
     title: "Rate your experience",
-    description: "Let us know how we could improve!",
+    description: "Share your opinion.",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
     actionFlow: BugBattle.FLOW_RATING,
   },
   {
     title: "Report an issue",
-    description: "Something is broken? Let us know!",
+    description: "Found a bug? Let us know.",
     icon: "https://jssdk.bugbattle.io/res/bug.svg",
     actionFlow: BugBattle.FLOW_DEFAULT,
   },
@@ -117,6 +124,8 @@ BugBattle.setCustomerInfo({
 BugBattle.logEvent("Sample", {
   userId: 1234,
 });
+
+BugBattle.setLanguage("en");
 
 console.error("Demo error");
 

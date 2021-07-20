@@ -87,7 +87,7 @@ export const createWidgetDialog = function (
 ) {
   var elem = document.createElement("div");
   elem.className = "bugbattle-feedback-dialog-container";
-  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-feedback-dialog--chat bugbattle-anim-fadein ${appendClass}'>
+  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-anim-fadein ${appendClass}'>
       <div class="bugbattle-feedback-dialog-header${
         back ? " bugbattle-feedback-dialog-header--back" : ""
       }${!showBack ? " bugbattle-feedback-dialog-header--backhidden" : ""}">
@@ -95,10 +95,10 @@ export const createWidgetDialog = function (
           back
             ? `<div class="bugbattle-feedback-dialog-header-back">
         ${loadIcon("arrowleft", "#fff")}
-      </div>`
+        </div>`
             : `<div class="bugbattle-feedback-dialog-header-logo">
-        ${getHeaderImage(customLogoUrl)}
-      </div>`
+          ${getHeaderImage(customLogoUrl)}
+        </div>`
         }
         <div class="bugbattle-feedback-dialog-header-text">
           <div class="bugbattle-feedback-dialog-header-title">
@@ -111,6 +111,11 @@ export const createWidgetDialog = function (
           ${description}
         </div>`
           }
+        </div>
+        <div class="bugbattle-feedback-dialog-header-close">
+          <svg fill="#FFFFFF" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <path d="m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z"/>
+          </svg>
         </div>
       </div>
       <div class="bugbattle-feedback-dialog-body">
@@ -139,6 +144,13 @@ export const createWidgetDialog = function (
       </div>
     </div>`;
   document.body.appendChild(elem);
+
+  const closeButton = document.querySelector(
+    ".bugbattle-feedback-dialog-header-close"
+  );
+  closeButton.onclick = function () {
+    BugBattle.getInstance().closeBugBattle();
+  };
 
   // Hook back action
   if (back) {
@@ -208,9 +220,7 @@ export const createFeedbackTypeDialog = function (
           feedbackTypeActions[index].action();
         }
         if (feedbackTypeActions[index].actionFlow) {
-          BugBattle.startBugReporting(
-            feedbackTypeActions[index].actionFlow
-          );
+          BugBattle.startBugReporting(feedbackTypeActions[index].actionFlow);
         }
         if (selectedMenuOption) {
           selectedMenuOption();

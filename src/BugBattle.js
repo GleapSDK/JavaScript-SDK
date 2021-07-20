@@ -55,8 +55,8 @@ class BugBattle {
   customerInfo = {};
   widgetInfo = {
     title: "Feedback",
-    subtitle: "How can we help you?",
-    dialogSubtitle: "We are here to help",
+    subtitle: "Let us know how we can do better.",
+    dialogSubtitle: "Report a bug, or share your feedback with us.",
   };
   originalConsoleLog;
   severity = "LOW";
@@ -82,9 +82,11 @@ class BugBattle {
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
   static NONE = "NONE";
   static FLOW_CRASH = {
-    title: "Problems detected",
+    title: "Problem detected",
     description:
-      "We detected problems with our webapp. It would be amazing if you help us fix the problems by submitting this form.",
+      "Oh, oh looks like something went wrong here. By submitting this form, you will help us fix the issue and improve big time.",
+    thanksMessage:
+      "Thanks for submitting your report. You’ve just done us a big favor.",
     form: [
       {
         title: "Email",
@@ -97,13 +99,13 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        title: "What went wrong?",
-        placeholder: "Optional",
+        title: "Tell us more about the problem",
+        placeholder: "Describe what went wrong",
         type: "textarea",
         name: "description",
       },
       {
-        title: "Report issue",
+        title: "Send report",
         type: "submit",
         name: "send",
       },
@@ -114,7 +116,9 @@ class BugBattle {
   static FLOW_DEFAULT = {
     title: "Report an issue",
     description:
-      "Your feedback means a lot to us. Use our marker tools to add more details to your screenshot.",
+      "Your feedback means a lot to us. Add more details to your screenshot to let us know what needs fixing.",
+    thanksMessage:
+      "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [
       {
         title: "Email",
@@ -127,13 +131,13 @@ class BugBattle {
         hideOnDefaultSet: true,
       },
       {
-        title: "What went wrong?",
-        placeholder: "Optional",
+        title: "Describe the issue",
+        placeholder: "The more information, the better.",
         type: "textarea",
         name: "description",
       },
       {
-        title: "Send feedback",
+        title: "Send report",
         type: "submit",
         name: "send",
       },
@@ -141,12 +145,17 @@ class BugBattle {
   };
   static FLOW_RATING = {
     title: "Rate your experience",
+    thanksMessage: "Your feedback means a lot to us. Thanks for your rating.",
     form: [
       {
         type: "rating",
         ratingtype: "emoji",
         name: "pagerating",
         required: true,
+      },
+      {
+        type: "spacer",
+        showAfter: "pagerating",
       },
       {
         title: "Email",
@@ -160,8 +169,8 @@ class BugBattle {
         showAfter: "pagerating",
       },
       {
-        title: "How can we improve?",
-        placeholder: "Optional",
+        title: "Please tell us more",
+        placeholder: "The more details, the better.",
         type: "textarea",
         name: "description",
         showAfter: "pagerating",
@@ -176,9 +185,10 @@ class BugBattle {
     feedbackType: "RATING",
     disableUserScreenshot: true,
   };
-  static FLOW_FEATUREREQUEST = {
-    title: "Request a feature",
-    description: "What feature or improvement would you like to see?",
+  static FLOW_CONTACT = {
+    title: "Contact us",
+    description: "Our support team is always here to help.",
+    thanksMessage: "Thanks for your message. We will be in touch shortly",
     form: [
       {
         title: "Email",
@@ -191,7 +201,39 @@ class BugBattle {
         remember: true,
       },
       {
-        placeholder: "",
+        title: "Message",
+        placeholder: "Your message",
+        type: "textarea",
+        name: "description",
+        required: true,
+      },
+      {
+        title: "Send message",
+        type: "submit",
+        name: "send",
+      },
+    ],
+    feedbackType: "BUG",
+    disableUserScreenshot: true,
+  };
+  static FLOW_FEATUREREQUEST = {
+    title: "Request a feature",
+    description: "What feature or improvement would you like to see?",
+    thanksMessage:
+      "We’re working full steam to constantly improve. We’ll be in touch if we have further questions or an update for you.",
+    form: [
+      {
+        title: "Email",
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "reportedBy",
+        hideOnDefaultSet: true,
+        required: true,
+        remember: true,
+      },
+      {
+        placeholder: "Explain your request.",
         title: "Subject",
         type: "text",
         inputtype: "text",
@@ -200,12 +242,12 @@ class BugBattle {
       },
       {
         title: "Description",
-        placeholder: "Optional",
+        placeholder: "The more details, the better.",
         type: "textarea",
         name: "description",
       },
       {
-        title: "Send feedback",
+        title: "Send request",
         type: "submit",
         name: "send",
       },
@@ -339,7 +381,10 @@ class BugBattle {
       Intercom("onHide", function () {
         BugBattle.showFeedbackButton(true);
       });
-      Intercom('hide');
+      Intercom("hide");
+      Intercom("update", {
+        hide_default_launcher: true,
+      });
     } else {
       if (retries > 10) {
         return;
@@ -935,7 +980,9 @@ class BugBattle {
         </g>
     </svg>
     <div class="bugbattle-feedback-dialog-info-text">${translateText(
-      "Thank you for your feedback!",
+      feedbackOptions.thanksMessage
+        ? feedbackOptions.thanksMessage
+        : "Thank you!",
       this.overrideLanguage
     )}</div>
   </div>
@@ -951,7 +998,7 @@ class BugBattle {
       return "";
     };
 
-    createWidgetDialog(
+    const dialogElement = createWidgetDialog(
       title,
       null,
       this.customLogoUrl,
@@ -1165,15 +1212,25 @@ class BugBattle {
   injectFeedbackButton() {
     const self = this;
 
-    var elem = document.createElement("div");
-    elem.className = "bugbattle-feedback-button";
-    elem.innerHTML = `<div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title">${translateText(
+    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${translateText(
       self.widgetInfo.title,
       self.overrideLanguage
-    )}</div><div class="bugbattle-feedback-button-text-subtitle">${translateText(
+    )}</b><br />${translateText(
       self.widgetInfo.subtitle,
       self.overrideLanguage
-    )}</div></div><div class="bugbattle-feedback-button-icon">${loadIcon(
+    )}</div></div></div>`;
+
+    // Hide the shoutout if user clicked on it.
+    try {
+      var ftv = localStorage.getItem("bugbattle-fto");
+      if (ftv) {
+        // constShoutoutText = "";
+      }
+    } catch (exp) {}
+
+    var elem = document.createElement("div");
+    elem.className = "bugbattle-feedback-button";
+    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${loadIcon(
       "bblogo",
       "#fff"
     )}${loadIcon("arrowdown", "#fff")}</div>`;
@@ -1201,6 +1258,19 @@ class BugBattle {
     } else {
       BugBattle.startBugReporting();
     }
+
+    // Remove shoutout.
+    const feedbackShoutout = window.document.getElementsByClassName(
+      "bugbattle-feedback-button-shoutout"
+    );
+    if (feedbackShoutout && feedbackShoutout.length > 0) {
+      feedbackShoutout[0].remove();
+    }
+
+    // Prevent shoutout from showing again.
+    try {
+      localStorage.setItem("bugbattle-fto", true);
+    } catch (exp) {}
   }
 
   updateFeedbackButtonState(retry = false) {
@@ -1320,7 +1390,7 @@ class BugBattle {
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
-        }, 1500);
+        }, 2500);
       }
     };
 
@@ -1487,7 +1557,7 @@ class BugBattle {
           <div class='bugbattle-screenshot-editor-dot'></div>
           <div class='bugbattle-screenshot-editor-rectangle'></div>
           <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
-            "Click or drag to comment",
+            "Click and drag to mark the bug",
             self.overrideLanguage
           )}</div>
         </div>

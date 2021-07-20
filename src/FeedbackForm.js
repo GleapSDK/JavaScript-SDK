@@ -62,6 +62,11 @@ export const buildForm = function (form, overrideLanguage) {
       )}</a>.</label>
       </div>`;
     }
+    if (formItem.type === "spacer") {
+      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-spacer ${getShowAfterHTML(
+        formItem.showAfter
+      )}"></div>`;
+    }
     if (formItem.type === "submit") {
       formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-button ${getShowAfterHTML(
         formItem.showAfter
