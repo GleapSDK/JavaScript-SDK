@@ -73,6 +73,7 @@ class BugBattle {
   fakeLoadingProgress = 0;
   widgetOpened = false;
   openedMenu = false;
+  alwaysShowMenuText = false;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -334,6 +335,14 @@ class BugBattle {
    */
   static logEvent(name, data) {
     this.getInstance().logEvent(name, data);
+  }
+
+  /**
+   * Set widget only
+   * @param {boolean} alwaysShowMenuText
+   */
+  static alwaysShowMenuText(alwaysShowMenuText) {
+    this.getInstance().alwaysShowMenuText = alwaysShowMenuText;
   }
 
   /**
@@ -1220,21 +1229,26 @@ class BugBattle {
   injectFeedbackButton() {
     const self = this;
 
-    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${translateText(
-      self.widgetInfo.title,
-      self.overrideLanguage
-    )}</b><br />${translateText(
+    const title = translateText(self.widgetInfo.title, self.overrideLanguage);
+    const subtitle = translateText(
       self.widgetInfo.subtitle,
       self.overrideLanguage
-    )}</div></div></div>`;
+    );
 
-    // Hide the shoutout if user clicked on it.
+    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
+
+    // Hide the shoutout if user clicked on it AND not forced to always show.
     try {
       var ftv = localStorage.getItem("bugbattle-fto");
-      if (ftv) {
+      if (ftv && !self.alwaysShowMenuText) {
         constShoutoutText = "";
       }
     } catch (exp) {}
+
+    // Hide shoutout if no text is set.
+    if (title.length === 0 && subtitle.length === 0) {
+      constShoutoutText = "";
+    }
 
     var buttonIcon = "";
     if (self.customButtonLogoUrl) {

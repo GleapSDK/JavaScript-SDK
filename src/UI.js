@@ -183,7 +183,9 @@ export const createFeedbackTypeDialog = function (
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     var action = feedbackTypeActions[i];
     optionsHTML += `<div id="bugbattle-feedback-type-${i}" class="bugbattle-feedback-type">
-        <img class="bugbattle-feedback-type-icon" src="${action.icon}">
+        <div class="bugbattle-feedback-type-icon">
+          <img src="${action.icon}">
+        </div>
         <div class="bugbattle-feedback-type-text">
           <div class="bugbattle-feedback-type-title">${translateText(
             action.title,
