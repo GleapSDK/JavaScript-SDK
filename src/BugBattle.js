@@ -400,7 +400,7 @@ class BugBattle {
    * Automatically prompt the user for a user feedback rating.
    * @param {Number} daysDelayed
    */
-  static autoPromptForRating(daysDelayed = 5) {
+  static autoPromptForRating(daysDelayed = 14) {
     try {
       var ftv = localStorage.getItem("bugbattle-ftv");
       if (!ftv) {
@@ -454,6 +454,14 @@ class BugBattle {
    */
   static setLogoUrl(logoUrl) {
     this.getInstance().customLogoUrl = logoUrl;
+  }
+
+  /**
+   * Sets the button logo url.
+   * @param {string} logoUrl
+   */
+  static setButtonLogoUrl(logoUrl) {
+    this.getInstance().customButtonLogoUrl = logoUrl;
   }
 
   /**
@@ -1228,12 +1236,19 @@ class BugBattle {
       }
     } catch (exp) {}
 
+    var buttonIcon = "";
+    if (customButtonLogoUrl) {
+      buttonIcon = `<img class="bugbattle-logo-logo" src="${customButtonLogoUrl}" alt="Feedback Button" />`;
+    } else {
+      buttonIcon = loadIcon("bblogo", "#fff");
+    }
+
     var elem = document.createElement("div");
     elem.className = "bugbattle-feedback-button";
-    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${loadIcon(
-      "bblogo",
+    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
+      "arrowdown",
       "#fff"
-    )}${loadIcon("arrowdown", "#fff")}</div>`;
+    )}</div>`;
 
     elem.onclick = function () {
       self.feedbackButtonPressed();
