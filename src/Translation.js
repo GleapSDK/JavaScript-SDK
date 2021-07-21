@@ -3,6 +3,7 @@ import fr from "./i18n/fr.json";
 import it from "./i18n/it.json";
 import nl from "./i18n/nl.json";
 import cz from "./i18n/cz.json";
+import es from "./i18n/es.json";
 import en from "./i18n/en.json";
 
 const translations = {
@@ -12,6 +13,7 @@ const translations = {
   nl,
   cz,
   en,
+  es,
 };
 
 import BugBattle from "./BugBattle";
