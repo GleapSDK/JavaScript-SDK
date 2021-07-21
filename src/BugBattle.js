@@ -703,8 +703,8 @@ class BugBattle {
           instance.widgetCallback("selectedMenuOption", {});
         }
       },
-      `Hi ${
-        instance.customerInfo.name ? ` ${instance.customerInfo.name}` : ""
+      `${translateText("Hi", instance.overrideLanguage)} ${
+        instance.customerInfo.name ? instance.customerInfo.name : ""
       } 👋`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
