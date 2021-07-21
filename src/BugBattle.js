@@ -274,6 +274,15 @@ class BugBattle {
   }
 
   /**
+   * Sets a custom translation
+   * @param {*} customTranslation
+   */
+  static setCustomTranslation(customTranslation) {
+    const instance = this.getInstance();
+    instance.customTranslation = customTranslation;
+  }
+
+  /**
    * Initializes the SDK
    * @param {*} sdkKey
    * @param {*} activation
