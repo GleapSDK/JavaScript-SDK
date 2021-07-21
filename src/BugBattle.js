@@ -1237,8 +1237,8 @@ class BugBattle {
     } catch (exp) {}
 
     var buttonIcon = "";
-    if (customButtonLogoUrl) {
-      buttonIcon = `<img class="bugbattle-logo-logo" src="${customButtonLogoUrl}" alt="Feedback Button" />`;
+    if (self.customButtonLogoUrl) {
+      buttonIcon = `<img class="bugbattle-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
     } else {
       buttonIcon = loadIcon("bblogo", "#fff");
     }
