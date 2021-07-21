@@ -704,7 +704,7 @@ class BugBattle {
         }
       },
       `Hi ${
-        instance.customerInfo.name ? instance.customerInfo.name : "there"
+        instance.customerInfo.name ? ` ${instance.customerInfo.name}` : ""
       } 👋`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
