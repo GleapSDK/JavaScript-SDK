@@ -192,7 +192,7 @@
   position: fixed;
   right: 16px;
   bottom: 92px;
-  z-index: 2147483100;
+  z-index: 2147483105;
 }
 
 .bugbattle-feedback-dialog-infoitem {
