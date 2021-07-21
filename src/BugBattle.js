@@ -704,7 +704,9 @@ class BugBattle {
         }
       },
       `${translateText("Hi", instance.overrideLanguage)} ${
-        instance.customerInfo.name ? instance.customerInfo.name : ""
+        instance.customerInfo.name
+          ? instance.customerInfo.name
+          : translateText("there", instance.overrideLanguage)
       } 👋`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
