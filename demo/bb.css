@@ -81,6 +81,7 @@
   font-size: 14px;
   color: #666;
   line-height: 18px;
+  max-width: 220px;
 }
 
 .bugbattle-feedback-button-text-title b {
@@ -155,6 +156,7 @@
 .bugbattle-feedback-dialog-container .bugbattle-feedback-dialog-backdrop {
   opacity: 0;
   transition: opacity 1s;
+  z-index: 2147483098;
 }
 
 .bugbattle-feedback-dialog-container--focused
@@ -192,7 +194,7 @@
   position: fixed;
   right: 16px;
   bottom: 92px;
-  z-index: 2147483100;
+  z-index: 2147483105;
 }
 
 .bugbattle-feedback-dialog-infoitem {
@@ -202,6 +204,7 @@
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
+  font-family: "Open Sans", sans-serif;
   color: #6e6e7f;
   border: 1px solid rgba(0, 0, 0, 0.09);
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
@@ -265,16 +268,11 @@
   margin-top: 5px;
 }
 
-.bugbattle-feedback-dialog-header-logo {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  max-width: 65%;
-}
-
-.bugbattle-feedback-dialog-header-logo svg {
+.bugbattle-feedback-dialog-header-logo svg,
+.bugbattle-feedback-dialog-header-logo img {
   height: 40px;
-  width: 100%;
+  width: auto;
+  max-width: 200px;
   object-fit: contain;
   text-align: left;
 }
@@ -363,6 +361,7 @@
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
   min-height: 81px;
   background-color: #fff;
+  box-sizing: border-box;
 }
 
 .bugbattle-feedback-type:first-of-type:hover {
@@ -382,6 +381,12 @@
   margin-right: 12px;
   padding: 10px;
   box-sizing: border-box;
+}
+
+.bugbattle-feedback-type-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .bugbattle-feedback-type-text {
@@ -1273,6 +1278,7 @@ textarea.bugbattle-feedback-required {
     display: flex;
     justify-content: center;
     align-items: center;
+    cursor: pointer;
   }
   .bugbattle-feedback-dialog-header-close svg {
     width: 24px;
