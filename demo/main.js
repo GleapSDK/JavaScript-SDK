@@ -3,7 +3,7 @@ const BugBattle = window.BugBattle.default;
 BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.initialize(
-  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
+  "VXO20FQtZA7WRf5YI9qke6b6DMwnUOJj",
   BugBattle.FEEDBACK_BUTTON
 );
 
