@@ -156,6 +156,7 @@
 .bugbattle-feedback-dialog-container .bugbattle-feedback-dialog-backdrop {
   opacity: 0;
   transition: opacity 1s;
+  z-index: 2147483098;
 }
 
 .bugbattle-feedback-dialog-container--focused
