@@ -170,7 +170,7 @@ class BugBattle {
         showAfter: "pagerating",
       },
       {
-        title: "Let us know how we can do better",
+        title: "How can we do better?",
         placeholder: "The more details, the better.",
         type: "textarea",
         name: "description",
