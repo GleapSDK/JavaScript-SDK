@@ -119,7 +119,7 @@ xhttpa.open(
 xhttpa.send();
 
 BugBattle.setCustomerInfo({
-  email: "lukas@boehlerbrothers.com",
+  email: "lukas+test@boehlerbrothers.com",
   name: "Lukas",
 });
 
