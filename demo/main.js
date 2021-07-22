@@ -1,5 +1,7 @@
 const BugBattle = window.BugBattle.default;
 
+BugBattle.setApiUrl("http://localhost:9000");
+
 BugBattle.initialize(
   "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
   BugBattle.FEEDBACK_BUTTON
@@ -117,7 +119,7 @@ xhttpa.open(
 xhttpa.send();
 
 BugBattle.setCustomerInfo({
-  email: "asdf@asdf.de",
+  email: "lukas@boehlerbrothers.com",
   name: "Lukas",
 });
 
