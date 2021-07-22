@@ -44,7 +44,7 @@ export const setColor = (color) => {
     .bugbattle-feedback-type:hover {
       border: 1px solid ${color};
     }
-    .bugbattle-feedback-type:first-of-type, .bugbattle-feedback-type:first-of-type:hover, .bugbattle-feedback-dialog-infoitem {
+    .bugbattle-feedback-dialog-infoitem {
       border-top: 2px solid ${color}77;
     }
     .bugbattle-feedback-dialog-infoitem {
