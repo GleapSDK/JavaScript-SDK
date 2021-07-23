@@ -1428,16 +1428,12 @@ textarea.bugbattle-feedback-required {
   animation-name: none;
 }
 
+.bugbattle-feedback-dialog-header-close {
+  display: none;
+}
+
 @media only screen and (max-width: 600px) {
   .bugbattle-feedback-dialog {
-    width: 100%;
-    border-radius: 0px;
-    box-shadow: none;
-    height: 100vh;
-  }
-
-  .bugbattle-feedback-dialog-header {
-    border-top-left-radius: 0px;
-    border-top-right-radius: 0px;
+    width: calc(100vw - 40px);
   }
 }
