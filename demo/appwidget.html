@@ -20,12 +20,12 @@
       href="appwidget.css"
     />
   </head>
-
   <body>
     <!-- index.js as found in build/index.js -->
-    <script src="appwidget.js"></script>
+    <script src="index.js"></script>
     <script src="main.js"></script>
     <script>
+      BugBattle.isWidgetOnly(true);
       BugBattle.widgetCallback(function (name, data) {
         if (
           window.webkit &&

@@ -15,21 +15,11 @@ BugBattle.setFeedbackTypeOptions([
     title: "Contact us",
     description: "We are here to help.",
     icon: "https://jssdk.bugbattle.io/res/support.svg",
-    /*action: () => {
-      //BugBattle.startBugReporting(BugBattle.FLOW_FEATUREREQUEST);
-      Intercom("showNewMessage");
-    },*/
     actionFlow: BugBattle.FLOW_CONTACT,
   },
   {
     title: "Request a feature",
     description: "Which feature would you like to see next?",
-    icon: "https://jssdk.bugbattle.io/res/star.svg",
-    actionFlow: BugBattle.FLOW_FEATUREREQUEST,
-  },
-  {
-    title: "Rate your experience",
-    description: "Share your opinion.",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
     actionFlow: BugBattle.FLOW_RATING,
   },
