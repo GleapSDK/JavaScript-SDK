@@ -42,7 +42,7 @@ fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then(
   }
 );
 
-// BugBattle.setApiUrl("http://localhost:9000");
+BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.setAppBuildNumber("2345");
 

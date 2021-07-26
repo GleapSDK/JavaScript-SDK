@@ -969,6 +969,7 @@ textarea.bugbattle-feedback-required {
   border-radius: 8px;
   box-sizing: border-box;
   color: #192027;
+  max-height: 140px;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy {
