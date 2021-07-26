@@ -1493,17 +1493,16 @@ class BugBattle {
         return;
       }
 
-      if (
-        http.readyState === XMLHttpRequest.DONE &&
-        (http.status === 200 || http.status === 201)
-      ) {
-        self.notifyEvent("feedback-sent");
-        self.showSuccessMessage();
-        setTimeout(function () {
-          self.closeBugBattle();
-        }, 2500);
-      } else {
-        self.showError();
+      if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.status === 200 || http.status === 201) {
+          self.notifyEvent("feedback-sent");
+          self.showSuccessMessage();
+          setTimeout(function () {
+            self.closeBugBattle();
+          }, 2500);
+        } else {
+          self.showError();
+        }
       }
     };
 

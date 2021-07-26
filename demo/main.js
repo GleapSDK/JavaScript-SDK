@@ -1,7 +1,7 @@
 const BugBattle = window.BugBattle.default;
 
 BugBattle.initialize(
-  "VXO20FQtZA7WRf5YI9qke6b6DMwnUOJj",
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
   BugBattle.FEEDBACK_BUTTON
 );
 
