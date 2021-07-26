@@ -1,7 +1,5 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.setApiUrl("http://localhost:9000");
-
 BugBattle.initialize(
   "VXO20FQtZA7WRf5YI9qke6b6DMwnUOJj",
   BugBattle.FEEDBACK_BUTTON
@@ -144,3 +142,19 @@ x[0].as = 1;
 }, 5000);*/
 
 BugBattle.autoPromptForRating();
+
+BugBattle.on("open", (data) => {
+  console.log("open");
+});
+
+BugBattle.on("close", (data) => {
+  console.log("close");
+});
+
+setTimeout(() => {
+  //BugBattle.open();
+
+  setTimeout(() => {
+    //BugBattle.hide();
+  }, 3000);
+}, 1000);

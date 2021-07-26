@@ -79,6 +79,7 @@ class BugBattle {
     x: 0,
     y: 0,
   };
+  eventListeners = {};
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -279,6 +280,22 @@ class BugBattle {
   }
 
   /**
+   * Hides any open BugBattle dialogs.
+   */
+  static hide() {
+    const instance = this.getInstance();
+    instance.closeBugBattle();
+  }
+
+  /**
+   * Starts the BugBattle flow.
+   */
+  static open() {
+    const instance = this.getInstance();
+    instance.showBugBattle();
+  }
+
+  /**
    * Sets a custom translation
    * @param {*} customTranslation
    */
@@ -375,6 +392,38 @@ class BugBattle {
     this.getInstance().buttonType = buttonType;
   }
 
+  /**
+   * Register events for BugBattle.
+   * @param {*} eventName
+   * @param {*} callback
+   */
+  static on(eventName, callback) {
+    const instance = this.getInstance();
+    if (!instance.eventListeners[eventName]) {
+      instance.eventListeners[eventName] = [];
+    }
+    instance.eventListeners[eventName].push(callback);
+  }
+
+  /**
+   * Notify all registrants for event.
+   */
+  notifyEvent(event, data = {}) {
+    const eventListeners = this.eventListeners[event];
+    if (eventListeners) {
+      for (var i = 0; i < eventListeners.length; i++) {
+        const eventListener = eventListeners[i];
+        if (eventListener) {
+          eventListener(data);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sets the native widget callback
+   * @param {*} widgetCallback
+   */
   static widgetCallback(widgetCallback) {
     this.getInstance().widgetCallback = widgetCallback;
   }
@@ -802,6 +851,8 @@ class BugBattle {
       return;
     }
 
+    instance.notifyEvent("flow-started", feedbackOptions);
+
     instance.closeModalUI();
     instance.currentlySendingBug = true;
     instance.silentBugReport = silentBugReport;
@@ -993,7 +1044,10 @@ class BugBattle {
     const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
-    const htmlContent = `<div class="bugbattle-feedback-dialog-loading">
+    const htmlContent = `<div class="bugbattle-feedback-dialog-error">${translateText(
+      "Something went wrong, please try again.",
+      self.overrideLanguage
+    )}</div><div class="bugbattle-feedback-dialog-loading">
     <svg
       class="bugbattle--progress-ring"
       width="120"
@@ -1171,6 +1225,7 @@ class BugBattle {
       editorContainer.remove();
     }
 
+    this.notifyEvent("close");
     this.closeModalUI();
     this.enableScroll();
   }
@@ -1302,11 +1357,8 @@ class BugBattle {
     this.feedbackButton = elem;
   }
 
-  feedbackButtonPressed() {
-    if (this.widgetOpened) {
-      this.closeBugBattle();
-      return;
-    }
+  showBugBattle() {
+    this.notifyEvent("open");
 
     if (this.feedbackTypeActions.length > 0) {
       BugBattle.startFeedbackTypeSelection();
@@ -1326,6 +1378,15 @@ class BugBattle {
     try {
       localStorage.setItem("bugbattle-fto", true);
     } catch (exp) {}
+  }
+
+  feedbackButtonPressed() {
+    if (this.widgetOpened) {
+      this.closeBugBattle();
+      return;
+    }
+
+    this.showBugBattle();
   }
 
   updateFeedbackButtonState(retry = false) {
@@ -1405,16 +1466,10 @@ class BugBattle {
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", this.sdkKey);
     http.onerror = (error) => {
-      if (self.silentBugReport) {
-        self.reportCleanup();
-        return;
-      }
-
       self.showError();
     };
     http.upload.onprogress = function (e) {
       if (self.silentBugReport) {
-        self.reportCleanup();
         return;
       }
 
@@ -1442,10 +1497,13 @@ class BugBattle {
         http.readyState === XMLHttpRequest.DONE &&
         (http.status === 200 || http.status === 201)
       ) {
+        this.notifyEvent("feedback-sent");
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
         }, 2500);
+      } else {
+        self.showError();
       }
     };
 
@@ -1477,9 +1535,14 @@ class BugBattle {
 
   showError() {
     if (this.silentBugReport) {
+      this.reportCleanup();
       return;
     }
+
+    this.notifyEvent("error-while-sending");
     toggleLoading(false);
+    document.querySelector(".bugbattle-feedback-dialog-error").style.display =
+      "flex";
   }
 
   getMetaData() {

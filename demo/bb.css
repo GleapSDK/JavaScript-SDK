@@ -1155,6 +1155,20 @@ textarea.bugbattle-feedback-required {
   align-items: center;
 }
 
+.bugbattle-feedback-dialog-error {
+  background-color: #da0e0710;
+  padding: 16px;
+  margin: 32px;
+  margin-bottom: -16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: "Open Sans", sans-serif;
+  color: #da0e07;
+  border: 1px solid #da0e07;
+  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
+  display: none;
+}
+
 .bugbattle-feedback-dialog-loading {
   padding: 20px;
   display: none;
