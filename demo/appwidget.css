@@ -233,6 +233,7 @@
   flex-direction: column;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   padding-bottom: 75px;
+  position: relative;
 }
 
 .bugbattle-feedback-dialog-header-button-cancel svg {
@@ -347,6 +348,7 @@
   margin-top: -55px;
   margin-bottom: 20px;
   flex-grow: 1;
+  position: relative;
 }
 
 .bugbattle-feedback-type {
@@ -1255,10 +1257,6 @@ textarea.bugbattle-feedback-required {
   animation-name: fadeInUp;
 }
 
-.bugbattle-feedback-dialog-header-close {
-  display: none;
-}
-
 @media only screen and (max-width: 600px) {
   .bugbattle-feedback-dialog {
     width: calc(100% - 20px);
@@ -1270,19 +1268,6 @@ textarea.bugbattle-feedback-required {
     right: 10px;
     display: flex;
     flex-direction: column;
-  }
-  .bugbattle-feedback-dialog-header-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-  .bugbattle-feedback-dialog-header-close svg {
-    width: 24px;
-    height: 24px;
   }
   .bugbattle-feedback-dialog-backdrop {
     position: fixed;
@@ -1429,7 +1414,17 @@ textarea.bugbattle-feedback-required {
 }
 
 .bugbattle-feedback-dialog-header-close {
-  display: none;
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.bugbattle-feedback-dialog-header-close svg {
+  width: 24px;
+  height: 24px;
 }
 
 @media only screen and (max-width: 600px) {

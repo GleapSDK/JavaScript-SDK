@@ -823,8 +823,10 @@ class BugBattle {
     };
 
     if (instance.silentBugReport) {
+      // Move on
       instance.checkReplayLoaded();
     } else {
+      // Show editor
       instance.showBugReportEditor(feedbackOptions);
     }
 
@@ -836,8 +838,12 @@ class BugBattle {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
-          const status = JSON.parse(xhr.responseText);
-          resolve(status);
+          try {
+            const status = JSON.parse(xhr.responseText);
+            resolve(status);
+          } catch (exp) {
+            reject();
+          }
         }
       };
       xhr.ontimeout = function () {
@@ -977,6 +983,8 @@ class BugBattle {
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
+    console.log(self);
+
     const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
@@ -1024,15 +1032,19 @@ class BugBattle {
       return "";
     };
 
-    const dialogElement = createWidgetDialog(
+    createWidgetDialog(
       title,
       null,
       this.customLogoUrl,
       htmlContent,
       function () {
-        self.closeBugBattle();
         if (self.feedbackTypeActions.length > 0) {
+          // Only go back to feedback menu options
+          self.closeBugBattle(false);
           BugBattle.startFeedbackTypeSelection();
+        } else {
+          // Close bug battle
+          self.closeBugBattle();
         }
       },
       this.openedMenu,
@@ -1123,19 +1135,17 @@ class BugBattle {
       });
   }
 
-  reportCleanup() {
+  reportCleanupOnClose() {
     try {
       BugBattle.enableReplays(this.replaysEnabled);
     } catch (exp) {}
     try {
       this.networkIntercepter.setStopped(false);
     } catch (exp) {}
-    this.currentlySendingBug = false;
-    this.widgetOpened = false;
-    this.openedMenu = false;
-    this.appCrashDetected = false;
-    this.rageClickDetected = false;
-    this.updateFeedbackButtonState();
+
+    if (this.widgetCallback) {
+      this.widgetCallback("closeBugBattle", {});
+    }
   }
 
   closeModalUI() {
@@ -1147,8 +1157,17 @@ class BugBattle {
     }
   }
 
-  closeBugBattle() {
-    this.reportCleanup();
+  closeBugBattle(cleanUp = true) {
+    if (cleanUp) {
+      this.reportCleanupOnClose();
+    }
+
+    this.currentlySendingBug = false;
+    this.widgetOpened = false;
+    this.openedMenu = false;
+    this.appCrashDetected = false;
+    this.rageClickDetected = false;
+    this.updateFeedbackButtonState();
 
     // Remove editor.
     const editorContainer = document.querySelector(
@@ -1389,7 +1408,7 @@ class BugBattle {
     http.setRequestHeader("Api-Token", this.sdkKey);
     http.onerror = (error) => {
       if (self.silentBugReport) {
-        self.reportCleanup();
+        self.closeBugBattle();
         return;
       }
 
@@ -1397,7 +1416,7 @@ class BugBattle {
     };
     http.upload.onprogress = function (e) {
       if (self.silentBugReport) {
-        self.reportCleanup();
+        self.closeBugBattle();
         return;
       }
 
@@ -1417,7 +1436,7 @@ class BugBattle {
     };
     http.onreadystatechange = function (e) {
       if (self.silentBugReport) {
-        self.reportCleanup();
+        self.closeBugBattle();
         return;
       }
 

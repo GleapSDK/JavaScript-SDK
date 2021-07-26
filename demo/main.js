@@ -1,9 +1,9 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.setApiUrl("http://localhost:9000");
+// BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.initialize(
-  "VXO20FQtZA7WRf5YI9qke6b6DMwnUOJj",
+  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
   BugBattle.FEEDBACK_BUTTON
 );
 
@@ -118,8 +118,6 @@ BugBattle.logEvent("Sample", {
 });
 
 BugBattle.setLanguage("en");
-
-console.error("Demo error");
 
 BugBattle.logEvent("User signed in", {
   userId: 1242,
