@@ -1497,7 +1497,7 @@ class BugBattle {
         http.readyState === XMLHttpRequest.DONE &&
         (http.status === 200 || http.status === 201)
       ) {
-        this.notifyEvent("feedback-sent");
+        self.notifyEvent("feedback-sent");
         self.showSuccessMessage();
         setTimeout(function () {
           self.closeBugBattle();
