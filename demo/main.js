@@ -145,16 +145,18 @@ BugBattle.autoPromptForRating();
 
 BugBattle.on("open", (data) => {
   console.log("open");
+  console.log(BugBattle.isOpened());
 });
 
 BugBattle.on("close", (data) => {
   console.log("close");
+  console.log(BugBattle.isOpened());
 });
 
 setTimeout(() => {
-  //BugBattle.open();
+  BugBattle.open();
 
   setTimeout(() => {
-    //BugBattle.hide();
+    BugBattle.hide();
   }, 3000);
 }, 1000);

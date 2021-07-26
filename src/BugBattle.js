@@ -280,6 +280,14 @@ class BugBattle {
   }
 
   /**
+   * Widget opened status
+   * @returns {boolean} isOpened
+   */
+  static isOpened() {
+    return this.getInstance().openedMenu;
+  }
+
+  /**
    * Hides any open BugBattle dialogs.
    */
   static hide() {
@@ -1358,14 +1366,16 @@ class BugBattle {
   }
 
   showBugBattle() {
-    this.notifyEvent("open");
+    if (this.widgetOpened) {
+      return;
+    }
 
     if (this.feedbackTypeActions.length > 0) {
       BugBattle.startFeedbackTypeSelection();
     } else {
       BugBattle.startBugReporting();
     }
-
+    
     // Remove shoutout.
     const feedbackShoutout = window.document.getElementsByClassName(
       "bugbattle-feedback-button-shoutout"
@@ -1378,6 +1388,8 @@ class BugBattle {
     try {
       localStorage.setItem("bugbattle-fto", true);
     } catch (exp) {}
+
+    this.notifyEvent("open");
   }
 
   feedbackButtonPressed() {
