@@ -145,6 +145,12 @@ export const createWidgetDialog = function (
     </div>`;
   document.body.appendChild(elem);
 
+  if (
+    BugBattle.getInstance().buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT
+  ) {
+    elem.classList.add("bugbattle-feedback-button--bottomleft");
+  }
+
   const closeButton = document.querySelector(
     ".bugbattle-feedback-dialog-header-close"
   );

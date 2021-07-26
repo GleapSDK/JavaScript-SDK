@@ -35,6 +35,7 @@ class BugBattle {
   eventArray = [];
   customData = {};
   formData = {};
+  buttonType = BugBattle.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
   sessionStart = new Date();
   customActionCallbacks = [];
@@ -78,6 +79,10 @@ class BugBattle {
     x: 0,
     y: 0,
   };
+
+  // Feedback button types
+  static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
+  static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
 
   // Activation methods
   static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
@@ -360,6 +365,14 @@ class BugBattle {
    */
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
+  }
+
+  /**
+   * Sets the button type.
+   * @param {boolean} buttonType
+   */
+  static setButtonType(buttonType) {
+    this.getInstance().buttonType = buttonType;
   }
 
   static widgetCallback(widgetCallback) {
@@ -1280,6 +1293,10 @@ class BugBattle {
 
     if (this.activation !== BugBattle.FEEDBACK_BUTTON) {
       elem.classList.add("bugbattle-feedback-button--disabled");
+    }
+
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+      elem.classList.add("bugbattle-feedback-button--bottomleft");
     }
 
     this.feedbackButton = elem;
