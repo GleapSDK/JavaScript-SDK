@@ -27,7 +27,6 @@ class BugBattle {
   widgetOnly = false;
   widgetCallback = null;
   overrideLanguage = "";
-  overrideButtonText = undefined;
   screenshot = null;
   actionLog = [];
   logArray = [];
@@ -54,6 +53,7 @@ class BugBattle {
   initialized = false;
   customerInfo = {};
   welcomeIcon = "👋";
+  feedbackButtonText = "Feedback";
   widgetInfo = {
     title: "Feedback",
     subtitle: "Let us know how we can do better.",
@@ -312,6 +312,15 @@ class BugBattle {
   }
 
   /**
+   * Sets the feedback button text
+   * @param {string} feedbackButtonText
+   */
+  static setFeedbackButtonText(feedbackButtonText) {
+    const instance = this.getInstance();
+    instance.feedbackButtonText = feedbackButtonText;
+  }
+
+  /**
    * Initializes the SDK
    * @param {*} sdkKey
    */
@@ -524,14 +533,6 @@ class BugBattle {
    */
   static enablePoweredByBugbattle(enabled) {
     this.getInstance().poweredByHidden = !enabled;
-  }
-
-  /**
-   * Overrides the feedback button text.
-   * @param {string} overrideButtonText
-   */
-  static setFeedbackButtonText(overrideButtonText) {
-    this.getInstance().overrideButtonText = overrideButtonText;
   }
 
   /**
@@ -1350,7 +1351,10 @@ class BugBattle {
     var elem = document.createElement("div");
     elem.className = "bugbattle-feedback-button";
     if (this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
-      elem.innerHTML = `<div class="bugbattle-feedback-button-classic">Feedback</div>`;
+      elem.innerHTML = `<div class="bugbattle-feedback-button-classic">${translateText(
+        this.feedbackButtonText,
+        this.overrideLanguage
+      )}</div>`;
     } else {
       elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",

@@ -120,9 +120,9 @@
   position: fixed;
   transform: rotate(-90deg) translate(50%, -50%);
   transform-origin: 100% 50%;
-  padding: 9px 18px;
+  padding: 9px 20px;
   text-align: center;
-  min-width: 120px;
+  min-width: 100px;
   background-color: #398cfe;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
