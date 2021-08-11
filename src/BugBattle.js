@@ -26,7 +26,6 @@ class BugBattle {
   sdkKey = null;
   widgetOnly = false;
   widgetCallback = null;
-  activation = "";
   overrideLanguage = "";
   overrideButtonText = undefined;
   screenshot = null;
@@ -54,6 +53,7 @@ class BugBattle {
   silentBugReport = false;
   initialized = false;
   customerInfo = {};
+  welcomeIcon = "👋";
   widgetInfo = {
     title: "Feedback",
     subtitle: "Let us know how we can do better.",
@@ -74,7 +74,7 @@ class BugBattle {
   fakeLoadingProgress = 0;
   widgetOpened = false;
   openedMenu = false;
-  alwaysShowMenuText = false;
+  showInfoPopup = false;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -84,10 +84,9 @@ class BugBattle {
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
   static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
+  static FEEDBACK_BUTTON_CLASSIC = "BUTTON_CLASSIC";
+  static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
 
-  // Activation methods
-  static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
-  static NONE = "NONE";
   static FLOW_CRASH = {
     title: "Problem detected",
     description:
@@ -315,9 +314,8 @@ class BugBattle {
   /**
    * Initializes the SDK
    * @param {*} sdkKey
-   * @param {*} activation
    */
-  static initialize(sdkKey, activation) {
+  static initialize(sdkKey) {
     const instance = this.getInstance();
 
     if (instance.initialized) {
@@ -327,7 +325,6 @@ class BugBattle {
 
     instance.initialized = true;
     instance.sdkKey = sdkKey;
-    instance.activation = activation;
 
     if (
       document.readyState === "complete" ||
@@ -377,11 +374,11 @@ class BugBattle {
   }
 
   /**
-   * Set widget only
-   * @param {boolean} alwaysShowMenuText
+   * Show info popup
+   * @param {boolean} showInfoPopup
    */
-  static alwaysShowMenuText(alwaysShowMenuText) {
-    this.getInstance().alwaysShowMenuText = alwaysShowMenuText;
+  static showInfoPopup(showInfoPopup) {
+    this.getInstance().showInfoPopup = showInfoPopup;
   }
 
   /**
@@ -390,6 +387,14 @@ class BugBattle {
    */
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
+  }
+
+  /**
+   * Set welcome icon
+   * @param {string} welcomeIcon
+   */
+  static setWelcomeIcon(welcomeIcon) {
+    this.getInstance().welcomeIcon = welcomeIcon;
   }
 
   /**
@@ -775,7 +780,7 @@ class BugBattle {
       },
       `${translateText("Hi", instance.overrideLanguage)} ${
         instance.customerInfo.name ? instance.customerInfo.name : ""
-      } 👋`,
+      } ${instance.welcomeIcon}`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
         instance.overrideLanguage
@@ -1320,13 +1325,13 @@ class BugBattle {
       self.overrideLanguage
     );
 
-    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
+    var constShoutoutText = "";
 
     // Hide the shoutout if user clicked on it AND not forced to always show.
     try {
       var ftv = localStorage.getItem("bugbattle-fto");
-      if (ftv && !self.alwaysShowMenuText) {
-        constShoutoutText = "";
+      if (!ftv && self.showInfoPopup) {
+        constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
       }
     } catch (exp) {}
 
@@ -1344,17 +1349,21 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle-feedback-button";
-    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
-      "arrowdown",
-      "#fff"
-    )}</div>`;
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
+      elem.innerHTML = `<div class="bugbattle-feedback-button-classic">Feedback</div>`;
+    } else {
+      elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
+        "arrowdown",
+        "#fff"
+      )}</div>`;
+    }
 
     elem.onclick = function () {
       self.feedbackButtonPressed();
     };
     document.body.appendChild(elem);
 
-    if (this.activation !== BugBattle.FEEDBACK_BUTTON) {
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
       elem.classList.add("bugbattle-feedback-button--disabled");
     }
 
@@ -1375,7 +1384,7 @@ class BugBattle {
     } else {
       BugBattle.startBugReporting();
     }
-    
+
     // Remove shoutout.
     const feedbackShoutout = window.document.getElementsByClassName(
       "bugbattle-feedback-button-shoutout"

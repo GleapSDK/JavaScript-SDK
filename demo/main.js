@@ -1,9 +1,8 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.initialize(
-  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
-  BugBattle.FEEDBACK_BUTTON
-);
+BugBattle.setButtonType(BugBattle.FEEDBACK_BUTTON_BOTTOM_RIGHT);
+
+BugBattle.initialize("dTyHwclytieniWlH7AofrCMvtXVPTbvH");
 
 BugBattle.logEvent("Booted");
 
@@ -19,7 +18,7 @@ BugBattle.setFeedbackTypeOptions([
     title: "Request a feature",
     description: "Which feature would you like to see next?",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
-    actionFlow: BugBattle.FLOW_RATING,
+    actionFlow: BugBattle.FLOW_FEATUREREQUEST,
   },
   {
     title: "Report an issue",
@@ -30,8 +29,6 @@ BugBattle.setFeedbackTypeOptions([
 ]);
 
 BugBattle.enableNetworkLogger();
-
-BugBattle.alwaysShowMenuText(true);
 
 fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then(
   (data) => {
@@ -135,28 +132,8 @@ setTimeout(() => {
   });
 }, 5000);
 
-/*setTimeout(() => {
-  var x = [];
-
-x[0].as = 1;
-}, 5000);*/
-
 BugBattle.autoPromptForRating();
 
-BugBattle.on("open", (data) => {
-  console.log("open");
-  console.log(BugBattle.isOpened());
-});
+BugBattle.showInfoPopup(true);
 
-BugBattle.on("close", (data) => {
-  console.log("close");
-  console.log(BugBattle.isOpened());
-});
-
-setTimeout(() => {
-  BugBattle.open();
-
-  setTimeout(() => {
-    BugBattle.hide();
-  }, 3000);
-}, 1000);
+BugBattle.setWelcomeIcon("");

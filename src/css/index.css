@@ -114,6 +114,18 @@
   position: relative;
 }
 
+.bugbattle-feedback-button-classic {
+  top: 50%;
+  right: 0px;
+  position: fixed;
+  transform: rotate(-90deg) translate(50%, -50%);
+  transform-origin: 100% 50%;
+  padding: 9px 15px;
+  background-color: #398cfe;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
 .bugbattle-feedback-button .bugbattle-logo-logo {
   position: absolute;
   width: 34px;
@@ -223,16 +235,16 @@
 }
 
 .bugbattle-feedback-dialog-infoitem {
-  background-color: #eff4f7;
-  padding: 16px;
+  padding: 16px 0px;
   margin: 32px;
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
-  color: #6e6e7f;
+  color: #192027;
   border: 1px solid rgba(0, 0, 0, 0.09);
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
+  background-color: transparent;
 }
 
 .bugbattle-feedback-form--hidden {
