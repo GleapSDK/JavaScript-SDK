@@ -28,6 +28,8 @@ class BugBattle {
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
+  privacyPolicyEnabled = false;
+  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
   actionLog = [];
   logArray = [];
   eventArray = [];
@@ -563,14 +565,18 @@ class BugBattle {
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {}
+  static enablePrivacyPolicy(enabled) {
+    this.getInstance().privacyPolicyEnabled = enabled;
+  }
 
   /**
    * @deprecated Since v5.0 of the widget
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {
+    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
+  }
 
   /**
    * Sets the customers email.
@@ -865,6 +871,9 @@ class BugBattle {
       return;
     }
 
+    // Deep copy to prevent changes.
+    feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
+
     instance.notifyEvent("flow-started", feedbackOptions);
 
     instance.closeModalUI();
@@ -885,6 +894,25 @@ class BugBattle {
         if (feedbackOption.name === "reportedBy") {
           feedbackOption.defaultValue = instance.customerInfo.email;
         }
+      }
+
+      // Inject privacy policy.
+      if (instance.privacyPolicyEnabled) {
+        var policyItem = {
+          type: "privacypolicy",
+          required: true,
+          url: instance.privacyPolicyUrl,
+        };
+        const showAfter =
+          feedbackOptions.form[feedbackOptions.form.length - 1].showAfter;
+        if (showAfter) {
+          policyItem.showAfter = showAfter;
+        }
+        feedbackOptions.form.splice(
+          feedbackOptions.form.length - 1,
+          0,
+          policyItem
+        );
       }
     }
 
@@ -914,8 +942,12 @@ class BugBattle {
       var xhr = new XMLHttpRequest();
       xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
-          const status = JSON.parse(xhr.responseText);
-          resolve(status);
+          try {
+            const status = JSON.parse(xhr.responseText);
+            resolve(status);
+          } catch (exp) {
+            reject();
+          }
         }
       };
       xhr.ontimeout = function () {

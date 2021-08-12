@@ -16,6 +16,12 @@ BugBattle.setFeedbackTypeOptions([
     actionFlow: BugBattle.FLOW_CONTACT,
   },
   {
+    title: "Rating",
+    description: "We are here to help.",
+    icon: "https://jssdk.bugbattle.io/res/support.svg",
+    actionFlow: BugBattle.FLOW_RATING,
+  },
+  {
     title: "Request a feature",
     description: "Which feature would you like to see next?",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
@@ -72,7 +78,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enableIntercomCompatibilityMode();
 
 // Turn the privacy policy check on or off.
-BugBattle.enablePrivacyPolicy(true);
+BugBattle.enablePrivacyPolicy(false);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
 BugBattle.setMainColor("#398cfe");
