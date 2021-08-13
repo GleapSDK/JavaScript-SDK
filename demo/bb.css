@@ -25,11 +25,17 @@
 }
 
 .bugbattle-feedback-button--disabled .bugbattle-feedback-button-icon {
-  display: none;
+  display: none !important;
 }
 
 .bugbattle-feedback-button--disabled .bugbattle-feedback-button-text {
   display: none;
+}
+
+.bugbattle-feedback-button--bottomleft {
+  bottom: 20px;
+  right: auto;
+  left: 20px;
 }
 
 .bugbattle-feedback-button-shoutout {
@@ -38,7 +44,12 @@
   right: 94px;
   animation-duration: 0.2s;
   animation-fill-mode: both;
-  animation-name: fadeInUp;
+  animation-name: bbFadeInUp;
+}
+
+.bugbattle-feedback-button--bottomleft .bugbattle-feedback-button-shoutout {
+  right: auto;
+  left: 94px;
 }
 
 .bugbattle-feedback-button-text {
@@ -64,6 +75,10 @@
   border-width: 10px;
   border-style: solid;
   border-color: transparent #fff #fff transparent;
+}
+
+.bugbattle-feedback-button--bottomleft .bugbattle-feedback-button-text:before {
+  display: none;
 }
 
 .bugbattle-feedback-button-text:after {
@@ -99,6 +114,32 @@
   position: relative;
 }
 
+.bugbattle-feedback-button-classic {
+  top: 50%;
+  right: 0px;
+  position: fixed;
+  transform: rotate(-90deg) translate(50%, -50%);
+  transform-origin: 100% 50%;
+  padding: 9px 20px;
+  text-align: center;
+  background-color: #398cfe;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  font-family: "Open Sans", sans-serif;
+  font-size: 16px;
+  color: #fff;
+  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInLeft;
+}
+
+.bugbattle-feedback-button--sending .bugbattle-feedback-button-classic {
+  animation-duration: 0.2s;
+  animation-fill-mode: both;
+  animation-name: bbFadeOutRight;
+}
+
 .bugbattle-feedback-button .bugbattle-logo-logo {
   position: absolute;
   width: 34px;
@@ -122,19 +163,19 @@
 }
 
 .bugbattle-feedback-button .bugbattle-logo-arrowdown {
-  animation-name: zoomOut;
+  animation-name: bbZoomOut;
 }
 
 .bugbattle-feedback-button .bugbattle-logo-logo {
-  animation-name: zoomIn;
+  animation-name: bbZoomIn;
 }
 
 .bugbattle-feedback-button--sending .bugbattle-logo-arrowdown {
-  animation-name: zoomIn;
+  animation-name: bbZoomIn;
 }
 
 .bugbattle-feedback-button--sending .bugbattle-logo-logo {
-  animation-name: zoomOut;
+  animation-name: bbZoomOut;
 }
 
 .bugbattle-feedback-button-icon:hover {
@@ -145,8 +186,13 @@
   padding-left: 5px;
 }
 
+.bugbattle-feedback-button--bottomleft.bugbattle-feedback-button--sending {
+  padding-left: 0px;
+  padding-right: 5px;
+}
+
 .bugbattle-feedback-button--sending .bugbattle-feedback-button-text {
-  animation-name: fadeOutDown;
+  animation-name: bbFadeOutDown;
 }
 
 .bugbattle-feedback-button--sending .bugbattle-feedback-button-icon {
@@ -197,15 +243,24 @@
   z-index: 2147483105;
 }
 
+.bugbattle-feedback-button--bottomleft .bugbattle-feedback-dialog {
+  right: auto;
+  left: 16px;
+}
+
+.bugbattle-feedback-button--classic .bugbattle-feedback-dialog,
+.bugbattle-feedback-button--disabled .bugbattle-feedback-dialog {
+  bottom: 20px;
+}
+
 .bugbattle-feedback-dialog-infoitem {
-  background-color: #eff4f7;
   padding: 16px;
   margin: 32px;
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
-  color: #6e6e7f;
+  color: #192027;
   border: 1px solid rgba(0, 0, 0, 0.09);
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
 }
@@ -416,6 +471,7 @@
   margin-bottom: 8px;
   margin-top: 0px;
   font-weight: bold;
+  color: #192027;
 }
 
 .bugbattle-feedback-elementtitle span {
@@ -969,6 +1025,7 @@ textarea.bugbattle-feedback-required {
   border-radius: 8px;
   box-sizing: border-box;
   color: #192027;
+  max-height: 140px;
 }
 
 .bugbattle-feedback-inputgroup--privacy-policy {
@@ -1130,6 +1187,20 @@ textarea.bugbattle-feedback-required {
   align-items: center;
 }
 
+.bugbattle-feedback-dialog-error {
+  background-color: #da0e0710;
+  padding: 16px;
+  margin: 32px;
+  margin-bottom: -16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: "Open Sans", sans-serif;
+  color: #da0e07;
+  border: 1px solid #da0e07;
+  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
+  display: none;
+}
+
 .bugbattle-feedback-dialog-loading {
   padding: 20px;
   display: none;
@@ -1252,11 +1323,26 @@ textarea.bugbattle-feedback-required {
 .bugbattle-anim-fadein {
   animation-duration: 0.55s;
   animation-fill-mode: both;
-  animation-name: fadeInUp;
+  animation-name: bbFadeInUp;
 }
 
 .bugbattle-feedback-dialog-header-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
   display: none;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+.bugbattle-feedback-dialog-header-close svg {
+  width: 24px;
+  height: 24px;
+}
+
+.bugbattle-feedback-button--classic .bugbattle-feedback-dialog-header-close,
+.bugbattle-feedback-button--disabled .bugbattle-feedback-dialog-header-close {
+  display: flex;
 }
 
 @media only screen and (max-width: 600px) {
@@ -1272,17 +1358,7 @@ textarea.bugbattle-feedback-required {
     flex-direction: column;
   }
   .bugbattle-feedback-dialog-header-close {
-    position: absolute;
-    top: 20px;
-    right: 20px;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
-  .bugbattle-feedback-dialog-header-close svg {
-    width: 24px;
-    height: 24px;
   }
   .bugbattle-feedback-dialog-backdrop {
     position: fixed;
@@ -1351,7 +1427,7 @@ textarea.bugbattle-feedback-required {
   }
 }
 
-@keyframes fadeOutRight {
+@keyframes bbFadeOutRight {
   from {
     opacity: 1;
   }
@@ -1362,7 +1438,7 @@ textarea.bugbattle-feedback-required {
   }
 }
 
-@keyframes fadeOutDown {
+@keyframes bbFadeOutDown {
   from {
     opacity: 1;
   }
@@ -1373,7 +1449,7 @@ textarea.bugbattle-feedback-required {
   }
 }
 
-@keyframes fadeInUp {
+@keyframes bbFadeInUp {
   from {
     opacity: 0;
     transform: translate3d(0, 100%, 0);
@@ -1385,7 +1461,27 @@ textarea.bugbattle-feedback-required {
   }
 }
 
-@keyframes zoomOut {
+@keyframes bbFadeInLeft {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bbFadeOutRight {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes bbZoomOut {
   from {
     opacity: 1;
   }
@@ -1400,7 +1496,7 @@ textarea.bugbattle-feedback-required {
   }
 }
 
-@keyframes zoomIn {
+@keyframes bbZoomIn {
   from {
     opacity: 0;
     transform: scale3d(0.3, 0.3, 0.3);

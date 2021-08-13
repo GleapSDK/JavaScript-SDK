@@ -26,15 +26,16 @@ class BugBattle {
   sdkKey = null;
   widgetOnly = false;
   widgetCallback = null;
-  activation = "";
   overrideLanguage = "";
-  overrideButtonText = undefined;
   screenshot = null;
+  privacyPolicyEnabled = false;
+  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
   actionLog = [];
   logArray = [];
   eventArray = [];
   customData = {};
   formData = {};
+  buttonType = BugBattle.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
   sessionStart = new Date();
   customActionCallbacks = [];
@@ -53,6 +54,8 @@ class BugBattle {
   silentBugReport = false;
   initialized = false;
   customerInfo = {};
+  welcomeIcon = "👋";
+  feedbackButtonText = "Feedback";
   widgetInfo = {
     title: "Feedback",
     subtitle: "Let us know how we can do better.",
@@ -73,15 +76,19 @@ class BugBattle {
   fakeLoadingProgress = 0;
   widgetOpened = false;
   openedMenu = false;
-  alwaysShowMenuText = false;
+  showInfoPopup = false;
   snapshotPosition = {
     x: 0,
     y: 0,
   };
+  eventListeners = {};
 
-  // Activation methods
-  static FEEDBACK_BUTTON = "FEEDBACK_BUTTON";
-  static NONE = "NONE";
+  // Feedback button types
+  static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
+  static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
+  static FEEDBACK_BUTTON_CLASSIC = "BUTTON_CLASSIC";
+  static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
+
   static FLOW_CRASH = {
     title: "Problem detected",
     description:
@@ -274,6 +281,30 @@ class BugBattle {
   }
 
   /**
+   * Widget opened status
+   * @returns {boolean} isOpened
+   */
+  static isOpened() {
+    return this.getInstance().openedMenu;
+  }
+
+  /**
+   * Hides any open BugBattle dialogs.
+   */
+  static hide() {
+    const instance = this.getInstance();
+    instance.closeBugBattle();
+  }
+
+  /**
+   * Starts the BugBattle flow.
+   */
+  static open() {
+    const instance = this.getInstance();
+    instance.showBugBattle();
+  }
+
+  /**
    * Sets a custom translation
    * @param {*} customTranslation
    */
@@ -283,11 +314,19 @@ class BugBattle {
   }
 
   /**
+   * Sets the feedback button text
+   * @param {string} feedbackButtonText
+   */
+  static setFeedbackButtonText(feedbackButtonText) {
+    const instance = this.getInstance();
+    instance.feedbackButtonText = feedbackButtonText;
+  }
+
+  /**
    * Initializes the SDK
    * @param {*} sdkKey
-   * @param {*} activation
    */
-  static initialize(sdkKey, activation) {
+  static initialize(sdkKey) {
     const instance = this.getInstance();
 
     if (instance.initialized) {
@@ -297,7 +336,6 @@ class BugBattle {
 
     instance.initialized = true;
     instance.sdkKey = sdkKey;
-    instance.activation = activation;
 
     if (
       document.readyState === "complete" ||
@@ -347,11 +385,11 @@ class BugBattle {
   }
 
   /**
-   * Set widget only
-   * @param {boolean} alwaysShowMenuText
+   * Show info popup
+   * @param {boolean} showInfoPopup
    */
-  static alwaysShowMenuText(alwaysShowMenuText) {
-    this.getInstance().alwaysShowMenuText = alwaysShowMenuText;
+  static showInfoPopup(showInfoPopup) {
+    this.getInstance().showInfoPopup = showInfoPopup;
   }
 
   /**
@@ -362,6 +400,54 @@ class BugBattle {
     this.getInstance().widgetOnly = widgetOnly;
   }
 
+  /**
+   * Set welcome icon
+   * @param {string} welcomeIcon
+   */
+  static setWelcomeIcon(welcomeIcon) {
+    this.getInstance().welcomeIcon = welcomeIcon;
+  }
+
+  /**
+   * Sets the button type.
+   * @param {boolean} buttonType
+   */
+  static setButtonType(buttonType) {
+    this.getInstance().buttonType = buttonType;
+  }
+
+  /**
+   * Register events for BugBattle.
+   * @param {*} eventName
+   * @param {*} callback
+   */
+  static on(eventName, callback) {
+    const instance = this.getInstance();
+    if (!instance.eventListeners[eventName]) {
+      instance.eventListeners[eventName] = [];
+    }
+    instance.eventListeners[eventName].push(callback);
+  }
+
+  /**
+   * Notify all registrants for event.
+   */
+  notifyEvent(event, data = {}) {
+    const eventListeners = this.eventListeners[event];
+    if (eventListeners) {
+      for (var i = 0; i < eventListeners.length; i++) {
+        const eventListener = eventListeners[i];
+        if (eventListener) {
+          eventListener(data);
+        }
+      }
+    }
+  }
+
+  /**
+   * Sets the native widget callback
+   * @param {*} widgetCallback
+   */
   static widgetCallback(widgetCallback) {
     this.getInstance().widgetCallback = widgetCallback;
   }
@@ -452,14 +538,6 @@ class BugBattle {
   }
 
   /**
-   * Overrides the feedback button text.
-   * @param {string} overrideButtonText
-   */
-  static setFeedbackButtonText(overrideButtonText) {
-    this.getInstance().overrideButtonText = overrideButtonText;
-  }
-
-  /**
    * Enables the network logger.
    */
   static enableNetworkLogger() {
@@ -487,14 +565,18 @@ class BugBattle {
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {}
+  static enablePrivacyPolicy(enabled) {
+    this.getInstance().privacyPolicyEnabled = enabled;
+  }
 
   /**
    * @deprecated Since v5.0 of the widget
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {
+    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
+  }
 
   /**
    * Sets the customers email.
@@ -705,7 +787,7 @@ class BugBattle {
       },
       `${translateText("Hi", instance.overrideLanguage)} ${
         instance.customerInfo.name ? instance.customerInfo.name : ""
-      } 👋`,
+      } ${instance.welcomeIcon}`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
         instance.overrideLanguage
@@ -789,6 +871,11 @@ class BugBattle {
       return;
     }
 
+    // Deep copy to prevent changes.
+    feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
+
+    instance.notifyEvent("flow-started", feedbackOptions);
+
     instance.closeModalUI();
     instance.currentlySendingBug = true;
     instance.silentBugReport = silentBugReport;
@@ -807,6 +894,25 @@ class BugBattle {
         if (feedbackOption.name === "reportedBy") {
           feedbackOption.defaultValue = instance.customerInfo.email;
         }
+      }
+
+      // Inject privacy policy.
+      if (instance.privacyPolicyEnabled) {
+        var policyItem = {
+          type: "privacypolicy",
+          required: true,
+          url: instance.privacyPolicyUrl,
+        };
+        const showAfter =
+          feedbackOptions.form[feedbackOptions.form.length - 1].showAfter;
+        if (showAfter) {
+          policyItem.showAfter = showAfter;
+        }
+        feedbackOptions.form.splice(
+          feedbackOptions.form.length - 1,
+          0,
+          policyItem
+        );
       }
     }
 
@@ -988,7 +1094,10 @@ class BugBattle {
     const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
-    const htmlContent = `<div class="bugbattle-feedback-dialog-loading">
+    const htmlContent = `<div class="bugbattle-feedback-dialog-error">${translateText(
+      "Something went wrong, please try again.",
+      self.overrideLanguage
+    )}</div><div class="bugbattle-feedback-dialog-loading">
     <svg
       class="bugbattle--progress-ring"
       width="120"
@@ -1177,6 +1286,7 @@ class BugBattle {
       editorContainer.remove();
     }
 
+    this.notifyEvent("close");
     this.closeModalUI();
     this.enableScroll();
   }
@@ -1263,13 +1373,13 @@ class BugBattle {
       self.overrideLanguage
     );
 
-    var constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
+    var constShoutoutText = "";
 
     // Hide the shoutout if user clicked on it AND not forced to always show.
     try {
       var ftv = localStorage.getItem("bugbattle-fto");
-      if (ftv && !self.alwaysShowMenuText) {
-        constShoutoutText = "";
+      if (!ftv && self.showInfoPopup) {
+        constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
       }
     } catch (exp) {}
 
@@ -1287,26 +1397,36 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bugbattle-feedback-button";
-    elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
-      "arrowdown",
-      "#fff"
-    )}</div>`;
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
+      elem.innerHTML = `<div class="bugbattle-feedback-button-classic">${translateText(
+        this.feedbackButtonText,
+        this.overrideLanguage
+      )}</div>`;
+    } else {
+      elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
+        "arrowdown",
+        "#fff"
+      )}</div>`;
+    }
 
     elem.onclick = function () {
       self.feedbackButtonPressed();
     };
     document.body.appendChild(elem);
 
-    if (this.activation !== BugBattle.FEEDBACK_BUTTON) {
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
       elem.classList.add("bugbattle-feedback-button--disabled");
+    }
+
+    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+      elem.classList.add("bugbattle-feedback-button--bottomleft");
     }
 
     this.feedbackButton = elem;
   }
 
-  feedbackButtonPressed() {
+  showBugBattle() {
     if (this.widgetOpened) {
-      this.closeBugBattle();
       return;
     }
 
@@ -1328,6 +1448,17 @@ class BugBattle {
     try {
       localStorage.setItem("bugbattle-fto", true);
     } catch (exp) {}
+
+    this.notifyEvent("open");
+  }
+
+  feedbackButtonPressed() {
+    if (this.widgetOpened) {
+      this.closeBugBattle();
+      return;
+    }
+
+    this.showBugBattle();
   }
 
   updateFeedbackButtonState(retry = false) {
@@ -1440,14 +1571,16 @@ class BugBattle {
         return;
       }
 
-      if (
-        http.readyState === XMLHttpRequest.DONE &&
-        (http.status === 200 || http.status === 201)
-      ) {
-        self.showSuccessMessage();
-        setTimeout(function () {
-          self.closeBugBattle();
-        }, 2500);
+      if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.status === 200 || http.status === 201) {
+          self.notifyEvent("feedback-sent");
+          self.showSuccessMessage();
+          setTimeout(function () {
+            self.closeBugBattle();
+          }, 2500);
+        } else {
+          self.showError();
+        }
       }
     };
 
@@ -1479,9 +1612,14 @@ class BugBattle {
 
   showError() {
     if (this.silentBugReport) {
+      this.reportCleanup();
       return;
     }
+
+    this.notifyEvent("error-while-sending");
     toggleLoading(false);
+    document.querySelector(".bugbattle-feedback-dialog-error").style.display =
+      "flex";
   }
 
   getMetaData() {

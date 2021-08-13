@@ -1,11 +1,9 @@
 const BugBattle = window.BugBattle.default;
 
-// BugBattle.setApiUrl("http://localhost:9000");
+BugBattle.setButtonType(BugBattle.FEEDBACK_BUTTON_CLASSIC);
+BugBattle.setFeedbackButtonText("Hello 🚀");
 
-BugBattle.initialize(
-  "J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES",
-  BugBattle.FEEDBACK_BUTTON
-);
+BugBattle.initialize("dTyHwclytieniWlH7AofrCMvtXVPTbvH");
 
 BugBattle.logEvent("Booted");
 
@@ -18,10 +16,16 @@ BugBattle.setFeedbackTypeOptions([
     actionFlow: BugBattle.FLOW_CONTACT,
   },
   {
+    title: "Rating",
+    description: "We are here to help.",
+    icon: "https://jssdk.bugbattle.io/res/support.svg",
+    actionFlow: BugBattle.FLOW_RATING,
+  },
+  {
     title: "Request a feature",
     description: "Which feature would you like to see next?",
     icon: "https://jssdk.bugbattle.io/res/star.svg",
-    actionFlow: BugBattle.FLOW_RATING,
+    actionFlow: BugBattle.FLOW_FEATUREREQUEST,
   },
   {
     title: "Report an issue",
@@ -42,7 +46,7 @@ fetch("https://run.mocky.io/v3/002b4638-e1de-465c-9a7e-cd4216fd1389").then(
   }
 );
 
-// BugBattle.setApiUrl("http://localhost:9000");
+BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.setAppBuildNumber("2345");
 
@@ -74,7 +78,7 @@ BugBattle.enableShortcuts(true);
 BugBattle.enableIntercomCompatibilityMode();
 
 // Turn the privacy policy check on or off.
-BugBattle.enablePrivacyPolicy(true);
+BugBattle.enablePrivacyPolicy(false);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
 BugBattle.setMainColor("#398cfe");
@@ -133,10 +137,8 @@ setTimeout(() => {
   });
 }, 5000);
 
-/*setTimeout(() => {
-  var x = [];
-
-x[0].as = 1;
-}, 5000);*/
-
 BugBattle.autoPromptForRating();
+
+BugBattle.showInfoPopup(true);
+
+BugBattle.setWelcomeIcon("");

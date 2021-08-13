@@ -16,6 +16,9 @@ export const setColor = (color) => {
     .bugbattle-screenshot-editor-borderlayer {
         border-color: ${color};
     }
+    .bugbattle-feedback-button-classic {
+      background-color: ${color};
+    }
     .bugbattle-screenshot-editor-dot {
       background-color: ${color};
     }
@@ -144,6 +147,19 @@ export const createWidgetDialog = function (
       </div>
     </div>`;
   document.body.appendChild(elem);
+
+  const buttonType = BugBattle.getInstance().buttonType;
+  if (buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+    elem.classList.add("bugbattle-feedback-button--bottomleft");
+  }
+
+  if (buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
+    elem.classList.add("bugbattle-feedback-button--disabled");
+  }
+
+  if (buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
+    elem.classList.add("bugbattle-feedback-button--classic");
+  }
 
   const closeButton = document.querySelector(
     ".bugbattle-feedback-dialog-header-close"
