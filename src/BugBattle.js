@@ -506,10 +506,10 @@ class BugBattle {
    */
   static autoPromptForRating(daysDelayed = 14) {
     try {
-      var ftv = localStorage.getItem("bugbattle-ftv");
+      var ftv = localStorage.getItem("bb-ftv");
       if (!ftv) {
         ftv = new Date().toString();
-        localStorage.setItem("bugbattle-ftv", ftv);
+        localStorage.setItem("bb-ftv", ftv);
       }
 
       // Convert to date
@@ -522,7 +522,7 @@ class BugBattle {
       if (d >= ftv) {
         const showAfter = 8000 + Math.floor(Math.random() * 8000);
         setTimeout(() => {
-          localStorage.setItem("bugbattle-ftv", new Date().toString());
+          localStorage.setItem("bb-ftv", new Date().toString());
           BugBattle.startBugReporting(BugBattle.FLOW_RATING);
         }, showAfter);
       }
@@ -1066,7 +1066,7 @@ class BugBattle {
     var description = "";
 
     if (feedbackOptions.description && feedbackOptions.description.length > 0) {
-      description = `<div class="bugbattle-feedback-dialog-infoitem">${translateText(
+      description = `<div class="bb-feedback-dialog-infoitem">${translateText(
         feedbackOptions.description,
         this.overrideLanguage
       )}</div>`;
@@ -1089,21 +1089,19 @@ class BugBattle {
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
-    console.log(self);
-
     const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
-    const htmlContent = `<div class="bugbattle-feedback-dialog-error">${translateText(
+    const htmlContent = `<div class="bb-feedback-dialog-error">${translateText(
       "Something went wrong, please try again.",
       self.overrideLanguage
-    )}</div><div class="bugbattle-feedback-dialog-loading">
+    )}</div><div class="bb-feedback-dialog-loading">
     <svg
-      class="bugbattle--progress-ring"
+      class="bb--progress-ring"
       width="120"
       height="120">
       <circle
-        class="bugbattle--progress-ring__circle"
+        class="bb--progress-ring__circle"
         stroke="${this.mainColor}"
         stroke-width="6"
         fill="transparent"
@@ -1112,7 +1110,7 @@ class BugBattle {
         cy="60"/>
     </svg>
   </div>
-  <div class="bugbattle-feedback-dialog-success">
+  <div class="bb-feedback-dialog-success">
     <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g id="np_check_1807541" fill="${
@@ -1122,7 +1120,7 @@ class BugBattle {
             </g>
         </g>
     </svg>
-    <div class="bugbattle-feedback-dialog-info-text">${translateText(
+    <div class="bb-feedback-dialog-info-text">${translateText(
       feedbackOptions.thanksMessage
         ? feedbackOptions.thanksMessage
         : "Thank you!",
@@ -1130,13 +1128,13 @@ class BugBattle {
     )}</div>
   </div>
   ${description}
-  <div class="bugbattle-feedback-form">
+  <div class="bb-feedback-form">
     ${formData.formHTML}
   </div>`;
 
     const getWidgetDialogClass = () => {
       if (this.appCrashDetected || this.rageClickDetected) {
-        return "bugbattle-feedback-dialog--crashed";
+        return "bb-feedback-dialog--crashed";
       }
       return "";
     };
@@ -1166,7 +1164,7 @@ class BugBattle {
     hookForm(feedbackOptions.form);
 
     const sendButton = document.querySelector(
-      ".bugbattle-feedback-send-button"
+      ".bb-feedback-send-button"
     );
     sendButton.onclick = function () {
       self.formSubmitAction(feedbackOptions);
@@ -1259,7 +1257,7 @@ class BugBattle {
 
   closeModalUI() {
     const dialogContainer = document.querySelector(
-      ".bugbattle-feedback-dialog-container"
+      ".bb-feedback-dialog-container"
     );
     if (dialogContainer) {
       dialogContainer.remove();
@@ -1280,7 +1278,7 @@ class BugBattle {
 
     // Remove editor.
     const editorContainer = document.querySelector(
-      ".bugbattle-screenshot-editor"
+      ".bb-screenshot-editor"
     );
     if (editorContainer) {
       editorContainer.remove();
@@ -1377,9 +1375,9 @@ class BugBattle {
 
     // Hide the shoutout if user clicked on it AND not forced to always show.
     try {
-      var ftv = localStorage.getItem("bugbattle-fto");
+      var ftv = localStorage.getItem("bb-fto");
       if (!ftv && self.showInfoPopup) {
-        constShoutoutText = `<div class="bugbattle-feedback-button-shoutout"><div class="bugbattle-feedback-button-text"><div class="bugbattle-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
+        constShoutoutText = `<div class="bb-feedback-button-shoutout"><div class="bb-feedback-button-text"><div class="bb-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
       }
     } catch (exp) {}
 
@@ -1390,20 +1388,20 @@ class BugBattle {
 
     var buttonIcon = "";
     if (self.customButtonLogoUrl) {
-      buttonIcon = `<img class="bugbattle-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
+      buttonIcon = `<img class="bb-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
     } else {
       buttonIcon = loadIcon("bblogo", "#fff");
     }
 
     var elem = document.createElement("div");
-    elem.className = "bugbattle-feedback-button";
+    elem.className = "bb-feedback-button";
     if (this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
-      elem.innerHTML = `<div class="bugbattle-feedback-button-classic">${translateText(
+      elem.innerHTML = `<div class="bb-feedback-button-classic">${translateText(
         this.feedbackButtonText,
         this.overrideLanguage
       )}</div>`;
     } else {
-      elem.innerHTML = `${constShoutoutText}<div class="bugbattle-feedback-button-icon">${buttonIcon}${loadIcon(
+      elem.innerHTML = `${constShoutoutText}<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
         "#fff"
       )}</div>`;
@@ -1415,11 +1413,11 @@ class BugBattle {
     document.body.appendChild(elem);
 
     if (this.buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
-      elem.classList.add("bugbattle-feedback-button--disabled");
+      elem.classList.add("bb-feedback-button--disabled");
     }
 
     if (this.buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
-      elem.classList.add("bugbattle-feedback-button--bottomleft");
+      elem.classList.add("bb-feedback-button--bottomleft");
     }
 
     this.feedbackButton = elem;
@@ -1438,7 +1436,7 @@ class BugBattle {
 
     // Remove shoutout.
     const feedbackShoutout = window.document.getElementsByClassName(
-      "bugbattle-feedback-button-shoutout"
+      "bb-feedback-button-shoutout"
     );
     if (feedbackShoutout && feedbackShoutout.length > 0) {
       feedbackShoutout[0].remove();
@@ -1446,7 +1444,7 @@ class BugBattle {
 
     // Prevent shoutout from showing again.
     try {
-      localStorage.setItem("bugbattle-fto", true);
+      localStorage.setItem("bb-fto", true);
     } catch (exp) {}
 
     this.notifyEvent("open");
@@ -1471,14 +1469,14 @@ class BugBattle {
       return;
     }
 
-    const sendingClass = "bugbattle-feedback-button--sending";
+    const sendingClass = "bb-feedback-button--sending";
     if (this.widgetOpened) {
       this.feedbackButton.classList.add(sendingClass);
     } else {
       this.feedbackButton.classList.remove(sendingClass);
     }
 
-    const crashedClass = "bugbattle-feedback-button--crashed";
+    const crashedClass = "bb-feedback-button--crashed";
     if (this.appCrashDetected || this.rageClickDetected) {
       this.feedbackButton.classList.add(crashedClass);
     } else {
@@ -1486,9 +1484,9 @@ class BugBattle {
     }
 
     const dialogContainer = document.querySelector(
-      ".bugbattle-feedback-dialog-container"
+      ".bb-feedback-dialog-container"
     );
-    const containerFocusClass = "bugbattle-feedback-dialog-container--focused";
+    const containerFocusClass = "bb-feedback-dialog-container--focused";
     if (dialogContainer) {
       if (this.appCrashDetected || this.rageClickDetected) {
         dialogContainer.classList.add(containerFocusClass);
@@ -1516,13 +1514,13 @@ class BugBattle {
 
   showSuccessMessage() {
     const success = document.querySelector(
-      ".bugbattle-feedback-dialog-success"
+      ".bb-feedback-dialog-success"
     );
-    const form = document.querySelector(".bugbattle-feedback-form");
+    const form = document.querySelector(".bb-feedback-form");
     const infoItem = document.querySelector(
-      ".bugbattle-feedback-dialog-infoitem"
+      ".bb-feedback-dialog-infoitem"
     );
-    const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
+    const loader = document.querySelector(".bb-feedback-dialog-loading");
     form.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
@@ -1612,13 +1610,13 @@ class BugBattle {
 
   showError() {
     if (this.silentBugReport) {
-      this.reportCleanup();
+      this.closeBugBattle();
       return;
     }
 
     this.notifyEvent("error-while-sending");
     toggleLoading(false);
-    document.querySelector(".bugbattle-feedback-dialog-error").style.display =
+    document.querySelector(".bb-feedback-dialog-error").style.display =
       "flex";
   }
 
@@ -1720,12 +1718,9 @@ class BugBattle {
       return;
     }
 
-    // Notify for native SDK.
+    // Native SDK, process with screenshot editing.
     if (this.widgetOnly && this.widgetCallback) {
-      this.createBugReportingDialog(feedbackOptions);
-      this.widgetCallback("openScreenshotEditor", {
-        screenshotEditorIsFirstStep: this.feedbackTypeActions.length === 0,
-      });
+      this.createScreenshotEditor(feedbackOptions);
       return;
     }
 
@@ -1735,23 +1730,23 @@ class BugBattle {
   showScreenshotEditor(feedbackOptions) {
     const self = this;
     var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bugbattle-screenshot-editor";
+    bugReportingEditor.className = "bb-screenshot-editor";
     bugReportingEditor.innerHTML = `
-      <div class="bugbattle-screenshot-editor-container">
-        <div class='bugbattle-screenshot-editor-container-inner'>
-          <svg class="bugbattle-screenshot-editor-svg" width="100%" height="100%">
+      <div class="bb-screenshot-editor-container">
+        <div class='bb-screenshot-editor-container-inner'>
+          <svg class="bb-screenshot-editor-svg" width="100%" height="100%">
             <defs>
               <mask id="bbmask">
                 <rect width="100%" height="100%" fill="white"/>
-                <rect id="bugbattle-markercut" x="0" y="0" width="0" height="0" />
+                <rect id="bb-markercut" x="0" y="0" width="0" height="0" />
               </mask>
             </defs>
             <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.4);" mask="url(#bbmask)" />
           </svg>
-          <div class='bugbattle-screenshot-editor-borderlayer'></div>
-          <div class='bugbattle-screenshot-editor-dot'></div>
-          <div class='bugbattle-screenshot-editor-rectangle'></div>
-          <div class='bugbattle-screenshot-editor-drag-info'>${translateText(
+          <div class='bb-screenshot-editor-borderlayer'></div>
+          <div class='bb-screenshot-editor-dot'></div>
+          <div class='bb-screenshot-editor-rectangle'></div>
+          <div class='bb-screenshot-editor-drag-info'>${translateText(
             "Click and drag to mark the bug",
             self.overrideLanguage
           )}</div>
@@ -1761,19 +1756,19 @@ class BugBattle {
     document.body.appendChild(bugReportingEditor);
 
     const editorBorderLayer = document.querySelector(
-      ".bugbattle-screenshot-editor-borderlayer"
+      ".bb-screenshot-editor-borderlayer"
     );
     const editorDot = window.document.querySelector(
-      ".bugbattle-screenshot-editor-dot"
+      ".bb-screenshot-editor-dot"
     );
     const editorRectangle = window.document.querySelector(
-      ".bugbattle-screenshot-editor-rectangle"
+      ".bb-screenshot-editor-rectangle"
     );
     const editorSVG = window.document.querySelector(
-      ".bugbattle-screenshot-editor-svg"
+      ".bb-screenshot-editor-svg"
     );
     const rectangleMarker = window.document.getElementById(
-      "bugbattle-markercut"
+      "bb-markercut"
     );
 
     editorBorderLayer.style.height = `${window.innerHeight}px`;
@@ -1792,7 +1787,7 @@ class BugBattle {
 
     function setMouseMove(x, y) {
       const dragInfo = document.querySelector(
-        ".bugbattle-screenshot-editor-drag-info"
+        ".bb-screenshot-editor-drag-info"
       );
       dragInfo.style.left = `${x + 20}px`;
       dragInfo.style.top = `${y - dragInfo.offsetHeight / 2}px`;
@@ -1847,7 +1842,7 @@ class BugBattle {
 
     function mouseUpEventHandler(e) {
       const dragInfo = document.querySelector(
-        ".bugbattle-screenshot-editor-drag-info"
+        ".bb-screenshot-editor-drag-info"
       );
       dragInfo.style.display = "none";
 
@@ -1875,7 +1870,7 @@ class BugBattle {
 
       bugReportingEditor.appendChild(editorDot);
       bugReportingEditor.appendChild(editorRectangle);
-      bugReportingEditor.classList.add("bugbattle-screenshot-editor--marked");
+      bugReportingEditor.classList.add("bb-screenshot-editor--marked");
       addedMarker = true;
 
       bugReportingEditor.removeEventListener("mouseup", mouseUpEventHandler);
@@ -1906,6 +1901,36 @@ class BugBattle {
     bugReportingEditor.addEventListener("touchstart", touchstartEventHandler);
     bugReportingEditor.addEventListener("touchmove", touchMoveEventHandler);
     bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
+  }
+
+  createScreenshotEditor(feedbackOptions) {
+    const self = this;
+
+    const htmlContent = `<div class="">
+    </div>`;
+
+    function mouseUpEventHandler(e) {
+      self.createBugReportingDialog(feedbackOptions);
+    }
+
+    createWidgetDialog(
+      "Test?",
+      null,
+      this.customLogoUrl,
+      htmlContent,
+      function () {
+        if (self.feedbackTypeActions.length > 0) {
+          // Only go back to feedback menu options
+          self.closeBugBattle(false);
+          BugBattle.startFeedbackTypeSelection();
+        } else {
+          // Close bug battle
+          self.closeBugBattle();
+        }
+      },
+      this.openedMenu,
+      "bb-feedback-dialog--editor"
+    );
   }
 }
 

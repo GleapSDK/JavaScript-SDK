@@ -1,13 +1,13 @@
 import { translateText } from "./Translation";
 
-const showAfterClass = "bugbattle-feedback-showafter";
+const showAfterClass = "bb-feedback-showafter";
 
 const getTitleHTML = function (title, overrideLanguage, required) {
   if (title === undefined) {
     return "";
   }
 
-  return `<div class="bugbattle-feedback-elementtitle">${translateText(
+  return `<div class="bb-feedback-elementtitle">${translateText(
     title,
     overrideLanguage
   )}${required ? "<span>*</span>" : ""}</div>`;
@@ -33,10 +33,10 @@ export const buildForm = function (form, overrideLanguage) {
       formContainsShowAfter = true;
     }
     if (formItem.type === "text") {
-      formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
-          <input class="bugbattle-feedback-formdata bugbattle-feedback-${
+          <input class="bb-feedback-formdata bb-feedback-${
             formItem.name
           }" type="${formItem.inputtype}" placeholder="${translateText(
         formItem.placeholder,
@@ -45,16 +45,16 @@ export const buildForm = function (form, overrideLanguage) {
         </div>`;
     }
     if (formItem.type === "privacypolicy") {
-      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup--privacy-policy ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getShowAfterHTML(
         formItem.showAfter
       )}">
-        <input id="bugbattlePrivacyPolicy" class="bugbattle-feedback-${
+        <input id="bugbattlePrivacyPolicy" class="bb-feedback-${
           formItem.name
         }" type="checkbox" required />
-        <label for="bugbattlePrivacyPolicy" class="bugbattle-feedback-inputgroup--privacy-policy-label">${translateText(
+        <label for="bugbattlePrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
           "I read and accept the",
           overrideLanguage
-        )}<a id="bugbattle-privacy-policy-link" href="${
+        )}<a id="bb-privacy-policy-link" href="${
         formItem.url
       }" target="_blank">${translateText(
         " privacy policy",
@@ -63,15 +63,15 @@ export const buildForm = function (form, overrideLanguage) {
       </div>`;
     }
     if (formItem.type === "spacer") {
-      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-spacer ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-spacer ${getShowAfterHTML(
         formItem.showAfter
       )}"></div>`;
     }
     if (formItem.type === "submit") {
-      formHTML += `<div class="bugbattle-feedback-inputgroup bugbattle-feedback-inputgroup-button ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button ${getShowAfterHTML(
         formItem.showAfter
       )}">
-        <div class="bugbattle-feedback-send-button">${translateText(
+        <div class="bb-feedback-send-button">${translateText(
           formItem.title,
           overrideLanguage,
           formItem.required
@@ -79,10 +79,10 @@ export const buildForm = function (form, overrideLanguage) {
       </div>`;
     }
     if (formItem.type === "textarea") {
-      formHTML += `<div class="bugbattle-feedback-inputgroup ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-inputgroup ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
-          <textarea class="bugbattle-feedback-formdata bugbattle-feedback-${
+          <textarea class="bb-feedback-formdata bb-feedback-${
             formItem.name
           }" placeholder="${translateText(
         formItem.placeholder,
@@ -91,64 +91,64 @@ export const buildForm = function (form, overrideLanguage) {
         </div>`;
     }
     if (formItem.type === "rating") {
-      formHTML += `<div class="bugbattle-feedback-rating ${getShowAfterHTML(
+      formHTML += `<div class="bb-feedback-rating ${getShowAfterHTML(
         formItem.showAfter
       )}">${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
-      )}<input class="bugbattle-feedback-formdata bugbattle-feedback-${
+      )}<input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" type="hidden" />
-          <ul class="bugbattle-feedback-emojigroup">
-            <li class="bugbattle-feedback-angry" data-value="0">
+          <ul class="bb-feedback-emojigroup">
+            <li class="bb-feedback-angry" data-value="0">
               <div>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
+                <svg class="bb-feedback-eye bb-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
+                <svg class="bb-feedback-eye bb-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-mouth">
+                <svg class="bb-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle-feedback-sad" data-value="2.5">
+            <li class="bb-feedback-sad" data-value="2.5">
               <div>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
+                <svg class="bb-feedback-eye bb-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
+                <svg class="bb-feedback-eye bb-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-mouth">
+                <svg class="bb-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle-feedback-ok" data-value="5">
+            <li class="bb-feedback-ok" data-value="5">
                 <div></div>
             </li>
-            <li class="bugbattle-feedback-good" data-value="7.5">
+            <li class="bb-feedback-good" data-value="7.5">
               <div>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
+                <svg class="bb-feedback-eye bb-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
+                <svg class="bb-feedback-eye bb-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-mouth">
+                <svg class="bb-feedback-mouth">
                     <use xlink:href="#mouth">
                 </svg>
               </div>
             </li>
-            <li class="bugbattle-feedback-happy" data-value="10">
+            <li class="bb-feedback-happy" data-value="10">
               <div>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-left">
+                <svg class="bb-feedback-eye bb-feedback-left">
                     <use xlink:href="#eye">
                 </svg>
-                <svg class="bugbattle-feedback-eye bugbattle-feedback-right">
+                <svg class="bb-feedback-eye bb-feedback-right">
                     <use xlink:href="#eye">
                 </svg>
               </div>
@@ -177,7 +177,7 @@ export const getFormData = function (form) {
   for (let i = 0; i < form.length; i++) {
     const formItem = form[i];
     const formElement = document.querySelector(
-      `.bugbattle-feedback-${formItem.name}`
+      `.bb-feedback-${formItem.name}`
     );
     if (formElement && formElement.value) {
       formData[formItem.name] = formElement.value;
@@ -191,12 +191,12 @@ export const rememberForm = function (form) {
     const formItem = form[i];
     if (formItem.remember) {
       const formElement = document.querySelector(
-        `.bugbattle-feedback-${formItem.name}`
+        `.bb-feedback-${formItem.name}`
       );
       if (formElement && formElement.value) {
         try {
           localStorage.setItem(
-            `bugbattle-remember-${formItem.name}`,
+            `bb-remember-${formItem.name}`,
             formElement.value
           );
         } catch (exp) {}
@@ -219,33 +219,33 @@ export const validateForm = function (form) {
 export const validateFormItem = function (formItem) {
   var valid = true;
   const formElement = document.querySelector(
-    `.bugbattle-feedback-${formItem.name}`
+    `.bb-feedback-${formItem.name}`
   );
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
     formItem.required
   ) {
     if (!formElement.value || formElement.value === "") {
-      formElement.classList.add("bugbattle-feedback-required");
+      formElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
-      formElement.classList.remove("bugbattle-feedback-required");
+      formElement.classList.remove("bb-feedback-required");
     }
   }
   if (formItem.type === "rating" && formItem.required) {
     if (!formElement.value || formElement.value === "") {
-      formElement.parentElement.classList.add("bugbattle-feedback-required");
+      formElement.parentElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
-      formElement.parentElement.classList.remove("bugbattle-feedback-required");
+      formElement.parentElement.classList.remove("bb-feedback-required");
     }
   }
   if (formItem.type === "privacypolicy" && formItem.required) {
     if (!formElement.checked) {
-      formElement.parentElement.classList.add("bugbattle-feedback-required");
+      formElement.parentElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
-      formElement.parentElement.classList.remove("bugbattle-feedback-required");
+      formElement.parentElement.classList.remove("bb-feedback-required");
     }
   }
   const elementsToShow = document.querySelectorAll(
@@ -267,13 +267,13 @@ export const hookForm = function (form) {
       break;
     }
     const formInput = document.querySelector(
-      `.bugbattle-feedback-${formItem.name}`
+      `.bb-feedback-${formItem.name}`
     );
     if (formItem.type === "text") {
       if (formItem.remember) {
         try {
           const rememberedValue = localStorage.getItem(
-            `bugbattle-remember-${formItem.name}`
+            `bb-remember-${formItem.name}`
           );
           if (rememberedValue) {
             formInput.value = rememberedValue;
@@ -284,7 +284,7 @@ export const hookForm = function (form) {
         formInput.value = formItem.defaultValue;
       }
       if (formItem.defaultValue && formItem.hideOnDefaultSet) {
-        formInput.parentElement.classList.add("bugbattle-feedback-form--hidden");
+        formInput.parentElement.classList.add("bb-feedback-form--hidden");
       }
       formInput.oninput = function () {
         validateFormItem(formItem);
@@ -304,7 +304,7 @@ export const hookForm = function (form) {
     }
     if (formItem.type === "rating") {
       const ratingItems = document.querySelectorAll(
-        ".bugbattle-feedback-emojigroup li"
+        ".bb-feedback-emojigroup li"
       );
       for (var j = 0; j < ratingItems.length; j++) {
         const ratingItem = ratingItems[j];
@@ -312,12 +312,12 @@ export const hookForm = function (form) {
           formInput.value = ratingItem.getAttribute("data-value");
           validateFormItem(formItem);
           const lastActiveItem = document.querySelector(
-            ".bugbattle-feedback-emojigroup li.bugbattle-feedback-active"
+            ".bb-feedback-emojigroup li.bb-feedback-active"
           );
           if (lastActiveItem) {
-            lastActiveItem.classList.remove("bugbattle-feedback-active");
+            lastActiveItem.classList.remove("bb-feedback-active");
           }
-          ratingItem.classList.add("bugbattle-feedback-active");
+          ratingItem.classList.add("bb-feedback-active");
           e.preventDefault();
         });
       }

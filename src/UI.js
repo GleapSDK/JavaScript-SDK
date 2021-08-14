@@ -4,62 +4,62 @@ import { translateText } from "./Translation";
 export const setColor = (color) => {
   const darkerShade = shadeColor(color, -20);
   const colorStyleSheet = `
-    .bugbattle-feedback-button-icon {
+    .bb-feedback-button-icon {
         background-color: ${color};
     }
-    .bugbattle-feedback-button-icon:hover {
+    .bb-feedback-button-icon:hover {
         background-color: ${darkerShade};
     }
-    .bugbattle-feedback-dialog-header-button {
+    .bb-feedback-dialog-header-button {
         color: ${color};
     }
-    .bugbattle-screenshot-editor-borderlayer {
+    .bb-screenshot-editor-borderlayer {
         border-color: ${color};
     }
-    .bugbattle-feedback-button-classic {
+    .bb-feedback-button-classic {
       background-color: ${color};
     }
-    .bugbattle-screenshot-editor-dot {
+    .bb-screenshot-editor-dot {
       background-color: ${color};
     }
-    .bugbattle-feedback-dialog-header {
+    .bb-feedback-dialog-header {
       background: linear-gradient(135deg, ${color} 0%,  ${darkerShade} 100%);
     }
-    .bugbattle-screenshot-editor-rectangle {
+    .bb-screenshot-editor-rectangle {
       border-color: ${color};
     }
-    .bugbattle-feedback-send-button {
+    .bb-feedback-send-button {
       background-color: ${color};
     }
-    .bugbattle-screenshot-editor-drag-info {
+    .bb-screenshot-editor-drag-info {
       background-color: ${color};
     }
-    .bugbattle-double-bounce1,
-    .bugbattle-double-bounce2 {
+    .bb-double-bounce1,
+    .bb-double-bounce2 {
       background-color: ${color};
     }
-    .bugbattle-feedback-dialog-header-button-cancel {
+    .bb-feedback-dialog-header-button-cancel {
       background-color: ${color};
     }
-    .bugbattle-feedback-type-icon {
+    .bb-feedback-type-icon {
       background-color: ${color};
     }
-    .bugbattle-feedback-type:hover {
+    .bb-feedback-type:hover {
       border: 1px solid ${color};
     }
-    .bugbattle-feedback-dialog-infoitem {
+    .bb-feedback-dialog-infoitem {
       border-top: 2px solid ${color}77;
     }
-    .bugbattle-feedback-dialog-infoitem {
+    .bb-feedback-dialog-infoitem {
       background-color: ${color}09;
     }
-    .bugbattle-feedback-type:hover .bugbattle-feedback-type-title {
+    .bb-feedback-type:hover .bb-feedback-type-title {
       color: ${color};
     }
-    .bugbattle-feedback-inputgroup--privacy-policy
+    .bb-feedback-inputgroup--privacy-policy
     [type="checkbox"]:not(:checked)
     + label:after,
-    .bugbattle-feedback-inputgroup--privacy-policy
+    .bb-feedback-inputgroup--privacy-policy
     [type="checkbox"]:checked
     + label:after {
     color: ${color};
@@ -74,7 +74,7 @@ export const setColor = (color) => {
 export const getHeaderImage = function (customLogoUrl) {
   var headerImage = loadIcon("bblogo", "#fff");
   if (customLogoUrl) {
-    headerImage = `<img src="${customLogoUrl}" alt="bugbattle-logo" />`;
+    headerImage = `<img src="${customLogoUrl}" alt="bb-logo" />`;
   }
   return headerImage;
 };
@@ -89,41 +89,41 @@ export const createWidgetDialog = function (
   appendClass = ""
 ) {
   var elem = document.createElement("div");
-  elem.className = "bugbattle-feedback-dialog-container";
-  elem.innerHTML = `<div class="bugbattle-feedback-dialog-backdrop"></div><div class='bugbattle-feedback-dialog bugbattle-anim-fadein ${appendClass}'>
-      <div class="bugbattle-feedback-dialog-header${
-        back ? " bugbattle-feedback-dialog-header--back" : ""
-      }${!showBack ? " bugbattle-feedback-dialog-header--backhidden" : ""}">
+  elem.className = "bb-feedback-dialog-container";
+  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-anim-fadein ${appendClass}'>
+      <div class="bb-feedback-dialog-header${
+        back ? " bb-feedback-dialog-header--back" : ""
+      }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
         ${
           back
-            ? `<div class="bugbattle-feedback-dialog-header-back">
+            ? `<div class="bb-feedback-dialog-header-back">
         ${loadIcon("arrowleft", "#fff")}
         </div>`
-            : `<div class="bugbattle-feedback-dialog-header-logo">
+            : `<div class="bb-feedback-dialog-header-logo">
           ${getHeaderImage(customLogoUrl)}
         </div>`
         }
-        <div class="bugbattle-feedback-dialog-header-text">
-          <div class="bugbattle-feedback-dialog-header-title">
+        <div class="bb-feedback-dialog-header-text">
+          <div class="bb-feedback-dialog-header-title">
             ${title}
           </div>
           ${
             description === null
               ? ""
-              : `<div class="bugbattle-feedback-dialog-header-description">
+              : `<div class="bb-feedback-dialog-header-description">
           ${description}
         </div>`
           }
         </div>
-        <div class="bugbattle-feedback-dialog-header-close">
+        <div class="bb-feedback-dialog-header-close">
           <svg fill="#FFFFFF" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <path d="m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z"/>
           </svg>
         </div>
       </div>
-      <div class="bugbattle-feedback-dialog-body">
+      <div class="bb-feedback-dialog-body">
         ${content}
-        <div class="bugbattle-feedback-poweredbycontainer">
+        <div class="bb-feedback-poweredbycontainer">
           <span>Powered by</span>
           <svg width="173px" height="30px" viewBox="0 0 173 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
               <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -150,19 +150,19 @@ export const createWidgetDialog = function (
 
   const buttonType = BugBattle.getInstance().buttonType;
   if (buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
-    elem.classList.add("bugbattle-feedback-button--bottomleft");
+    elem.classList.add("bb-feedback-button--bottomleft");
   }
 
   if (buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
-    elem.classList.add("bugbattle-feedback-button--disabled");
+    elem.classList.add("bb-feedback-button--disabled");
   }
 
   if (buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
-    elem.classList.add("bugbattle-feedback-button--classic");
+    elem.classList.add("bb-feedback-button--classic");
   }
 
   const closeButton = document.querySelector(
-    ".bugbattle-feedback-dialog-header-close"
+    ".bb-feedback-dialog-header-close"
   );
   closeButton.onclick = function () {
     BugBattle.getInstance().closeBugBattle();
@@ -171,7 +171,7 @@ export const createWidgetDialog = function (
   // Hook back action
   if (back) {
     const backButton = document.querySelector(
-      ".bugbattle-feedback-dialog-header-back"
+      ".bb-feedback-dialog-header-back"
     );
     backButton.onclick = function () {
       back();
@@ -194,20 +194,20 @@ export const createFeedbackTypeDialog = function (
   subtitle
 ) {
   // Generate options
-  var optionsHTML = `<div class="bugbattle-feedback-types">`;
+  var optionsHTML = `<div class="bb-feedback-types">`;
 
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     var action = feedbackTypeActions[i];
-    optionsHTML += `<div id="bugbattle-feedback-type-${i}" class="bugbattle-feedback-type">
-        <div class="bugbattle-feedback-type-icon">
+    optionsHTML += `<div id="bb-feedback-type-${i}" class="bb-feedback-type">
+        <div class="bb-feedback-type-icon">
           <img src="${action.icon}">
         </div>
-        <div class="bugbattle-feedback-type-text">
-          <div class="bugbattle-feedback-type-title">${translateText(
+        <div class="bb-feedback-type-text">
+          <div class="bb-feedback-type-title">${translateText(
             action.title,
             overrideLanguage
           )}</div>
-          <div class="bugbattle-feedback-type-description">${translateText(
+          <div class="bb-feedback-type-description">${translateText(
             action.description,
             overrideLanguage
           )}</div>
@@ -227,12 +227,12 @@ export const createFeedbackTypeDialog = function (
   // Hook actions
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     const index = i;
-    document.getElementById(`bugbattle-feedback-type-${index}`).onclick =
+    document.getElementById(`bb-feedback-type-${index}`).onclick =
       function () {
         dialog.remove();
         if (feedbackTypeActions[index].action) {
           // Cleanup widget.
-          BugBattle.getInstance().reportCleanup();
+          BugBattle.getInstance().closeBugBattle();
 
           // Call custom action.
           feedbackTypeActions[index].action();
@@ -251,7 +251,7 @@ export const createFeedbackTypeDialog = function (
 
 export const validatePoweredBy = function (poweredByHidden) {
   const poweredByContainer = document.querySelector(
-    ".bugbattle-feedback-poweredbycontainer"
+    ".bb-feedback-poweredbycontainer"
   );
   if (poweredByHidden) {
     poweredByContainer.style.display = "none";
@@ -264,7 +264,7 @@ export const validatePoweredBy = function (poweredByHidden) {
 
 export const setLoadingIndicatorProgress = function (percentComplete) {
   const circle = window.document.querySelector(
-    ".bugbattle--progress-ring__circle"
+    ".bb--progress-ring__circle"
   );
   const circumference = 213.628300444;
   const offset = circumference - (percentComplete / 100) * circumference;
@@ -276,7 +276,7 @@ export const setLoadingIndicatorProgress = function (percentComplete) {
 
 export const loadIcon = function (name, color) {
   if (name === "bblogo") {
-    return `<svg class="bugbattle-logo-logo" width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    return `<svg class="bb-logo-logo" width="32px" height="32px" viewBox="0 0 32 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <title>Shape</title>
         <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
             <g id="Artboard" transform="translate(-1597.000000, -901.000000)" fill="${color}">
@@ -291,7 +291,7 @@ export const loadIcon = function (name, color) {
   }
 
   if (name === "arrowdown") {
-    return `<svg class="bugbattle-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    return `<svg class="bb-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z"/>
    </svg>`;
   }
@@ -306,11 +306,11 @@ export const loadIcon = function (name, color) {
 };
 
 export const toggleLoading = function (loading) {
-  const form = document.querySelector(".bugbattle-feedback-form");
+  const form = document.querySelector(".bb-feedback-form");
   const infoItem = document.querySelector(
-    ".bugbattle-feedback-dialog-infoitem"
+    ".bb-feedback-dialog-infoitem"
   );
-  const loader = document.querySelector(".bugbattle-feedback-dialog-loading");
+  const loader = document.querySelector(".bb-feedback-dialog-loading");
   if (loading) {
     if (infoItem) {
       infoItem.style.display = "none";
