@@ -205,8 +205,7 @@
   z-index: 2147483098;
 }
 
-.bb-feedback-dialog-container--focused
-  .bb-feedback-dialog-backdrop {
+.bb-feedback-dialog-container--focused .bb-feedback-dialog-backdrop {
   position: fixed;
   top: 0px;
   left: 0px;
@@ -254,15 +253,11 @@
 }
 
 .bb-feedback-dialog-infoitem {
-  padding: 16px;
   margin: 32px;
   margin-bottom: -16px;
-  border-radius: 6px;
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
   color: #192027;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
 }
 
 .bb-feedback-form--hidden {
@@ -366,8 +361,7 @@
   padding-left: 16px;
 }
 
-.bb-feedback-dialog-header--backhidden
-  .bb-feedback-dialog-header-text {
+.bb-feedback-dialog-header--backhidden .bb-feedback-dialog-header-text {
   padding-left: 0px;
 }
 
@@ -376,24 +370,21 @@
   padding-top: 21px;
 }
 
-.bb-feedback-dialog-header--back
-  .bb-feedback-dialog-header-title {
+.bb-feedback-dialog-header--back .bb-feedback-dialog-header-title {
   margin-top: 0px;
   line-height: 22px;
   font-family: "Open Sans", sans-serif;
   font-size: 18px;
 }
 
-.bb-feedback-dialog-header--back
-  .bb-feedback-dialog-header-description {
+.bb-feedback-dialog-header--back .bb-feedback-dialog-header-description {
   font-family: "Open Sans", sans-serif;
   font-size: 14px;
   line-height: 18px;
   margin-top: 5px;
 }
 
-.bb-feedback-dialog-header--backhidden
-  .bb-feedback-dialog-header-back {
+.bb-feedback-dialog-header--backhidden .bb-feedback-dialog-header-back {
   display: none !important;
 }
 
@@ -668,10 +659,7 @@ textarea.bb-feedback-required {
   --h: 4px;
 }
 
-.bb-feedback-emojigroup
-  li
-  div
-  svg.bb-feedback-eye.bb-feedback-right {
+.bb-feedback-emojigroup li div svg.bb-feedback-eye.bb-feedback-right {
   --l: 28px;
 }
 
@@ -712,33 +700,25 @@ textarea.bb-feedback-required {
   left: 28px;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-angry
-  div
-  svg.bb-feedback-eye {
+.bb-feedback-emojigroup li.bb-feedback-angry div svg.bb-feedback-eye {
   stroke-dasharray: 4.55;
   stroke-dashoffset: 8.15;
 }
 
 .bb-feedback-emojigroup li.bb-feedback-angry:hover,
-.bb-feedback-emojigroup
-  li.bb-feedback-angry.bb-feedback-active {
+.bb-feedback-emojigroup li.bb-feedback-angry.bb-feedback-active {
   animation: angry 1s linear;
 }
 
 .bb-feedback-emojigroup li.bb-feedback-angry:hover div:before,
-.bb-feedback-emojigroup
-  li.bb-feedback-angry.bb-feedback-active
-  div:before {
+.bb-feedback-emojigroup li.bb-feedback-angry.bb-feedback-active div:before {
   --middle-y: -2px;
   --middle-r: 22deg;
   animation: toggle 0.8s linear forwards;
 }
 
 .bb-feedback-emojigroup li.bb-feedback-angry:hover div:after,
-.bb-feedback-emojigroup
-  li.bb-feedback-angry.bb-feedback-active
-  div:after {
+.bb-feedback-emojigroup li.bb-feedback-angry.bb-feedback-active div:after {
   --middle-y: 1px;
   --middle-r: -18deg;
   animation: toggle 0.8s linear forwards;
@@ -765,17 +745,11 @@ textarea.bb-feedback-required {
   --l: 25px;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-sad
-  div
-  svg.bb-feedback-eye {
+.bb-feedback-emojigroup li.bb-feedback-sad div svg.bb-feedback-eye {
   --t: 16px;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-sad
-  div
-  svg.bb-feedback-mouth {
+.bb-feedback-emojigroup li.bb-feedback-sad div svg.bb-feedback-mouth {
   --t: 25px;
   stroke-dasharray: 9.5;
   stroke-dashoffset: 33.25;
@@ -783,12 +757,8 @@ textarea.bb-feedback-required {
 
 .bb-feedback-emojigroup li.bb-feedback-sad:hover div:before,
 .bb-feedback-emojigroup li.bb-feedback-sad:hover div:after,
-.bb-feedback-emojigroup
-  li.bb-feedback-sad.bb-feedback-active
-  div:before,
-.bb-feedback-emojigroup
-  li.bb-feedback-sad.bb-feedback-active
-  div:after {
+.bb-feedback-emojigroup li.bb-feedback-sad.bb-feedback-active div:before,
+.bb-feedback-emojigroup li.bb-feedback-sad.bb-feedback-active div:after {
   animation: tear 0.6s linear forwards;
 }
 
@@ -820,17 +790,13 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-emojigroup li.bb-feedback-ok:hover div:before,
-.bb-feedback-emojigroup
-  li.bb-feedback-ok.bb-feedback-active
-  div:before {
+.bb-feedback-emojigroup li.bb-feedback-ok.bb-feedback-active div:before {
   --middle-s-y: 0.35;
   animation: toggle 0.2s linear forwards;
 }
 
 .bb-feedback-emojigroup li.bb-feedback-ok:hover div:after,
-.bb-feedback-emojigroup
-  li.bb-feedback-ok.bb-feedback-active
-  div:after {
+.bb-feedback-emojigroup li.bb-feedback-ok.bb-feedback-active div:after {
   --middle-s-x: 0.5;
   animation: toggle 0.7s linear forwards;
 }
@@ -858,30 +824,21 @@ textarea.bb-feedback-required {
   --sc: 0;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-good
-  div
-  svg.bb-feedback-eye {
+.bb-feedback-emojigroup li.bb-feedback-good div svg.bb-feedback-eye {
   --t: 15px;
   --sc: -1;
   stroke-dasharray: 4.55;
   stroke-dashoffset: 8.15;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-good
-  div
-  svg.bb-feedback-mouth {
+.bb-feedback-emojigroup li.bb-feedback-good div svg.bb-feedback-mouth {
   --t: 22px;
   --sc: -1;
   stroke-dasharray: 13.3;
   stroke-dashoffset: 23.75;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-good:hover
-  div
-  svg.bb-feedback-mouth,
+.bb-feedback-emojigroup li.bb-feedback-good:hover div svg.bb-feedback-mouth,
 .bb-feedback-emojigroup
   li.bb-feedback-good.bb-feedback-active
   div
@@ -911,18 +868,13 @@ textarea.bb-feedback-required {
   --br: 0 0 8px 8px;
 }
 
-.bb-feedback-emojigroup
-  li.bb-feedback-happy
-  div
-  svg.bb-feedback-eye {
+.bb-feedback-emojigroup li.bb-feedback-happy div svg.bb-feedback-eye {
   --t: 14px;
   --sc: -1;
 }
 
 .bb-feedback-emojigroup li.bb-feedback-happy:hover div:after,
-.bb-feedback-emojigroup
-  li.bb-feedback-happy.bb-feedback-active
-  div:after {
+.bb-feedback-emojigroup li.bb-feedback-happy.bb-feedback-active div:after {
   --middle-s-x: 0.95;
   --middle-s-y: 0.75;
   animation: toggle 0.8s linear forwards;
@@ -1054,12 +1006,8 @@ textarea.bb-feedback-required {
   opacity: 0.01;
 }
 
-.bb-feedback-inputgroup--privacy-policy
-  [type="checkbox"]:not(:checked)
-  + label,
-.bb-feedback-inputgroup--privacy-policy
-  [type="checkbox"]:checked
-  + label {
+.bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
+.bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
   font-family: "Open Sans", sans-serif;
   position: relative;
   padding-left: 2em;
@@ -1247,17 +1195,6 @@ textarea.bb-feedback-required {
   box-sizing: border-box;
 }
 
-.bb-screenshot-editor-canvas {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
-  cursor: crosshair;
-  z-index: 916777267;
-}
-
 .bb-screenshot-editor-borderlayer {
   position: absolute;
   top: 0px;
@@ -1272,7 +1209,6 @@ textarea.bb-feedback-required {
 }
 
 .bb-screenshot-editor--marked .bb-screenshot-editor-svg,
-.bb-screenshot-editor--marked .bb-screenshot-editor-canvas,
 .bb-screenshot-editor--marked .bb-screenshot-editor-borderlayer {
   cursor: default;
 }
@@ -1345,7 +1281,7 @@ textarea.bb-feedback-required {
   display: flex;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 6000px) {
   .bb-feedback-dialog {
     width: calc(100% - 20px);
     box-sizing: border-box;

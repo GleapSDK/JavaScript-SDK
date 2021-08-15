@@ -1247,17 +1247,6 @@ textarea.bb-feedback-required {
   box-sizing: border-box;
 }
 
-.bb-screenshot-editor-canvas {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
-  cursor: crosshair;
-  z-index: 916777267;
-}
-
 .bb-screenshot-editor-borderlayer {
   position: absolute;
   top: 0px;
@@ -1272,7 +1261,6 @@ textarea.bb-feedback-required {
 }
 
 .bb-screenshot-editor--marked .bb-screenshot-editor-svg,
-.bb-screenshot-editor--marked .bb-screenshot-editor-canvas,
 .bb-screenshot-editor--marked .bb-screenshot-editor-borderlayer {
   cursor: default;
 }

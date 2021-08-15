@@ -47,12 +47,6 @@ export const setColor = (color) => {
     .bb-feedback-type:hover {
       border: 1px solid ${color};
     }
-    .bb-feedback-dialog-infoitem {
-      border-top: 2px solid ${color}77;
-    }
-    .bb-feedback-dialog-infoitem {
-      background-color: ${color}09;
-    }
     .bb-feedback-type:hover .bb-feedback-type-title {
       color: ${color};
     }

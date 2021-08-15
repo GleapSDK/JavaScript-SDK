@@ -20,6 +20,7 @@ import {
   validateForm,
 } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
+import { createScreenshotEditor } from "./DrawingCanvas";
 
 class BugBattle {
   apiUrl = "https://api.bugbattle.io";
@@ -311,6 +312,15 @@ class BugBattle {
   static setCustomTranslation(customTranslation) {
     const instance = this.getInstance();
     instance.customTranslation = customTranslation;
+  }
+
+  /**
+   * Sets a custom screenshot
+   * @param {*} screenshot
+   */
+  static setScreenshot(screenshot) {
+    const instance = this.getInstance();
+    instance.screenshot = screenshot;
   }
 
   /**
@@ -1163,9 +1173,7 @@ class BugBattle {
     validatePoweredBy(this.poweredByHidden);
     hookForm(feedbackOptions.form);
 
-    const sendButton = document.querySelector(
-      ".bb-feedback-send-button"
-    );
+    const sendButton = document.querySelector(".bb-feedback-send-button");
     sendButton.onclick = function () {
       self.formSubmitAction(feedbackOptions);
     };
@@ -1277,9 +1285,7 @@ class BugBattle {
     this.updateFeedbackButtonState();
 
     // Remove editor.
-    const editorContainer = document.querySelector(
-      ".bb-screenshot-editor"
-    );
+    const editorContainer = document.querySelector(".bb-screenshot-editor");
     if (editorContainer) {
       editorContainer.remove();
     }
@@ -1513,13 +1519,9 @@ class BugBattle {
   }
 
   showSuccessMessage() {
-    const success = document.querySelector(
-      ".bb-feedback-dialog-success"
-    );
+    const success = document.querySelector(".bb-feedback-dialog-success");
     const form = document.querySelector(".bb-feedback-form");
-    const infoItem = document.querySelector(
-      ".bb-feedback-dialog-infoitem"
-    );
+    const infoItem = document.querySelector(".bb-feedback-dialog-infoitem");
     const loader = document.querySelector(".bb-feedback-dialog-loading");
     form.style.display = "none";
     loader.style.display = "none";
@@ -1616,8 +1618,7 @@ class BugBattle {
 
     this.notifyEvent("error-while-sending");
     toggleLoading(false);
-    document.querySelector(".bb-feedback-dialog-error").style.display =
-      "flex";
+    document.querySelector(".bb-feedback-dialog-error").style.display = "flex";
   }
 
   getMetaData() {
@@ -1712,15 +1713,33 @@ class BugBattle {
   }
 
   showBugReportEditor(feedbackOptions) {
-    // Stop here if we don't want to show the native screenshot tools
+    const self = this;
+
+    // Stop here if we don't want to show the native screenshot tools.
     if (feedbackOptions.disableUserScreenshot) {
       this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
+    // Predefined screenshot set - show editor.
+    if (this.screenshot) {
+      createScreenshotEditor(
+        this.screenshot,
+        function () {
+          self.closeBugBattle(false);
+          self.createBugReportingDialog(feedbackOptions);
+        },
+        function () {
+          self.closeBugBattle(false);
+          BugBattle.startFeedbackTypeSelection();
+        }
+      );
+      return;
+    }
+
     // Native SDK, process with screenshot editing.
     if (this.widgetOnly && this.widgetCallback) {
-      this.createScreenshotEditor(feedbackOptions);
+      this.createBugReportingDialog(feedbackOptions);
       return;
     }
 
@@ -1767,9 +1786,7 @@ class BugBattle {
     const editorSVG = window.document.querySelector(
       ".bb-screenshot-editor-svg"
     );
-    const rectangleMarker = window.document.getElementById(
-      "bb-markercut"
-    );
+    const rectangleMarker = window.document.getElementById("bb-markercut");
 
     editorBorderLayer.style.height = `${window.innerHeight}px`;
     var addedMarker = false;
@@ -1901,36 +1918,6 @@ class BugBattle {
     bugReportingEditor.addEventListener("touchstart", touchstartEventHandler);
     bugReportingEditor.addEventListener("touchmove", touchMoveEventHandler);
     bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
-  }
-
-  createScreenshotEditor(feedbackOptions) {
-    const self = this;
-
-    const htmlContent = `<div class="">
-    </div>`;
-
-    function mouseUpEventHandler(e) {
-      self.createBugReportingDialog(feedbackOptions);
-    }
-
-    createWidgetDialog(
-      "Test?",
-      null,
-      this.customLogoUrl,
-      htmlContent,
-      function () {
-        if (self.feedbackTypeActions.length > 0) {
-          // Only go back to feedback menu options
-          self.closeBugBattle(false);
-          BugBattle.startFeedbackTypeSelection();
-        } else {
-          // Close bug battle
-          self.closeBugBattle();
-        }
-      },
-      this.openedMenu,
-      "bb-feedback-dialog--editor"
-    );
   }
 }
 
