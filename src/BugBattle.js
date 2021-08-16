@@ -288,7 +288,7 @@ class BugBattle {
   static isOpened() {
     return this.getInstance().openedMenu;
   }
-
+  
   /**
    * Hides any open BugBattle dialogs.
    */
@@ -784,17 +784,17 @@ class BugBattle {
     instance.openedMenu = true;
     instance.updateFeedbackButtonState();
 
+    if (instance.widgetOnly && instance.widgetCallback) {
+      instance.widgetCallback("showingMenu", {});
+    }
+
     // Start feedback type dialog
     createFeedbackTypeDialog(
       instance.feedbackTypeActions,
       instance.overrideLanguage,
       instance.customLogoUrl,
       instance.poweredByHidden,
-      function () {
-        if (instance.widgetOnly && instance.widgetCallback) {
-          instance.widgetCallback("selectedMenuOption", {});
-        }
-      },
+      function () {},
       `${translateText("Hi", instance.overrideLanguage)} ${
         instance.customerInfo.name ? instance.customerInfo.name : ""
       } ${instance.welcomeIcon}`,
@@ -1200,13 +1200,13 @@ class BugBattle {
 
     // Start fake loading
     self.fakeLoading = setInterval(function () {
-      if (self.fakeLoadingProgress > 50) {
+      if (self.fakeLoadingProgress > 75) {
         self.resetLoading(false);
         return;
       }
       self.fakeLoadingProgress += 2;
       setLoadingIndicatorProgress(self.fakeLoadingProgress);
-    }, 200);
+    }, 150);
 
     // Send form
     const formData = getFormData(feedbackOptions.form);

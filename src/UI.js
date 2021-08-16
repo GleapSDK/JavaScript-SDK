@@ -159,6 +159,9 @@ export const createWidgetDialog = function (
     ".bb-feedback-dialog-header-close"
   );
   closeButton.onclick = function () {
+    if (closeButton.getAttribute("d") === "t") {
+      return;
+    }
     BugBattle.getInstance().closeBugBattle();
   };
 
@@ -168,6 +171,9 @@ export const createWidgetDialog = function (
       ".bb-feedback-dialog-header-back"
     );
     backButton.onclick = function () {
+      if (backButton.getAttribute("d") === "t") {
+        return;
+      }
       back();
     };
   }
@@ -221,23 +227,24 @@ export const createFeedbackTypeDialog = function (
   // Hook actions
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     const index = i;
-    document.getElementById(`bb-feedback-type-${index}`).onclick =
-      function () {
-        dialog.remove();
-        if (feedbackTypeActions[index].action) {
-          // Cleanup widget.
-          BugBattle.getInstance().closeBugBattle();
+    document.getElementById(`bb-feedback-type-${index}`).onclick = function () {
+      dialog.remove();
+      if (feedbackTypeActions[index].action) {
+        // Cleanup widget.
+        BugBattle.getInstance().closeBugBattle();
 
-          // Call custom action.
-          feedbackTypeActions[index].action();
-        }
-        if (feedbackTypeActions[index].actionFlow) {
-          BugBattle.startBugReporting(feedbackTypeActions[index].actionFlow);
-        }
-        if (selectedMenuOption) {
-          selectedMenuOption();
-        }
-      };
+        // Call custom action.
+        feedbackTypeActions[index].action();
+      }
+
+      if (feedbackTypeActions[index].actionFlow) {
+        BugBattle.getInstance().navigateTo(BugBattle.NAV_ACTIONS.FLOW, feedbackTypeActions[index].actionFlow);
+      }
+
+      if (selectedMenuOption) {
+        selectedMenuOption();
+      }
+    };
   }
 
   validatePoweredBy(poweredByHidden);
@@ -257,9 +264,7 @@ export const validatePoweredBy = function (poweredByHidden) {
 };
 
 export const setLoadingIndicatorProgress = function (percentComplete) {
-  const circle = window.document.querySelector(
-    ".bb--progress-ring__circle"
-  );
+  const circle = window.document.querySelector(".bb--progress-ring__circle");
   const circumference = 213.628300444;
   const offset = circumference - (percentComplete / 100) * circumference;
   if (circle) {
@@ -301,22 +306,39 @@ export const loadIcon = function (name, color) {
 
 export const toggleLoading = function (loading) {
   const form = document.querySelector(".bb-feedback-form");
-  const infoItem = document.querySelector(
-    ".bb-feedback-dialog-infoitem"
-  );
+  const infoItem = document.querySelector(".bb-feedback-dialog-infoitem");
   const loader = document.querySelector(".bb-feedback-dialog-loading");
+  const next = document.querySelector(".bb-feedback-dialog-header-back");
+  const close = document.querySelector(".bb-feedback-dialog-header-close");
+
   if (loading) {
     if (infoItem) {
       infoItem.style.display = "none";
     }
     form.style.display = "none";
     loader.style.display = "flex";
+    if (next) {
+      next.setAttribute("d", "t");
+      next.style.opacity = "0.2";
+    }
+    if (close) {
+      close.setAttribute("d", "t");
+      close.style.opacity = "0.2";
+    }
   } else {
     if (infoItem) {
       infoItem.style.display = "block";
     }
     form.style.display = "block";
     loader.style.display = "none";
+    if (next) {
+      next.setAttribute("d", "n");
+      next.style.opacity = "1";
+    }
+    if (close) {
+      close.setAttribute("d", "n");
+      close.style.opacity = "1";
+    }
   }
 };
 

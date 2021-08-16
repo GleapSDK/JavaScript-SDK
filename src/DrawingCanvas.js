@@ -46,7 +46,7 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
   });
   const nextButton = document.querySelector(".bb-feedback-dialog-header-next");
   nextButton.addEventListener("click", function () {
-    onDone(canvas.toDataURL('image/jpeg', 0.8));
+    onDone(canvas.toDataURL('image/png'));
   });
 
   const colorItem = document.getElementById("bb-drawing-color");

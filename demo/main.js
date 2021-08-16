@@ -81,8 +81,6 @@ BugBattle.enableIntercomCompatibilityMode();
 BugBattle.enablePrivacyPolicy(false);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#398cfe");
-
 console.warn("DEMO!");
 console.log("HI!");
 
