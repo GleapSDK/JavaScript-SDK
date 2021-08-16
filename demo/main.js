@@ -1,6 +1,6 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.setButtonType(BugBattle.FEEDBACK_BUTTON_CLASSIC);
+BugBattle.setButtonType(BugBattle.FEEDBACK_BUTTON_BOTTOM_RIGHT);
 BugBattle.setFeedbackButtonText("Hello 🚀");
 
 BugBattle.initialize("dTyHwclytieniWlH7AofrCMvtXVPTbvH");

@@ -254,15 +254,13 @@
 }
 
 .bb-feedback-dialog-infoitem {
-  padding: 16px;
+  padding: 0px;
   margin: 32px;
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
   color: #192027;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
 }
 
 .bb-feedback-form--hidden {
@@ -288,6 +286,7 @@
   flex-direction: column;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   padding-bottom: 75px;
+  position: relative;
 }
 
 .bb-feedback-dialog-header-button-cancel svg {
@@ -402,6 +401,7 @@
   margin-top: -55px;
   margin-bottom: 20px;
   flex-grow: 1;
+  z-index: 1;
 }
 
 .bb-feedback-type {
@@ -512,6 +512,7 @@
   display: flex;
   flex-grow: 1;
   flex-direction: column;
+  z-index: 1;
 }
 
 .bb-feedback-inputgroup {
@@ -1247,6 +1248,17 @@ textarea.bb-feedback-required {
   box-sizing: border-box;
 }
 
+.bb-screenshot-editor-canvas {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  height: -webkit-fill-available;
+  cursor: crosshair;
+  z-index: 916777267;
+}
+
 .bb-screenshot-editor-borderlayer {
   position: absolute;
   top: 0px;
@@ -1261,6 +1273,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-screenshot-editor--marked .bb-screenshot-editor-svg,
+.bb-screenshot-editor--marked .bb-screenshot-editor-canvas,
 .bb-screenshot-editor--marked .bb-screenshot-editor-borderlayer {
   cursor: default;
 }
@@ -1333,7 +1346,7 @@ textarea.bb-feedback-required {
   display: flex;
 }
 
-@media only screen and (max-width: 6000px) {
+@media only screen and (max-width: 600px) {
   .bb-feedback-dialog {
     width: calc(100% - 20px);
     box-sizing: border-box;
