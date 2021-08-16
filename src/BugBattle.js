@@ -533,7 +533,7 @@ class BugBattle {
         const showAfter = 8000 + Math.floor(Math.random() * 8000);
         setTimeout(() => {
           localStorage.setItem("bb-ftv", new Date().toString());
-          BugBattle.startBugReporting(BugBattle.FLOW_RATING);
+          BugBattle.startFlow(BugBattle.FLOW_RATING);
         }, showAfter);
       }
     } catch (exp) {}
@@ -723,7 +723,7 @@ class BugBattle {
       if (instance.enabledRageClickDetectorSilent) {
         BugBattle.sendSilentBugReport(null, "Rage click detected.");
       } else {
-        BugBattle.startBugReporting(BugBattle.FLOW_CRASH);
+        BugBattle.startFlow(BugBattle.FLOW_CRASH);
       }
     });
   }
@@ -771,7 +771,7 @@ class BugBattle {
     instance.severity = priority;
     instance.feedbackType = "BUG";
 
-    this.startBugReporting({}, true);
+    this.startFlow({}, true);
   }
 
   /**
@@ -872,7 +872,7 @@ class BugBattle {
   /**
    * Starts the bug reporting flow.
    */
-  static startBugReporting(
+  static startFlow(
     feedbackOptions = this.FLOW_DEFAULT,
     silentBugReport = false
   ) {
@@ -1001,7 +1001,7 @@ class BugBattle {
           )}\n`;
           BugBattle.sendSilentBugReport(null, errorMessage);
         } else {
-          BugBattle.startBugReporting(BugBattle.FLOW_CRASH);
+          BugBattle.startFlow(BugBattle.FLOW_CRASH);
         }
       }
 
@@ -1342,7 +1342,7 @@ class BugBattle {
         (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
-        BugBattle.startBugReporting();
+        BugBattle.startFlow();
       }
     };
   }
@@ -1364,7 +1364,7 @@ class BugBattle {
       if (self.feedbackTypeActions.length > 0) {
         BugBattle.startFeedbackTypeSelection();
       } else {
-        BugBattle.startBugReporting();
+        BugBattle.startFlow();
       }
     }
   }
@@ -1438,7 +1438,7 @@ class BugBattle {
     if (this.feedbackTypeActions.length > 0) {
       BugBattle.startFeedbackTypeSelection();
     } else {
-      BugBattle.startBugReporting();
+      BugBattle.startFlow();
     }
 
     // Remove shoutout.

@@ -238,7 +238,7 @@ export const createFeedbackTypeDialog = function (
       }
 
       if (feedbackTypeActions[index].actionFlow) {
-        BugBattle.getInstance().navigateTo(BugBattle.NAV_ACTIONS.FLOW, feedbackTypeActions[index].actionFlow);
+        BugBattle.startFlow(feedbackTypeActions[index].actionFlow);
       }
 
       if (selectedMenuOption) {
