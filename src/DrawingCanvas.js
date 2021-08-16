@@ -1,6 +1,12 @@
+import { translateText } from "./Translation";
 import { loadIcon } from "./UI";
 
-export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
+export const createScreenshotEditor = function (
+  screenshot,
+  onDone,
+  onCancel,
+  overrideLanguage
+) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
   elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadein'>
@@ -9,10 +15,13 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
         ${loadIcon("arrowleft", "#fff")}
         </div>
         <div class="bb-feedback-dialog-header-text">
-            <div class="bb-feedback-dialog-header-title">Mark the bug</div>
+            <div class="bb-feedback-dialog-header-title">${translateText(
+              "Mark the bug",
+              overrideLanguage
+            )}</div>
         </div>
           <div class="bb-feedback-dialog-header-next">
-          <span>Next</span>
+          <span>${translateText("Next", overrideLanguage)}</span>
           ${loadIcon("arrowleft", "#000")}
         </div>
     </div>
@@ -40,13 +49,60 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
   var ctx = canvas.getContext("2d");
   var currentColor = "#EB144C";
 
+  const resizeCanvas = function () {
+    // Calculate canvas scale.
+    const vw = Math.max(
+      document.documentElement.clientWidth || 0,
+      window.innerWidth || 0
+    );
+    const vh = Math.max(
+      document.documentElement.clientHeight || 0,
+      window.innerHeight || 0
+    );
+
+    var ratio = 0;
+    var maxWidth = Math.min(vw - 60, 700);
+    var maxHeight = Math.min(vh - 200, 700);
+
+    // Landscape
+    /*if (vw > vh && maxWidth > 600) {
+      maxHeight = 600;
+      maxWidth = 520;
+    }
+    if (vw < vh && maxHeight > 600) {
+      maxHeight = 520;
+      maxWidth = 600;
+    }*/
+
+
+    var width = canvas.width;
+    var height = canvas.height;
+
+    if (width > maxWidth) {
+      ratio = maxWidth / width;
+      height = height * ratio;
+      width = width * ratio;
+    }
+
+    if (height > maxHeight) {
+      ratio = maxHeight / height;
+      width = width * ratio;
+      height = height * ratio;
+    }
+
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+  };
+
   const backButton = document.querySelector(".bb-feedback-dialog-header-back");
   backButton.addEventListener("click", function () {
+    window.removeEventListener("resize", resizeCanvas);
     onCancel();
   });
   const nextButton = document.querySelector(".bb-feedback-dialog-header-next");
   nextButton.addEventListener("click", function () {
-    onDone(canvas.toDataURL('image/png'));
+    window.removeEventListener("resize", resizeCanvas);
+    onDone(canvas.toDataURL("image/png"));
   });
 
   const colorItem = document.getElementById("bb-drawing-color");
@@ -78,9 +134,14 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
   image.onload = function () {
     ctx.canvas.width = this.width;
     ctx.canvas.height = this.height;
+
+    resizeCanvas();
+
     ctx.drawImage(this, 0, 0);
   };
   image.src = screenshot;
+
+  window.addEventListener("resize", resizeCanvas);
 
   var isIdle = true;
 

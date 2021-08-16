@@ -288,7 +288,7 @@ class BugBattle {
   static isOpened() {
     return this.getInstance().openedMenu;
   }
-  
+
   /**
    * Hides any open BugBattle dialogs.
    */
@@ -1740,7 +1740,8 @@ class BugBattle {
         function () {
           self.closeBugBattle(false);
           BugBattle.startFeedbackTypeSelection();
-        }
+        },
+        self.overrideLanguage
       );
       return;
     }

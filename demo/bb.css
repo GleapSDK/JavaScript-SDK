@@ -254,15 +254,13 @@
 }
 
 .bb-feedback-dialog-infoitem {
-  padding: 16px;
+  padding: 0px;
   margin: 32px;
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
   font-family: "Open Sans", sans-serif;
   color: #192027;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
 }
 
 .bb-feedback-form--hidden {
