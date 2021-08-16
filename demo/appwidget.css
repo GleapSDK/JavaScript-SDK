@@ -82,7 +82,67 @@
 .bb-drawing-container {
   display: flex;
   justify-content: center;
-  padding: 20px;
+  padding-top: 20px;
+  padding-bottom: 10px;
+}
+
+.bb-drawing-tools {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+}
+
+.bb-drawing-tool-item {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.bb-drawing-tool-action {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 11px;
+  cursor: pointer;
+}
+
+.bb-drawing-tool-action--disabled {
+  opacity: 0.2;
+  cursor: not-allowed;
+}
+
+.bb-drawing-tool-spacer {
+  background-color: #ddd;
+  width: 1px;
+  height: 44px;
+  margin: 0px 5px;
+}
+
+.bb-drawing-tool-item--active {
+  background-color: #398cfe;
+}
+
+.bb-drawing-tool-item svg,
+.bb-drawing-tool-item svg g {
+  fill: #192027;
+}
+
+.bb-drawing-tool-item--active svg,
+.bb-drawing-tool-item--active svg g {
+  fill: #fff;
+}
+
+.bb-drawing-tool-item svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .bb-drawing-coloritem {
@@ -93,20 +153,25 @@
   cursor: pointer;
 }
 
+.bb-drawing-coloritem--active {
+  border: 4px solid #00000033;
+}
+
 #bb-drawing-color {
-  position: relative;
-  width: 36px;
-  height: 36px;
+  width: 26px;
+  height: 26px;
   border-radius: 100%;
   box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 15%);
   cursor: pointer;
+  margin: 9px;
+  margin-left: 5px;
 }
 
 #bb-drawing-colorpopup {
   display: none;
-  position: absolute;
-  bottom: 50px;
-  left: 18px;
+  position: fixed;
+  bottom: 85px;
+  left: 50%;
   transform: translate(-50%, 0%);
   background: #fff;
   padding: 8px;
@@ -120,7 +185,7 @@
   width: auto;
 }
 
-@media only screen and (max-width: 767px) and (orientation:portrait) {
+@media only screen and (max-width: 767px) and (orientation: portrait) {
   .bb-feedback-dialog-drawing {
     max-width: calc(100% - 20px);
     width: 100%;

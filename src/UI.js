@@ -13,6 +13,9 @@ export const setColor = (color) => {
     .bb-feedback-dialog-header-button {
         color: ${color};
     }
+    .bb-drawing-tool-item--active {
+      background-color: ${color};
+    }
     .bb-screenshot-editor-borderlayer {
         border-color: ${color};
     }
