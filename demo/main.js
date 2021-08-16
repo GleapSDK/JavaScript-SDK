@@ -81,8 +81,6 @@ BugBattle.enableIntercomCompatibilityMode();
 BugBattle.enablePrivacyPolicy(false);
 BugBattle.setPrivacyPolicyUrl("htpp...");
 
-BugBattle.setMainColor("#398cfe");
-
 console.warn("DEMO!");
 console.log("HI!");
 
@@ -122,8 +120,6 @@ BugBattle.logEvent("Sample", {
 });
 
 BugBattle.setLanguage("en");
-
-console.error("Demo error");
 
 BugBattle.logEvent("User signed in", {
   userId: 1242,
