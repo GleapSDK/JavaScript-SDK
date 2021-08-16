@@ -11,10 +11,11 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
         <div class="bb-feedback-dialog-header-text">
             <div class="bb-feedback-dialog-header-title">Mark the bug</div>
         </div>
-        <div class="bb-feedback-dialog-header-next">
-        ${loadIcon("arrowleft", "#000")}
+          <div class="bb-feedback-dialog-header-next">
+          <span>Next</span>
+          ${loadIcon("arrowleft", "#000")}
         </div>
-    </div>    
+    </div>
     <div class="bb-feedback-dialog-body">
         <div class="bb-screenshot-editor-canv">
             <canvas id="bb-screenshot-editor-canvas" />
@@ -45,7 +46,7 @@ export const createScreenshotEditor = function (screenshot, onDone, onCancel) {
   });
   const nextButton = document.querySelector(".bb-feedback-dialog-header-next");
   nextButton.addEventListener("click", function () {
-    onDone();
+    onDone(canvas.toDataURL('image/jpeg', 0.8));
   });
 
   const colorItem = document.getElementById("bb-drawing-color");

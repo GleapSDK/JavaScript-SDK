@@ -1219,6 +1219,7 @@ class BugBattle {
       self.widgetCallback("sendFeedback", {
         type: self.feedbackType,
         formData: self.formData,
+        screenshot: self.screenshot,
       });
     } else {
       self.checkReplayLoaded();
@@ -1574,10 +1575,7 @@ class BugBattle {
       if (http.readyState === XMLHttpRequest.DONE) {
         if (http.status === 200 || http.status === 201) {
           self.notifyEvent("feedback-sent");
-          self.showSuccessMessage();
-          setTimeout(function () {
-            self.closeBugBattle();
-          }, 2500);
+          self.showSuccessAndClose();
         } else {
           self.showError();
         }
@@ -1608,6 +1606,14 @@ class BugBattle {
     }
 
     http.send(JSON.stringify(bugReportData));
+  }
+
+  showSuccessAndClose() {
+    const self = this;
+    self.showSuccessMessage();
+    setTimeout(function () {
+      self.closeBugBattle();
+    }, 2500);
   }
 
   showError() {
@@ -1725,8 +1731,10 @@ class BugBattle {
     if (this.screenshot) {
       createScreenshotEditor(
         this.screenshot,
-        function () {
-          self.closeBugBattle(false);
+        function (screenshot) {
+          // Update screenshot.
+          self.screenshot = screenshot;
+          self.closeModalUI();
           self.createBugReportingDialog(feedbackOptions);
         },
         function () {
