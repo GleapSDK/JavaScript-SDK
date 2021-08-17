@@ -273,6 +273,7 @@
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
+  line-height: 18px;
   font-family: "Open Sans", sans-serif;
   color: #192027;
 }
@@ -501,6 +502,7 @@
   font-size: 15px;
   padding-top: 20px;
   text-align: center;
+  line-height: 19px;
 }
 
 .bb-feedback-dialog-success {
@@ -570,6 +572,7 @@
   box-sizing: border-box;
   padding: 12px 19px;
   font-size: 15px;
+  line-height: 18px;
   font-weight: 600;
   color: #fff;
   text-align: center;
