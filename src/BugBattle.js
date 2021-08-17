@@ -327,7 +327,7 @@ class BugBattle {
 
     // Open screenshot
     if (instance.screenshotFeedbackOptions) {
-      instance.showMobileScreenshotEditor();
+      instance.showMobileScreenshotEditor(instance.screenshotFeedbackOptions);
       instance.screenshotFeedbackOptions = null;
     }
   }
@@ -1939,7 +1939,7 @@ class BugBattle {
     bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
   }
 
-  showMobileScreenshotEditor() {
+  showMobileScreenshotEditor(feedbackOptions) {
     const self = this;
     createScreenshotEditor(
       this.screenshot,
@@ -1947,7 +1947,7 @@ class BugBattle {
         // Update screenshot.
         self.screenshot = screenshot;
         self.closeModalUI();
-        self.createBugReportingDialog(self.screenshotFeedbackOptions);
+        self.createBugReportingDialog(feedbackOptions);
       },
       function () {
         self.closeBugBattle(false);
