@@ -1971,7 +1971,7 @@ class BugBattle {
         }
       },
       this.overrideLanguage,
-      !this.showMenu,
+      this.feedbackTypeActions.length > 0
     );
   }
 }
