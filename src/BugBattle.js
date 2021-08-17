@@ -1758,7 +1758,13 @@ class BugBattle {
       return;
     }
 
-    // Predefined screenshot set - show editor.
+    // Predefined screenshot set, show the editor.
+    if (this.screenshot) {
+      this.showMobileScreenshotEditor(feedbackOptions);
+      return;
+    }
+
+    // Fetch screenshot from native SDK.
     if (this.widgetOnly && this.widgetCallback) {
       if (this.widgetOnly && this.widgetCallback) {
         this.screenshotFeedbackOptions = feedbackOptions;
@@ -1965,7 +1971,7 @@ class BugBattle {
         }
       },
       this.overrideLanguage,
-      this.showMenu,
+      !this.showMenu,
     );
   }
 }
