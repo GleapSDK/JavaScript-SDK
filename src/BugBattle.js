@@ -524,6 +524,11 @@ class BugBattle {
    * @param {Number} daysDelayed
    */
   static autoPromptForRating(daysDelayed = 14) {
+    // Prevent for native SDK.
+    if (this.getInstance().widgetOnly) {
+      return;
+    }
+
     try {
       var ftv = localStorage.getItem("bb-ftv");
       if (!ftv) {
@@ -1174,7 +1179,7 @@ class BugBattle {
           self.closeBugBattle(false);
           BugBattle.startFeedbackTypeSelection();
         } else {
-          // Close bug battle
+          // Close
           self.closeBugBattle();
         }
       },
@@ -1950,10 +1955,17 @@ class BugBattle {
         self.createBugReportingDialog(feedbackOptions);
       },
       function () {
-        self.closeBugBattle(false);
-        BugBattle.startFeedbackTypeSelection();
+        if (self.feedbackTypeActions.length > 0) {
+          // Go back to menu
+          self.closeBugBattle(false);
+          BugBattle.startFeedbackTypeSelection();
+        } else {
+          // Close
+          self.closeBugBattle();
+        }
       },
-      this.overrideLanguage
+      this.overrideLanguage,
+      this.showMenu,
     );
   }
 }

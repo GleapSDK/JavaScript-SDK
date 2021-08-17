@@ -5,15 +5,16 @@ export const createScreenshotEditor = function (
   screenshot,
   onDone,
   onCancel,
-  overrideLanguage
+  overrideLanguage,
+  showMenu
 ) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
   elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadein'>
     <div class="bb-feedback-dialog-header bb-feedback-dialog-header--back">
-        <div class="bb-feedback-dialog-header-back">
+        ${showMenu ? `<div class="bb-feedback-dialog-header-back">
         ${loadIcon("arrowleft", "#fff")}
-        </div>
+        </div>` : ''}
         <div class="bb-feedback-dialog-header-text">
             <div class="bb-feedback-dialog-header-title">${translateText(
               "Mark the bug",
