@@ -597,6 +597,14 @@ class BugBattle {
   }
 
   /**
+   * Sets the customers name.
+   * @param {string} name
+   */
+   static setCustomerName(name) {
+    this.getInstance().customerInfo.name = name;
+  }
+
+  /**
    * Sets the customers info.
    * @param {string} customerInfo
    */
