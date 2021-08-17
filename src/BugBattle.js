@@ -54,6 +54,7 @@ class BugBattle {
   shortcutsEnabled = true;
   silentBugReport = false;
   initialized = false;
+  screenshotFeedbackOptions = null;
   customerInfo = {};
   welcomeIcon = "👋";
   feedbackButtonText = "Feedback";
@@ -320,13 +321,14 @@ class BugBattle {
    * Sets a custom screenshot
    * @param {*} screenshot
    */
-  static setScreenshot(screenshot, open = false) {
+  static setScreenshot(screenshot) {
     const instance = this.getInstance();
     instance.screenshot = screenshot;
 
     // Open screenshot
-    if (open) {
-      instance.showScreenshotEditor();
+    if (instance.screenshotFeedbackOptions) {
+      instance.showMobileScreenshotEditor();
+      instance.screenshotFeedbackOptions = null;
     }
   }
 
@@ -1754,6 +1756,7 @@ class BugBattle {
     // Predefined screenshot set - show editor.
     if (this.widgetOnly && this.widgetCallback) {
       if (this.widgetOnly && this.widgetCallback) {
+        this.screenshotFeedbackOptions = feedbackOptions;
         this.widgetCallback("requestScreenshot", {});
       }
       return;
@@ -1936,7 +1939,7 @@ class BugBattle {
     bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
   }
 
-  showScreenshotEditor() {
+  showMobileScreenshotEditor() {
     const self = this;
     createScreenshotEditor(
       this.screenshot,
@@ -1944,7 +1947,7 @@ class BugBattle {
         // Update screenshot.
         self.screenshot = screenshot;
         self.closeModalUI();
-        self.createBugReportingDialog(feedbackOptions);
+        self.createBugReportingDialog(self.screenshotFeedbackOptions);
       },
       function () {
         self.closeBugBattle(false);
