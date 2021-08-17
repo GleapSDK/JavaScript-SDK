@@ -88,6 +88,8 @@ class BugBattle {
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
   static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
   static FEEDBACK_BUTTON_CLASSIC = "BUTTON_CLASSIC";
+  static FEEDBACK_BUTTON_CLASSIC_LEFT = "BUTTON_CLASSIC_LEFT";
+  static FEEDBACK_BUTTON_CLASSIC_BOTTOM = "BUTTON_CLASSIC_BOTTOM";
   static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
 
   static FLOW_CRASH = {
@@ -600,7 +602,7 @@ class BugBattle {
    * Sets the customers name.
    * @param {string} name
    */
-   static setCustomerName(name) {
+  static setCustomerName(name) {
     this.getInstance().customerInfo.name = name;
   }
 
@@ -917,6 +919,7 @@ class BugBattle {
       // Inject privacy policy.
       if (instance.privacyPolicyEnabled) {
         var policyItem = {
+          name: "privacyPolicy",
           type: "privacypolicy",
           required: true,
           url: instance.privacyPolicyUrl,
@@ -1410,8 +1413,20 @@ class BugBattle {
 
     var elem = document.createElement("div");
     elem.className = "bb-feedback-button";
-    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
-      elem.innerHTML = `<div class="bb-feedback-button-classic">${translateText(
+    if (
+      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC ||
+      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT
+    ) {
+      elem.innerHTML = `<div class="bb-feedback-button-classic ${
+        this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT
+          ? "bb-feedback-button-classic--left"
+          : ""
+      }${
+        this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+          ? "bb-feedback-button-classic--bottom"
+          : ""
+      }">${translateText(
         this.feedbackButtonText,
         this.overrideLanguage
       )}</div>`;

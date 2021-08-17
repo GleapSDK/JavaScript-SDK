@@ -154,7 +154,11 @@ export const createWidgetDialog = function (
     elem.classList.add("bb-feedback-button--disabled");
   }
 
-  if (buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC) {
+  if (
+    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC ||
+    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT ||
+    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+  ) {
     elem.classList.add("bb-feedback-button--classic");
   }
 
