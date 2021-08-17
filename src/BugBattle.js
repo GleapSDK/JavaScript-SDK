@@ -320,9 +320,14 @@ class BugBattle {
    * Sets a custom screenshot
    * @param {*} screenshot
    */
-  static setScreenshot(screenshot) {
+  static setScreenshot(screenshot, open = false) {
     const instance = this.getInstance();
     instance.screenshot = screenshot;
+
+    // Open screenshot
+    if (open) {
+      instance.showScreenshotEditor();
+    }
   }
 
   /**
@@ -793,10 +798,6 @@ class BugBattle {
     instance.widgetOpened = true;
     instance.openedMenu = true;
     instance.updateFeedbackButtonState();
-
-    if (instance.widgetOnly && instance.widgetCallback) {
-      instance.widgetCallback("showingMenu", {});
-    }
 
     // Start feedback type dialog
     createFeedbackTypeDialog(
@@ -1751,27 +1752,10 @@ class BugBattle {
     }
 
     // Predefined screenshot set - show editor.
-    if (this.screenshot) {
-      createScreenshotEditor(
-        this.screenshot,
-        function (screenshot) {
-          // Update screenshot.
-          self.screenshot = screenshot;
-          self.closeModalUI();
-          self.createBugReportingDialog(feedbackOptions);
-        },
-        function () {
-          self.closeBugBattle(false);
-          BugBattle.startFeedbackTypeSelection();
-        },
-        self.overrideLanguage
-      );
-      return;
-    }
-
-    // Native SDK, process with screenshot editing.
     if (this.widgetOnly && this.widgetCallback) {
-      this.createBugReportingDialog(feedbackOptions);
+      if (this.widgetOnly && this.widgetCallback) {
+        this.widgetCallback("requestScreenshot", {});
+      }
       return;
     }
 
@@ -1950,6 +1934,24 @@ class BugBattle {
     bugReportingEditor.addEventListener("touchstart", touchstartEventHandler);
     bugReportingEditor.addEventListener("touchmove", touchMoveEventHandler);
     bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
+  }
+
+  showScreenshotEditor() {
+    const self = this;
+    createScreenshotEditor(
+      this.screenshot,
+      function (screenshot) {
+        // Update screenshot.
+        self.screenshot = screenshot;
+        self.closeModalUI();
+        self.createBugReportingDialog(feedbackOptions);
+      },
+      function () {
+        self.closeBugBattle(false);
+        BugBattle.startFeedbackTypeSelection();
+      },
+      this.overrideLanguage
+    );
   }
 }
 
