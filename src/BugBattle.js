@@ -21,10 +21,9 @@ import {
 } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
+import Session from "./Session";
 
 class BugBattle {
-  apiUrl = "https://api.bugbattle.io";
-  sdkKey = null;
   widgetOnly = false;
   widgetCallback = null;
   overrideLanguage = "";
@@ -345,7 +344,7 @@ class BugBattle {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, options) {
     const instance = this.getInstance();
 
     if (instance.initialized) {
@@ -354,7 +353,9 @@ class BugBattle {
     }
 
     instance.initialized = true;
-    instance.sdkKey = sdkKey;
+
+    Session.getInstance().sdkKey = sdkKey;
+    Session.getInstance().startSession(options);
 
     if (
       document.readyState === "complete" ||
@@ -524,33 +525,7 @@ class BugBattle {
    * @param {Number} daysDelayed
    */
   static autoPromptForRating(daysDelayed = 14) {
-    // Prevent for native SDK.
-    if (this.getInstance().widgetOnly) {
-      return;
-    }
-
-    try {
-      var ftv = localStorage.getItem("bb-ftv");
-      if (!ftv) {
-        ftv = new Date().toString();
-        localStorage.setItem("bb-ftv", ftv);
-      }
-
-      // Convert to date
-      ftv = new Date(ftv);
-
-      // Calculate date when to show the widget
-      var d = new Date();
-      d.setDate(d.getDate() - daysDelayed);
-
-      if (d >= ftv) {
-        const showAfter = 8000 + Math.floor(Math.random() * 8000);
-        setTimeout(() => {
-          localStorage.setItem("bb-ftv", new Date().toString());
-          BugBattle.startFlow(BugBattle.FLOW_RATING);
-        }, showAfter);
-      }
-    } catch (exp) {}
+    console.warn("@deprecated");
   }
 
   /**
@@ -603,19 +578,19 @@ class BugBattle {
   }
 
   /**
-   * Sets the customers email.
+   * @deprecated Sets the customers email.
    * @param {string} email
    */
   static setCustomerEmail(email) {
-    this.getInstance().customerInfo.email = email;
+    console.warn("setCustomerEmail @deprecated");
   }
 
   /**
-   * Sets the customers name.
+   * @deprecated Sets the customers name.
    * @param {string} name
    */
   static setCustomerName(name) {
-    this.getInstance().customerInfo.name = name;
+    console.warn("setCustomerName @deprecated");
   }
 
   /**
@@ -623,11 +598,7 @@ class BugBattle {
    * @param {string} customerInfo
    */
   static setCustomerInfo(customerInfo) {
-    if (!customerInfo) {
-      return;
-    }
-
-    this.getInstance().customerInfo = customerInfo;
+    console.warn("setCustomerInfo @deprecated");
   }
 
   /**
@@ -666,7 +637,7 @@ class BugBattle {
    * @param {string} apiUrl
    */
   static setApiUrl(apiUrl) {
-    this.getInstance().apiUrl = apiUrl;
+    Session.getInstance().apiUrl = apiUrl;
   }
 
   /**
@@ -743,7 +714,7 @@ class BugBattle {
     startRageClickDetector(function (target) {
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
-        BugBattle.sendSilentBugReport(null, "Rage click detected.");
+        BugBattle.sendSilentBugReport("Rage click detected.");
       } else {
         BugBattle.startFlow(BugBattle.FLOW_CRASH);
       }
@@ -772,19 +743,22 @@ class BugBattle {
 
   /**
    * Reports a bug silently
-   * @param {*} senderEmail
    * @param {*} description
    */
   static sendSilentBugReport(
-    senderEmail,
     description,
     priority = BugBattle.PRIORITY_MEDIUM
   ) {
     const instance = this.getInstance();
+    const sessionInstance = Session.getInstance();
+
+    if (!sessionInstance.ready) {
+      return;
+    }
 
     instance.formData = {};
-    if (senderEmail) {
-      instance.formData.reportedBy = senderEmail;
+    if (sessionInstance.session.email) {
+      instance.formData.reportedBy = sessionInstance.session.email;
     }
     if (description) {
       instance.formData.description = description;
@@ -800,6 +774,7 @@ class BugBattle {
    * Starts the feedback type selection flow.
    */
   static startFeedbackTypeSelection() {
+    const sessionInstance = Session.getInstance();
     const instance = this.getInstance();
     instance.stopBugReportingAnalytics();
     instance.widgetOpened = true;
@@ -814,7 +789,7 @@ class BugBattle {
       instance.poweredByHidden,
       function () {},
       `${translateText("Hi", instance.overrideLanguage)} ${
-        instance.customerInfo.name ? instance.customerInfo.name : ""
+        sessionInstance.session.name ? sessionInstance.session.name : ""
       } ${instance.welcomeIcon}`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
@@ -894,8 +869,13 @@ class BugBattle {
     feedbackOptions = this.FLOW_DEFAULT,
     silentBugReport = false
   ) {
+    const sessionInstance = Session.getInstance();
     const instance = this.getInstance();
     if (instance.currentlySendingBug) {
+      return;
+    }
+
+    if (!sessionInstance.ready) {
       return;
     }
 
@@ -911,16 +891,15 @@ class BugBattle {
       instance.widgetOpened = true;
     }
 
-    if (
-      instance.customerInfo.email &&
-      feedbackOptions.form &&
-      feedbackOptions.form.length > 0
-    ) {
+    if (feedbackOptions.form && feedbackOptions.form.length > 0) {
       // Search for email field
-      for (var i = 0; i < feedbackOptions.form.length; i++) {
-        var feedbackOption = feedbackOptions.form[i];
-        if (feedbackOption.name === "reportedBy") {
-          feedbackOption.defaultValue = instance.customerInfo.email;
+      console.log(sessionInstance.session);
+      if (sessionInstance.session.email) {
+        for (var i = 0; i < feedbackOptions.form.length; i++) {
+          var feedbackOption = feedbackOptions.form[i];
+          if (feedbackOption.name === "reportedBy") {
+            feedbackOption.defaultValue = sessionInstance.session.email;
+          }
         }
       }
 
@@ -1018,7 +997,7 @@ class BugBattle {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
           )}\n`;
-          BugBattle.sendSilentBugReport(null, errorMessage);
+          BugBattle.sendSilentBugReport(errorMessage);
         } else {
           BugBattle.startFlow(BugBattle.FLOW_CRASH);
         }
@@ -1373,11 +1352,8 @@ class BugBattle {
       }
     }, 1000);
 
-    if (!this.widgetOnly) {
-      this.injectFeedbackButton();
-    }
-
     if (this.widgetOnly) {
+      // App widget
       const self = this;
 
       if (self.feedbackTypeActions.length > 0) {
@@ -1385,6 +1361,11 @@ class BugBattle {
       } else {
         BugBattle.startFlow();
       }
+    } else {
+      // Web widget
+      Session.getInstance().setOnSessionReady(() => {
+        this.injectFeedbackButton();
+      });
     }
   }
 
@@ -1566,9 +1547,9 @@ class BugBattle {
   sendBugReportToServer(screenshotData) {
     const self = this;
     const http = new XMLHttpRequest();
-    http.open("POST", this.apiUrl + "/bugs");
+    http.open("POST", Session.getInstance().apiUrl + "/bugs");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    http.setRequestHeader("Api-Token", this.sdkKey);
+    Session.instance().injectSession(http);
     http.onerror = (error) => {
       if (self.silentBugReport) {
         self.closeBugBattle();

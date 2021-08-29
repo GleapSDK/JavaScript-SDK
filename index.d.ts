@@ -21,9 +21,11 @@ declare module "bugbattle" {
       action: () => void;
     }
 
-    function startBugReporting(feedbackOptions?: any, silentBugReport?: boolean): void;
+    function startBugReporting(
+      feedbackOptions?: any,
+      silentBugReport?: boolean
+    ): void;
     function sendSilentBugReport(
-      senderEmail: string,
       description: string,
       priority: "LOW" | "MEDIUM" | "HIGH"
     ): void;
