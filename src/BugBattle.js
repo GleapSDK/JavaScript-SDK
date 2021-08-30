@@ -893,7 +893,6 @@ class BugBattle {
 
     if (feedbackOptions.form && feedbackOptions.form.length > 0) {
       // Search for email field
-      console.log(sessionInstance.session);
       if (sessionInstance.session.email) {
         for (var i = 0; i < feedbackOptions.form.length; i++) {
           var feedbackOption = feedbackOptions.form[i];
@@ -1187,11 +1186,6 @@ class BugBattle {
 
     // Remember form items
     rememberForm(feedbackOptions.form);
-
-    // Check API key
-    if (!self.sdkKey) {
-      return alert(translateText("Wrong API key", self.overrideLanguage));
-    }
 
     window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
     toggleLoading(true);
@@ -1549,7 +1543,7 @@ class BugBattle {
     const http = new XMLHttpRequest();
     http.open("POST", Session.getInstance().apiUrl + "/bugs");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    Session.instance().injectSession(http);
+    Session.getInstance().injectSession(http);
     http.onerror = (error) => {
       if (self.silentBugReport) {
         self.closeBugBattle();
@@ -1616,7 +1610,7 @@ class BugBattle {
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
     }
-
+    
     http.send(JSON.stringify(bugReportData));
   }
 

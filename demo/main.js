@@ -5,7 +5,7 @@ BugBattle.setApiUrl("http://localhost:9000");
 BugBattle.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES", {
   userId: "1",
   userHash: "c9ca287ccb482cfd8c97e5abcbfed647a922b7e2f22023e96acfce889b6c8660",
-  email: "lukas@boehlerbrothers.com",
+  email: "lukas@bugbattle.io",
   name: "Lukas",
 });
 

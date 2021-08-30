@@ -5,8 +5,8 @@ export default class Session {
     id: null,
     hash: null,
     type: null,
-    name: '',
-    email: '',
+    name: "",
+    email: "",
   };
   ready = false;
   onSessionReady = null;
@@ -29,7 +29,15 @@ export default class Session {
     if (this.ready) {
       onSessionReady();
     }
-  }
+  };
+
+  injectSession = (http) => {
+    if (http) {
+      http.setRequestHeader("Api-Token", this.sdkKey);
+      http.setRequestHeader("Gleap-Id", this.session.id);
+      http.setRequestHeader("Gleap-Hash", this.session.hash);
+    }
+  };
 
   startSession = (data) => {
     const self = this;
@@ -100,11 +108,3 @@ export default class Session {
     });
   };
 }
-
-export const injectSession = (http) => {
-  if (http) {
-    http.setRequestHeader("Api-Token", this.sdkKey);
-    http.setRequestHeader("Gleap-Id", this.session.id);
-    http.setRequestHeader("Gleap-Hash", this.session.hash);
-  }
-};
