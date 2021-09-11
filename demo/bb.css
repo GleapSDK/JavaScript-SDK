@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap');
 
 .bb-feedback-dialog-container input,
 .bb-feedback-dialog-container label {
@@ -92,7 +92,7 @@
 }
 
 .bb-feedback-button-text-title {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   color: #666;
   line-height: 18px;
@@ -125,7 +125,7 @@
   background-color: #485BFF;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 16px;
   color: #fff;
   box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
@@ -157,10 +157,10 @@
 
 .bb-feedback-button .bb-logo-logo {
   position: absolute;
-  width: 40px;
-  height: 40px;
-  top: 10px;
-  left: 10px;
+  width: 38px;
+  height: 38px;
+  top: 11px;
+  left: 11px;
   object-fit: contain;
   animation-duration: 0.3s;
   animation-fill-mode: both;
@@ -271,7 +271,7 @@
   border-radius: 6px;
   font-size: 14px;
   line-height: 18px;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #192027;
 }
 
@@ -292,11 +292,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 37px;
+  padding: 35px;
   box-sizing: border-box;
   background-color: #485BFF;
   flex-direction: column;
-  padding-bottom: 75px;
+  padding-bottom: 70px;
   position: relative;
 }
 
@@ -313,11 +313,11 @@
   font-weight: normal;
   text-align: center;
   color: #fff;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   text-align: left;
-  margin-top: 20px;
+  margin-top: 15px;
   font-weight: normal;
-  font-size: 32px;
+  font-size: 28px;
   line-height: 36px;
 }
 
@@ -325,7 +325,7 @@
   font-weight: normal;
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   text-align: left;
   font-weight: normal;
   margin-top: 5px;
@@ -357,7 +357,7 @@
 }
 
 .bb-feedback-dialog-header-back:hover {
-  border-radius: 5px;
+  border-radius: 11px;
   cursor: pointer;
 }
 
@@ -372,7 +372,7 @@
 
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-text {
   flex-grow: 1;
-  padding-left: 16px;
+  padding-left: 8px;
 }
 
 .bb-feedback-dialog-header--backhidden .bb-feedback-dialog-header-text {
@@ -387,12 +387,12 @@
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-title {
   margin-top: 0px;
   line-height: 22px;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 18px;
 }
 
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-description {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   line-height: 18px;
   margin-top: 5px;
@@ -414,11 +414,11 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding: 12px;
+  padding: 9px;
   margin: 12px 25px;
   cursor: pointer;
   border: 1px solid transparent;
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: #fff;
   box-sizing: border-box;
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.05), 0px 1px 3px rgba(0, 0, 0, 0.1);
@@ -426,6 +426,7 @@
 
 .bb-feedback-type:hover {
   background-color: #fff;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1), 0px 1px 10px rgba(0, 0, 0, 0.1);
 }
 
 .bb-feedback-type-icon {
@@ -450,7 +451,7 @@
 }
 
 .bb-feedback-type-title {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 16px;
   line-height: 18px;
@@ -459,14 +460,14 @@
 }
 
 .bb-feedback-type-description {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #666;
   font-size: 14px;
   line-height: 16px;
 }
 
 .bb-feedback-elementtitle {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   text-align: left;
   margin-bottom: 8px;
@@ -476,7 +477,7 @@
 }
 
 .bb-feedback-elementtitle span {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 14px;
   text-align: left;
   margin-bottom: 8px;
@@ -487,7 +488,7 @@
 }
 
 .bb-feedback-dialog-info-text {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #666;
   font-size: 15px;
   padding-top: 20px;
@@ -540,14 +541,14 @@
 }
 
 .bb-feedback-inputgroup-text {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #192027;
   font-size: 16px;
   font-weight: normal;
 }
 
 .bb-feedback-inputgroup-label {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   padding: 0px;
   margin-bottom: 5px;
   color: #192027;
@@ -556,7 +557,7 @@
 }
 
 .bb-feedback-send-button {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: #485BFF;
   border-radius: 8px;
   box-sizing: border-box;
@@ -582,7 +583,7 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   width: auto;
   padding: 15px 12px;
   font-size: 14px;
@@ -971,7 +972,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-inputgroup textarea {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   outline: none;
   -webkit-appearance: none;
   -webkit-box-shadow: none;
@@ -994,7 +995,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-inputgroup--privacy-policy {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   padding: 8px 0px;
   font-size: 14px;
   flex-direction: row;
@@ -1008,7 +1009,7 @@ textarea.bb-feedback-required {
   margin-bottom: 0px;
   display: inline;
   text-decoration: underline;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #192027;
 }
 
@@ -1021,7 +1022,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   position: relative;
   padding-left: 2em;
   font-size: 14px;
@@ -1094,7 +1095,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-importance {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   margin: 20px;
   margin-bottom: -8px;
   font-weight: 600;
@@ -1108,7 +1109,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-poweredbycontainer {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -1119,12 +1120,12 @@ textarea.bb-feedback-required {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   padding-top: 0px;
-  padding-bottom: 20px;
-  margin-top: -12px;
+  padding-bottom: 22px;
+  margin-top: -10px;
 }
 
 .bb-feedback-poweredbycontainer span {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: normal;
   font-size: 13px;
   color: #59617D;
@@ -1157,7 +1158,7 @@ textarea.bb-feedback-required {
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   color: #da0e07;
   border: 1px solid #da0e07;
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
@@ -1255,7 +1256,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-screenshot-editor-drag-info {
-  font-family: "Open Sans", sans-serif;
+  font-family: 'Inter', sans-serif;
   position: absolute;
   top: -100px;
   left: -100px;

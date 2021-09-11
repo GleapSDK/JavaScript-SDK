@@ -73,9 +73,6 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-type-icon {
       background-color: ${primaryColor};
     }
-    .bb-feedback-type:hover {
-      box-shadow: 0px 0px 12px ${primaryColor}44, 0px 1px 3px ${primaryColor}11;
-    }
     .bb-feedback-inputgroup--privacy-policy
     [type="checkbox"]:not(:checked)
     + label:after,

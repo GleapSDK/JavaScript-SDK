@@ -13,8 +13,8 @@ body, html {
 
 .header {
     width: 100%;
-    background: linear-gradient(rgb(219, 234, 255) 0%, rgb(219, 234, 255) 80%, rgb(255, 255, 255) 80.001%, rgb(255, 255, 255) 100%);
-    min-height: 750px;
+    min-height: 500px;
+    background-color: #FFEEC2;
 }
 
 .header-container {
@@ -26,7 +26,7 @@ body, html {
 .header-container-image {
     max-width: 850px;
     margin: auto;
-    padding-top: 0px;
+    margin-top: -200px;
 }
 
 h1 {
@@ -43,8 +43,7 @@ h2 {
 }
 
 .logo {
-    width: 60%;
-    width: 200px;
+    width: 60px;
     height: auto;
     position: fixed;
     top: 40px;
