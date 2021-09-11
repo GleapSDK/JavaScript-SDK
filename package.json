@@ -1,6 +1,6 @@
 {
   "name": "bugbattle",
-  "version": "5.1.7",
+  "version": "6.0.0",
   "main": "build/index.js",
   "types": "index.d.ts",
   "scripts": {
@@ -14,8 +14,8 @@
     "type": "git",
     "url": "https://github.com/BugBattle/JavaScript-SDK"
   },
-  "author": "BugBattle <hello@bugbattle.io>",
-  "homepage": "https://www.bugbattle.io/",
+  "author": "Gleap <hello@gleap.io>",
+  "homepage": "https://www.gleap.io/",
   "keywords": [
     "javascript-bug-reporting",
     "bug",

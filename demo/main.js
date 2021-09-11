@@ -1,8 +1,5 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.setButtonType(BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM);
-BugBattle.setFeedbackButtonText("Hello 🚀");
-
 BugBattle.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES");
 
 BugBattle.logEvent("Booted");
@@ -10,28 +7,25 @@ BugBattle.logEvent("Booted");
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
   {
-    title: "Contact us",
-    description: "We are here to help.",
-    icon: "https://jssdk.bugbattle.io/res/support.svg",
-    actionFlow: BugBattle.FLOW_CONTACT,
+    title: "Report an issue",
+    description: "Found a bug? Let us know.",
+    icon: "https://i.ibb.co/CJV3jZ0/Subtract-1.png",
+    actionFlow: BugBattle.FLOW_DEFAULT,
+    color: '#F4CAC8',
   },
   {
-    title: "Rating",
+    title: "Contact us",
     description: "We are here to help.",
-    icon: "https://jssdk.bugbattle.io/res/support.svg",
-    actionFlow: BugBattle.FLOW_RATING,
+    icon: "https://i.ibb.co/WcWGJ6S/Subtract.png",
+    actionFlow: BugBattle.FLOW_CONTACT,
+    color: '#EFE2FF',
   },
   {
     title: "Request a feature",
     description: "Which feature would you like to see next?",
-    icon: "https://jssdk.bugbattle.io/res/star.svg",
+    icon: "https://i.ibb.co/qsmt9WR/Subtract-2.png",
     actionFlow: BugBattle.FLOW_FEATUREREQUEST,
-  },
-  {
-    title: "Report an issue",
-    description: "Found a bug? Let us know.",
-    icon: "https://jssdk.bugbattle.io/res/bug.svg",
-    actionFlow: BugBattle.FLOW_DEFAULT,
+    color: '#FFEEC2',
   },
 ]);
 
@@ -110,6 +104,8 @@ xhttpa.open(
 );
 xhttpa.send();
 
+BugBattle.setColors("#485BFF", "#EDEFFF", "#FFFFFF");
+
 BugBattle.setCustomerInfo({
   email: "lukas+test@boehlerbrothers.com",
   name: "Lukas",
@@ -127,6 +123,9 @@ BugBattle.logEvent("User signed in", {
   skillLevel: "🤩",
 });
 
+BugBattle.setButtonLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
+BugBattle.setLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
+
 setTimeout(() => {
   BugBattle.logEvent("User signed out", {
     userId: 1242,
@@ -138,5 +137,3 @@ setTimeout(() => {
 BugBattle.autoPromptForRating();
 
 BugBattle.showInfoPopup(true);
-
-BugBattle.setWelcomeIcon("");

@@ -4,7 +4,7 @@ import {
   createFeedbackTypeDialog,
   createWidgetDialog,
   loadIcon,
-  setColor,
+  injectColorCSS,
   setLoadingIndicatorProgress,
   toggleLoading,
   validatePoweredBy,
@@ -23,14 +23,14 @@ import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 
 class BugBattle {
-  apiUrl = "https://api.bugbattle.io";
+  apiUrl = "https://api.gleap.io";
   sdkKey = null;
   widgetOnly = false;
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
   privacyPolicyEnabled = false;
-  privacyPolicyUrl = "https://www.bugbattle.io/privacy-policy/";
+  privacyPolicyUrl = "https://www.gleap.io/privacy-policy/";
   actionLog = [];
   logArray = [];
   eventArray = [];
@@ -752,20 +752,35 @@ class BugBattle {
 
   /**
    * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
-   * @param {string} color
+   * @deprecated since version 6.0.0
    */
   static setMainColor(color) {
-    this.getInstance().mainColor = color;
+    BugBattle.setColors(color);
+  }
+
+  /**
+   * Sets a custom color scheme.
+   * @param {string} color
+   */
+  static setColors(primaryColor, headerColor, buttonColor) {
+    this.getInstance().mainColor = primaryColor;
+
+    if (!headerColor) {
+      headerColor = primaryColor;
+    }
+    if (!buttonColor) {
+      buttonColor = primaryColor;
+    }
 
     if (
       document.readyState === "complete" ||
       document.readyState === "loaded" ||
       document.readyState === "interactive"
     ) {
-      setColor(color);
+      injectColorCSS(primaryColor, headerColor, buttonColor);
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
-        setColor(color);
+        injectColorCSS(primaryColor, headerColor, buttonColor);
       });
     }
   }
@@ -989,7 +1004,7 @@ class BugBattle {
       };
       xhr.open(
         "GET",
-        "https://uptime.bugbattle.io/?url=" + encodeURIComponent(url),
+        "https://uptime.gleap.io/?url=" + encodeURIComponent(url),
         true
       );
       xhr.send();

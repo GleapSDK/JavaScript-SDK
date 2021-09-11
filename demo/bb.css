@@ -108,7 +108,7 @@
   width: 60px;
   height: 60px;
   border-radius: 60px;
-  background-color: #398cfe;
+  background-color: #485BFF;
   transition: box-shadow 0.3s ease-in-out;
   box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
   position: relative;
@@ -122,7 +122,7 @@
   transform-origin: 100% 50%;
   padding: 9px 20px;
   text-align: center;
-  background-color: #398cfe;
+  background-color: #485BFF;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
   font-family: "Open Sans", sans-serif;
@@ -157,13 +157,14 @@
 
 .bb-feedback-button .bb-logo-logo {
   position: absolute;
-  width: 34px;
-  height: 34px;
-  top: 13px;
-  left: 13px;
+  width: 40px;
+  height: 40px;
+  top: 10px;
+  left: 10px;
   object-fit: contain;
   animation-duration: 0.3s;
   animation-fill-mode: both;
+  animation-name: bbZoomIn;
 }
 
 .bb-feedback-button .bb-logo-arrowdown {
@@ -179,10 +180,6 @@
 
 .bb-feedback-button .bb-logo-arrowdown {
   animation-name: bbZoomOut;
-}
-
-.bb-feedback-button .bb-logo-logo {
-  animation-name: bbZoomIn;
 }
 
 .bb-feedback-button--sending .bb-logo-arrowdown {
@@ -249,7 +246,7 @@
   max-width: 375px;
   background-color: #fff;
   box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
+  border-radius: 20px;
   box-sizing: border-box;
   position: fixed;
   right: 16px;
@@ -273,6 +270,7 @@
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
+  line-height: 18px;
   font-family: "Open Sans", sans-serif;
   color: #192027;
 }
@@ -289,16 +287,15 @@
 }
 
 .bb-feedback-dialog-header {
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 37px;
   box-sizing: border-box;
-  background-color: #398cfe;
+  background-color: #485BFF;
   flex-direction: column;
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   padding-bottom: 75px;
   position: relative;
 }
@@ -317,11 +314,11 @@
   text-align: center;
   color: #fff;
   font-family: "Open Sans", sans-serif;
-  font-size: 28px;
   text-align: left;
   margin-top: 20px;
   font-weight: normal;
-  line-height: 30px;
+  font-size: 32px;
+  line-height: 36px;
 }
 
 .bb-feedback-dialog-header-description {
@@ -329,11 +326,11 @@
   text-align: center;
   color: rgba(255, 255, 255, 0.8);
   font-family: "Open Sans", sans-serif;
-  font-size: 15px;
   text-align: left;
-  font-weight: 100;
-  line-height: 18px;
+  font-weight: normal;
   margin-top: 5px;
+  font-size: 16px;
+  line-height: 19px;
 }
 
 .bb-feedback-dialog-header-logo svg,
@@ -361,7 +358,6 @@
 
 .bb-feedback-dialog-header-back:hover {
   border-radius: 5px;
-  background-color: rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
 
@@ -421,16 +417,11 @@
   padding: 12px;
   margin: 12px 25px;
   cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  border-radius: 4px;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
-  min-height: 81px;
+  border: 1px solid transparent;
+  border-radius: 10px;
   background-color: #fff;
   box-sizing: border-box;
-}
-
-.bb-feedback-type:first-of-type:hover {
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.05), 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .bb-feedback-type:hover {
@@ -441,7 +432,7 @@
   width: 44px;
   height: 44px;
   min-width: 44px;
-  background-color: #398cfe;
+  background-color: #485BFF;
   border-radius: 44px;
   margin-right: 12px;
   padding: 10px;
@@ -501,6 +492,7 @@
   font-size: 15px;
   padding-top: 20px;
   text-align: center;
+  line-height: 19px;
 }
 
 .bb-feedback-dialog-success {
@@ -565,11 +557,12 @@
 
 .bb-feedback-send-button {
   font-family: "Open Sans", sans-serif;
-  background-color: #398cfe;
+  background-color: #485BFF;
   border-radius: 8px;
   box-sizing: border-box;
   padding: 12px 19px;
   font-size: 15px;
+  line-height: 18px;
   font-weight: 600;
   color: #fff;
   text-align: center;
@@ -1049,7 +1042,7 @@ textarea.bb-feedback-required {
   top: 0;
   width: 1.4em;
   height: 1.4em;
-  border: 1px solid #aaa;
+  border: 1px solid #59617D;
   background: #fff;
   border-radius: 0.2em;
   -webkit-transition: all 0.275s;
@@ -1067,7 +1060,7 @@ textarea.bb-feedback-required {
   top: 0.525em;
   left: 0.18em;
   font-size: 1.375em;
-  color: #398cfe;
+  color: #485BFF;
   line-height: 0;
   -webkit-transition: all 0.2s;
   transition: all 0.2s;
@@ -1121,18 +1114,20 @@ textarea.bb-feedback-required {
   margin-bottom: 0px;
   cursor: pointer;
   margin: 0px;
-  padding: 12px 0px;
+  padding: 25px 25px;
   background-color: rgb(255, 255, 255);
-  box-shadow: rgb(0 0 0 / 4%) 0px -10px 10px 1px;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  padding-top: 0px;
+  padding-bottom: 20px;
+  margin-top: -12px;
 }
 
 .bb-feedback-poweredbycontainer span {
   font-family: "Open Sans", sans-serif;
   font-weight: normal;
   font-size: 13px;
-  color: #aaa;
+  color: #59617D;
 }
 
 .bb-feedback-poweredbycontainer svg {
@@ -1233,7 +1228,7 @@ textarea.bb-feedback-required {
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
-  border: 5px solid #398cfe;
+  border: 5px solid #485BFF;
   cursor: crosshair;
   z-index: 916777272;
   box-sizing: border-box;
@@ -1251,7 +1246,7 @@ textarea.bb-feedback-required {
   left: -16px;
   width: 16px;
   height: 16px;
-  background-color: #398cfe;
+  background-color: #485BFF;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 100%;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
@@ -1264,7 +1259,7 @@ textarea.bb-feedback-required {
   position: absolute;
   top: -100px;
   left: -100px;
-  background-color: #398cfe;
+  background-color: #485BFF;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
@@ -1283,7 +1278,7 @@ textarea.bb-feedback-required {
   left: 0px;
   width: 0px;
   height: 0px;
-  border: 5px solid #398cfe;
+  border: 5px solid #485BFF;
   box-sizing: border-box;
   z-index: 916777269;
 }
