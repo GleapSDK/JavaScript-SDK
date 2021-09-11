@@ -396,8 +396,9 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     }
 
     // Fix base node
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + "/";
     const baseNode = window.document.createElement("base");
-    baseNode.href = window.location.origin;
+    baseNode.href = baseUrl;
     const head = clone.querySelector("head");
     head.insertBefore(baseNode, head.firstChild);
 
@@ -420,7 +421,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
       resolve({
         html: html,
-        baseUrl: window.location.origin,
+        baseUrl: baseUrl,
         x: snapshotPosition.x,
         y: snapshotPosition.y,
         width: window.innerWidth,
