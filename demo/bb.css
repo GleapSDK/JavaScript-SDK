@@ -1109,7 +1109,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-poweredbycontainer {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   align-items: center;
   margin-top: 0px;
   margin-bottom: 0px;
@@ -1347,6 +1347,11 @@ textarea.bb-feedback-required {
     animation-duration: 0s;
     animation-fill-mode: both;
     animation-name: none;
+  }
+  .bb-feedback-inputgroup textarea,
+  .bb-feedback-inputgroup > input,
+  .bb-feedback-inputgroup input {
+      font-size: 16px;
   }
 }
 

@@ -1,6 +1,6 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.setApiUrl("http://localhost:9000");
+// BugBattle.setApiUrl("http://localhost:9000");
 
 BugBattle.setColors("#485BFF", "#EDEFFF", "#FFFFFF");
 
