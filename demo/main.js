@@ -1,8 +1,23 @@
 const BugBattle = window.BugBattle.default;
 
-BugBattle.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES");
+BugBattle.setApiUrl("http://localhost:9000");
 
-BugBattle.logEvent("Booted");
+BugBattle.setColors("#485BFF", "#EDEFFF", "#FFFFFF");
+
+BugBattle.setCustomerInfo({
+  email: "lukas+test@boehlerbrothers.com",
+  name: "Lukas",
+});
+
+BugBattle.setButtonLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
+BugBattle.setLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
+
+BugBattle.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES", {
+  userId: "1",
+  userHash: "c9ca287ccb482cfd8c97e5abcbfed647a922b7e2f22023e96acfce889b6c8660",
+  email: "lukas@bugbattle.io",
+  name: "Lukas",
+});
 
 // Sample for feedback type options
 BugBattle.setFeedbackTypeOptions([
@@ -61,79 +76,3 @@ BugBattle.attachCustomData({
   test1: "Battle",
   data2: "Unicorn",
 });
-
-BugBattle.logEvent("Booted");
-
-BugBattle.enableRageClickDetector();
-
-// Disable shortcuts
-BugBattle.enableShortcuts(true);
-
-BugBattle.enableIntercomCompatibilityMode();
-
-// Turn the privacy policy check on or off.
-BugBattle.enablePrivacyPolicy(false);
-BugBattle.setPrivacyPolicyUrl("htpp...");
-
-console.warn("DEMO!");
-console.log("HI!");
-
-var xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function () {
-  if (this.readyState == 4 && this.status == 200) {
-    console.log(this.responseText);
-  }
-};
-xhttp.open(
-  "GET",
-  "https://run.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
-  true
-);
-xhttp.send();
-
-var xhttpa = new XMLHttpRequest();
-xhttpa.onreadystatechange = function () {
-  if (this.readyState == 4 && this.status == 200) {
-    console.log(this.responseText);
-  }
-};
-xhttpa.open(
-  "GET",
-  "https://runa.mocky.io/v3/274ec30c-eeba-4248-b605-ace31b7e3b52",
-  true
-);
-xhttpa.send();
-
-BugBattle.setColors("#485BFF", "#EDEFFF", "#FFFFFF");
-
-BugBattle.setCustomerInfo({
-  email: "lukas+test@boehlerbrothers.com",
-  name: "Lukas",
-});
-
-BugBattle.logEvent("Sample", {
-  userId: 1234,
-});
-
-BugBattle.setLanguage("en");
-
-BugBattle.logEvent("User signed in", {
-  userId: 1242,
-  name: "Isabella",
-  skillLevel: "🤩",
-});
-
-BugBattle.setButtonLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
-BugBattle.setLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
-
-setTimeout(() => {
-  BugBattle.logEvent("User signed out", {
-    userId: 1242,
-    name: "Isabella",
-    skillLevel: "🤩",
-  });
-}, 5000);
-
-BugBattle.autoPromptForRating();
-
-BugBattle.showInfoPopup(true);
