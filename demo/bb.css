@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap");
 
 .bb-feedback-dialog-container input,
 .bb-feedback-dialog-container label {
@@ -92,7 +92,7 @@
 }
 
 .bb-feedback-button-text-title {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   color: #666;
   line-height: 18px;
@@ -108,7 +108,7 @@
   width: 60px;
   height: 60px;
   border-radius: 60px;
-  background-color: #485BFF;
+  background-color: #ffffff;
   transition: box-shadow 0.3s ease-in-out;
   box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
   position: relative;
@@ -122,10 +122,10 @@
   transform-origin: 100% 50%;
   padding: 9px 20px;
   text-align: center;
-  background-color: #485BFF;
+  background-color: #485bff;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 16px;
   color: #fff;
   box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
@@ -266,12 +266,12 @@
 
 .bb-feedback-dialog-infoitem {
   padding: 0px;
-  margin: 32px;
-  margin-bottom: -16px;
+  margin: 25px;
+  margin-bottom: -5px;
   border-radius: 6px;
   font-size: 14px;
   line-height: 18px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #192027;
 }
 
@@ -280,7 +280,7 @@
 }
 
 .bb-feedback-form {
-  margin: 32px;
+  margin: 25px;
   margin-bottom: 22px;
   position: relative;
   flex-grow: 1;
@@ -294,7 +294,7 @@
   justify-content: center;
   padding: 35px;
   box-sizing: border-box;
-  background-color: #485BFF;
+  background-color: #edefff;
   flex-direction: column;
   padding-bottom: 70px;
   position: relative;
@@ -312,8 +312,8 @@
 .bb-feedback-dialog-header-title {
   font-weight: normal;
   text-align: center;
-  color: #fff;
-  font-family: 'Inter', sans-serif;
+  color: #192027;
+  font-family: "Inter", sans-serif;
   text-align: left;
   margin-top: 15px;
   font-weight: normal;
@@ -324,8 +324,8 @@
 .bb-feedback-dialog-header-description {
   font-weight: normal;
   text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  font-family: 'Inter', sans-serif;
+  color: #192027ad;
+  font-family: "Inter", sans-serif;
   text-align: left;
   font-weight: normal;
   margin-top: 5px;
@@ -361,6 +361,10 @@
   cursor: pointer;
 }
 
+.bb-feedback-dialog-header-back:hover {
+  background-color: #00000011;
+}   
+
 .bb-feedback-dialog-header--back {
   display: flex;
   flex-direction: row;
@@ -387,12 +391,12 @@
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-title {
   margin-top: 0px;
   line-height: 22px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 18px;
 }
 
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-description {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   line-height: 18px;
   margin-top: 5px;
@@ -433,7 +437,7 @@
   width: 44px;
   height: 44px;
   min-width: 44px;
-  background-color: #485BFF;
+  background-color: #485bff;
   border-radius: 44px;
   margin-right: 12px;
   padding: 10px;
@@ -451,7 +455,7 @@
 }
 
 .bb-feedback-type-title {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: 600;
   font-size: 16px;
   line-height: 18px;
@@ -460,14 +464,14 @@
 }
 
 .bb-feedback-type-description {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #666;
   font-size: 14px;
   line-height: 16px;
 }
 
 .bb-feedback-elementtitle {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   text-align: left;
   margin-bottom: 8px;
@@ -477,7 +481,7 @@
 }
 
 .bb-feedback-elementtitle span {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   text-align: left;
   margin-bottom: 8px;
@@ -488,7 +492,7 @@
 }
 
 .bb-feedback-dialog-info-text {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #666;
   font-size: 15px;
   padding-top: 20px;
@@ -541,14 +545,14 @@
 }
 
 .bb-feedback-inputgroup-text {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #192027;
   font-size: 16px;
   font-weight: normal;
 }
 
 .bb-feedback-inputgroup-label {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 0px;
   margin-bottom: 5px;
   color: #192027;
@@ -557,8 +561,8 @@
 }
 
 .bb-feedback-send-button {
-  font-family: 'Inter', sans-serif;
-  background-color: #485BFF;
+  font-family: "Inter", sans-serif;
+  background-color: #485bff;
   border-radius: 8px;
   box-sizing: border-box;
   padding: 12px 19px;
@@ -583,7 +587,7 @@
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   width: auto;
   padding: 15px 12px;
   font-size: 14px;
@@ -972,7 +976,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-inputgroup textarea {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   outline: none;
   -webkit-appearance: none;
   -webkit-box-shadow: none;
@@ -995,7 +999,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-inputgroup--privacy-policy {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   padding: 8px 0px;
   font-size: 14px;
   flex-direction: row;
@@ -1009,7 +1013,7 @@ textarea.bb-feedback-required {
   margin-bottom: 0px;
   display: inline;
   text-decoration: underline;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #192027;
 }
 
@@ -1022,7 +1026,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   position: relative;
   padding-left: 2em;
   font-size: 14px;
@@ -1043,7 +1047,7 @@ textarea.bb-feedback-required {
   top: 0;
   width: 1.4em;
   height: 1.4em;
-  border: 1px solid #59617D;
+  border: 1px solid #59617d;
   background: #fff;
   border-radius: 0.2em;
   -webkit-transition: all 0.275s;
@@ -1061,7 +1065,7 @@ textarea.bb-feedback-required {
   top: 0.525em;
   left: 0.18em;
   font-size: 1.375em;
-  color: #485BFF;
+  color: #485bff;
   line-height: 0;
   -webkit-transition: all 0.2s;
   transition: all 0.2s;
@@ -1095,7 +1099,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-importance {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   margin: 20px;
   margin-bottom: -8px;
   font-weight: 600;
@@ -1125,10 +1129,10 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-poweredbycontainer span {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-weight: normal;
   font-size: 13px;
-  color: #59617D;
+  color: #59617d;
 }
 
 .bb-feedback-poweredbycontainer svg {
@@ -1158,7 +1162,7 @@ textarea.bb-feedback-required {
   margin-bottom: -16px;
   border-radius: 6px;
   font-size: 14px;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   color: #da0e07;
   border: 1px solid #da0e07;
   box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
@@ -1229,7 +1233,7 @@ textarea.bb-feedback-required {
   width: 100vw;
   height: 100vh;
   height: -webkit-fill-available;
-  border: 5px solid #485BFF;
+  border: 5px solid #485bff;
   cursor: crosshair;
   z-index: 916777272;
   box-sizing: border-box;
@@ -1247,7 +1251,7 @@ textarea.bb-feedback-required {
   left: -16px;
   width: 16px;
   height: 16px;
-  background-color: #485BFF;
+  background-color: #485bff;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 100%;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
@@ -1256,11 +1260,11 @@ textarea.bb-feedback-required {
 }
 
 .bb-screenshot-editor-drag-info {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   position: absolute;
   top: -100px;
   left: -100px;
-  background-color: #485BFF;
+  background-color: #485bff;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   box-sizing: border-box;
@@ -1279,7 +1283,7 @@ textarea.bb-feedback-required {
   left: 0px;
   width: 0px;
   height: 0px;
-  border: 5px solid #485BFF;
+  border: 5px solid #485bff;
   box-sizing: border-box;
   z-index: 916777269;
 }
@@ -1351,7 +1355,7 @@ textarea.bb-feedback-required {
   .bb-feedback-inputgroup textarea,
   .bb-feedback-inputgroup > input,
   .bb-feedback-inputgroup input {
-      font-size: 16px;
+    font-size: 16px;
   }
 }
 

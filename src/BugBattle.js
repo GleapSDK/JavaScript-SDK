@@ -284,6 +284,51 @@ class BugBattle {
   }
 
   /**
+   * Main constructor
+   */
+  constructor() {
+    this.init();
+  }
+
+  /**
+   * Initializes the SDK
+   * @param {*} sdkKey
+   */
+  static initialize(sdkKey, options) {
+    const instance = this.getInstance();
+
+    if (instance.initialized) {
+      console.warn("Bugbattle already initialized.");
+      return;
+    }
+
+    instance.initialized = true;
+
+    Session.getInstance().sdkKey = sdkKey;
+    Session.getInstance().startSession(options);
+
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
+    ) {
+      instance.checkForInitType();
+    } else {
+      document.addEventListener("DOMContentLoaded", function (event) {
+        instance.checkForInitType();
+      });
+    }
+  }
+
+  /**
+   * Update user data
+   * @param {*} data
+   */
+  static updateUserData(data) {
+    Session.getInstance().startSession(data);
+  }
+
+  /**
    * Widget opened status
    * @returns {boolean} isOpened
    */
@@ -341,42 +386,9 @@ class BugBattle {
   }
 
   /**
-   * Initializes the SDK
-   * @param {*} sdkKey
+   * Enable replays
+   * @param {*} enabled
    */
-  static initialize(sdkKey, options) {
-    const instance = this.getInstance();
-
-    if (instance.initialized) {
-      console.warn("Bugbattle already initialized.");
-      return;
-    }
-
-    instance.initialized = true;
-
-    Session.getInstance().sdkKey = sdkKey;
-    Session.getInstance().startSession(options);
-
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
-      instance.checkForInitType();
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
-        instance.checkForInitType();
-      });
-    }
-  }
-
-  /**
-   * Main constructor
-   */
-  constructor() {
-    this.init();
-  }
-
   static enableReplays(enabled) {
     const instance = this.getInstance();
 
@@ -480,10 +492,18 @@ class BugBattle {
     this.getInstance().shortcutsEnabled = enabled;
   }
 
+  /**
+   * Enable Intercom compatibility mode
+   */
   static enableIntercomCompatibilityMode() {
     this.getInstance().enableIntercomCompatibilityMode();
   }
 
+  /**
+   * Show or hide the feedback button
+   * @param {*} show
+   * @returns
+   */
   static showFeedbackButton(show) {
     const feedbackButton = this.getInstance().feedbackButton;
     if (!feedbackButton) {
@@ -494,29 +514,6 @@ class BugBattle {
       feedbackButton.style.display = "flex";
     } else {
       feedbackButton.style.display = "none";
-    }
-  }
-
-  enableIntercomCompatibilityMode(retries = 0) {
-    if (window.Intercom) {
-      Intercom("onShow", function () {
-        BugBattle.showFeedbackButton(false);
-      });
-      Intercom("onHide", function () {
-        BugBattle.showFeedbackButton(true);
-      });
-      Intercom("hide");
-      Intercom("update", {
-        hide_default_launcher: true,
-      });
-    } else {
-      if (retries > 10) {
-        return;
-      } else {
-        setTimeout(() => {
-          this.enableIntercomCompatibilityMode(++retries);
-        }, 1000);
-      }
     }
   }
 
@@ -855,28 +852,6 @@ class BugBattle {
     this.getInstance().feedbackTypeActions = feedbackTypeOptions;
   }
 
-  logEvent(name, data) {
-    if (this.eventArray.length > 1000) {
-      this.eventArray.shift();
-    }
-
-    let log = {
-      name,
-      date: new Date(),
-    };
-    if (data) {
-      log.data = data;
-    }
-    this.eventArray.push(log);
-  }
-
-  stopBugReportingAnalytics() {
-    this.networkIntercepter.setStopped(true);
-    if (this.replay && !this.replay.stopped) {
-      this.replay.stop(!this.isLiveSite);
-    }
-  }
-
   /**
    * Starts the bug reporting flow.
    */
@@ -959,6 +934,51 @@ class BugBattle {
     }
 
     instance.updateFeedbackButtonState();
+  }
+
+  enableIntercomCompatibilityMode(retries = 0) {
+    if (window.Intercom) {
+      Intercom("onShow", function () {
+        BugBattle.showFeedbackButton(false);
+      });
+      Intercom("onHide", function () {
+        BugBattle.showFeedbackButton(true);
+      });
+      Intercom("hide");
+      Intercom("update", {
+        hide_default_launcher: true,
+      });
+    } else {
+      if (retries > 10) {
+        return;
+      } else {
+        setTimeout(() => {
+          this.enableIntercomCompatibilityMode(++retries);
+        }, 1000);
+      }
+    }
+  }
+
+  logEvent(name, data) {
+    if (this.eventArray.length > 1000) {
+      this.eventArray.shift();
+    }
+
+    let log = {
+      name,
+      date: new Date(),
+    };
+    if (data) {
+      log.data = data;
+    }
+    this.eventArray.push(log);
+  }
+
+  stopBugReportingAnalytics() {
+    this.networkIntercepter.setStopped(true);
+    if (this.replay && !this.replay.stopped) {
+      this.replay.stop(!this.isLiveSite);
+    }
   }
 
   checkOnlineStatus(url) {
@@ -1406,7 +1426,7 @@ class BugBattle {
     if (self.customButtonLogoUrl) {
       buttonIcon = `<img class="bb-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
     } else {
-      buttonIcon = loadIcon("bblogo", "#fff");
+      buttonIcon = loadIcon("bblogo", "#192027");
     }
 
     var elem = document.createElement("div");
@@ -1431,7 +1451,7 @@ class BugBattle {
     } else {
       elem.innerHTML = `${constShoutoutText}<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
-        "#fff"
+        "#192027"
       )}</div>`;
     }
 
@@ -1625,7 +1645,7 @@ class BugBattle {
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
     }
-    
+
     http.send(JSON.stringify(bugReportData));
   }
 
