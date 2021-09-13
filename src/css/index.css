@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap');
 
 .bb-feedback-dialog-container input,
 .bb-feedback-dialog-container label {
@@ -157,13 +157,14 @@
 
 .bb-feedback-button .bb-logo-logo {
   position: absolute;
-  width: 34px;
-  height: 34px;
-  top: 13px;
-  left: 13px;
+  width: 38px;
+  height: 38px;
+  top: 11px;
+  left: 11px;
   object-fit: contain;
   animation-duration: 0.3s;
   animation-fill-mode: both;
+  animation-name: bbZoomIn;
 }
 
 .bb-feedback-button .bb-logo-arrowdown {
@@ -179,10 +180,6 @@
 
 .bb-feedback-button .bb-logo-arrowdown {
   animation-name: bbZoomOut;
-}
-
-.bb-feedback-button .bb-logo-logo {
-  animation-name: bbZoomIn;
 }
 
 .bb-feedback-button--sending .bb-logo-arrowdown {
@@ -249,7 +246,7 @@
   max-width: 375px;
   background-color: #fff;
   box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.3);
-  border-radius: 24px;
+  border-radius: 20px;
   box-sizing: border-box;
   position: fixed;
   right: 16px;
@@ -290,16 +287,16 @@
 }
 
 .bb-feedback-dialog-header {
-  border-top-left-radius: 24px;
-  border-top-right-radius: 24px;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 37px;
+  padding: 35px;
   box-sizing: border-box;
   background-color: #485BFF;
   flex-direction: column;
-  padding-bottom: 75px;
+  padding-bottom: 70px;
   position: relative;
 }
 
@@ -318,10 +315,10 @@
   color: #fff;
   font-family: 'Inter', sans-serif;
   text-align: left;
-  margin-top: 20px;
+  margin-top: 15px;
   font-weight: normal;
-  font-size: 36px;
-  line-height: 42px;
+  font-size: 28px;
+  line-height: 36px;
 }
 
 .bb-feedback-dialog-header-description {
@@ -360,8 +357,7 @@
 }
 
 .bb-feedback-dialog-header-back:hover {
-  border-radius: 5px;
-  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 11px;
   cursor: pointer;
 }
 
@@ -376,7 +372,7 @@
 
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-text {
   flex-grow: 1;
-  padding-left: 16px;
+  padding-left: 8px;
 }
 
 .bb-feedback-dialog-header--backhidden .bb-feedback-dialog-header-text {
@@ -418,23 +414,19 @@
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  padding: 12px;
+  padding: 9px;
   margin: 12px 25px;
   cursor: pointer;
-  border: 1px solid rgba(0, 0, 0, 0.09);
-  border-radius: 4px;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
-  min-height: 81px;
+  border: 1px solid transparent;
+  border-radius: 12px;
   background-color: #fff;
   box-sizing: border-box;
-}
-
-.bb-feedback-type:first-of-type:hover {
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.05), 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .bb-feedback-type:hover {
   background-color: #fff;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1), 0px 1px 10px rgba(0, 0, 0, 0.1);
 }
 
 .bb-feedback-type-icon {
@@ -1051,7 +1043,7 @@ textarea.bb-feedback-required {
   top: 0;
   width: 1.4em;
   height: 1.4em;
-  border: 1px solid #aaa;
+  border: 1px solid #59617D;
   background: #fff;
   border-radius: 0.2em;
   -webkit-transition: all 0.275s;
@@ -1123,17 +1115,20 @@ textarea.bb-feedback-required {
   margin-bottom: 0px;
   cursor: pointer;
   margin: 0px;
-  padding: 12px 0px;
+  padding: 25px 25px;
   background-color: rgb(255, 255, 255);
-  border-bottom-left-radius: 24px;
-  border-bottom-right-radius: 24px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  padding-top: 0px;
+  padding-bottom: 22px;
+  margin-top: -10px;
 }
 
 .bb-feedback-poweredbycontainer span {
   font-family: 'Inter', sans-serif;
   font-weight: normal;
   font-size: 13px;
-  color: #aaa;
+  color: #59617D;
 }
 
 .bb-feedback-poweredbycontainer svg {
@@ -1352,6 +1347,11 @@ textarea.bb-feedback-required {
     animation-duration: 0s;
     animation-fill-mode: both;
     animation-name: none;
+  }
+  .bb-feedback-inputgroup textarea,
+  .bb-feedback-inputgroup > input,
+  .bb-feedback-inputgroup input {
+      font-size: 16px;
   }
 }
 
