@@ -4,11 +4,6 @@ const BugBattle = window.BugBattle.default;
 
 BugBattle.setColors("#485BFF", "#EDEFFF", "#FFFFFF");
 
-BugBattle.setCustomerInfo({
-  email: "lukas+test@boehlerbrothers.com",
-  name: "Lukas",
-});
-
 BugBattle.setButtonLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
 BugBattle.setLogoUrl("https://i.ibb.co/wMGvWqh/Gleap-Logo.png");
 

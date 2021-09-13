@@ -68,6 +68,15 @@ export default class Session {
         http.setRequestHeader("User-Hash", data.userHash);
       }
 
+      // Create user data.
+      var userData = {};
+      if (data && data.name) {
+        userData['name'] = data.name;
+      }
+      if (data && data.email) {
+        userData['email'] = data.email;
+      }
+
       http.onerror = (error) => {
         reject();
       };
@@ -100,10 +109,7 @@ export default class Session {
         }
       };
       http.send(
-        JSON.stringify({
-          name: data.name,
-          email: data.email,
-        })
+        JSON.stringify(userData)
       );
     });
   };
