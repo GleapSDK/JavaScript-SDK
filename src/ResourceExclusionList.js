@@ -5,7 +5,6 @@ const blacklist = [
   "//ajax.googleapis.com",
   "//use.typekit.net",
   ".amazonaws.com",
-  "//jssdk.bugbattle.io",
   "//jssdk.gleap.io",
   ".gstatic.com",
 ];

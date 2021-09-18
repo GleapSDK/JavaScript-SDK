@@ -1,5 +1,5 @@
 export default class Session {
-  apiUrl = "https://api.bugbattle.io";
+  apiUrl = "https://api.gleap.io";
   sdkKey = null;
   session = {
     id: null,

@@ -6,11 +6,11 @@ The Bugbattle SDK for JavScript is the easiest way to integrate Bugbattle into y
 
 ## 📖 Docs & Examples
 
-Checkout our [documentation](https://docs.bugbattle.io/docs/javascript-sdk) for full reference.
+Checkout our [documentation](https://docs.gleap.io/docs/javascript-sdk) for full reference.
 
 ## ❤️ Demo
 
-[https://jssdk.bugbattle.io/demo](https://jssdk.bugbattle.io/demo)
+[https://jssdk.gleap.io/demo](https://jssdk.gleap.io/demo)
 
 ## ⭐️ Features
 
@@ -23,7 +23,7 @@ Checkout our [documentation](https://docs.bugbattle.io/docs/javascript-sdk) for 
 
 ## 🚀 Getting started
 
-1.) Register an account at [www.bugbattle.io](https://www.bugbattle.io). It's free and takes just a few seconds.
+1.) Register an account at [www.gleap.io](https://www.gleap.io). It's free and takes just a few seconds.
 
 2.) Include the BugBattle JS SDK within your apps.
 
@@ -43,13 +43,13 @@ import BugBattle from 'bugbattle';
 
 Add the following lines to your website's / webapp's ```<head>```-tag:
 ```
-<script src="https://jssdk.bugbattle.io/latest/index.js"></script>
+<script src="https://jssdk.gleap.io/latest/index.js"></script>
 <script>let BugBattle = window.BugBattle.default;</script>
 ```
 
 ### Initialize the SDK
 
-Add the following code to to initialize the BugBattle JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Bugbattle dashboard](https://app.bugbattle.io).
+Add the following code to to initialize the BugBattle JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Bugbattle dashboard](https://app.gleap.io).
 
 ```
 BugBattle.initialize("YOUR-SDK-TOKEN-HERE", BugBattle.FEEDBACK_BUTTON);
@@ -67,4 +67,4 @@ Congrats, you are now all set! Report your first bug by using the feedback butto
 
 ## 🤝 Need help?
 
-We are here to help! hello@bugbattle.io
+We are here to help! hello@gleap.io
