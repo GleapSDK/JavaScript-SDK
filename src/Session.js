@@ -9,7 +9,7 @@ export default class Session {
     email: "",
   };
   ready = false;
-  onSessionReady = null;
+  onSessionReadyListener = [];
 
   // Session singleton
   static instance;
@@ -25,9 +25,10 @@ export default class Session {
   constructor() {}
 
   setOnSessionReady = (onSessionReady) => {
-    this.onSessionReady = onSessionReady;
     if (this.ready) {
       onSessionReady();
+    } else {
+      this.onSessionReadyListener.push(onSessionReady);
     }
   };
 
@@ -103,8 +104,11 @@ export default class Session {
               self.session = sessionData;
               self.ready = true;
 
-              if (self.onSessionReady) {
-                self.onSessionReady();
+              // Session is ready. Notify all subscribers.
+              if (self.onSessionReadyListener.length > 0) {
+                for (var i = 0; i < self.onSessionReadyListener.length; i++) {
+                  self.onSessionReadyListener[i]();
+                }
               }
 
               resolve(sessionData);

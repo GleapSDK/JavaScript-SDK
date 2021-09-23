@@ -764,10 +764,7 @@ class Gleap {
    * Reports a bug silently
    * @param {*} description
    */
-  static sendSilentBugReport(
-    description,
-    priority = Gleap.PRIORITY_MEDIUM
-  ) {
+  static sendSilentBugReport(description, priority = Gleap.PRIORITY_MEDIUM) {
     const instance = this.getInstance();
     const sessionInstance = Session.getInstance();
 
@@ -794,27 +791,29 @@ class Gleap {
    */
   static startFeedbackTypeSelection() {
     const sessionInstance = Session.getInstance();
-    const instance = this.getInstance();
-    instance.stopBugReportingAnalytics();
-    instance.widgetOpened = true;
-    instance.openedMenu = true;
-    instance.updateFeedbackButtonState();
+    sessionInstance.setOnSessionReady(() => {
+      const instance = this.getInstance();
+      instance.stopBugReportingAnalytics();
+      instance.widgetOpened = true;
+      instance.openedMenu = true;
+      instance.updateFeedbackButtonState();
 
-    // Start feedback type dialog
-    createFeedbackTypeDialog(
-      instance.feedbackTypeActions,
-      instance.overrideLanguage,
-      instance.customLogoUrl,
-      instance.poweredByHidden,
-      function () {},
-      `${translateText("Hi", instance.overrideLanguage)} ${
-        sessionInstance.session.name ? sessionInstance.session.name : ""
-      } ${instance.welcomeIcon}`,
-      translateText(
-        instance.widgetInfo.dialogSubtitle,
-        instance.overrideLanguage
-      )
-    );
+      // Start feedback type dialog
+      createFeedbackTypeDialog(
+        instance.feedbackTypeActions,
+        instance.overrideLanguage,
+        instance.customLogoUrl,
+        instance.poweredByHidden,
+        function () {},
+        `${translateText("Hi", instance.overrideLanguage)} ${
+          sessionInstance.session.name ? sessionInstance.session.name : ""
+        } ${instance.welcomeIcon}`,
+        translateText(
+          instance.widgetInfo.dialogSubtitle,
+          instance.overrideLanguage
+        )
+      );
+    });
   }
 
   /**
