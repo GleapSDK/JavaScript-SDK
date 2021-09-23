@@ -66,7 +66,7 @@ module.exports = {
           const nodeVersion = process.env.npm_package_version;
 
           exec(
-            `mkdir -p published/v2/${nodeVersion} & cp ./build/index.js published/v2/${nodeVersion}/index.js`,
+            `mkdir -p published/${nodeVersion} & cp ./build/index.js published/${nodeVersion}/index.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
@@ -75,12 +75,12 @@ module.exports = {
               minify({
                 compressor: cleanCSS,
                 input: "./src/css/index.css",
-                output: `published/v2/${nodeVersion}/index.min.css`,
+                output: `published/${nodeVersion}/index.min.css`,
               });
               minify({
                 compressor: cleanCSS,
                 input: "./demo/appwidget.css",
-                output: `published/v2/${nodeVersion}/appwidget.min.css`,
+                output: `published/${nodeVersion}/appwidget.min.css`,
               });
             }
           );
