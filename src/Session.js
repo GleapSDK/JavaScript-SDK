@@ -39,6 +39,14 @@ export default class Session {
     }
   };
 
+  clearSession = () => {
+    try {
+      localStorage.removeItem(`bb-session-id`);
+      localStorage.removeItem(`bb-session-hash`);
+      localStorage.removeItem(`bb-session-type`);
+    } catch (exp) {}
+  };
+
   startSession = (data) => {
     const self = this;
     return new Promise((resolve, reject) => {
@@ -71,10 +79,10 @@ export default class Session {
       // Create user data.
       var userData = {};
       if (data && data.name) {
-        userData['name'] = data.name;
+        userData["name"] = data.name;
       }
       if (data && data.email) {
-        userData['email'] = data.email;
+        userData["email"] = data.email;
       }
 
       http.onerror = (error) => {
@@ -108,9 +116,7 @@ export default class Session {
           }
         }
       };
-      http.send(
-        JSON.stringify(userData)
-      );
+      http.send(JSON.stringify(userData));
     });
   };
 }

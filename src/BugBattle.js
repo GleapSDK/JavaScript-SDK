@@ -322,10 +322,17 @@ class BugBattle {
 
   /**
    * Update user data
-   * @param {*} data
+   * @param {*} userData
    */
-  static updateUserData(data) {
-    Session.getInstance().startSession(data);
+  static updateUserSession(userData) {
+    Session.getInstance().startSession(userData);
+  }
+
+  /**
+   * Clears the current user session
+   */
+  static clearUserSession() {
+    Session.getInstance().clearSession();
   }
 
   /**
