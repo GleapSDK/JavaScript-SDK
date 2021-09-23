@@ -1,4 +1,4 @@
-import BugBattle from "./BugBattle";
+import Gleap from "./Gleap";
 import { translateText } from "./Translation";
 
 const calculateContrast = (hex) => {
@@ -190,19 +190,19 @@ export const createWidgetDialog = function (
     </div>`;
   document.body.appendChild(elem);
 
-  const buttonType = BugBattle.getInstance().buttonType;
-  if (buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+  const buttonType = Gleap.getInstance().buttonType;
+  if (buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
     elem.classList.add("bb-feedback-button--bottomleft");
   }
 
-  if (buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
+  if (buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
     elem.classList.add("bb-feedback-button--disabled");
   }
 
   if (
-    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC ||
-    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT ||
-    buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC ||
+    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT ||
+    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
   ) {
     elem.classList.add("bb-feedback-button--classic");
   }
@@ -214,7 +214,7 @@ export const createWidgetDialog = function (
     if (closeButton.getAttribute("d") === "t") {
       return;
     }
-    BugBattle.getInstance().closeBugBattle();
+    Gleap.getInstance().closeGleap();
   };
 
   // Hook back action
@@ -285,14 +285,14 @@ export const createFeedbackTypeDialog = function (
       dialog.remove();
       if (feedbackTypeActions[index].action) {
         // Cleanup widget.
-        BugBattle.getInstance().closeBugBattle();
+        Gleap.getInstance().closeGleap();
 
         // Call custom action.
         feedbackTypeActions[index].action();
       }
 
       if (feedbackTypeActions[index].actionFlow) {
-        BugBattle.startFlow(feedbackTypeActions[index].actionFlow);
+        Gleap.startFlow(feedbackTypeActions[index].actionFlow);
       }
 
       if (selectedMenuOption) {

@@ -1,3 +1,3 @@
-import BugBattle from "./BugBattle";
+import Gleap from "./Gleap";
 
-export default BugBattle;
+export default Gleap;

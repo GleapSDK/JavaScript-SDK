@@ -9,7 +9,7 @@ import {
   toggleLoading,
   validatePoweredBy,
 } from "./UI";
-import BugBattleNetworkIntercepter from "./NetworkInterception";
+import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
 import { isMobile } from "./ImageHelper";
 import {
@@ -23,7 +23,7 @@ import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 
-class BugBattle {
+class Gleap {
   widgetOnly = false;
   widgetCallback = null;
   overrideLanguage = "";
@@ -35,7 +35,7 @@ class BugBattle {
   eventArray = [];
   customData = {};
   formData = {};
-  buttonType = BugBattle.FEEDBACK_BUTTON_BOTTOM_RIGHT;
+  buttonType = Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
   sessionStart = new Date();
   customActionCallbacks = [];
@@ -70,7 +70,7 @@ class BugBattle {
   feedbackTypeActions = [];
   previousBodyOverflow;
   customTranslation = {};
-  networkIntercepter = new BugBattleNetworkIntercepter();
+  networkIntercepter = new GleapNetworkIntercepter();
   replay = null;
   feedbackButton = null;
   fakeLoading = null;
@@ -272,11 +272,11 @@ class BugBattle {
   static PRIORITY_MEDIUM = "MEDIUM";
   static PRIORITY_HIGH = "HIGH";
 
-  // BugBattle singleton
+  // Gleap singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new BugBattle();
+      this.instance = new Gleap();
       return this.instance;
     } else {
       return this.instance;
@@ -344,19 +344,19 @@ class BugBattle {
   }
 
   /**
-   * Hides any open BugBattle dialogs.
+   * Hides any open Gleap dialogs.
    */
   static hide() {
     const instance = this.getInstance();
-    instance.closeBugBattle();
+    instance.closeGleap();
   }
 
   /**
-   * Starts the BugBattle flow.
+   * Starts the Gleap flow.
    */
   static open() {
     const instance = this.getInstance();
-    instance.showBugBattle();
+    instance.showGleap();
   }
 
   /**
@@ -456,7 +456,7 @@ class BugBattle {
   }
 
   /**
-   * Register events for BugBattle.
+   * Register events for Gleap.
    * @param {*} eventName
    * @param {*} callback
    */
@@ -536,7 +536,7 @@ class BugBattle {
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
    */
-  static enablePoweredByBugbattle(enabled) {
+  static enablePoweredBy(enabled) {
     this.getInstance().poweredByHidden = !enabled;
   }
 
@@ -718,9 +718,9 @@ class BugBattle {
     startRageClickDetector(function (target) {
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
-        BugBattle.sendSilentBugReport("Rage click detected.");
+        Gleap.sendSilentBugReport("Rage click detected.");
       } else {
-        BugBattle.startFlow(BugBattle.FLOW_CRASH);
+        Gleap.startFlow(Gleap.FLOW_CRASH);
       }
     });
   }
@@ -730,7 +730,7 @@ class BugBattle {
    * @deprecated since version 6.0.0
    */
   static setMainColor(color) {
-    BugBattle.setColors(color);
+    Gleap.setColors(color);
   }
 
   /**
@@ -766,7 +766,7 @@ class BugBattle {
    */
   static sendSilentBugReport(
     description,
-    priority = BugBattle.PRIORITY_MEDIUM
+    priority = Gleap.PRIORITY_MEDIUM
   ) {
     const instance = this.getInstance();
     const sessionInstance = Session.getInstance();
@@ -946,10 +946,10 @@ class BugBattle {
   enableIntercomCompatibilityMode(retries = 0) {
     if (window.Intercom) {
       Intercom("onShow", function () {
-        BugBattle.showFeedbackButton(false);
+        Gleap.showFeedbackButton(false);
       });
       Intercom("onHide", function () {
-        BugBattle.showFeedbackButton(true);
+        Gleap.showFeedbackButton(true);
       });
       Intercom("hide");
       Intercom("update", {
@@ -1038,9 +1038,9 @@ class BugBattle {
           const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
             error
           )}\n`;
-          BugBattle.sendSilentBugReport(errorMessage);
+          Gleap.sendSilentBugReport(errorMessage);
         } else {
-          BugBattle.startFlow(BugBattle.FLOW_CRASH);
+          Gleap.startFlow(Gleap.FLOW_CRASH);
         }
       }
 
@@ -1196,11 +1196,11 @@ class BugBattle {
       function () {
         if (self.feedbackTypeActions.length > 0) {
           // Only go back to feedback menu options
-          self.closeBugBattle(false);
-          BugBattle.startFeedbackTypeSelection();
+          self.closeGleap(false);
+          Gleap.startFeedbackTypeSelection();
         } else {
           // Close
-          self.closeBugBattle();
+          self.closeGleap();
         }
       },
       this.openedMenu,
@@ -1287,14 +1287,14 @@ class BugBattle {
 
   reportCleanupOnClose() {
     try {
-      BugBattle.enableReplays(this.replaysEnabled);
+      Gleap.enableReplays(this.replaysEnabled);
     } catch (exp) {}
     try {
       this.networkIntercepter.setStopped(false);
     } catch (exp) {}
 
     if (this.widgetCallback) {
-      this.widgetCallback("closeBugBattle", {});
+      this.widgetCallback("closeGleap", {});
     }
   }
 
@@ -1307,7 +1307,7 @@ class BugBattle {
     }
   }
 
-  closeBugBattle(cleanUp = true) {
+  closeGleap(cleanUp = true) {
     if (cleanUp) {
       this.reportCleanupOnClose();
     }
@@ -1376,7 +1376,7 @@ class BugBattle {
         (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
-        BugBattle.startFlow();
+        Gleap.startFlow();
       }
     };
   }
@@ -1384,7 +1384,7 @@ class BugBattle {
   checkForInitType() {
     setInterval(() => {
       if (this.replay && this.replay.isFull()) {
-        BugBattle.enableReplays(this.replaysEnabled);
+        Gleap.enableReplays(this.replaysEnabled);
       }
     }, 1000);
 
@@ -1393,9 +1393,9 @@ class BugBattle {
       const self = this;
 
       if (self.feedbackTypeActions.length > 0) {
-        BugBattle.startFeedbackTypeSelection();
+        Gleap.startFeedbackTypeSelection();
       } else {
-        BugBattle.startFlow();
+        Gleap.startFlow();
       }
     } else {
       // Web widget
@@ -1439,16 +1439,16 @@ class BugBattle {
     var elem = document.createElement("div");
     elem.className = "bb-feedback-button";
     if (
-      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC ||
-      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-      this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT
+      this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC ||
+      this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+      this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
       elem.innerHTML = `<div class="bb-feedback-button-classic ${
-        this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_LEFT
+        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
           ? "bb-feedback-button-classic--left"
           : ""
       }${
-        this.buttonType === BugBattle.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
           ? "bb-feedback-button-classic--bottom"
           : ""
       }">${translateText(
@@ -1467,26 +1467,26 @@ class BugBattle {
     };
     document.body.appendChild(elem);
 
-    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_NONE) {
+    if (this.buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
       elem.classList.add("bb-feedback-button--disabled");
     }
 
-    if (this.buttonType === BugBattle.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+    if (this.buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
       elem.classList.add("bb-feedback-button--bottomleft");
     }
 
     this.feedbackButton = elem;
   }
 
-  showBugBattle() {
+  showGleap() {
     if (this.widgetOpened) {
       return;
     }
 
     if (this.feedbackTypeActions.length > 0) {
-      BugBattle.startFeedbackTypeSelection();
+      Gleap.startFeedbackTypeSelection();
     } else {
-      BugBattle.startFlow();
+      Gleap.startFlow();
     }
 
     // Remove shoutout.
@@ -1507,11 +1507,11 @@ class BugBattle {
 
   feedbackButtonPressed() {
     if (this.widgetOpened) {
-      this.closeBugBattle();
+      this.closeGleap();
       return;
     }
 
-    this.showBugBattle();
+    this.showGleap();
   }
 
   updateFeedbackButtonState(retry = false) {
@@ -1562,7 +1562,7 @@ class BugBattle {
         isEscape = evt.keyCode === 27;
       }
       if (isEscape) {
-        self.closeBugBattle();
+        self.closeGleap();
       }
     });
   }
@@ -1588,7 +1588,7 @@ class BugBattle {
     Session.getInstance().injectSession(http);
     http.onerror = (error) => {
       if (self.silentBugReport) {
-        self.closeBugBattle();
+        self.closeGleap();
         return;
       }
 
@@ -1596,7 +1596,7 @@ class BugBattle {
     };
     http.upload.onprogress = function (e) {
       if (self.silentBugReport) {
-        self.closeBugBattle();
+        self.closeGleap();
         return;
       }
 
@@ -1616,7 +1616,7 @@ class BugBattle {
     };
     http.onreadystatechange = function (e) {
       if (self.silentBugReport) {
-        self.closeBugBattle();
+        self.closeGleap();
         return;
       }
 
@@ -1660,13 +1660,13 @@ class BugBattle {
     const self = this;
     self.showSuccessMessage();
     setTimeout(function () {
-      self.closeBugBattle();
+      self.closeGleap();
     }, 2500);
   }
 
   showError() {
     if (this.silentBugReport) {
-      this.closeBugBattle();
+      this.closeGleap();
       return;
     }
 
@@ -1980,11 +1980,11 @@ class BugBattle {
       function () {
         if (self.feedbackTypeActions.length > 0) {
           // Go back to menu
-          self.closeBugBattle(false);
-          BugBattle.startFeedbackTypeSelection();
+          self.closeGleap(false);
+          Gleap.startFeedbackTypeSelection();
         } else {
           // Close
-          self.closeBugBattle();
+          self.closeGleap();
         }
       },
       this.overrideLanguage,
@@ -1993,4 +1993,4 @@ class BugBattle {
   }
 }
 
-export default BugBattle;
+export default Gleap;

@@ -1,7 +1,7 @@
-import BugBattle from "./BugBattle";
+import Gleap from "./Gleap";
 
 export const translateText = (key, overrideLanguage) => {
-  const instance = BugBattle.getInstance();
+  const instance = Gleap.getInstance();
 
   var language = navigator.language;
   if (overrideLanguage !== "") {

@@ -13,7 +13,7 @@ module.exports = {
   output: {
     filename: "[name].js",
     path: path.resolve(__dirname, "build"),
-    library: "BugBattle",
+    library: "Gleap",
     libraryTarget: "umd",
     clean: true,
   },

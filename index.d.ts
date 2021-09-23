@@ -1,5 +1,5 @@
 declare module "bugbattle" {
-  export namespace BugBattle {
+  export namespace Gleap {
     const NONE: "NONE";
     const FEEDBACK_BUTTON: "FEEDBACK_BUTTON";
     const PRIORITY_LOW: "LOW";
@@ -44,7 +44,7 @@ declare module "bugbattle" {
     function enableCrashDetector(enabled: boolean, silent?: boolean): void;
     function setAppBuildNumber(buildNumber: string): void;
     function setAppVersionCode(versionCode: string): void;
-    function enablePoweredByBugbattle(enabled: boolean): void;
+    function enablePoweredBy(enabled: boolean): void;
     function setMainColor(color: string): void;
     function disableConsoleLogOverwrite(): void;
     function enableNetworkLogger(): void;
@@ -56,5 +56,5 @@ declare module "bugbattle" {
       feedbackTypeOptions: FeedbackTypeOption[]
     ): void;
   }
-  export default BugBattle;
+  export default Gleap;
 }

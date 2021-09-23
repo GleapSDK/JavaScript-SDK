@@ -1,5 +1,5 @@
 {
-  "name": "bugbattle",
+  "name": "gleap",
   "version": "6.0.0",
   "main": "build/index.js",
   "types": "index.d.ts",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BugBattle/JavaScript-SDK"
+    "url": "https://github.com/Gleap/JavaScript-SDK"
   },
   "author": "Gleap <hello@gleap.io>",
   "homepage": "https://www.gleap.io/",

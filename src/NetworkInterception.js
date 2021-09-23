@@ -1,4 +1,4 @@
-class BugBattleNetworkIntercepter {
+class GleapNetworkIntercepter {
   requestId = 0;
   requests = {};
   maxRequests = 15;
@@ -291,4 +291,4 @@ class BugBattleNetworkIntercepter {
   }
 }
 
-export default BugBattleNetworkIntercepter;
+export default GleapNetworkIntercepter;
