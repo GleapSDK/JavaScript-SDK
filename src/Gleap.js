@@ -127,7 +127,7 @@ class Gleap {
   static FLOW_DEFAULT = {
     title: "Report an issue",
     description:
-      "Your feedback means a lot to us. Add more details to your screenshot to let us know what needs fixing.",
+      "Add more details to your screenshot to let us know what needs fixing.",
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [
@@ -789,7 +789,7 @@ class Gleap {
   /**
    * Starts the feedback type selection flow.
    */
-  static startFeedbackTypeSelection() {
+  static startFeedbackTypeSelection(fromBack = false) {
     const sessionInstance = Session.getInstance();
     sessionInstance.setOnSessionReady(() => {
       const instance = this.getInstance();
@@ -811,7 +811,8 @@ class Gleap {
         translateText(
           instance.widgetInfo.dialogSubtitle,
           instance.overrideLanguage
-        )
+        ),
+        fromBack
       );
     });
   }
@@ -1195,8 +1196,9 @@ class Gleap {
       function () {
         if (self.feedbackTypeActions.length > 0) {
           // Only go back to feedback menu options
+          
           self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection();
+          Gleap.startFeedbackTypeSelection(true);
         } else {
           // Close
           self.closeGleap();
@@ -1297,7 +1299,7 @@ class Gleap {
     }
   }
 
-  closeModalUI() {
+  closeModalUI(cleanUp) {
     const dialogContainer = document.querySelector(
       ".bb-feedback-dialog-container"
     );
@@ -1325,7 +1327,7 @@ class Gleap {
     }
 
     this.notifyEvent("close");
-    this.closeModalUI();
+    this.closeModalUI(cleanUp);
     this.enableScroll();
   }
 
@@ -1981,7 +1983,7 @@ class Gleap {
         if (self.feedbackTypeActions.length > 0) {
           // Go back to menu
           self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection();
+          Gleap.startFeedbackTypeSelection(true);
         } else {
           // Close
           self.closeGleap();

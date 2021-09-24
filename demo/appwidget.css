@@ -87,10 +87,7 @@
 }
 
 .bb-drawing-tools {
-  border: 1px solid #ddd;
-  border-radius: 8px;
   display: flex;
-  overflow: hidden;
 }
 
 .bb-drawing-tool-item {
@@ -101,6 +98,11 @@
   align-items: center;
   padding: 11px;
   cursor: pointer;
+  border-radius: 16px;
+}
+
+.bb-drawing-tool-item--last {
+  margin-right: 5px;
 }
 
 .bb-drawing-tool-action {
@@ -122,7 +124,7 @@
   background-color: #ddd;
   width: 1px;
   height: 44px;
-  margin: 0px 5px;
+  margin: 0px 10px;
 }
 
 .bb-drawing-tool-item--active {
@@ -163,14 +165,13 @@
   border-radius: 100%;
   box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 15%);
   cursor: pointer;
-  margin: 9px;
-  margin-left: 5px;
+  margin: 9px 5px;
 }
 
 #bb-drawing-colorpopup {
   display: none;
   position: fixed;
-  bottom: 85px;
+  bottom: 65px;
   left: 50%;
   transform: translate(-50%, 0%);
   background: #fff;
@@ -180,7 +181,7 @@
 }
 
 .bb-feedback-dialog-drawing {
-  background-color: #f1f0f0;
+  background-color: #fff;
   max-width: 100%;
   width: auto;
 }

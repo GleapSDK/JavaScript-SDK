@@ -26,9 +26,6 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-dialog-header-back:hover svg {
       fill: ${contrastColor};
     }
-    .bb-feedback-dialog-header-back:hover {
-      background-color: ${primaryColor};
-    }    
     .bb-feedback-dialog-header-title {
       color: ${contrastHeaderColor};
     }
@@ -249,7 +246,8 @@ export const createFeedbackTypeDialog = function (
   poweredByHidden,
   selectedMenuOption,
   title,
-  subtitle
+  subtitle,
+  fromBack
 ) {
   // Generate options
   var optionsHTML = `<div class="bb-feedback-types">`;
@@ -284,7 +282,7 @@ export const createFeedbackTypeDialog = function (
     optionsHTML,
     null,
     true,
-    'bb-anim-fadein'
+    fromBack ? 'bb-anim-fadeinfromback' : 'bb-anim-fadein'
   );
 
   // Hook actions
