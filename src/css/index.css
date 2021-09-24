@@ -243,7 +243,7 @@
 
 .bb-feedback-dialog {
   width: 90%;
-  max-width: 375px;
+  max-width: 365px;
   background-color: #fff;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
@@ -362,8 +362,8 @@
 }
 
 .bb-feedback-dialog-header-back:hover {
-  background-color: #00000011;
-}   
+  background-color: #00000022;
+}
 
 .bb-feedback-dialog-header--back {
   display: flex;
@@ -393,6 +393,14 @@
   line-height: 22px;
   font-family: "Inter", sans-serif;
   font-size: 20px;
+  font-weight: 600;
+}
+
+.bb-feedback-dialog-header--back .bb-feedback-dialog-header-title-small {
+  margin-top: 0px;
+  line-height: 22px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -599,6 +607,11 @@
   border-radius: 8px;
   box-sizing: border-box;
   color: #000000;
+}
+
+.bb-feedback-inputgroup > input:focus,
+.bb-feedback-inputgroup input:focus {
+  border-color: #485bff;
 }
 
 input.bb-feedback-required,
@@ -1000,6 +1013,10 @@ textarea.bb-feedback-required {
   max-height: 140px;
 }
 
+.bb-feedback-inputgroup textarea:focus {
+  border-color: #485bff;
+}
+
 .bb-feedback-inputgroup--privacy-policy {
   font-family: "Inter", sans-serif;
   padding: 8px 0px;
@@ -1295,10 +1312,40 @@ textarea.bb-feedback-required {
   animation-name: bbFadeInUp;
 }
 
+.bb-anim-fadeinfromback {
+  overflow: hidden;
+}
+
+.bb-anim-fadeinfromback .bb-feedback-dialog-header > div {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInLeft;
+  animation-timing-function: cubic-bezier(0.465, 0.183, 0.153, 0.946);
+}
+
+.bb-anim-fadeinfromback .bb-feedback-dialog-body {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInLeft;
+  animation-timing-function: cubic-bezier(0.465, 0.183, 0.153, 0.946);
+}
+
 .bb-anim-fadeinright {
+  overflow: hidden;
+}
+
+.bb-anim-fadeinright .bb-feedback-dialog-header > div {
   animation-duration: 0.3s;
   animation-fill-mode: both;
   animation-name: bbFadeInRight;
+  animation-timing-function: cubic-bezier(0.465, 0.183, 0.153, 0.946);
+}
+
+.bb-anim-fadeinright .bb-feedback-dialog-body {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInRight;
+  animation-timing-function: cubic-bezier(0.465, 0.183, 0.153, 0.946);
 }
 
 .bb-feedback-dialog-header-close {
@@ -1449,6 +1496,18 @@ textarea.bb-feedback-required {
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes bbFadeInLeft {
+  from {
+    opacity: 0;
+    transform: translate3d(-100%, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 

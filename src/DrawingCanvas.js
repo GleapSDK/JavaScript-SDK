@@ -16,7 +16,7 @@ export const createScreenshotEditor = function (
           ${loadIcon(showBack ? "arrowleft" : "close", "#192027")}
         </div>
         <div class="bb-feedback-dialog-header-text">
-            <div class="bb-feedback-dialog-header-title">${translateText(
+            <div class="bb-feedback-dialog-header-title-small">${translateText(
               "Mark the bug",
               overrideLanguage
             )}</div>
