@@ -16,7 +16,7 @@
   border-radius: 30px;
   cursor: pointer;
   background-color: transparent;
-  color: #192027;
+  color: #000000;
   z-index: 2147483100;
   box-sizing: border-box;
   display: flex;
@@ -100,7 +100,7 @@
 }
 
 .bb-feedback-button-text-title b {
-  color: #192027;
+  color: #000000;
   font-weight: 600;
 }
 
@@ -110,7 +110,7 @@
   border-radius: 60px;
   background-color: #ffffff;
   transition: box-shadow 0.3s ease-in-out;
-  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
   position: relative;
 }
 
@@ -131,7 +131,7 @@
   box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
   animation-duration: 0.2s;
   animation-fill-mode: both;
-  animation-name: bbFadeInLeft;
+  animation-name: bbFadeInOpacity;
 }
 
 .bb-feedback-button-classic--left {
@@ -191,7 +191,7 @@
 }
 
 .bb-feedback-button-icon:hover {
-  box-shadow: 0px 0px 12px 0px rgba(0, 0, 0, 0.4);
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
 }
 
 .bb-feedback-button--sending {
@@ -245,7 +245,7 @@
   width: 90%;
   max-width: 375px;
   background-color: #fff;
-  box-shadow: 0px 5px 20px 0px rgba(0, 0, 0, 0.3);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   box-sizing: border-box;
   position: fixed;
@@ -269,10 +269,10 @@
   margin: 25px;
   margin-bottom: -5px;
   border-radius: 6px;
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 19px;
   font-family: "Inter", sans-serif;
-  color: #192027;
+  color: #000000;
 }
 
 .bb-feedback-form--hidden {
@@ -292,11 +292,11 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 35px;
+  padding: 25px;
   box-sizing: border-box;
   background-color: #edefff;
   flex-direction: column;
-  padding-bottom: 70px;
+  padding-bottom: 65px;
   position: relative;
 }
 
@@ -312,7 +312,7 @@
 .bb-feedback-dialog-header-title {
   font-weight: normal;
   text-align: center;
-  color: #192027;
+  color: #000000;
   font-family: "Inter", sans-serif;
   text-align: left;
   margin-top: 15px;
@@ -324,7 +324,7 @@
 .bb-feedback-dialog-header-description {
   font-weight: normal;
   text-align: center;
-  color: #192027ad;
+  color: #000000;
   font-family: "Inter", sans-serif;
   text-align: left;
   font-weight: normal;
@@ -392,7 +392,8 @@
   margin-top: 0px;
   line-height: 22px;
   font-family: "Inter", sans-serif;
-  font-size: 18px;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .bb-feedback-dialog-header--back .bb-feedback-dialog-header-description {
@@ -426,11 +427,12 @@
   background-color: #fff;
   box-sizing: border-box;
   box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.05), 0px 1px 3px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.2s ease-in-out;
 }
 
 .bb-feedback-type:hover {
   background-color: #fff;
-  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1), 0px 1px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.1), 0px 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .bb-feedback-type-icon {
@@ -460,29 +462,29 @@
   font-size: 16px;
   line-height: 18px;
   margin-bottom: 3px;
-  color: #192027;
+  color: #000000;
 }
 
 .bb-feedback-type-description {
   font-family: "Inter", sans-serif;
-  color: #666;
+  color: #000000;
   font-size: 14px;
   line-height: 16px;
 }
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   text-align: left;
   margin-bottom: 8px;
   margin-top: 0px;
   font-weight: bold;
-  color: #192027;
+  color: #000000;
 }
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   text-align: left;
   margin-bottom: 8px;
   margin-top: 0px;
@@ -493,8 +495,8 @@
 
 .bb-feedback-dialog-info-text {
   font-family: "Inter", sans-serif;
-  color: #666;
-  font-size: 15px;
+  color: #000000;
+  font-size: 16px;
   padding-top: 20px;
   text-align: center;
   line-height: 19px;
@@ -525,7 +527,7 @@
 .bb-feedback-inputgroup {
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 13px;
   padding: 0px;
   flex-direction: column;
 }
@@ -546,7 +548,7 @@
 
 .bb-feedback-inputgroup-text {
   font-family: "Inter", sans-serif;
-  color: #192027;
+  color: #000000;
   font-size: 16px;
   font-weight: normal;
 }
@@ -555,7 +557,7 @@
   font-family: "Inter", sans-serif;
   padding: 0px;
   margin-bottom: 5px;
-  color: #192027;
+  color: #000000;
   font-size: 14px;
   font-weight: 600;
 }
@@ -563,16 +565,16 @@
 .bb-feedback-send-button {
   font-family: "Inter", sans-serif;
   background-color: #485bff;
-  border-radius: 8px;
+  border-radius: 21px;
   box-sizing: border-box;
   padding: 12px 19px;
-  font-size: 15px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 19px;
   font-weight: 600;
   color: #fff;
   text-align: center;
   width: 100%;
-  margin-top: 5px;
+  margin-top: 7px;
   margin-bottom: 0px;
   cursor: pointer;
   box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.05);
@@ -589,14 +591,14 @@
   appearance: none;
   font-family: "Inter", sans-serif;
   width: auto;
-  padding: 15px 12px;
-  font-size: 14px;
+  padding: 11px 12px;
+  font-size: 16px;
   outline: none;
-  border: 1px solid #e9f1fd;
+  border: 1px solid #eee;
   background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #192027;
+  color: #000000;
 }
 
 input.bb-feedback-required,
@@ -985,16 +987,16 @@ textarea.bb-feedback-required {
   resize: none;
   width: auto;
   height: auto;
-  padding: 12px;
-  font-size: 14px;
-  line-height: 17px;
+  padding: 11px 12px;
+  font-size: 16px;
+  line-height: 19px;
   margin: 0px;
   box-sizing: border-box;
-  border: 1px solid #e9f1fd;
+  border: 1px solid #eee;
   background-color: #fff;
   border-radius: 8px;
   box-sizing: border-box;
-  color: #192027;
+  color: #000000;
   max-height: 140px;
 }
 
@@ -1014,7 +1016,7 @@ textarea.bb-feedback-required {
   display: inline;
   text-decoration: underline;
   font-family: "Inter", sans-serif;
-  color: #192027;
+  color: #000000;
 }
 
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
@@ -1030,7 +1032,7 @@ textarea.bb-feedback-required {
   position: relative;
   padding-left: 2em;
   font-size: 14px;
-  color: #192027;
+  color: #000000;
   line-height: 1.7;
   cursor: pointer;
 }
@@ -1131,7 +1133,7 @@ textarea.bb-feedback-required {
 .bb-feedback-poweredbycontainer span {
   font-family: "Inter", sans-serif;
   font-weight: normal;
-  font-size: 13px;
+  font-size: 14px;
   color: #59617d;
 }
 
@@ -1265,22 +1267,21 @@ textarea.bb-feedback-required {
   top: -100px;
   left: -100px;
   background-color: #485bff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
+  border-radius: 21px;
   box-sizing: border-box;
-  padding: 8px 10px;
-  font-size: 16px;
+  padding: 10px 16px;
+  font-size: 18px;
   color: #fff;
   box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
   z-index: 916777271;
-  min-width: 270px;
+  min-width: 300px;
   text-align: center;
 }
 
 .bb-screenshot-editor-rectangle {
   position: absolute;
-  top: 0px;
-  left: 0px;
+  top: -100px;
+  left: -100px;
   width: 0px;
   height: 0px;
   border: 5px solid #485bff;
@@ -1289,9 +1290,15 @@ textarea.bb-feedback-required {
 }
 
 .bb-anim-fadein {
-  animation-duration: 0.55s;
+  animation-duration: 0.3s;
   animation-fill-mode: both;
   animation-name: bbFadeInUp;
+}
+
+.bb-anim-fadeinright {
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInRight;
 }
 
 .bb-feedback-dialog-header-close {
@@ -1311,6 +1318,18 @@ textarea.bb-feedback-required {
 .bb-feedback-button--classic .bb-feedback-dialog-header-close,
 .bb-feedback-button--disabled .bb-feedback-dialog-header-close {
   display: flex;
+}
+
+@media only screen and (max-width: 1024px) {
+  .bb-screenshot-editor-drag-info {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translate(-50%, 0);
+  }
+  .bb-screenshot-editor-drag-info--dragged {
+    transform: none;
+  }
 }
 
 @media only screen and (max-width: 600px) {
@@ -1338,12 +1357,6 @@ textarea.bb-feedback-required {
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
   }
-  .bb-screenshot-editor-drag-info {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    right: 20px;
-  }
   .bb-screenshot-editor-borderlayer {
     border-width: 4px;
   }
@@ -1351,11 +1364,6 @@ textarea.bb-feedback-required {
     animation-duration: 0s;
     animation-fill-mode: both;
     animation-name: none;
-  }
-  .bb-feedback-inputgroup textarea,
-  .bb-feedback-inputgroup > input,
-  .bb-feedback-inputgroup input {
-    font-size: 16px;
   }
 }
 
@@ -1434,13 +1442,25 @@ textarea.bb-feedback-required {
   }
 }
 
-@keyframes bbFadeInLeft {
+@keyframes bbFadeInOpacity {
   from {
     opacity: 0;
   }
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes bbFadeInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(100%, 0, 0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
   }
 }
 

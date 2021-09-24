@@ -59,6 +59,12 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-screenshot-editor-rectangle {
       border-color: ${primaryColor};
     }
+    .bb-feedback-inputgroup textarea:focus {
+      border-color: ${primaryColor};
+    }
+    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {
+      border-color: ${primaryColor};
+    }
     .bb-feedback-send-button {
       color: ${contrastColor};
       background-color: ${primaryColor};
@@ -106,11 +112,11 @@ export const createWidgetDialog = function (
   content,
   back,
   showBack = true,
-  appendClass = ""
+  appendClass = "",
 ) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-anim-fadein ${appendClass}'>
+  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog ${appendClass}'>
       <div class="bb-feedback-dialog-header${
         back ? " bb-feedback-dialog-header--back" : ""
       }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
@@ -275,7 +281,10 @@ export const createFeedbackTypeDialog = function (
     title,
     subtitle,
     customLogoUrl,
-    optionsHTML
+    optionsHTML,
+    null,
+    true,
+    'bb-anim-fadein'
   );
 
   // Hook actions

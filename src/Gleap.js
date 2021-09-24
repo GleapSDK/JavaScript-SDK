@@ -66,7 +66,7 @@ class Gleap {
   severity = "LOW";
   appVersionCode = "";
   appBuildNumber = "";
-  mainColor = "#398CFE";
+  mainColor = "#485bff";
   feedbackTypeActions = [];
   previousBodyOverflow;
   customTranslation = {};
@@ -1160,8 +1160,8 @@ class Gleap {
   </div>
   <div class="bb-feedback-dialog-success">
     <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g id="np_check_1807541" fill="${
+        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+            <g fill="${
               this.mainColor
             }" fill-rule="nonzero">
                 <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
@@ -1203,7 +1203,7 @@ class Gleap {
         }
       },
       this.openedMenu,
-      getWidgetDialogClass()
+      `bb-anim-fadeinright ${getWidgetDialogClass()}`
     );
 
     this.openedMenu = true;
@@ -1806,7 +1806,7 @@ class Gleap {
                 <rect id="bb-markercut" x="0" y="0" width="0" height="0" />
               </mask>
             </defs>
-            <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.4);" mask="url(#bbmask)" />
+            <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.2);" mask="url(#bbmask)" />
           </svg>
           <div class='bb-screenshot-editor-borderlayer'></div>
           <div class='bb-screenshot-editor-dot'></div>
@@ -1855,6 +1855,7 @@ class Gleap {
       dragInfo.style.left = `${x + 20}px`;
       dragInfo.style.top = `${y - dragInfo.offsetHeight / 2}px`;
       dragInfo.style.right = null;
+      dragInfo.classList.add("bb-screenshot-editor-drag-info--dragged");
 
       if (addedMarker || clickStartX < 0) {
         return;
