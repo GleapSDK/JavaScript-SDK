@@ -29,6 +29,9 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-dialog-header-title {
       color: ${contrastHeaderColor};
     }
+    .bb-feedback-dialog-header-title-small {
+      color: ${contrastHeaderColor};
+    }
     .bb-feedback-dialog-header-description {
       color: ${contrastHeaderColor};
     }
