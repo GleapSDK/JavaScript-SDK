@@ -38,6 +38,8 @@ Gleap.setAppBuildNumber("2345");
 
 Gleap.enableReplays(true);
 
+Gleap.setColors("red", "blue", "green");
+
 Gleap.enablePoweredBy(true);
 
 Gleap.enableCrashDetector(true, false);

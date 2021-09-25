@@ -18,7 +18,7 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
       fill: ${contrastButtonColor};
     }
     .bb-feedback-dialog-header-back svg {
-      fill: ${contrastButtonColor};
+      fill: ${contrastHeaderColor};
     }
     .bb-feedback-dialog-header-close svg {
       fill: ${contrastHeaderColor};
