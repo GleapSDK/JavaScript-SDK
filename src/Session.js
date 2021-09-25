@@ -46,6 +46,17 @@ export default class Session {
       localStorage.removeItem(`bb-session-hash`);
       localStorage.removeItem(`bb-session-type`);
     } catch (exp) {}
+
+    this.session = {
+      id: null,
+      hash: null,
+      type: null,
+      name: "",
+      email: "",
+    };
+
+    // Start guest session.
+    this.startSession();
   };
 
   startSession = (data) => {
@@ -110,6 +121,7 @@ export default class Session {
                   self.onSessionReadyListener[i]();
                 }
               }
+              self.onSessionReadyListener = [];
 
               resolve(sessionData);
             } catch (exp) {

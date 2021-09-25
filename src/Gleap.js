@@ -304,20 +304,25 @@ class Gleap {
 
     instance.initialized = true;
 
-    Session.getInstance().sdkKey = sdkKey;
-    Session.getInstance().startSession(options);
-
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
-      instance.checkForInitType();
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
+    const sessionInstance = Session.getInstance();
+    sessionInstance.sdkKey = sdkKey;
+    sessionInstance.startSession(options);
+    sessionInstance.setOnSessionReady(() => {
+      if (
+        document.readyState === "complete" ||
+        document.readyState === "loaded" ||
+        document.readyState === "interactive"
+      ) {
         instance.checkForInitType();
-      });
-    }
+      } else {
+        document.addEventListener("DOMContentLoaded", function (event) {
+          instance.checkForInitType();
+        });
+      }
+      if (instance.widgetCallback) {
+        instance.widgetCallback("sessionReady");
+      }
+    });
   }
 
   /**
@@ -791,30 +796,28 @@ class Gleap {
    */
   static startFeedbackTypeSelection(fromBack = false) {
     const sessionInstance = Session.getInstance();
-    sessionInstance.setOnSessionReady(() => {
-      const instance = this.getInstance();
-      instance.stopBugReportingAnalytics();
-      instance.widgetOpened = true;
-      instance.openedMenu = true;
-      instance.updateFeedbackButtonState();
+    const instance = this.getInstance();
+    instance.stopBugReportingAnalytics();
+    instance.widgetOpened = true;
+    instance.openedMenu = true;
+    instance.updateFeedbackButtonState();
 
-      // Start feedback type dialog
-      createFeedbackTypeDialog(
-        instance.feedbackTypeActions,
-        instance.overrideLanguage,
-        instance.customLogoUrl,
-        instance.poweredByHidden,
-        function () {},
-        `${translateText("Hi", instance.overrideLanguage)} ${
-          sessionInstance.session.name ? sessionInstance.session.name : ""
-        } ${instance.welcomeIcon}`,
-        translateText(
-          instance.widgetInfo.dialogSubtitle,
-          instance.overrideLanguage
-        ),
-        fromBack
-      );
-    });
+    // Start feedback type dialog
+    createFeedbackTypeDialog(
+      instance.feedbackTypeActions,
+      instance.overrideLanguage,
+      instance.customLogoUrl,
+      instance.poweredByHidden,
+      function () {},
+      `${translateText("Hi", instance.overrideLanguage)} ${
+        sessionInstance.session.name ? sessionInstance.session.name : ""
+      } ${instance.welcomeIcon}`,
+      translateText(
+        instance.widgetInfo.dialogSubtitle,
+        instance.overrideLanguage
+      ),
+      fromBack
+    );
   }
 
   /**
@@ -834,7 +837,7 @@ class Gleap {
   static triggerCustomAction(name) {
     const instance = this.getInstance();
 
-    if (instance.widgetOnly && instance.widgetCallback) {
+    if (instance.widgetCallback) {
       instance.widgetCallback("customActionCalled", {
         name,
       });
@@ -1162,9 +1165,7 @@ class Gleap {
   <div class="bb-feedback-dialog-success">
     <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
         <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g fill="${
-              this.mainColor
-            }" fill-rule="nonzero">
+            <g fill="${this.mainColor}" fill-rule="nonzero">
                 <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
             </g>
         </g>
@@ -1196,7 +1197,7 @@ class Gleap {
       function () {
         if (self.feedbackTypeActions.length > 0) {
           // Only go back to feedback menu options
-          
+
           self.closeGleap(false);
           Gleap.startFeedbackTypeSelection(true);
         } else {
