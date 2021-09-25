@@ -356,6 +356,10 @@
   height: auto;
 }
 
+.bb-feedback-dialog-header-back--close svg {
+  width: 26px;
+}
+
 .bb-feedback-dialog-header-back:hover {
   border-radius: 11px;
   cursor: pointer;
