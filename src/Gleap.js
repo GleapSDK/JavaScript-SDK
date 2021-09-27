@@ -224,7 +224,7 @@ class Gleap {
         name: "send",
       },
     ],
-    feedbackType: "GENERAL",
+    feedbackType: "INQUIRY",
     disableUserScreenshot: true,
   };
   static FLOW_FEATUREREQUEST = {
