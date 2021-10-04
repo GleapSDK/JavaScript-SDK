@@ -120,7 +120,7 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, userId, userHash) {
     const instance = this.getInstance();
 
     if (instance.initialized) {
@@ -131,7 +131,7 @@ class Gleap {
 
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
-    sessionInstance.startSession();
+    sessionInstance.startSession(userId, userHash);
     sessionInstance.setOnSessionReady(() => {
       if (
         document.readyState === "complete" ||
