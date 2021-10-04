@@ -83,7 +83,7 @@ class Gleap {
     y: 0,
   };
   eventListeners = {};
-  flows = {};
+  feedbackActions = {};
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -516,7 +516,7 @@ class Gleap {
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentBugReport("Rage click detected.");
       } else {
-        Gleap.startFeedbackFlow(instance.flows.crash);
+        Gleap.startFeedbackFlow(instance.feedbackActions.crash);
       }
     });
   }
@@ -641,8 +641,8 @@ class Gleap {
   /**
    * Sets the feedback flow options.
    */
-  static setFeedbackFlows(flows) {
-    this.getInstance().flows = flows;
+  static setFeedbackActions(feedbackActions) {
+    this.getInstance().feedbackActions = feedbackActions;
   }
 
   /**
@@ -670,12 +670,12 @@ class Gleap {
 
     // Try to load the specific feedback flow.
     if (feedbackFlow) {
-      feedbackOptions = instance.flows[feedbackFlow];
+      feedbackOptions = instance.feedbackActions[feedbackFlow];
     }
 
     // Fallback
     if (!feedbackOptions) {
-      feedbackOptions = instance.flows.bugreporting;
+      feedbackOptions = instance.feedbackActions.bugreporting;
     }
 
     // Deep copy to prevent changes.
@@ -842,7 +842,7 @@ class Gleap {
           )}\n`;
           Gleap.sendSilentBugReport(errorMessage);
         } else {
-          Gleap.startFeedbackFlow(self.flows.crash);
+          Gleap.startFeedbackFlow(self.feedbackActions.crash);
         }
       }
 
