@@ -516,7 +516,7 @@ class Gleap {
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentBugReport("Rage click detected.");
       } else {
-        Gleap.startFlow(instance.flows.crash);
+        Gleap.startFeedbackFlow(instance.flows.crash);
       }
     });
   }
@@ -571,7 +571,7 @@ class Gleap {
     instance.severity = priority;
     instance.feedbackType = "BUG";
 
-    this.startFlow({}, true);
+    this.startFeedbackFlow({}, true);
   }
 
   /**
@@ -641,7 +641,7 @@ class Gleap {
   /**
    * Sets the feedback flow options.
    */
-  static setFlows(flows) {
+  static setFeedbackFlows(flows) {
     this.getInstance().flows = flows;
   }
 
@@ -655,7 +655,7 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFlow(feedbackFlow, silentBugReport = false) {
+  static startFeedbackFlow(feedbackFlow, silentBugReport = false) {
     const sessionInstance = Session.getInstance();
     const instance = this.getInstance();
     if (instance.currentlySendingBug) {
@@ -675,7 +675,7 @@ class Gleap {
 
     // Fallback
     if (!feedbackOptions) {
-      feedbackOptions = instance.flows.default;
+      feedbackOptions = instance.flows.bugreporting;
     }
 
     // Deep copy to prevent changes.
@@ -842,7 +842,7 @@ class Gleap {
           )}\n`;
           Gleap.sendSilentBugReport(errorMessage);
         } else {
-          Gleap.startFlow(self.flows.crash);
+          Gleap.startFeedbackFlow(self.flows.crash);
         }
       }
 
@@ -1177,7 +1177,7 @@ class Gleap {
         (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
-        Gleap.startFlow();
+        Gleap.startFeedbackFlow();
       }
     };
   }
@@ -1200,7 +1200,7 @@ class Gleap {
       if (self.feedbackTypeActions.length > 0) {
         Gleap.startFeedbackTypeSelection();
       } else {
-        Gleap.startFlow();
+        Gleap.startFeedbackFlow();
       }
     } else {
       // Web widget
@@ -1276,7 +1276,7 @@ class Gleap {
     if (this.feedbackTypeActions.length > 0) {
       Gleap.startFeedbackTypeSelection();
     } else {
-      Gleap.startFlow();
+      Gleap.startFeedbackFlow();
     }
 
     // Remove shoutout.

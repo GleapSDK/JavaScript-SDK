@@ -302,7 +302,7 @@ export const createFeedbackTypeDialog = function (
       }
 
       if (feedbackTypeActions[index].actionFlow) {
-        Gleap.startFlow(feedbackTypeActions[index].actionFlow);
+        Gleap.startFeedbackFlow(feedbackTypeActions[index].actionFlow);
       }
 
       if (selectedMenuOption) {
