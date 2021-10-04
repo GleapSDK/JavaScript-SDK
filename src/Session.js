@@ -40,7 +40,7 @@ export default class Session {
     }
   };
 
-  clearSession = () => {
+  clearSession = (renewSession = true) => {
     try {
       localStorage.removeItem(`bb-session-id`);
       localStorage.removeItem(`bb-session-hash`);
@@ -56,48 +56,46 @@ export default class Session {
     };
 
     // Start guest session.
-    this.startSession();
+    if (renewSession) {
+      this.startSession();
+    }
   };
 
-  startSession = (data) => {
+  startSession = (userId, userHash, userData) => {
     const self = this;
     return new Promise((resolve, reject) => {
       const http = new XMLHttpRequest();
-      http.open("POST", this.apiUrl + "/sessions/start");
+      http.open("POST", this.apiUrl + "/sessions");
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       http.setRequestHeader("Api-Token", this.sdkKey);
 
       // Set the guest id & hash
       try {
         const sessionType = localStorage.getItem(`bb-session-type`);
+        const sessionId = localStorage.getItem(`bb-session-id`);
+        const sessionHash = localStorage.getItem(`bb-session-hash`);
         if (sessionType === "GUEST") {
-          const guestId = localStorage.getItem(`bb-session-id`);
-          const guestHash = localStorage.getItem(`bb-session-hash`);
-          if (guestId && guestHash) {
-            http.setRequestHeader("Guest-Id", guestId);
-            http.setRequestHeader("Guest-Hash", guestHash);
+          if (sessionId && sessionHash) {
+            http.setRequestHeader("Guest-Id", sessionId);
+            http.setRequestHeader("Guest-Hash", sessionHash);
+          }
+        } else {
+          // Existing session from cache.
+          if (sessionId && sessionHash && !userId && !userHash) {
+            http.setRequestHeader("User-Id", sessionId);
+            http.setRequestHeader("User-Hash", sessionHash);
           }
         }
       } catch (exp) {}
 
       // Additionally set the user id
-      if (data && data.userId) {
-        http.setRequestHeader("User-Id", data.userId);
-      }
-      if (data && data.userHash) {
-        http.setRequestHeader("User-Hash", data.userHash);
-      }
-
-      // Create user data.
-      var userData = {};
-      if (data && data.name) {
-        userData["name"] = data.name;
-      }
-      if (data && data.email) {
-        userData["email"] = data.email;
+      if (userId && userHash) {
+        http.setRequestHeader("User-Id", userId);
+        http.setRequestHeader("User-Hash", userHash);
       }
 
       http.onerror = (error) => {
+        self.clearSession(false);
         reject();
       };
       http.onreadystatechange = function (e) {
@@ -128,6 +126,7 @@ export default class Session {
               reject(exp);
             }
           } else {
+            self.clearSession(false);
             reject();
           }
         }

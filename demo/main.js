@@ -1,11 +1,21 @@
-const Gleap = window.Gleap.default;
+const Gleap = window.Gleap;
 
-Gleap.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES", {
-  userId: "1",
-  userHash: "c9ca287ccb482cfd8c97e5abcbfed647a922b7e2f22023e96acfce889b6c8660",
-  email: "lukas@gleap.io",
-  name: "Lukas",
-});
+window.onGleapLoaded = () => {
+  console.log("LOADED.");
+
+  Gleap.identify(
+    "1",
+    "db5897fe20d33d8072babc477655eba5240e606cbde86deaa0c17e34eaef6201",
+    {
+      name: "Franz",
+      email: "x@x.com",
+    }
+  );
+};
+
+Gleap.setApiUrl("http://0.0.0.0:9000");
+
+Gleap.initialize("OcLgYN5vWavsjTrv1vjAjGj22INW0Xdz");
 
 // Sample for feedback type options
 Gleap.setFeedbackTypeOptions([
@@ -13,22 +23,22 @@ Gleap.setFeedbackTypeOptions([
     title: "Report an issue",
     description: "Found a bug? Let us know.",
     icon: "https://i.ibb.co/CJV3jZ0/Subtract-1.png",
-    actionFlow: Gleap.FLOW_DEFAULT,
-    color: '#F4CAC8',
+    actionFlow: "default",
+    color: "#F4CAC8",
   },
   {
     title: "Contact us",
     description: "We are here to help.",
     icon: "https://i.ibb.co/WcWGJ6S/Subtract.png",
-    actionFlow: Gleap.FLOW_CONTACT,
-    color: '#EFE2FF',
+    actionFlow: "contact",
+    color: "#EFE2FF",
   },
   {
     title: "Request a feature",
     description: "Which feature would you like to see next?",
     icon: "https://i.ibb.co/qsmt9WR/Subtract-2.png",
-    actionFlow: Gleap.FLOW_FEATUREREQUEST,
-    color: '#FFEEC2',
+    actionFlow: "featurerequest",
+    color: "#FFEEC2",
   },
 ]);
 

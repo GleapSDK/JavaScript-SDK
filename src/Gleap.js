@@ -83,6 +83,7 @@ class Gleap {
     y: 0,
   };
   eventListeners = {};
+  flows = {};
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -91,181 +92,6 @@ class Gleap {
   static FEEDBACK_BUTTON_CLASSIC_LEFT = "BUTTON_CLASSIC_LEFT";
   static FEEDBACK_BUTTON_CLASSIC_BOTTOM = "BUTTON_CLASSIC_BOTTOM";
   static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
-
-  static FLOW_CRASH = {
-    title: "Problem detected",
-    description:
-      "Oh, oh looks like something went wrong here. By submitting this form, you will help us fix the issue and improve big time.",
-    thanksMessage:
-      "Thanks for submitting your report. You’ve just done us a big favor.",
-    form: [
-      {
-        title: "Email",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "reportedBy",
-        required: true,
-        remember: true,
-        hideOnDefaultSet: true,
-      },
-      {
-        title: "Tell us more about the problem",
-        placeholder: "Describe what went wrong",
-        type: "textarea",
-        name: "description",
-      },
-      {
-        title: "Send report",
-        type: "submit",
-        name: "send",
-      },
-    ],
-    feedbackType: "BUG",
-    disableUserScreenshot: true,
-  };
-  static FLOW_DEFAULT = {
-    title: "Report an issue",
-    description:
-      "Add more details to your screenshot to let us know what needs fixing.",
-    thanksMessage:
-      "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
-    form: [
-      {
-        title: "Email",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "reportedBy",
-        required: true,
-        remember: true,
-        hideOnDefaultSet: true,
-      },
-      {
-        title: "Describe the issue",
-        placeholder: "The more information, the better.",
-        type: "textarea",
-        name: "description",
-      },
-      {
-        title: "Send report",
-        type: "submit",
-        name: "send",
-      },
-    ],
-  };
-  static FLOW_RATING = {
-    title: "Rate your experience",
-    thanksMessage: "Your feedback means a lot to us. Thanks for your rating.",
-    form: [
-      {
-        type: "rating",
-        ratingtype: "emoji",
-        name: "pagerating",
-        required: true,
-      },
-      {
-        type: "spacer",
-        showAfter: "pagerating",
-      },
-      {
-        title: "Email",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "reportedBy",
-        required: true,
-        remember: true,
-        hideOnDefaultSet: true,
-        showAfter: "pagerating",
-      },
-      {
-        title: "How can we do better?",
-        placeholder: "The more details, the better.",
-        type: "textarea",
-        name: "description",
-        showAfter: "pagerating",
-      },
-      {
-        title: "Send feedback",
-        type: "submit",
-        name: "send",
-        showAfter: "pagerating",
-      },
-    ],
-    feedbackType: "RATING",
-    disableUserScreenshot: true,
-  };
-  static FLOW_CONTACT = {
-    title: "Contact us",
-    description: "Our support team is always here to help.",
-    thanksMessage: "Thanks for your message. We will be in touch shortly",
-    form: [
-      {
-        title: "Email",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "reportedBy",
-        hideOnDefaultSet: true,
-        required: true,
-        remember: true,
-      },
-      {
-        title: "Message",
-        placeholder: "Your message",
-        type: "textarea",
-        name: "description",
-        required: true,
-      },
-      {
-        title: "Send message",
-        type: "submit",
-        name: "send",
-      },
-    ],
-    feedbackType: "INQUIRY",
-    disableUserScreenshot: true,
-  };
-  static FLOW_FEATUREREQUEST = {
-    title: "Request a feature",
-    description: "What feature or improvement would you like to see?",
-    thanksMessage:
-      "We’re working full steam to constantly improve. We’ll be in touch if we have further questions or an update for you.",
-    form: [
-      {
-        title: "Email",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "reportedBy",
-        hideOnDefaultSet: true,
-        required: true,
-        remember: true,
-      },
-      {
-        placeholder: "Explain your request.",
-        title: "Subject",
-        type: "text",
-        inputtype: "text",
-        name: "title",
-        required: true,
-      },
-      {
-        title: "Description",
-        placeholder: "The more details, the better.",
-        type: "textarea",
-        name: "description",
-      },
-      {
-        title: "Send request",
-        type: "submit",
-        name: "send",
-      },
-    ],
-    feedbackType: "FEATURE_REQUEST",
-    disableUserScreenshot: true,
-  };
 
   // Bug priorities
   static PRIORITY_LOW = "LOW";
@@ -294,19 +120,18 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey, options) {
+  static initialize(sdkKey) {
     const instance = this.getInstance();
 
     if (instance.initialized) {
       console.warn("Bugbattle already initialized.");
       return;
     }
-
     instance.initialized = true;
 
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
-    sessionInstance.startSession(options);
+    sessionInstance.startSession();
     sessionInstance.setOnSessionReady(() => {
       if (
         document.readyState === "complete" ||
@@ -329,14 +154,14 @@ class Gleap {
    * Update user data
    * @param {*} userData
    */
-  static updateUserSession(userData) {
-    Session.getInstance().startSession(userData);
+  static identify(userId, userHash, userData) {
+    Session.getInstance().startSession(userId, userHash, userData);
   }
 
   /**
    * Clears the current user session
    */
-  static clearUserSession() {
+  static logout() {
     Session.getInstance().clearSession();
   }
 
@@ -530,14 +355,6 @@ class Gleap {
   }
 
   /**
-   * Automatically prompt the user for a user feedback rating.
-   * @param {Number} daysDelayed
-   */
-  static autoPromptForRating(daysDelayed = 14) {
-    console.warn("@deprecated");
-  }
-
-  /**
    * Hides the powered by bugbattle logo.
    * @param {boolean} hide
    */
@@ -569,7 +386,6 @@ class Gleap {
   }
 
   /**
-   * @deprecated Since v5.0 of the widget
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
@@ -578,36 +394,11 @@ class Gleap {
   }
 
   /**
-   * @deprecated Since v5.0 of the widget
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
   static setPrivacyPolicyUrl(privacyPolicyUrl) {
     this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
-  }
-
-  /**
-   * @deprecated Sets the customers email.
-   * @param {string} email
-   */
-  static setCustomerEmail(email) {
-    console.warn("setCustomerEmail @deprecated");
-  }
-
-  /**
-   * @deprecated Sets the customers name.
-   * @param {string} name
-   */
-  static setCustomerName(name) {
-    console.warn("setCustomerName @deprecated");
-  }
-
-  /**
-   * Sets the customers info.
-   * @param {string} customerInfo
-   */
-  static setCustomerInfo(customerInfo) {
-    console.warn("setCustomerInfo @deprecated");
   }
 
   /**
@@ -725,17 +516,9 @@ class Gleap {
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentBugReport("Rage click detected.");
       } else {
-        Gleap.startFlow(Gleap.FLOW_CRASH);
+        Gleap.startFlow(instance.flows.crash);
       }
     });
-  }
-
-  /**
-   * Sets a custom color (HEX-String i.e. #086EFB) as new main color scheme.
-   * @deprecated since version 6.0.0
-   */
-  static setMainColor(color) {
-    Gleap.setColors(color);
   }
 
   /**
@@ -856,19 +639,23 @@ class Gleap {
   }
 
   /**
-   * Adds a feedback type option.
+   * Sets the feedback flow options.
    */
-  static setFeedbackTypeOptions(feedbackTypeOptions) {
-    this.getInstance().feedbackTypeActions = feedbackTypeOptions;
+  static setFlows(flows) {
+    this.getInstance().flows = flows;
+  }
+
+  /**
+   * Sets the menu options.
+   */
+  static setMenuOptions(options) {
+    this.getInstance().feedbackTypeActions = options;
   }
 
   /**
    * Starts the bug reporting flow.
    */
-  static startFlow(
-    feedbackOptions = this.FLOW_DEFAULT,
-    silentBugReport = false
-  ) {
+  static startFlow(feedbackFlow, silentBugReport = false) {
     const sessionInstance = Session.getInstance();
     const instance = this.getInstance();
     if (instance.currentlySendingBug) {
@@ -877,6 +664,18 @@ class Gleap {
 
     if (!sessionInstance.ready) {
       return;
+    }
+
+    var feedbackOptions = {};
+
+    // Try to load the specific feedback flow.
+    if (feedbackFlow) {
+      feedbackOptions = instance.flows[feedbackFlow];
+    }
+
+    // Fallback
+    if (!feedbackOptions) {
+      feedbackOptions = instance.flows.default;
     }
 
     // Deep copy to prevent changes.
@@ -1043,7 +842,7 @@ class Gleap {
           )}\n`;
           Gleap.sendSilentBugReport(errorMessage);
         } else {
-          Gleap.startFlow(Gleap.FLOW_CRASH);
+          Gleap.startFlow(self.flows.crash);
         }
       }
 
@@ -1384,6 +1183,10 @@ class Gleap {
   }
 
   checkForInitType() {
+    if (window && window.onGleapLoaded) {
+      window.onGleapLoaded(this);
+    }
+
     setInterval(() => {
       if (this.replay && this.replay.isFull()) {
         Gleap.enableReplays(this.replaysEnabled);
@@ -1416,21 +1219,6 @@ class Gleap {
       self.overrideLanguage
     );
 
-    var constShoutoutText = "";
-
-    // Hide the shoutout if user clicked on it AND not forced to always show.
-    try {
-      var ftv = localStorage.getItem("bb-fto");
-      if (!ftv && self.showInfoPopup) {
-        constShoutoutText = `<div class="bb-feedback-button-shoutout"><div class="bb-feedback-button-text"><div class="bb-feedback-button-text-title"><b>${title}</b><br />${subtitle}</div></div></div>`;
-      }
-    } catch (exp) {}
-
-    // Hide shoutout if no text is set.
-    if (title.length === 0 && subtitle.length === 0) {
-      constShoutoutText = "";
-    }
-
     var buttonIcon = "";
     if (self.customButtonLogoUrl) {
       buttonIcon = `<img class="bb-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
@@ -1458,7 +1246,7 @@ class Gleap {
         this.overrideLanguage
       )}</div>`;
     } else {
-      elem.innerHTML = `${constShoutoutText}<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
+      elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
         "#192027"
       )}</div>`;
@@ -1765,6 +1553,8 @@ class Gleap {
       currentUrl: window.location.href,
       language: navigator.language || navigator.userLanguage,
       mobile: isMobile(),
+      sdkVersion: SDK_VERSION,
+      sdkType: "javascript",
     };
   }
 

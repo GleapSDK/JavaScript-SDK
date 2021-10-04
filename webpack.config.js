@@ -15,6 +15,8 @@ module.exports = {
     path: path.resolve(__dirname, "build"),
     library: "Gleap",
     libraryTarget: "umd",
+    libraryExport: "default",
+    globalObject: "this",
     clean: true,
   },
   optimization: {
@@ -36,7 +38,7 @@ module.exports = {
   devServer: {
     open: true,
     hot: true,
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     static: path.join(__dirname, "demo"),
     port: 4444,
   },
@@ -60,6 +62,9 @@ module.exports = {
     ],
   },
   plugins: [
+    new webpack.DefinePlugin({
+      SDK_VERSION: JSON.stringify(process.env.npm_package_version),
+    }),
     {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
