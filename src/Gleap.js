@@ -1184,7 +1184,7 @@ class Gleap {
 
   checkForInitType() {
     if (window && window.onGleapLoaded) {
-      window.onGleapLoaded(this);
+      window.onGleapLoaded(Gleap);
     }
 
     setInterval(() => {
