@@ -342,7 +342,7 @@ export const setLoadingIndicatorProgress = function (percentComplete) {
 
 export const loadIcon = function (name, color) {
   if (name === "bblogo") {
-    return `<svg width="41px" height="41px" viewBox="0 0 41 41" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    return `<svg class="bb-logo-logo" width="41px" height="41px" viewBox="0 0 41 41" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <title>Group</title>
     <defs>
         <path d="M22.8640197,35.1504495 C32.3776197,32.4224495 37.8784197,22.4987495 35.1504197,12.9852495 C32.4224197,3.4716495 22.4987197,-2.0291505 12.9852197,0.698809498 C3.47164965,3.4267795 -2.02915035,13.3504495 0.698809655,22.8640495 C5.63821965,40.0898495 24.2753197,40.0720495 24.2753197,40.0720495 L22.8640197,35.1504495 Z" id="path-1"></path>
