@@ -479,7 +479,7 @@
 
 .bb-feedback-type-description {
   font-family: "Inter", sans-serif;
-  color: #000000;
+  color: #59617d;
   font-size: 14px;
   line-height: 16px;
 }
@@ -1430,16 +1430,16 @@ textarea.bb-feedback-required {
   background: linear-gradient(135deg, #ed4337 0%, #c7372d 100%);
 }
 
+.bb-feedback-dialog--crashed .bb-feedback-dialog-header-title {
+  color: #fff;
+}
+
+.bb-feedback-dialog--crashed .bb-feedback-send-button {
+  color: #fff;
+}
+
 .bb-feedback-dialog--crashed .bb-feedback-send-button {
   background-color: #ed4337;
-}
-
-.bb-feedback-dialog--crashed .bb-feedback-dialog-infoitem {
-  border-top: 2px solid #ed433777;
-}
-
-.bb-feedback-dialog--crashed .bb-feedback-dialog-infoitem {
-  background-color: #ed433709;
 }
 
 .bb-feedback-dialog--crashed

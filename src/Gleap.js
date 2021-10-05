@@ -516,7 +516,7 @@ class Gleap {
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentBugReport("Rage click detected.");
       } else {
-        Gleap.startFeedbackFlow(instance.feedbackActions.crash);
+        Gleap.startFeedbackFlow("crash");
       }
     });
   }
@@ -571,7 +571,7 @@ class Gleap {
     instance.severity = priority;
     instance.feedbackType = "BUG";
 
-    this.startFeedbackFlow({}, true);
+    this.startFeedbackFlow(null, true);
   }
 
   /**
@@ -666,7 +666,7 @@ class Gleap {
       return;
     }
 
-    var feedbackOptions = {};
+    var feedbackOptions = null;
 
     // Try to load the specific feedback flow.
     if (feedbackFlow) {
@@ -842,7 +842,7 @@ class Gleap {
           )}\n`;
           Gleap.sendSilentBugReport(errorMessage);
         } else {
-          Gleap.startFeedbackFlow(self.feedbackActions.crash);
+          Gleap.startFeedbackFlow("crash");
         }
       }
 

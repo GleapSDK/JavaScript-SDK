@@ -479,7 +479,7 @@
 
 .bb-feedback-type-description {
   font-family: "Inter", sans-serif;
-  color: #000000;
+  color: #59617d;
   font-size: 14px;
   line-height: 16px;
 }
@@ -1432,14 +1432,6 @@ textarea.bb-feedback-required {
 
 .bb-feedback-dialog--crashed .bb-feedback-send-button {
   background-color: #ed4337;
-}
-
-.bb-feedback-dialog--crashed .bb-feedback-dialog-infoitem {
-  border-top: 2px solid #ed433777;
-}
-
-.bb-feedback-dialog--crashed .bb-feedback-dialog-infoitem {
-  background-color: #ed433709;
 }
 
 .bb-feedback-dialog--crashed
