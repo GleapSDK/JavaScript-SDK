@@ -124,7 +124,7 @@ class Gleap {
     const instance = this.getInstance();
 
     if (instance.initialized) {
-      console.warn("Bugbattle already initialized.");
+      console.warn("Gleap already initialized.");
       return;
     }
     instance.initialized = true;
@@ -355,7 +355,7 @@ class Gleap {
   }
 
   /**
-   * Hides the powered by bugbattle logo.
+   * Hides the powered by Gleap logo.
    * @param {boolean} hide
    */
   static enablePoweredBy(enabled) {

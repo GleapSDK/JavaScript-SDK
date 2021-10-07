@@ -1,8 +1,8 @@
-# Bugbattle JavaScript SDK
+# Gleap JavaScript SDK
 
-![Bugbattle JavaScript SDK Intro](https://github.com/Gleap/JavaScript-SDK/blob/master/imgs/JavaScriptSDK.png)
+![Gleap JavaScript SDK Intro](https://github.com/Gleap/JavaScript-SDK/blob/master/imgs/JavaScriptSDK.png)
 
-The Bugbattle SDK for JavScript is the easiest way to integrate Bugbattle into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. Gleap offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
+The Gleap SDK for JavScript is the easiest way to integrate Gleap into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. Gleap offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
 
 ## 📖 Docs & Examples
 
@@ -29,14 +29,14 @@ Checkout our [documentation](https://docs.gleap.io/docs/javascript-sdk) for full
 
 ### Installation via nom
 
-Install the **bugbattle** package via npm or yarn.
+Install the **Gleap** package via npm or yarn.
 ```
-npm install bugbattle --save
+npm install Gleap --save
 ```
 
-Import the **bugbattle** package.
+Import the **Gleap** package.
 ```
-import Gleap from 'bugbattle';
+import Gleap from 'Gleap';
 ```
 
 ### Manual installation
@@ -49,7 +49,7 @@ Add the following lines to your website's / webapp's ```<head>```-tag:
 
 ### Initialize the SDK
 
-Add the following code to to initialize the Gleap JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Bugbattle dashboard](https://app.gleap.io).
+Add the following code to to initialize the Gleap JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Gleap dashboard](https://app.gleap.io).
 
 ```
 Gleap.initialize("YOUR-SDK-TOKEN-HERE", Gleap.FEEDBACK_BUTTON);

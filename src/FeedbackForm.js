@@ -48,10 +48,10 @@ export const buildForm = function (form, overrideLanguage) {
       formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getShowAfterHTML(
         formItem.showAfter
       )}">
-        <input id="bugbattlePrivacyPolicy" class="bb-feedback-${
+        <input id="GleapPrivacyPolicy" class="bb-feedback-${
           formItem.name
         }" type="checkbox" required />
-        <label for="bugbattlePrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
+        <label for="GleapPrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
           "I read and accept the",
           overrideLanguage
         )}<a id="bb-privacy-policy-link" href="${

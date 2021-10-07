@@ -79,49 +79,6 @@ const loadCSSUrlResources = (data, basePath) => {
   );
 };
 
-const fetchLinkItemResource = (elem) => {
-  return new Promise((resolve, reject) => {
-    var isCSS =
-      elem.href.includes(".css") ||
-      (elem.rel && elem.rel.includes("stylesheet"));
-    if (elem && elem.href && isCSS) {
-      if (isBlacklisted(elem.href)) {
-        return resolve();
-      }
-
-      var basePath = elem.href.substring(0, elem.href.lastIndexOf("/"));
-      var xhr = new XMLHttpRequest();
-      xhr.onload = function () {
-        const styleNode = document.createElement("style");
-        styleNode.type = "text/css";
-        styleNode.setAttribute("bb-basepath", basePath);
-        styleNode.appendChild(document.createTextNode(xhr.responseText));
-        elem.parentNode.insertBefore(styleNode, elem.nextSibling);
-        elem.remove();
-        resolve();
-      };
-      xhr.onerror = function (err) {
-        resolve();
-      };
-      xhr.open("GET", elem.href);
-      xhr.send();
-    } else {
-      resolve();
-    }
-  });
-};
-
-const downloadAllLinkRefs = (dom) => {
-  const linkItems = dom.querySelectorAll("link");
-  const linkItemsPromises = [];
-  for (var i = 0; i < linkItems.length; i++) {
-    const item = linkItems[i];
-    linkItemsPromises.push(fetchLinkItemResource(item));
-  }
-
-  return Promise.all(linkItemsPromises);
-};
-
 const fetchCSSResource = (url) => {
   return new Promise((resolve, reject) => {
     if (url) {
@@ -202,69 +159,109 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
-const getStyleSheetContentForStyle = (styleElement) => {
-  const styleSheets = document.styleSheets;
-  if (styleSheets) {
-    for (var i = 0; i < styleSheets.length; i++) {
-      const styleSheet = styleSheets[i];
-      if (
-        styleSheet &&
-        styleElement &&
-        styleSheet.ownerNode &&
-        styleElement.getAttribute("bb-styleid") &&
-        styleSheet.ownerNode.getAttribute("bb-styleid") &&
-        styleElement.getAttribute("bb-styleid") ===
-          styleSheet.ownerNode.getAttribute("bb-styleid")
-      ) {
-        var cssRules = null;
-        if (styleSheet.cssRules) {
-          cssRules = styleSheet.cssRules;
-        } else if (styleSheet.rules) {
-          cssRules = styleSheet.rules;
-        }
-        if (cssRules) {
-          var cssTextContent = "";
-          for (var cssRuleItem in cssRules) {
-            if (cssRules[cssRuleItem].cssText) {
-              cssTextContent += cssRules[cssRuleItem].cssText;
-            }
+const replaceStyleNodes = (clone, styleSheet, cssTextContent) => {
+  {
+    var cloneTargetNode = null;
+    if (styleSheet.ownerNode) {
+      cloneTargetNode = clone.querySelector(
+        '[bb-styleid="' + styleSheet.ownerNode.getAttribute("bb-styleid") + '"]'
+      );
+    }
+
+    try {
+      if (cloneTargetNode) {
+        var replacementNode = null;
+        if (cssTextContent != "") {
+          // Create node.
+          const head = clone.querySelector("head");
+          var styleNode = window.document.createElement("style");
+          head.appendChild(styleNode);
+          styleNode.type = "text/css";
+          if (styleNode.styleSheet) {
+            styleNode.styleSheet.cssText = cssTextContent;
+          } else {
+            styleNode.appendChild(
+              window.document.createTextNode(cssTextContent)
+            );
           }
-          styleSheet.ownerNode.removeAttribute("bb-styleid");
-          return cssTextContent;
+          replacementNode = styleNode;
+        } else {
+          var linkNode = window.document.createElement("link");
+          linkNode.rel = "stylesheet";
+          linkNode.type = styleSheet.type;
+          linkNode.href = styleSheet.href;
+          linkNode.media = styleSheet.media;
+          replacementNode = linkNode;
+        }
+
+        if (replacementNode) {
+          cloneTargetNode.parentNode.insertBefore(
+            replacementNode,
+            cloneTargetNode
+          );
+          cloneTargetNode.remove();
         }
       }
-    }
+    } catch (exp) {}
   }
-
-  return styleElement.innerHTML;
 };
 
 const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    const styleSheet = document.styleSheets[i];
 
-  const styleTags = clone.querySelectorAll("style");
-  for (const style of styleTags) {
-    if (style) {
-      const stylesheetContent = getStyleSheetContentForStyle(style);
-      const basePath = style.getAttribute("bb-basepath");
-
-      if (remote) {
-        // No need to resolve nested resources.
-        style.innerHTML = stylesheetContent;
-      } else {
-        promises.push(
-          loadCSSUrlResources(stylesheetContent, basePath).then(
-            (replacedStyle) => {
-              style.innerHTML = replacedStyle;
-              return;
-            }
-          )
-        );
+    var cssRules = null;
+    try {
+      if (styleSheet.cssRules) {
+        cssRules = styleSheet.cssRules;
+      } else if (styleSheet.rules) {
+        cssRules = styleSheet.rules;
       }
+    } catch (exp) {}
+
+    var cssTextContent = "";
+    if (cssRules) {
+      for (var cssRuleItem in cssRules) {
+        if (cssRules[cssRuleItem].cssText) {
+          cssTextContent += cssRules[cssRuleItem].cssText;
+        }
+      }
+    }
+
+    if (cssTextContent != "" && styleSheet.href && !remote) {
+      // Resolve resources.
+      const basePath = styleSheet.href.substring(
+        0,
+        styleSheet.href.lastIndexOf("/")
+      );
+
+      promises.push(
+        loadCSSUrlResources(cssTextContent, basePath).then((replacedStyle) => {
+          return {
+            styletext: replacedStyle,
+            stylesheet: styleSheet,
+          };
+        })
+      );
+    } else {
+      promises.push(
+        Promise.resolve({
+          styletext: "",
+          stylesheet: styleSheet,
+        })
+      );
     }
   }
 
-  return Promise.all(promises);
+  return Promise.all(promises).then((results) => {
+    if (results) {
+      for (var i = 0; i < results.length; i++) {
+        replaceStyleNodes(clone, results[i].stylesheet, results[i].styletext);
+      }
+    }
+    return true;
+  });
 };
 
 const prepareRemoteData = (clone, remote) => {
@@ -281,14 +278,14 @@ const prepareRemoteData = (clone, remote) => {
     } else {
       return downloadAllImages(clone)
         .then(() => {
-          return downloadAllLinkRefs(clone).then(() => {
-            return downloadAllCSSUrlResources(clone, remote).then(() => {
-              resolve();
-            });
+          return downloadAllCSSUrlResources(clone, remote).then(() => {
+            resolve();
           });
         })
         .catch(() => {
-          console.warn("BB: Failed with resolving local resources. Please contact the Bugbattle support team.")
+          console.warn(
+            "Gleap: Failed with resolving local resources. Please contact the Gleap support team."
+          );
           resolve();
         });
     }
@@ -325,7 +322,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       canvasElems[i].setAttribute("bb-canvas-data", canvasElems[i].toDataURL());
     }
 
-    const styleTags = window.document.querySelectorAll("style");
+    const styleTags = window.document.querySelectorAll("style, link");
     for (var i = 0; i < styleTags.length; ++i) {
       styleTags[i].setAttribute("bb-styleid", i);
     }
@@ -346,7 +343,11 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     const linkImportElems = clone.querySelectorAll("link[rel=import]");
     for (var i = 0; i < linkImportElems.length; ++i) {
       const referenceNode = linkImportElems[i];
-      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
+      if (
+        referenceNode &&
+        referenceNode.childNodes &&
+        referenceNode.childNodes.length > 0
+      ) {
         const childNodes = referenceNode.childNodes;
         while (childNodes.length > 0) {
           referenceNode.parentNode.insertBefore(childNodes[0], referenceNode);
@@ -354,7 +355,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
         referenceNode.remove();
       }
     }
-    
+
     // Copy values
     const selectElems = clone.querySelectorAll("select, textarea, input");
     for (var i = 0; i < selectElems.length; ++i) {
@@ -383,12 +384,12 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       elem.removeAttribute("bb-canvas-data");
     }
 
-    // Remove all scripts
-    const scriptElems = clone.querySelectorAll("script, noscript");
+    // Remove all scripts & style
+    const scriptElems = clone.querySelectorAll("script, noscript, style");
     for (var i = 0; i < scriptElems.length; ++i) {
       scriptElems[i].remove();
     }
-    
+
     // Cleanup base path
     const baseElems = clone.querySelectorAll("base");
     for (var i = 0; i < baseElems.length; ++i) {
@@ -396,7 +397,9 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     }
 
     // Fix base node
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/')) + "/";
+    const baseUrl =
+      window.location.href.substring(0, window.location.href.lastIndexOf("/")) +
+      "/";
     const baseNode = window.document.createElement("base");
     baseNode.href = baseUrl;
     const head = clone.querySelector("head");
@@ -415,7 +418,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     for (var i = 0; i < bbElems.length; ++i) {
       bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
     }
-    
+
     prepareRemoteData(clone, remote).then(() => {
       const html = documentToHTML(clone);
 
