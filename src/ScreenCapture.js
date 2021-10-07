@@ -159,13 +159,11 @@ const downloadAllImages = (dom) => {
   return Promise.all(imgItemsPromises);
 };
 
-const replaceStyleNodes = (clone, styleSheet, cssTextContent) => {
+const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
   {
     var cloneTargetNode = null;
     if (styleSheet.ownerNode) {
-      cloneTargetNode = clone.querySelector(
-        '[bb-styleid="' + styleSheet.ownerNode.getAttribute("bb-styleid") + '"]'
-      );
+      cloneTargetNode = clone.querySelector('[bb-styleid="' + styleId + '"]');
     }
 
     try {
@@ -228,27 +226,31 @@ const downloadAllCSSUrlResources = (clone, remote) => {
         }
       }
     }
-
-    if (cssTextContent != "" && styleSheet.href && !remote) {
+    if (cssTextContent != "" && !remote) {
       // Resolve resources.
-      const basePath = styleSheet.href.substring(
-        0,
-        styleSheet.href.lastIndexOf("/")
-      );
-
+      const baseTags = document.getElementsByTagName("base");
+      var basePathURL = baseTags.length
+        ? baseTags[0].href.substr(location.origin.length, 999)
+        : window.location.href;
+      if (styleSheet.href) {
+        basePathURL = styleSheet.href;
+      }
+      const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
       promises.push(
         loadCSSUrlResources(cssTextContent, basePath).then((replacedStyle) => {
           return {
             styletext: replacedStyle,
             stylesheet: styleSheet,
+            styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
           };
         })
       );
     } else {
       promises.push(
         Promise.resolve({
-          styletext: "",
+          styletext: cssTextContent,
           stylesheet: styleSheet,
+          styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
         })
       );
     }
@@ -257,7 +259,12 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   return Promise.all(promises).then((results) => {
     if (results) {
       for (var i = 0; i < results.length; i++) {
-        replaceStyleNodes(clone, results[i].stylesheet, results[i].styletext);
+        replaceStyleNodes(
+          clone,
+          results[i].stylesheet,
+          results[i].styletext,
+          results[i].styleId,
+        );
       }
     }
     return true;
@@ -385,7 +392,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     }
 
     // Remove all scripts & style
-    const scriptElems = clone.querySelectorAll("script, noscript, style");
+    const scriptElems = clone.querySelectorAll("script, noscript");
     for (var i = 0; i < scriptElems.length; ++i) {
       scriptElems[i].remove();
     }
