@@ -1,9 +1,5 @@
 const Gleap = window.Gleap;
 
-window.onGleapLoaded = () => {
-  console.log("LOADED.");
-};
-
 Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.identify("123", {
@@ -219,7 +215,7 @@ Gleap.setAppBuildNumber("2345");
 
 Gleap.enableReplays(true);
 
-Gleap.setColors("#ffffff", "#ffffff", "#ffffff");
+Gleap.setColors("red", "blue", "green");
 
 Gleap.enablePoweredBy(true);
 
