@@ -4,7 +4,12 @@ window.onGleapLoaded = () => {
   console.log("LOADED.");
 };
 
-// Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+
+Gleap.identify("123", {
+  name: "XOXO",
+  email: "test@gleap.io",
+});
 
 // Sample for feedback type options
 Gleap.setMenuOptions([

@@ -2,9 +2,8 @@ export default class Session {
   apiUrl = "https://api.gleap.io";
   sdkKey = null;
   session = {
-    id: null,
-    hash: null,
-    type: null,
+    gleapId: null,
+    gleapHash: null,
     name: "",
     email: "",
   };
@@ -33,18 +32,17 @@ export default class Session {
   };
 
   injectSession = (http) => {
-    if (http) {
+    if (http && this.session) {
       http.setRequestHeader("Api-Token", this.sdkKey);
-      http.setRequestHeader("Gleap-Id", this.session.id);
-      http.setRequestHeader("Gleap-Hash", this.session.hash);
+      http.setRequestHeader("Gleap-Id", this.session.gleapId);
+      http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
     }
   };
 
   clearSession = (renewSession = true) => {
     try {
-      localStorage.removeItem(`bb-session-id`);
-      localStorage.removeItem(`bb-session-hash`);
-      localStorage.removeItem(`bb-session-type`);
+      localStorage.removeItem(`gleap-id`);
+      localStorage.removeItem(`gleap-hash`);
     } catch (exp) {}
 
     this.session = {
@@ -61,38 +59,21 @@ export default class Session {
     }
   };
 
-  startSession = (userId, userHash, userData) => {
+  startSession = () => {
     const self = this;
     return new Promise((resolve, reject) => {
       const http = new XMLHttpRequest();
-      http.open("POST", this.apiUrl + "/sessions");
+      http.open("POST", self.apiUrl + "/sessions");
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      http.setRequestHeader("Api-Token", this.sdkKey);
-
-      // Set the guest id & hash
+      http.setRequestHeader("Api-Token", self.sdkKey);
       try {
-        const sessionType = localStorage.getItem(`bb-session-type`);
-        const sessionId = localStorage.getItem(`bb-session-id`);
-        const sessionHash = localStorage.getItem(`bb-session-hash`);
-        if (sessionType === "GUEST") {
-          if (sessionId && sessionHash) {
-            http.setRequestHeader("Guest-Id", sessionId);
-            http.setRequestHeader("Guest-Hash", sessionHash);
-          }
-        } else {
-          // Existing session from cache.
-          if (sessionId && sessionHash && !userId && !userHash) {
-            http.setRequestHeader("User-Id", sessionId);
-            http.setRequestHeader("User-Hash", sessionHash);
-          }
+        const gleapId = localStorage.getItem(`gleap-id`);
+        const gleapHash = localStorage.getItem(`gleap-hash`);
+        if (gleapId && gleapHash) {
+          http.setRequestHeader("Gleap-Id", gleapId);
+          http.setRequestHeader("Gleap-Hash", gleapHash);
         }
       } catch (exp) {}
-
-      // Additionally set the user id
-      if (userId && userHash) {
-        http.setRequestHeader("User-Id", userId);
-        http.setRequestHeader("User-Hash", userHash);
-      }
 
       http.onerror = (error) => {
         self.clearSession(false);
@@ -105,9 +86,8 @@ export default class Session {
               const sessionData = JSON.parse(http.responseText);
 
               try {
-                localStorage.setItem(`bb-session-id`, sessionData.id);
-                localStorage.setItem(`bb-session-hash`, sessionData.hash);
-                localStorage.setItem(`bb-session-type`, sessionData.type);
+                localStorage.setItem(`gleap-id`, sessionData.gleapId);
+                localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
               } catch (exp) {}
 
               self.session = sessionData;
@@ -131,7 +111,62 @@ export default class Session {
           }
         }
       };
-      http.send(JSON.stringify(userData));
+      http.send(JSON.stringify({}));
+    });
+  };
+
+  identifySession = (userId, userData) => {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      // Wait for gleap session to be ready.
+      this.setOnSessionReady(function () {
+        const http = new XMLHttpRequest();
+        http.open("POST", self.apiUrl + "/sessions/identify");
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http.setRequestHeader("Api-Token", self.sdkKey);
+        try {
+          const gleapId = localStorage.getItem(`gleap-id`);
+          const gleapHash = localStorage.getItem(`gleap-hash`);
+          if (gleapId && gleapHash) {
+            http.setRequestHeader("Gleap-Id", gleapId);
+            http.setRequestHeader("Gleap-Hash", gleapHash);
+          }
+        } catch (exp) {}
+
+        http.onerror = () => {
+          reject();
+        };
+        http.onreadystatechange = function (e) {
+          if (http.readyState === XMLHttpRequest.DONE) {
+            if (http.status === 200 || http.status === 201) {
+              try {
+                const sessionData = JSON.parse(http.responseText);
+
+                try {
+                  localStorage.setItem(`gleap-id`, sessionData.gleapId);
+                  localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
+                } catch (exp) {}
+
+                self.session = sessionData;
+                self.ready = true;
+
+                resolve(sessionData);
+              } catch (exp) {
+                reject(exp);
+              }
+            } else {
+              self.clearSession(false);
+              reject();
+            }
+          }
+        };
+        http.send(
+          JSON.stringify({
+            ...userData,
+            userId,
+          })
+        );
+      });
     });
   };
 }
