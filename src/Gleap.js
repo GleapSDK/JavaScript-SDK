@@ -120,8 +120,16 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, gleapId, gleapHash) {
     const instance = this.getInstance();
+
+    // Set default session (i.e. from the app SDK).
+    if (gleapId && gleapHash) {
+      try {
+        localStorage.setItem(`gleap-id`, gleapId);
+        localStorage.getItem(`gleap-hash`, gleapHash);
+      } catch (exp) {}
+    }
 
     if (instance.initialized) {
       console.warn("Gleap already initialized.");
@@ -593,7 +601,10 @@ class Gleap {
       instance.customLogoUrl,
       instance.poweredByHidden,
       function () {},
-      `${translateText("Hi", instance.overrideLanguage)} <span id="bb-user-name">${
+      `${translateText(
+        "Hi",
+        instance.overrideLanguage
+      )} <span id="bb-user-name">${
         sessionInstance.session.name ? sessionInstance.session.name : ""
       }</span> ${instance.welcomeIcon}`,
       translateText(
