@@ -150,6 +150,12 @@ export default class Session {
                 self.session = sessionData;
                 self.ready = true;
 
+                // Optionally update UI.
+                const userNameInfo = document.querySelector("#bb-user-name");
+                if (userNameInfo && sessionData.name) {
+                  userNameInfo.textContent = sessionData.name;
+                }
+
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);

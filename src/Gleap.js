@@ -593,9 +593,9 @@ class Gleap {
       instance.customLogoUrl,
       instance.poweredByHidden,
       function () {},
-      `${translateText("Hi", instance.overrideLanguage)} ${
+      `${translateText("Hi", instance.overrideLanguage)} <span id="bb-user-name">${
         sessionInstance.session.name ? sessionInstance.session.name : ""
-      } ${instance.welcomeIcon}`,
+      }</span> ${instance.welcomeIcon}`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
         instance.overrideLanguage
