@@ -1,6 +1,6 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://0.0.0.0:9000");
+// Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.identify("123", {
   name: "XOXO",

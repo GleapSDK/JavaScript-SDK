@@ -122,6 +122,11 @@ class Gleap {
    */
   static initialize(sdkKey, gleapId, gleapHash) {
     const instance = this.getInstance();
+    if (instance.initialized) {
+      console.warn("Gleap already initialized.");
+      return;
+    }
+    instance.initialized = true;
 
     // Set default session (i.e. from the app SDK).
     if (gleapId && gleapHash) {
@@ -130,12 +135,6 @@ class Gleap {
         localStorage.getItem(`gleap-hash`, gleapHash);
       } catch (exp) {}
     }
-
-    if (instance.initialized) {
-      console.warn("Gleap already initialized.");
-      return;
-    }
-    instance.initialized = true;
 
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
@@ -170,7 +169,7 @@ class Gleap {
   /**
    * Clears the current user session
    */
-  static logout() {
+  static clearIdentity() {
     Session.getInstance().clearSession();
   }
 
