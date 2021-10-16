@@ -176,9 +176,7 @@ export const getFormData = function (form) {
   var formData = {};
   for (let i = 0; i < form.length; i++) {
     const formItem = form[i];
-    const formElement = document.querySelector(
-      `.bb-feedback-${formItem.name}`
-    );
+    const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
     if (formElement && formElement.value) {
       formData[formItem.name] = formElement.value;
     }
@@ -216,17 +214,33 @@ export const validateForm = function (form) {
   return formValid;
 };
 
-export const validateFormItem = function (formItem) {
+const validateEmail = function (email) {
+  const re =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+};
+
+export const validateFormItem = function (formItem, showError = true) {
   var valid = true;
-  const formElement = document.querySelector(
-    `.bb-feedback-${formItem.name}`
-  );
+  const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
     formItem.required
   ) {
     if (!formElement.value || formElement.value === "") {
-      formElement.classList.add("bb-feedback-required");
+      showError && formElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.classList.remove("bb-feedback-required");
+    }
+  }
+  if (
+    formItem.type === "text" &&
+    formItem.inputtype === "email" &&
+    formItem.required
+  ) {
+    if (!validateEmail(formElement.value)) {
+      showError && formElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
       formElement.classList.remove("bb-feedback-required");
@@ -234,7 +248,8 @@ export const validateFormItem = function (formItem) {
   }
   if (formItem.type === "rating" && formItem.required) {
     if (!formElement.value || formElement.value === "") {
-      formElement.parentElement.classList.add("bb-feedback-required");
+      showError &&
+        formElement.parentElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
       formElement.parentElement.classList.remove("bb-feedback-required");
@@ -242,7 +257,8 @@ export const validateFormItem = function (formItem) {
   }
   if (formItem.type === "privacypolicy" && formItem.required) {
     if (!formElement.checked) {
-      formElement.parentElement.classList.add("bb-feedback-required");
+      showError &&
+        formElement.parentElement.classList.add("bb-feedback-required");
       valid = false;
     } else {
       formElement.parentElement.classList.remove("bb-feedback-required");
@@ -266,9 +282,7 @@ export const hookForm = function (form) {
     if (!formItem) {
       break;
     }
-    const formInput = document.querySelector(
-      `.bb-feedback-${formItem.name}`
-    );
+    const formInput = document.querySelector(`.bb-feedback-${formItem.name}`);
     if (formItem.type === "text") {
       if (formItem.remember) {
         try {
@@ -286,8 +300,11 @@ export const hookForm = function (form) {
       if (formItem.defaultValue && formItem.hideOnDefaultSet) {
         formInput.parentElement.classList.add("bb-feedback-form--hidden");
       }
-      formInput.oninput = function () {
+      formInput.addEventListener("focusout", function () {
         validateFormItem(formItem);
+      });
+      formInput.oninput = function () {
+        validateFormItem(formItem, false);
       };
     }
     if (formItem.type === "privacypolicy") {
@@ -296,6 +313,8 @@ export const hookForm = function (form) {
       };
     }
     if (formItem.type === "textarea") {
+      formInput.style.height = "inherit";
+      formInput.style.height = formInput.scrollHeight + "px";
       formInput.oninput = function () {
         formInput.style.height = "inherit";
         formInput.style.height = formInput.scrollHeight + "px";

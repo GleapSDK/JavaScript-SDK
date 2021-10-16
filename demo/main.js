@@ -2,11 +2,6 @@ const Gleap = window.Gleap;
 
 // Gleap.setApiUrl("http://0.0.0.0:9000");
 
-Gleap.identify("123", {
-  name: "XOXO",
-  email: "test@gleap.io",
-});
-
 // Sample for feedback type options
 Gleap.setMenuOptions([
   {
@@ -168,7 +163,7 @@ Gleap.setFeedbackActions({
     feedbackType: "INQUIRY",
     disableUserScreenshot: true,
   },
-  featurerequests: {
+  featurerequest: {
     title: "Request a feature",
     description: "What feature or improvement would you like to see?",
     thanksMessage:
@@ -180,6 +175,16 @@ Gleap.setFeedbackActions({
         type: "text",
         inputtype: "email",
         name: "reportedBy",
+        hideOnDefaultSet: true,
+        required: true,
+        remember: true,
+      },
+      {
+        title: "XX",
+        placeholder: "Your e-mail",
+        type: "text",
+        inputtype: "email",
+        name: "xx",
         hideOnDefaultSet: true,
         required: true,
         remember: true,
@@ -215,7 +220,7 @@ Gleap.setAppBuildNumber("2345");
 
 Gleap.enableReplays(true);
 
-Gleap.setColors("red", "blue", "green");
+Gleap.setColors("green", "blue", "green");
 
 Gleap.enablePoweredBy(true);
 
@@ -224,10 +229,10 @@ Gleap.enableCrashDetector(true, false);
 Gleap.enableRageClickDetector(true);
 
 // Sets the app's build number.
-Gleap.setAppBuildNumber(5);
+Gleap.setAppBuildNumber(64);
 
 // Sets the app's version code.
-Gleap.setAppVersionCode("v5.0");
+Gleap.setAppVersionCode("v6.0");
 
 // Attaches custom data to the bug reports.
 Gleap.attachCustomData({
@@ -235,4 +240,4 @@ Gleap.attachCustomData({
   data2: "Unicorn",
 });
 
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");

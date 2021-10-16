@@ -1440,6 +1440,7 @@ class Gleap {
       customEventLog: this.eventArray,
       type: this.feedbackType,
       formData: this.formData,
+      isSilent: this.silentBugReport,
     };
 
     if (screenshotData.fileUrl) {

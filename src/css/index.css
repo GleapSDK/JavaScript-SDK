@@ -522,6 +522,7 @@
   padding: 50px;
   display: none;
   flex-grow: 1;
+  min-height: 270px;
 }
 
 .bb-feedback-dialog-success svg {
@@ -589,7 +590,13 @@
   margin-top: 7px;
   margin-bottom: 0px;
   cursor: pointer;
-  box-shadow: 0px 5px 8px 0px rgba(0, 0, 0, 0.05);
+}
+
+.bb-feedback-send-button--disabled {
+  background-color: #DEE1EA !important;
+  color: #9B9FAE !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
 }
 
 .bb-feedback-send-button:hover {
@@ -1198,6 +1205,7 @@ textarea.bb-feedback-required {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
+  min-height: 270px;
 }
 
 .bb--progress-ring__circle {
@@ -1428,6 +1436,14 @@ textarea.bb-feedback-required {
 
 .bb-feedback-dialog--crashed .bb-feedback-dialog-header {
   background: linear-gradient(135deg, #ed4337 0%, #c7372d 100%);
+}
+
+.bb-feedback-dialog--crashed .bb-feedback-dialog-header-title {
+  color: #fff;
+}
+
+.bb-feedback-dialog--crashed .bb-feedback-send-button {
+  color: #fff;
 }
 
 .bb-feedback-dialog--crashed .bb-feedback-send-button {
