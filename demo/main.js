@@ -1,7 +1,5 @@
 const Gleap = window.Gleap;
 
-// Gleap.setApiUrl("http://0.0.0.0:9000");
-
 // Sample for feedback type options
 Gleap.setMenuOptions([
   {
@@ -240,4 +238,4 @@ Gleap.attachCustomData({
   data2: "Unicorn",
 });
 
-Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");

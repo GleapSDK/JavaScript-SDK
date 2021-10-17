@@ -522,7 +522,7 @@
   padding: 50px;
   display: none;
   flex-grow: 1;
-  min-height: 270px;
+  min-height: 220px;
 }
 
 .bb-feedback-dialog-success svg {
@@ -1205,7 +1205,7 @@ textarea.bb-feedback-required {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  min-height: 270px;
+  min-height: 220px;
 }
 
 .bb--progress-ring__circle {
@@ -1293,8 +1293,10 @@ textarea.bb-feedback-required {
 .bb-screenshot-editor-drag-info {
   font-family: "Inter", sans-serif;
   position: absolute;
-  top: -100px;
-  left: -100px;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%, 0);
   background-color: #485bff;
   border-radius: 21px;
   box-sizing: border-box;
@@ -1386,9 +1388,10 @@ textarea.bb-feedback-required {
     left: 50%;
     transform: translate(-50%, 0);
   }
-  .bb-screenshot-editor-drag-info--dragged {
-    transform: none;
-  }
+}
+
+.bb-screenshot-editor-drag-info--dragged {
+  transform: none;
 }
 
 @media only screen and (max-width: 600px) {
