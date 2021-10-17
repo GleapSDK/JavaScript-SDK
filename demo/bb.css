@@ -309,7 +309,8 @@
   opacity: 0.6;
 }
 
-.bb-feedback-dialog-header-title {
+.bb-feedback-dialog-header-title,
+.bb-feedback-dialog-header-title span {
   font-weight: normal;
   text-align: center;
   color: #000000;
