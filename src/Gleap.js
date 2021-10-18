@@ -34,6 +34,17 @@ if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
   };
 }
 
+const gleapDataParser = function (data) {
+  if (typeof data === "string" || data instanceof String) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return {};
+    }
+  }
+  return data;
+};
+
 class Gleap {
   widgetOnly = false;
   widgetCallback = null;
@@ -174,7 +185,7 @@ class Gleap {
    * @param {*} userData
    */
   static identify(userId, userData) {
-    Session.getInstance().identifySession(userId, userData);
+    Session.getInstance().identifySession(userId, gleapDataParser(userData));
   }
 
   /**
@@ -465,7 +476,10 @@ class Gleap {
    */
   static attachCustomData(data) {
     const instance = this.getInstance();
-    instance.customData = Object.assign(instance.customData, data);
+    instance.customData = Object.assign(
+      instance.customData,
+      gleapDataParser(data)
+    );
   }
 
   /**
@@ -800,7 +814,7 @@ class Gleap {
       date: new Date(),
     };
     if (data) {
-      log.data = data;
+      log.data = gleapDataParser(data);
     }
     this.eventArray.push(log);
   }
