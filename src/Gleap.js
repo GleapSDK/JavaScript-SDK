@@ -666,9 +666,7 @@ class Gleap {
       for (var i = 0; i < instance.customActionCallbacks.length; i++) {
         var callback = instance.customActionCallbacks[i];
         if (callback) {
-          callback({
-            name,
-          });
+          callback(name);
         }
       }
     }
