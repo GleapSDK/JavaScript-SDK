@@ -316,12 +316,62 @@ const deepClone = (host) => {
     };
 
     const clone = node.cloneNode();
+    if (node instanceof HTMLCanvasElement) {
+      clone.setAttribute("bb-canvas-data", node.toDataURL());
+    }
+
+    if (node instanceof HTMLCanvasElement) {
+      clone.setAttribute("bb-canvas-data", node.toDataURL());
+    }
+
+    if (node.nodeType == Node.ELEMENT_NODE) {
+      const tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
+      if (
+        tagName == "IFRAME" ||
+        tagName == "VIDEO" ||
+        tagName == "EMBED" ||
+        tagName == "IMG" ||
+        tagName == "SVG"
+      ) {
+        var height = 0;
+        if (node.style.boxSizing === "border-box") {
+          height =
+            node.height +
+            node.marginTop +
+            node.marginBottom +
+            node.bordorTop +
+            node.borderBottom;
+        } else {
+          height = node.height;
+        }
+
+        clone.setAttribute("bb-element", true);
+        clone.setAttribute("bb-height", height);
+      }
+
+      if (tagName == "DIV" && (node.scrollTop > 0 || node.scrollLeft > 0)) {
+        clone.setAttribute("bb-scrollpos", true);
+        clone.setAttribute("bb-scrolltop", node.scrollTop);
+        clone.setAttribute("bb-scrollleft", node.scrollLeft);
+      }
+
+      if (
+        tagName === "SELECT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "INPUT"
+      ) {
+        clone.setAttribute("bb-data-value", node.value);
+        if (node.type === "checkbox" || node.type === "radio") {
+          if (node.checked) {
+            clone.setAttribute("bb-data-checked", true);
+          }
+        }
+      }
+    }
+
     parent.appendChild(clone);
     if (node.shadowRoot) {
-      walkTree(
-        node.shadowRoot.firstChild,
-        clone.attachShadow({ mode: "open" })
-      );
+      walkTree(node.shadowRoot.firstChild, clone);
     }
 
     walkTree(node.firstChild, clone);
@@ -334,47 +384,9 @@ const deepClone = (host) => {
 
 const prepareScreenshotData = (snapshotPosition, remote) => {
   return new Promise((resolve, reject) => {
-    const imgElems = window.document.querySelectorAll(
-      "iframe, video, embed, img, svg"
-    );
-    for (var i = 0; i < imgElems.length; ++i) {
-      const elem = imgElems[i];
-      var height = 0;
-
-      if (elem.style.boxSizing === "border-box") {
-        height =
-          elem.height +
-          elem.marginTop +
-          elem.marginBottom +
-          elem.bordorTop +
-          elem.borderBottom;
-      } else {
-        height = elem.height;
-      }
-
-      elem.setAttribute("bb-element", true);
-      elem.setAttribute("bb-height", height);
-    }
-
-    // Prepare canvas
-    const canvasElems = window.document.querySelectorAll("canvas");
-    for (var i = 0; i < canvasElems.length; ++i) {
-      canvasElems[i].setAttribute("bb-canvas-data", canvasElems[i].toDataURL());
-    }
-
     const styleTags = window.document.querySelectorAll("style, link");
     for (var i = 0; i < styleTags.length; ++i) {
       styleTags[i].setAttribute("bb-styleid", i);
-    }
-
-    const divElems = window.document.querySelectorAll("div");
-    for (var i = 0; i < divElems.length; ++i) {
-      const elem = divElems[i];
-      if (elem.scrollTop > 0 || elem.scrollLeft > 0) {
-        elem.setAttribute("bb-scrollpos", true);
-        elem.setAttribute("bb-scrolltop", elem.scrollTop);
-        elem.setAttribute("bb-scrollleft", elem.scrollLeft);
-      }
     }
 
     const clone = deepClone(window.document.documentElement);
@@ -394,34 +406,6 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
         }
         referenceNode.remove();
       }
-    }
-
-    // Copy values
-    const selectElems = clone.querySelectorAll("select, textarea, input");
-    for (var i = 0; i < selectElems.length; ++i) {
-      const elem = selectElems[i];
-      const tagName = elem.tagName ? elem.tagName.toUpperCase() : elem.tagName;
-      if (
-        tagName === "SELECT" ||
-        tagName === "TEXTAREA" ||
-        tagName === "INPUT"
-      ) {
-        elem.setAttribute("bb-data-value", elem.value);
-        if (elem.type === "checkbox" || elem.type === "radio") {
-          if (elem.checked) {
-            elem.setAttribute("bb-data-checked", true);
-          }
-        }
-      }
-    }
-
-    // Cleanup
-    const allElems = window.document.querySelectorAll("*");
-    for (var i = 0; i < allElems.length; ++i) {
-      const elem = allElems[i];
-      elem.removeAttribute("bb-element");
-      elem.removeAttribute("bb-height");
-      elem.removeAttribute("bb-canvas-data");
     }
 
     // Remove all scripts & style

@@ -1192,8 +1192,8 @@ textarea.bb-feedback-required {
 .bb-feedback-dialog-error {
   background-color: #da0e0710;
   padding: 16px;
-  margin: 32px;
-  margin-bottom: -16px;
+  margin: 25px;
+  margin-bottom: -5px;
   border-radius: 6px;
   font-size: 14px;
   font-family: "Inter", sans-serif;
