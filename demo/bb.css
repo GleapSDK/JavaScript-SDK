@@ -322,6 +322,10 @@
   line-height: 36px;
 }
 
+#bb-user-name {
+  text-transform: capitalize;
+}
+
 .bb-feedback-dialog-header-description {
   font-weight: normal;
   text-align: center;
@@ -523,7 +527,6 @@
   padding: 50px;
   display: none;
   flex-grow: 1;
-  min-height: 220px;
 }
 
 .bb-feedback-dialog-success svg {
@@ -1206,7 +1209,6 @@ textarea.bb-feedback-required {
   justify-content: center;
   align-items: center;
   flex-grow: 1;
-  min-height: 220px;
 }
 
 .bb--progress-ring__circle {

@@ -24,7 +24,7 @@ const getShowAfterHTML = function (showAfter) {
 export const buildForm = function (form, overrideLanguage) {
   var formHTML = "";
   var formContainsShowAfter = false;
-  for (let i = 0; i < form.length; i++) {
+  for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
@@ -174,7 +174,7 @@ export const buildForm = function (form, overrideLanguage) {
 
 export const getFormData = function (form) {
   var formData = {};
-  for (let i = 0; i < form.length; i++) {
+  for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
     if (formElement && formElement.value) {
@@ -185,7 +185,7 @@ export const getFormData = function (form) {
 };
 
 export const rememberForm = function (form) {
-  for (let i = 0; i < form.length; i++) {
+  for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (formItem.remember) {
       const formElement = document.querySelector(
@@ -205,7 +205,7 @@ export const rememberForm = function (form) {
 
 export const validateForm = function (form) {
   var formValid = true;
-  for (let i = 0; i < form.length; i++) {
+  for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!validateFormItem(formItem)) {
       formValid = false;
@@ -277,7 +277,7 @@ export const validateFormItem = function (formItem, showError = true) {
 };
 
 export const hookForm = function (form) {
-  for (let i = 0; i < form.length; i++) {
+  for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;

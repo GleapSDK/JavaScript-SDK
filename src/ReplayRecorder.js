@@ -107,7 +107,7 @@ export default class ReplayRecorder {
           }
 
           try {
-            let resourcePath = matchedUrl;
+            var resourcePath = matchedUrl;
             if (basePath) {
               resourcePath = basePath + "/" + matchedUrl;
             }
@@ -178,8 +178,8 @@ export default class ReplayRecorder {
   };
 
   fetchImageResources() {
-    let resolvePromises = [];
-    let resourceKeys = Object.keys(this.resourcesToResolve);
+    var resolvePromises = [];
+    var resourceKeys = Object.keys(this.resourcesToResolve);
     for (var i = 0; i < resourceKeys.length; i++) {
       if (!isBlacklisted(resourceKeys[i])) {
         resolvePromises.push(this.fetchItemResource(resourceKeys[i]));
@@ -228,7 +228,7 @@ export default class ReplayRecorder {
   }
 
   cleanupResources() {
-    let resourceKeys = Object.keys(this.resourcesToResolve);
+    var resourceKeys = Object.keys(this.resourcesToResolve);
     for (var i = 0; i < resourceKeys.length; i++) {
       if (this.resourcesToResolve[resourceKeys[i]] === "--") {
         delete this.resourcesToResolve[resourceKeys[i]];
@@ -347,7 +347,7 @@ export default class ReplayRecorder {
 
         obj[""] = tag;
         const attrs = {};
-        let hasAttr = false;
+        var hasAttr = false;
         for (const a of node.attributes) {
           const name = a.name;
           if (this.allowAttribute(node, name)) {
@@ -445,7 +445,7 @@ export default class ReplayRecorder {
     delete e.ReplayRecID;
     const listener = e.ownerDocument.ReplayRecInner.scrollListener;
     e.removeEventListener("scroll", listener, { passive: true });
-    for (let c = e.firstChild; c; c = c.nextSibling) {
+    for (var c = e.firstChild; c; c = c.nextSibling) {
       if (c.ReplayRecID) {
         this.deleteAllReplayRecIDs(c);
       }
@@ -538,7 +538,7 @@ export default class ReplayRecorder {
       }
       for (const node of nodesWithAddedChildren) {
         delete node.ReplayRecNodesAdded;
-        for (let c = node.lastChild; c; c = c.previousSibling) {
+        for (var c = node.lastChild; c; c = c.previousSibling) {
           if (c.ReplayRecID) {
             continue;
           }

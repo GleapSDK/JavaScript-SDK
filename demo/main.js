@@ -4,7 +4,7 @@ const Gleap = window.Gleap;
 Gleap.setMenuOptions([
   {
     title: "Report an issue",
-    description: "Found a bug? Let us know.",
+    description: "Found a bug? var us know.",
     icon: "https://i.ibb.co/CJV3jZ0/Subtract-1.png",
     actionFlow: "default",
     color: "#F4CAC8",
@@ -29,7 +29,7 @@ Gleap.setFeedbackActions({
   bugreporting: {
     title: "Report an issue",
     description:
-      "Add more details to your screenshot to let us know what needs fixing.",
+      "Add more details to your screenshot to var us know what needs fixing.",
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [

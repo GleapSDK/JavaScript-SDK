@@ -133,9 +133,9 @@ export const createScreenshotEditor = function (
     ctx.drawImage(baseImage, 0, 0);
 
     // Replay
-    for (let i = 0; i < drawingHistory.length; i++) {
+    for (var i = 0; i < drawingHistory.length; i++) {
       const steps = drawingHistory[i];
-      for (let j = 0; j < steps.length; j++) {
+      for (var j = 0; j < steps.length; j++) {
         const step = steps[j];
         if (step.t === "t") {
           ctx.lineWidth = step.lw;

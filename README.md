@@ -44,7 +44,7 @@ import Gleap from 'Gleap';
 Add the following lines to your website's / webapp's ```<head>```-tag:
 ```
 <script src="https://jssdk.gleap.io/latest/index.js"></script>
-<script>let Gleap = window.Gleap.default;</script>
+<script>var Gleap = window.Gleap.default;</script>
 ```
 
 ### Initialize the SDK

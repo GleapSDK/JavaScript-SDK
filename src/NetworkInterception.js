@@ -42,7 +42,6 @@ class GleapNetworkIntercepter {
     const size = new TextEncoder().encode(text).length;
     const kiloBytes = size / 1024;
     const megaBytes = kiloBytes / 1024;
-    console.log("OBJ size: " + megaBytes);
     return megaBytes;
   }
 

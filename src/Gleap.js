@@ -23,6 +23,17 @@ import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 
+if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
+  HTMLCanvasElement.prototype.__originalGetContext =
+    HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (type, options) {
+    return this.__originalGetContext(type, {
+      ...options,
+      preserveDrawingBuffer: true,
+    });
+  };
+}
+
 class Gleap {
   widgetOnly = false;
   widgetCallback = null;
@@ -59,7 +70,7 @@ class Gleap {
   feedbackButtonText = "Feedback";
   widgetInfo = {
     title: "Feedback",
-    subtitle: "Let us know how we can do better.",
+    subtitle: "var us know how we can do better.",
     dialogSubtitle: "Report a bug, or share your feedback with us.",
   };
   originalConsoleLog;
@@ -784,7 +795,7 @@ class Gleap {
       this.eventArray.shift();
     }
 
-    let log = {
+    var log = {
       name,
       date: new Date(),
     };
@@ -861,6 +872,14 @@ class Gleap {
     };
   }
 
+  truncateString(str, num) {
+    if (str.length > num) {
+      return str.slice(0, num) + "...";
+    } else {
+      return str;
+    }
+  }
+
   addLog(args, priority) {
     if (!args) {
       return;
@@ -871,7 +890,7 @@ class Gleap {
       log += args[i] + " ";
     }
     this.logArray.push({
-      log,
+      log: this.truncateString(log, 1000),
       date: new Date(),
       priority,
     });
@@ -1463,7 +1482,6 @@ class Gleap {
     const size = new TextEncoder().encode(JSON.stringify(obj)).length;
     const kiloBytes = size / 1024;
     const megaBytes = kiloBytes / 1024;
-    console.log("OBJ size: " + megaBytes);
   }
 
   showSuccessAndClose() {

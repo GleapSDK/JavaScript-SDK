@@ -29,10 +29,10 @@ export default class ReplayRecFrame {
     };
 
     this.mouseListener = (event) => {
-      let x = event.clientX;
-      let y = event.clientY;
-      let target = event.target;
-      let mouseEventNode = this.node;
+      var x = event.clientX;
+      var y = event.clientY;
+      var target = event.target;
+      var mouseEventNode = this.node;
       if (!mouseEventNode.contains(target)) {
         return;
       }
@@ -41,7 +41,7 @@ export default class ReplayRecFrame {
       const nodeRect = mouseEventNode.getBoundingClientRect();
       x -= nodeRect.left;
       y -= nodeRect.top;
-      let key;
+      var key;
       switch (event.type) {
         case "mousemove":
           key = REPLAYREC_MOUSE_MOVE;
@@ -127,8 +127,8 @@ export default class ReplayRecFrame {
 
     node.ownerDocument.ReplayRecInner = this;
 
-    let initialActions = [];
-    let serializedNode = this.rec.serializeNode(this.node, initialActions);
+    var initialActions = [];
+    var serializedNode = this.rec.serializeNode(this.node, initialActions);
     if (serializedNode) {
       this.initialState = serializedNode;
       this.initialActions = initialActions;

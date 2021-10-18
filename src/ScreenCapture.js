@@ -18,7 +18,14 @@ const documentToHTML = (clone) => {
       ">";
   }
 
-  html += clone.outerHTML;
+  if (clone && clone.childNodes && clone.childNodes.length > 0) {
+    for (var i = 0; i < clone.childNodes.length; i++) {
+      if (clone.childNodes[i]) {
+        html += clone.childNodes[i].outerHTML;
+      }
+    }
+  }
+
   return html;
 };
 
@@ -371,10 +378,6 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     }
 
     const clone = deepClone(window.document.documentElement);
-
-    console.log(clone);
-
-    debugger;
 
     // Fix for web imports (depracted).
     const linkImportElems = clone.querySelectorAll("link[rel=import]");

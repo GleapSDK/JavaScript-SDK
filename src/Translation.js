@@ -10,7 +10,7 @@ export const translateText = (key, overrideLanguage) => {
 
   var customTranslation = {};
   const translationKeys = Object.keys(instance.customTranslation);
-  for (let i = 0; i < translationKeys.length; i++) {
+  for (var i = 0; i < translationKeys.length; i++) {
     const translationKey = translationKeys[i];
     if (language && language.includes(translationKey)) {
       if (instance.customTranslation[translationKey]) {

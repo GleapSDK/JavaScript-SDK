@@ -40,9 +40,6 @@
           window.webkit.messageHandlers &&
           window.webkit.messageHandlers[name]
         ) {
-          console.log("POST?");
-          console.log(name);
-          console.log(data);
           window.webkit.messageHandlers[name].postMessage(data);
         }
       });
