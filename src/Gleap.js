@@ -891,6 +891,7 @@ class Gleap {
       self.originalConsoleLog = origConsole;
 
       return {
+        ...origConsole,
         log: function () {
           self.addLog(arguments, "INFO");
           origConsole.log && origConsole.log.apply(origConsole, arguments);
@@ -1456,6 +1457,13 @@ class Gleap {
     }
 
     http.send(JSON.stringify(bugReportData));
+  }
+
+  jsonSize(obj) {
+    const size = new TextEncoder().encode(JSON.stringify(obj)).length;
+    const kiloBytes = size / 1024;
+    const megaBytes = kiloBytes / 1024;
+    console.log("OBJ size: " + megaBytes);
   }
 
   showSuccessAndClose() {

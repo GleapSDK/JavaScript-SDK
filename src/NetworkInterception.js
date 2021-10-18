@@ -38,15 +38,23 @@ class GleapNetworkIntercepter {
     }
   }
 
+  calculateTextSize(text) {
+    const size = new TextEncoder().encode(text).length;
+    const kiloBytes = size / 1024;
+    const megaBytes = kiloBytes / 1024;
+    console.log("OBJ size: " + megaBytes);
+    return megaBytes;
+  }
+
   start() {
+    const self = this;
     this.interceptNetworkRequests({
       onFetch: (params, bbRequestId) => {
         if (this.stopped || !bbRequestId || !this.requests) {
           return;
         }
-
-        if (params.length >= 2) {
-          var method = params[1].method ? params[1].method : "GET";
+        if (params.length >= 2 && params[1]) {
+          var method = params[1] && params[1].method ? params[1].method : "GET";
           this.requests[bbRequestId] = {
             request: {
               payload: params[1].body,
@@ -80,7 +88,10 @@ class GleapNetworkIntercepter {
           this.requests[bbRequestId]["response"] = {
             status: req.status,
             statusText: req.statusText,
-            responseText: responseText,
+            responseText:
+              self.calculateTextSize(responseText) > 0.5
+                ? "<response_too_large>"
+                : responseText,
           };
 
           this.calcRequestTime(bbRequestId);
@@ -236,7 +247,6 @@ class GleapNetworkIntercepter {
             .apply(this, arguments)
             .then(function (data) {
               return data.blob().then((blobData) => {
-
                 data.text = function () {
                   return self.blobToTextPromise(blobData);
                 };
@@ -255,7 +265,7 @@ class GleapNetworkIntercepter {
 
                 data.arrayBuffer = function () {
                   return blobData.arrayBuffer();
-                }
+                };
 
                 callback.onFetchLoad(data, bbRequestId);
 

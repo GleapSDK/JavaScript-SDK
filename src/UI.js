@@ -29,7 +29,8 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-dialog-header-back:hover svg {
       fill: ${contrastColor};
     }
-    .bb-feedback-dialog-header-title {
+    .bb-feedback-dialog-header-title,
+    .bb-feedback-dialog-header-title span {
       color: ${contrastHeaderColor};
     }
     .bb-feedback-dialog-header-title-small {

@@ -263,7 +263,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
           clone,
           results[i].stylesheet,
           results[i].styletext,
-          results[i].styleId,
+          results[i].styleId
         );
       }
     }
@@ -297,6 +297,32 @@ const prepareRemoteData = (clone, remote) => {
         });
     }
   });
+};
+
+const deepClone = (host) => {
+  const cloneNode = (node, parent) => {
+    const walkTree = (nextn, nextp) => {
+      while (nextn) {
+        cloneNode(nextn, nextp);
+        nextn = nextn.nextSibling;
+      }
+    };
+
+    const clone = node.cloneNode();
+    parent.appendChild(clone);
+    if (node.shadowRoot) {
+      walkTree(
+        node.shadowRoot.firstChild,
+        clone.attachShadow({ mode: "open" })
+      );
+    }
+
+    walkTree(node.firstChild, clone);
+  };
+
+  const fragment = document.createDocumentFragment();
+  cloneNode(host, fragment);
+  return fragment;
 };
 
 const prepareScreenshotData = (snapshotPosition, remote) => {
@@ -344,7 +370,11 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       }
     }
 
-    const clone = window.document.documentElement.cloneNode(true);
+    const clone = deepClone(window.document.documentElement);
+
+    console.log(clone);
+
+    debugger;
 
     // Fix for web imports (depracted).
     const linkImportElems = clone.querySelectorAll("link[rel=import]");
