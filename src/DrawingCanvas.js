@@ -12,21 +12,21 @@ export const createScreenshotEditor = function (
   elem.className = "bb-feedback-dialog-container";
   elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadeinright'>
     <div class="bb-feedback-dialog-header bb-feedback-dialog-header--back">
-        <div class="bb-feedback-dialog-header-back ${
-          !showBack && "bb-feedback-dialog-header-back--close"
-        }">
-          ${loadIcon(showBack ? "arrowleft" : "close", "#192027")}
-        </div>
-        <div class="bb-feedback-dialog-header-text">
-            <div class="bb-feedback-dialog-header-title-small">${translateText(
-              "Mark the bug",
-              overrideLanguage
-            )}</div>
-        </div>
-          <div class="bb-feedback-dialog-header-next">
-          <span>${translateText("Next", overrideLanguage)}</span>
-          ${loadIcon("arrowleft", "#000")}
-        </div>
+      <div class="bb-feedback-dialog-header-back ${
+        !showBack && "bb-feedback-dialog-header-back--close"
+      }">
+        ${loadIcon(showBack ? "arrowleft" : "close", "#192027")}
+      </div>
+      <div class="bb-feedback-dialog-header-text">
+          <div class="bb-feedback-dialog-header-title-small">${translateText(
+            "Mark the bug",
+            overrideLanguage
+          )}</div>
+      </div>
+      <div class="bb-feedback-dialog-header-next">
+        <span>${translateText("Next", overrideLanguage)}</span>
+        ${loadIcon("arrowleft", "#000")}
+      </div>
     </div>
     <div class="bb-feedback-dialog-body">
         <div class="bb-screenshot-editor-canv">
