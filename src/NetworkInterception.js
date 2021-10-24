@@ -1,7 +1,7 @@
 class GleapNetworkIntercepter {
   requestId = 0;
   requests = {};
-  maxRequests = 15;
+  maxRequests = 10;
   stopped = false;
 
   getRequests() {

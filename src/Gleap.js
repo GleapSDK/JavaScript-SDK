@@ -57,6 +57,7 @@ class Gleap {
   eventArray = [];
   customData = {};
   formData = {};
+  logMaxLength = 500;
   buttonType = Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
   sessionStart = new Date();
@@ -805,10 +806,6 @@ class Gleap {
   }
 
   logEvent(name, data) {
-    if (this.eventArray.length > 1000) {
-      this.eventArray.shift();
-    }
-
     var log = {
       name,
       date: new Date(),
@@ -817,6 +814,10 @@ class Gleap {
       log.data = gleapDataParser(data);
     }
     this.eventArray.push(log);
+
+    if (this.eventArray.length > this.logMaxLength) {
+      this.eventArray.shift();
+    }
   }
 
   stopBugReportingAnalytics() {
@@ -908,6 +909,10 @@ class Gleap {
       date: new Date(),
       priority,
     });
+
+    if (this.logArray.length > this.logMaxLength) {
+      this.logArray.shift();
+    }
   }
 
   static disableConsoleLogOverwrite() {
