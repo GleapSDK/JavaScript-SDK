@@ -1410,6 +1410,12 @@ textarea.bb-feedback-required {
     display: flex;
     flex-direction: column;
   }
+
+  .bb-feedback-button--bottomleft .bb-feedback-dialog {
+    left: 10px;
+    right: 10px;
+  }
+
   .bb-feedback-dialog-header-close {
     display: flex;
   }

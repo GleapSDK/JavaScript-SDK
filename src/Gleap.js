@@ -1508,7 +1508,7 @@ class Gleap {
     self.showSuccessMessage();
     setTimeout(function () {
       self.closeGleap();
-    }, 2500);
+    }, 2800);
   }
 
   showError() {

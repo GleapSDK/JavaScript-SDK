@@ -597,8 +597,8 @@
 }
 
 .bb-feedback-send-button--disabled {
-  background-color: #DEE1EA !important;
-  color: #9B9FAE !important;
+  background-color: #dee1ea !important;
+  color: #9b9fae !important;
   opacity: 1 !important;
   cursor: not-allowed !important;
 }
@@ -1410,6 +1410,12 @@ textarea.bb-feedback-required {
     display: flex;
     flex-direction: column;
   }
+
+  .bb-feedback-button--bottomleft .bb-feedback-dialog {
+    left: 10px;
+    right: 10px;
+  }
+
   .bb-feedback-dialog-header-close {
     display: flex;
   }
