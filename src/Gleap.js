@@ -1055,7 +1055,7 @@ class Gleap {
         }
       },
       this.openedMenu,
-      `bb-anim-fadeinright ${getWidgetDialogClass()}`
+      `bb-anim-fadeinright ${getWidgetDialogClass()} bb-feedback-dialog-form`
     );
 
     this.openedMenu = true;

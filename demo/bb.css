@@ -491,9 +491,10 @@
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 19px;
   text-align: left;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   margin-top: 0px;
   font-weight: bold;
   color: #000000;
@@ -501,7 +502,8 @@
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
+  font-size: 15px;
+  line-height: 19px;
   text-align: left;
   margin-bottom: 8px;
   margin-top: 0px;
@@ -541,10 +543,15 @@
   z-index: 1;
 }
 
+.bb-feedback-dialog-form .bb-feedback-dialog-body {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+}
+
 .bb-feedback-inputgroup {
   display: flex;
   justify-content: center;
-  margin-bottom: 13px;
+  margin-bottom: 15px;
   padding: 0px;
   flex-direction: column;
 }
@@ -609,13 +616,13 @@
 
 .bb-feedback-inputgroup > input,
 .bb-feedback-inputgroup input {
+  font-size: 15px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   font-family: "Inter", sans-serif;
   width: auto;
   padding: 11px 12px;
-  font-size: 16px;
   outline: none;
   border: 1px solid #eee;
   background-color: #fff;
@@ -1006,6 +1013,8 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-inputgroup textarea {
+  font-size: 15px;
+  line-height: 19px;
   font-family: "Inter", sans-serif;
   outline: none;
   -webkit-appearance: none;
@@ -1016,8 +1025,6 @@ textarea.bb-feedback-required {
   width: auto;
   height: auto;
   padding: 11px 12px;
-  font-size: 16px;
-  line-height: 19px;
   margin: 0px;
   box-sizing: border-box;
   border: 1px solid #eee;
@@ -1436,6 +1443,20 @@ textarea.bb-feedback-required {
     animation-duration: 0s;
     animation-fill-mode: both;
     animation-name: none;
+  }
+
+  .bb-feedback-inputgroup textarea {
+    font-size: 16px;
+  }
+
+  .bb-feedback-inputgroup > input,
+  .bb-feedback-inputgroup input {
+    font-size: 16px;
+  }
+
+  .bb-feedback-dialog-form .bb-feedback-dialog-body {
+    max-height: calc(100vh - 84px);
+    overflow-y: auto;
   }
 }
 

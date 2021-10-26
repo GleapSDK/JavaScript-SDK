@@ -238,4 +238,4 @@ Gleap.attachCustomData({
   data2: "Unicorn",
 });
 
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
