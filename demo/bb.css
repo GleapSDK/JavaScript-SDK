@@ -273,6 +273,7 @@
   line-height: 19px;
   font-family: "Inter", sans-serif;
   color: #000000;
+  font-weight: normal;
 }
 
 .bb-feedback-form--hidden {
@@ -487,6 +488,7 @@
   color: #59617d;
   font-size: 14px;
   line-height: 16px;
+  font-weight: normal;
 }
 
 .bb-feedback-elementtitle {
@@ -629,6 +631,7 @@
   border-radius: 8px;
   box-sizing: border-box;
   color: #000000;
+  font-weight: normal;
 }
 
 .bb-feedback-inputgroup > input:focus,
@@ -1015,6 +1018,7 @@ textarea.bb-feedback-required {
 .bb-feedback-inputgroup textarea {
   font-size: 15px;
   line-height: 19px;
+  font-weight: normal;
   font-family: "Inter", sans-serif;
   outline: none;
   -webkit-appearance: none;
@@ -1044,6 +1048,7 @@ textarea.bb-feedback-required {
   font-family: "Inter", sans-serif;
   padding: 8px 0px;
   font-size: 14px;
+  font-weight: normal;
   flex-direction: row;
   width: 100%;
   justify-content: center;
@@ -1057,6 +1062,8 @@ textarea.bb-feedback-required {
   text-decoration: underline;
   font-family: "Inter", sans-serif;
   color: #000000;
+  font-size: 14px;
+  font-weight: normal;
 }
 
 .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked),
@@ -1072,6 +1079,7 @@ textarea.bb-feedback-required {
   position: relative;
   padding-left: 2em;
   font-size: 14px;
+  font-weight: normal;
   color: #000000;
   line-height: 1.7;
   cursor: pointer;
@@ -1106,6 +1114,7 @@ textarea.bb-feedback-required {
   position: absolute;
   top: 0.525em;
   left: 0.18em;
+  font-family: "Inter", sans-serif;
   font-size: 1.375em;
   color: #485bff;
   line-height: 0;
@@ -1147,6 +1156,7 @@ textarea.bb-feedback-required {
   font-weight: 600;
   color: #222426;
   font-size: 14px;
+  font-weight: normal;
 }
 
 .bb-feedback-image {
@@ -1204,6 +1214,7 @@ textarea.bb-feedback-required {
   margin-bottom: -5px;
   border-radius: 6px;
   font-size: 14px;
+  font-weight: normal;
   font-family: "Inter", sans-serif;
   color: #da0e07;
   border: 1px solid #da0e07;
