@@ -310,7 +310,7 @@ class Gleap {
 
   /**
    * Sets the button type.
-   * @param {boolean} buttonType
+   * @param {string} buttonType
    */
   static setButtonType(buttonType) {
     this.getInstance().buttonType = buttonType;

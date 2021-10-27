@@ -232,6 +232,8 @@ Gleap.setAppBuildNumber(64);
 // Sets the app's version code.
 Gleap.setAppVersionCode("v6.0");
 
+Gleap.setButtonType("BUTTON_CLASSIC");
+
 // Attaches custom data to the bug reports.
 Gleap.attachCustomData({
   test1: "Battle",

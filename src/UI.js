@@ -52,7 +52,8 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
         border-color: ${primaryColor};
     }
     .bb-feedback-button-classic {
-      background-color: ${primaryColor};
+      background-color: ${buttonColor};
+      color: ${contrastButtonColor};
     }
     .bb-screenshot-editor-dot {
       background-color: ${primaryColor};
