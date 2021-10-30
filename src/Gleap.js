@@ -1805,9 +1805,9 @@ class Gleap {
       editorDot.parentNode.removeChild(editorDot);
       editorRectangle.parentNode.removeChild(editorRectangle);
 
-      Gleap.appendNode(editorDot);
-      Gleap.appendNode(editorRectangle);
-
+      bugReportingEditor.appendChild(editorDot);
+      bugReportingEditor.appendChild(editorRectangle);
+      
       bugReportingEditor.classList.add("bb-screenshot-editor--marked");
       addedMarker = true;
 
