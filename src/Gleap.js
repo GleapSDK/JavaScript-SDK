@@ -46,6 +46,7 @@ const gleapDataParser = function (data) {
 };
 
 class Gleap {
+  uiContainer = null;
   widgetOnly = false;
   widgetCallback = null;
   overrideLanguage = "";
@@ -137,6 +138,14 @@ class Gleap {
    */
   constructor() {
     this.init();
+  }
+
+  /**
+   * Sets a custom UI container.
+   */
+  static setUIContainer(container) {
+    const instance = this.getInstance();
+    instance.uiContainer = container;
   }
 
   /**
@@ -1305,7 +1314,12 @@ class Gleap {
     elem.onclick = function () {
       self.feedbackButtonPressed();
     };
-    document.body.appendChild(elem);
+
+    if (Gleap.getInstance().uiContainer) {
+      Gleap.getInstance().uiContainer.appendChild(elem);
+    } else {
+      document.body.appendChild(elem);
+    }
 
     if (this.buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
       elem.classList.add("bb-feedback-button--disabled");

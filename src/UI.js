@@ -199,7 +199,12 @@ export const createWidgetDialog = function (
         </div>
       </div>
     </div>`;
-  document.body.appendChild(elem);
+
+  if (Gleap.getInstance().uiContainer) {
+    Gleap.getInstance().uiContainer.appendChild(elem);
+  } else {
+    document.body.appendChild(elem);
+  }
 
   const buttonType = Gleap.getInstance().buttonType;
   if (buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
