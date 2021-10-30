@@ -99,7 +99,7 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
 
   const node = document.createElement("style");
   node.innerHTML = colorStyleSheet;
-  document.body.appendChild(node);
+  Gleap.appendNode(node);
 };
 
 export const getHeaderImage = function (customLogoUrl) {
@@ -199,12 +199,7 @@ export const createWidgetDialog = function (
         </div>
       </div>
     </div>`;
-
-  if (Gleap.getInstance().uiContainer) {
-    Gleap.getInstance().uiContainer.appendChild(elem);
-  } else {
-    document.body.appendChild(elem);
-  }
+  Gleap.appendNode(elem);
 
   const buttonType = Gleap.getInstance().buttonType;
   if (buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {

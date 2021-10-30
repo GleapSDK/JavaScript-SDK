@@ -354,6 +354,19 @@ class Gleap {
   }
 
   /**
+   * Appends a node to the widgets container.
+   * @param {*} node
+   */
+  static appendNode(node) {
+    const instance = this.getInstance();
+    if (instance.uiContainer) {
+      instance.uiContainer.appendChild(node);
+    } else {
+      document.body.appendChild(node);
+    }
+  }
+
+  /**
    * Sets the native widget callback
    * @param {*} widgetCallback
    */
@@ -1315,11 +1328,7 @@ class Gleap {
       self.feedbackButtonPressed();
     };
 
-    if (Gleap.getInstance().uiContainer) {
-      Gleap.getInstance().uiContainer.appendChild(elem);
-    } else {
-      document.body.appendChild(elem);
-    }
+    Gleap.appendNode(elem);
 
     if (this.buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
       elem.classList.add("bb-feedback-button--disabled");
@@ -1682,7 +1691,7 @@ class Gleap {
         </div>
       </div>
     `;
-    document.body.appendChild(bugReportingEditor);
+    Gleap.appendNode(bugReportingEditor);
 
     const editorBorderLayer = document.querySelector(
       ".bb-screenshot-editor-borderlayer"
@@ -1796,8 +1805,9 @@ class Gleap {
       editorDot.parentNode.removeChild(editorDot);
       editorRectangle.parentNode.removeChild(editorRectangle);
 
-      bugReportingEditor.appendChild(editorDot);
-      bugReportingEditor.appendChild(editorRectangle);
+      Gleap.appendNode(editorDot);
+      Gleap.appendNode(editorRectangle);
+
       bugReportingEditor.classList.add("bb-screenshot-editor--marked");
       addedMarker = true;
 
