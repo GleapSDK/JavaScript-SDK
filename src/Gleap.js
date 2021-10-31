@@ -108,6 +108,7 @@ class Gleap {
   };
   eventListeners = {};
   feedbackActions = {};
+  actionToPerform = undefined;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -1166,6 +1167,8 @@ class Gleap {
       this.networkIntercepter.setStopped(false);
     } catch (exp) {}
 
+    this.actionToPerform = undefined;
+
     if (this.widgetCallback) {
       this.widgetCallback("closeGleap", {});
     }
@@ -1443,6 +1446,13 @@ class Gleap {
     }
   }
 
+  performAction(action) {
+    if (action && action.outbound && action.actionType) {
+      this.actionToPerform = action;
+      Gleap.startFeedbackFlow(action.actionType);
+    }
+  }
+
   sendBugReportToServer(screenshotData) {
     const self = this;
     const http = new XMLHttpRequest();
@@ -1504,6 +1514,10 @@ class Gleap {
       formData: this.formData,
       isSilent: this.silentBugReport,
     };
+
+    if (this.actionToPerform && this.actionToPerform.outbound) {
+      bugReportData["outbound"] = this.actionToPerform.outbound;
+    }
 
     if (screenshotData.fileUrl) {
       bugReportData["screenshotUrl"] = screenshotData.fileUrl;
@@ -1807,7 +1821,7 @@ class Gleap {
 
       bugReportingEditor.appendChild(editorDot);
       bugReportingEditor.appendChild(editorRectangle);
-      
+
       bugReportingEditor.classList.add("bb-screenshot-editor--marked");
       addedMarker = true;
 
