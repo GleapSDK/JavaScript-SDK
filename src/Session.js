@@ -81,7 +81,11 @@ export default class Session {
     this.session = session;
     this.ready = true;
 
-    if (session.action) {
+    if (
+      session.action &&
+      session.action.outbound &&
+      session.action.actionType
+    ) {
       this.performAction(session.action);
     }
   };
