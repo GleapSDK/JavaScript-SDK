@@ -58,6 +58,7 @@ class Gleap {
   eventArray = [];
   customData = {};
   formData = {};
+  excludeData = {};
   logMaxLength = 500;
   buttonType = Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
@@ -1119,6 +1120,9 @@ class Gleap {
     // Send form
     const formData = getFormData(feedbackOptions.form);
     self.formData = formData;
+    self.excludeData = feedbackOptions.excludeData
+      ? feedbackOptions.excludeData
+      : {};
     self.feedbackType = feedbackOptions.feedbackType
       ? feedbackOptions.feedbackType
       : "BUG";
@@ -1128,6 +1132,7 @@ class Gleap {
         type: self.feedbackType,
         formData: self.formData,
         screenshot: self.screenshot,
+        excludeData: self.excludeData,
       });
     } else {
       self.checkReplayLoaded();
@@ -1150,13 +1155,18 @@ class Gleap {
   }
 
   takeScreenshotAndSend() {
-    return startScreenCapture(this.snapshotPosition, this.isLiveSite)
-      .then((data) => {
-        this.sendBugReportToServer(data);
-      })
-      .catch((err) => {
-        this.showError();
-      });
+    if (this.excludeData && this.excludeData.screenshot) {
+      // Screenshot excluded.
+      this.sendBugReportToServer();
+    } else {
+      return startScreenCapture(this.snapshotPosition, this.isLiveSite)
+        .then((data) => {
+          this.sendBugReportToServer(data);
+        })
+        .catch((err) => {
+          this.showError();
+        });
+    }
   }
 
   reportCleanupOnClose() {
@@ -1519,16 +1529,34 @@ class Gleap {
       bugReportData["outbound"] = this.actionToPerform.outbound;
     }
 
-    if (screenshotData.fileUrl) {
+    if (screenshotData && screenshotData.fileUrl) {
       bugReportData["screenshotUrl"] = screenshotData.fileUrl;
     }
 
-    if (screenshotData.html) {
+    if (screenshotData && screenshotData.html) {
       bugReportData["screenshotData"] = screenshotData;
     }
 
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
+    }
+
+    // Exclude data logic.
+    const keysToExclude = Object.keys(this.excludeData);
+    for (let i = 0; i < keysToExclude.length; i++) {
+      const keyToExclude = keysToExclude[i];
+      if (this.excludeData[keyToExclude] === true) {
+        delete bugReportData[keyToExclude];
+
+        if (keyToExclude === "screenshot") {
+          delete bugReportData.screenshotData;
+          delete bugReportData.screenshotUrl;
+        }
+
+        if (keyToExclude === "replays") {
+          delete bugReportData.webReplay;
+        }
+      }
     }
 
     http.send(JSON.stringify(bugReportData));

@@ -29,9 +29,10 @@ Gleap.setMenuOptions([
 
 Gleap.setFeedbackActions({
   bugreporting: {
+    default: true,
     title: "Report an issue",
     description:
-      "Add more details to your screenshot to var us know what needs fixing.",
+      "Add more details to your screenshot to let us know what needs fixing.",
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [
@@ -57,8 +58,18 @@ Gleap.setFeedbackActions({
         name: "send",
       },
     ],
+    excludeData: {
+      customData: false,
+      metaData: false,
+      consoleLog: false,
+      networkLogs: false,
+      customEventLog: false,
+      screenshot: false,
+      replays: false,
+    },
   },
   crash: {
+    default: true,
     title: "Problem detected",
     description:
       "Oh, oh looks like something went wrong here. By submitting this form, you will help us fix the issue and improve big time.",
@@ -89,8 +100,18 @@ Gleap.setFeedbackActions({
     ],
     feedbackType: "BUG",
     disableUserScreenshot: true,
+    excludeData: {
+      customData: false,
+      metaData: false,
+      consoleLog: false,
+      networkLogs: false,
+      customEventLog: false,
+      screenshot: false,
+      replays: false,
+    },
   },
   rating: {
+    default: true,
     title: "Rate your experience",
     thanksMessage: "Your feedback means a lot to us. Thanks for your rating.",
     form: [
@@ -131,8 +152,18 @@ Gleap.setFeedbackActions({
     ],
     feedbackType: "RATING",
     disableUserScreenshot: true,
+    excludeData: {
+      customData: false,
+      metaData: false,
+      consoleLog: false,
+      networkLogs: false,
+      customEventLog: false,
+      screenshot: false,
+      replays: false,
+    },
   },
   contact: {
+    default: true,
     title: "Contact us",
     description: "Our support team is always here to help.",
     thanksMessage: "Thanks for your message. We will be in touch shortly",
@@ -162,8 +193,18 @@ Gleap.setFeedbackActions({
     ],
     feedbackType: "INQUIRY",
     disableUserScreenshot: true,
+    excludeData: {
+      customData: false,
+      metaData: false,
+      consoleLog: false,
+      networkLogs: false,
+      customEventLog: false,
+      screenshot: true,
+      replays: true,
+    },
   },
-  featurerequest: {
+  featurerequests: {
+    default: true,
     title: "Request a feature",
     description: "What feature or improvement would you like to see?",
     thanksMessage:
@@ -175,16 +216,6 @@ Gleap.setFeedbackActions({
         type: "text",
         inputtype: "email",
         name: "reportedBy",
-        hideOnDefaultSet: true,
-        required: true,
-        remember: true,
-      },
-      {
-        title: "XX",
-        placeholder: "Your e-mail",
-        type: "text",
-        inputtype: "email",
-        name: "xx",
         hideOnDefaultSet: true,
         required: true,
         remember: true,
@@ -211,6 +242,15 @@ Gleap.setFeedbackActions({
     ],
     feedbackType: "FEATURE_REQUEST",
     disableUserScreenshot: true,
+    excludeData: {
+      customData: false,
+      metaData: false,
+      consoleLog: false,
+      networkLogs: false,
+      customEventLog: false,
+      screenshot: true,
+      replays: true,
+    },
   },
 });
 
