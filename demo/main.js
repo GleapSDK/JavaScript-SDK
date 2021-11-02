@@ -1,6 +1,6 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://localhost:9000");
+// Gleap.setApiUrl("http://localhost:9000");
 
 // Sample for feedback type options
 Gleap.setMenuOptions([

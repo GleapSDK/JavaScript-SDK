@@ -48,6 +48,7 @@ const gleapDataParser = function (data) {
 class Gleap {
   uiContainer = null;
   widgetOnly = false;
+  widgetStartFlow = undefined;
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
@@ -309,6 +310,14 @@ class Gleap {
    */
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
+  }
+
+  /**
+   * Set widget only start feedback flow
+   * @param {boolean} widgetStartFlow
+   */
+  static setWidgetStartFlow(widgetStartFlow) {
+    this.getInstance().widgetStartFlow = widgetStartFlow;
   }
 
   /**
@@ -1281,11 +1290,14 @@ class Gleap {
     if (this.widgetOnly) {
       // App widget
       const self = this;
-
-      if (self.feedbackTypeActions.length > 0) {
-        Gleap.startFeedbackTypeSelection();
+      if (self.widgetStartFlow) {
+        Gleap.startFeedbackFlow(self.widgetStartFlow);
       } else {
-        Gleap.startFeedbackFlow();
+        if (self.feedbackTypeActions.length > 0) {
+          Gleap.startFeedbackTypeSelection();
+        } else {
+          Gleap.startFeedbackFlow();
+        }
       }
     } else {
       // Web widget
