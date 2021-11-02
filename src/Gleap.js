@@ -48,6 +48,7 @@ const gleapDataParser = function (data) {
 class Gleap {
   uiContainer = null;
   widgetOnly = false;
+  widgetStartFlow = undefined;
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
@@ -58,6 +59,7 @@ class Gleap {
   eventArray = [];
   customData = {};
   formData = {};
+  excludeData = {};
   logMaxLength = 500;
   buttonType = Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT;
   feedbackType = "BUG";
@@ -108,6 +110,7 @@ class Gleap {
   };
   eventListeners = {};
   feedbackActions = {};
+  actionToPerform = undefined;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -307,6 +310,14 @@ class Gleap {
    */
   static isWidgetOnly(widgetOnly) {
     this.getInstance().widgetOnly = widgetOnly;
+  }
+
+  /**
+   * Set widget only start feedback flow
+   * @param {boolean} widgetStartFlow
+   */
+  static setWidgetStartFlow(widgetStartFlow) {
+    this.getInstance().widgetStartFlow = widgetStartFlow;
   }
 
   /**
@@ -1118,6 +1129,9 @@ class Gleap {
     // Send form
     const formData = getFormData(feedbackOptions.form);
     self.formData = formData;
+    self.excludeData = feedbackOptions.excludeData
+      ? feedbackOptions.excludeData
+      : {};
     self.feedbackType = feedbackOptions.feedbackType
       ? feedbackOptions.feedbackType
       : "BUG";
@@ -1127,6 +1141,7 @@ class Gleap {
         type: self.feedbackType,
         formData: self.formData,
         screenshot: self.screenshot,
+        excludeData: self.excludeData,
       });
     } else {
       self.checkReplayLoaded();
@@ -1149,13 +1164,18 @@ class Gleap {
   }
 
   takeScreenshotAndSend() {
-    return startScreenCapture(this.snapshotPosition, this.isLiveSite)
-      .then((data) => {
-        this.sendBugReportToServer(data);
-      })
-      .catch((err) => {
-        this.showError();
-      });
+    if (this.excludeData && this.excludeData.screenshot) {
+      // Screenshot excluded.
+      this.sendBugReportToServer();
+    } else {
+      return startScreenCapture(this.snapshotPosition, this.isLiveSite)
+        .then((data) => {
+          this.sendBugReportToServer(data);
+        })
+        .catch((err) => {
+          this.showError();
+        });
+    }
   }
 
   reportCleanupOnClose() {
@@ -1165,6 +1185,8 @@ class Gleap {
     try {
       this.networkIntercepter.setStopped(false);
     } catch (exp) {}
+
+    this.actionToPerform = undefined;
 
     if (this.widgetCallback) {
       this.widgetCallback("closeGleap", {});
@@ -1268,11 +1290,14 @@ class Gleap {
     if (this.widgetOnly) {
       // App widget
       const self = this;
-
-      if (self.feedbackTypeActions.length > 0) {
-        Gleap.startFeedbackTypeSelection();
+      if (self.widgetStartFlow) {
+        Gleap.startFeedbackFlow(self.widgetStartFlow);
       } else {
-        Gleap.startFeedbackFlow();
+        if (self.feedbackTypeActions.length > 0) {
+          Gleap.startFeedbackTypeSelection();
+        } else {
+          Gleap.startFeedbackFlow();
+        }
       }
     } else {
       // Web widget
@@ -1443,6 +1468,13 @@ class Gleap {
     }
   }
 
+  performAction(action) {
+    if (action && action.outbound && action.actionType) {
+      this.actionToPerform = action;
+      Gleap.startFeedbackFlow(action.actionType);
+    }
+  }
+
   sendBugReportToServer(screenshotData) {
     const self = this;
     const http = new XMLHttpRequest();
@@ -1505,16 +1537,38 @@ class Gleap {
       isSilent: this.silentBugReport,
     };
 
-    if (screenshotData.fileUrl) {
+    if (this.actionToPerform && this.actionToPerform.outbound) {
+      bugReportData["outbound"] = this.actionToPerform.outbound;
+    }
+
+    if (screenshotData && screenshotData.fileUrl) {
       bugReportData["screenshotUrl"] = screenshotData.fileUrl;
     }
 
-    if (screenshotData.html) {
+    if (screenshotData && screenshotData.html) {
       bugReportData["screenshotData"] = screenshotData;
     }
 
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
+    }
+
+    // Exclude data logic.
+    const keysToExclude = Object.keys(this.excludeData);
+    for (let i = 0; i < keysToExclude.length; i++) {
+      const keyToExclude = keysToExclude[i];
+      if (this.excludeData[keyToExclude] === true) {
+        delete bugReportData[keyToExclude];
+
+        if (keyToExclude === "screenshot") {
+          delete bugReportData.screenshotData;
+          delete bugReportData.screenshotUrl;
+        }
+
+        if (keyToExclude === "replays") {
+          delete bugReportData.webReplay;
+        }
+      }
     }
 
     http.send(JSON.stringify(bugReportData));
@@ -1807,7 +1861,7 @@ class Gleap {
 
       bugReportingEditor.appendChild(editorDot);
       bugReportingEditor.appendChild(editorRectangle);
-      
+
       bugReportingEditor.classList.add("bb-screenshot-editor--marked");
       addedMarker = true;
 

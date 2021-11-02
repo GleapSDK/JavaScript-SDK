@@ -1,3 +1,18 @@
+import Gleap from "./Gleap";
+
+const debounceFunc = function (func, wait, immediate) {
+  var timeout;
+  return function () {
+    var context = this,
+      args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(function () {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    }, wait);
+    if (immediate && !timeout) func.apply(context, args);
+  };
+};
 export default class Session {
   apiUrl = "https://api.gleap.io";
   sdkKey = null;
@@ -9,6 +24,9 @@ export default class Session {
   };
   ready = false;
   onSessionReadyListener = [];
+  performAction = debounceFunc(function (action) {
+    Gleap.getInstance().performAction(action);
+  }, 3000);
 
   // Session singleton
   static instance;
@@ -59,6 +77,15 @@ export default class Session {
     }
   };
 
+  validateSession = (session) => {
+    this.session = session;
+    this.ready = true;
+
+    if (session.action) {
+      this.performAction(session.action);
+    }
+  };
+
   startSession = () => {
     const self = this;
     return new Promise((resolve, reject) => {
@@ -90,8 +117,7 @@ export default class Session {
                 localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
               } catch (exp) {}
 
-              self.session = sessionData;
-              self.ready = true;
+              self.validateSession(sessionData);
 
               // Session is ready. Notify all subscribers.
               if (self.onSessionReadyListener.length > 0) {
@@ -147,8 +173,7 @@ export default class Session {
                   localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
                 } catch (exp) {}
 
-                self.session = sessionData;
-                self.ready = true;
+                self.validateSession(sessionData);
 
                 // Optionally update UI.
                 const userNameInfo = document.querySelector("#bb-user-name");
