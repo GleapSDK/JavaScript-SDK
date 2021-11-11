@@ -13,6 +13,17 @@ const getTitleHTML = function (title, overrideLanguage, required) {
   )}${required ? "<span>*</span>" : ""}</div>`;
 };
 
+const getDescriptionHTML = function (description, overrideLanguage) {
+  if (description === undefined) {
+    return "";
+  }
+
+  return `<div class="bb-feedback-form-description">${translateText(
+    description,
+    overrideLanguage
+  )}</div>`;
+};
+
 const getFormPageClass = function (formPage) {
   if (formPage === undefined) {
     return "";
@@ -63,7 +74,9 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
     if (formItem.type === "text") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
         currentPage
-      )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+      )}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <input class="bb-feedback-formdata bb-feedback-${
             formItem.name
           }" ${formItemData} type="${
@@ -77,7 +90,9 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
     if (formItem.type === "textarea") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
         currentPage
-      )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+      )}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <textarea class="bb-feedback-formdata bb-feedback-${
             formItem.name
           }" ${formItemData} placeholder="${translateText(
@@ -107,11 +122,14 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
     if (formItem.type === "rating") {
       formHTML += `<div class="bb-feedback-rating ${getFormPageClass(
         currentPage
-      )} bb-feedback-rating-${formItem.name}" ${formItemData}">${getTitleHTML(
+      )} bb-feedback-rating-${formItem.name}" ${formItemData}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
-      )}<input class="bb-feedback-formdata bb-feedback-${
+      )}
+      <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
           <ul class="bb-feedback-emojigroup">
@@ -187,11 +205,14 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         currentPage
       )} bb-feedback-onetofive-${
         formItem.name
-      }" ${formItemData}">${getTitleHTML(
+      }" ${formItemData}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
-      )}<input class="bb-feedback-formdata bb-feedback-${
+      )}
+      <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
         <div class="bb-feedback-onetofive-buttons">
@@ -231,11 +252,14 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         currentPage
       )} bb-feedback-multiplechoice-${
         formItem.name
-      }" ${formItemData}>${getTitleHTML(
+      }" ${formItemData}>
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
-      )}<input class="bb-feedback-formdata bb-feedback-${
+      )}
+      <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
       ${optionHTML}
@@ -429,6 +453,9 @@ export const hookForm = function (formOptions, submitForm) {
       break;
     }
     const formInput = document.querySelector(`.bb-feedback-${formItem.name}`);
+    if (!formInput) {
+      break;
+    }
     const currentPage = parseInt(formInput.getAttribute("bb-form-page"));
     if (formItem.type === "text") {
       if (formItem.remember) {

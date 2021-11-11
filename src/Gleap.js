@@ -761,6 +761,7 @@ class Gleap {
           feedbackOption &&
           feedbackOption.type !== "privacypolicy" &&
           feedbackOption.type !== "spacer" &&
+          feedbackOption.type !== "submit" &&
           feedbackOption.name !== "reportedBy"
         ) {
           newFormArray.push(feedbackOption);
@@ -1018,19 +1019,6 @@ class Gleap {
     }
   }
 
-  buildDescription(feedbackOptions) {
-    var description = "";
-
-    if (feedbackOptions.description && feedbackOptions.description.length > 0) {
-      description = `<div class="bb-feedback-dialog-infoitem">${translateText(
-        feedbackOptions.description,
-        this.overrideLanguage
-      )}</div>`;
-    }
-
-    return description;
-  }
-
   resetLoading(resetProgress) {
     if (this.fakeLoading) {
       clearInterval(this.fakeLoading);
@@ -1047,7 +1035,6 @@ class Gleap {
 
     const formData = buildForm(feedbackOptions, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
-    const description = this.buildDescription(feedbackOptions);
     const htmlContent = `<div class="bb-feedback-dialog-error">${translateText(
       "Something went wrong, please try again.",
       self.overrideLanguage
@@ -1081,7 +1068,6 @@ class Gleap {
       this.overrideLanguage
     )}</div>
   </div>
-  ${description}
   <div class="bb-feedback-form">
     ${formData}
   </div>`;
@@ -1472,7 +1458,6 @@ class Gleap {
   showSuccessMessage() {
     const success = document.querySelector(".bb-feedback-dialog-success");
     const form = document.querySelector(".bb-feedback-form");
-    const infoItem = document.querySelector(".bb-feedback-dialog-infoitem");
     const loader = document.querySelector(".bb-feedback-dialog-loading");
     form.style.display = "none";
     loader.style.display = "none";

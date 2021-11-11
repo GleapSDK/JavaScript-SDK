@@ -419,7 +419,6 @@ export const loadIcon = function (name, color) {
 
 export const toggleLoading = function (loading) {
   const form = document.querySelector(".bb-feedback-form");
-  const infoItem = document.querySelector(".bb-feedback-dialog-infoitem");
   const loader = document.querySelector(".bb-feedback-dialog-loading");
   const next = document.querySelector(".bb-feedback-dialog-header-back");
   const close = document.querySelector(".bb-feedback-dialog-header-close");

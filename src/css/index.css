@@ -263,16 +263,14 @@
   bottom: 20px;
 }
 
-.bb-feedback-dialog-infoitem {
-  padding: 0px;
-  margin: 25px;
-  margin-bottom: -5px;
-  border-radius: 6px;
+.bb-feedback-form-description {
   font-size: 16px;
   line-height: 19px;
   font-family: "Inter", sans-serif;
   color: #000000;
   font-weight: normal;
+  margin-top: 4px;
+  margin-bottom: 16px;
 }
 
 .bb-feedback-form--hidden {
@@ -607,7 +605,7 @@
   line-height: 22px;
   text-align: left;
   margin-bottom: 12px;
-  margin-top: 0px;
+  margin-top: 4px;
   font-weight: 600;
   color: #000000;
 }
@@ -678,7 +676,7 @@
 .bb-form-progress-inner {
   width: 0px;
   height: 4px;
-  background-color: #eee;
+  background-color: #485bff44;
   transition: width 0.5s ease-in-out;
 }
 
