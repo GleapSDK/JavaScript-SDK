@@ -23,5 +23,9 @@ export const translateText = (key, overrideLanguage) => {
     return customTranslation[key];
   }
 
+  if (!key) {
+    return "";
+  }
+
   return key;
 };
