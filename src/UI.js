@@ -424,9 +424,6 @@ export const toggleLoading = function (loading) {
   const close = document.querySelector(".bb-feedback-dialog-header-close");
 
   if (loading) {
-    if (infoItem) {
-      infoItem.style.display = "none";
-    }
     form.style.display = "none";
     loader.style.display = "flex";
     if (next) {
@@ -438,9 +435,6 @@ export const toggleLoading = function (loading) {
       close.style.opacity = "0.2";
     }
   } else {
-    if (infoItem) {
-      infoItem.style.display = "block";
-    }
     form.style.display = "block";
     loader.style.display = "none";
     if (next) {

@@ -1462,9 +1462,6 @@ class Gleap {
     form.style.display = "none";
     loader.style.display = "none";
     success.style.display = "flex";
-    if (infoItem) {
-      infoItem.style.display = "none";
-    }
   }
 
   performAction(action) {
