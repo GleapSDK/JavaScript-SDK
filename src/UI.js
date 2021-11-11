@@ -39,8 +39,22 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-dialog-header-description {
       color: ${contrastHeaderColor};
     }
+    .bb-feedback-onetofive-button-active,
+    .bb-feedback-onetofive-button:hover {
+      background-color: ${buttonColor};
+      color: ${contrastButtonColor};
+    }    
     .bb-feedback-button-icon {
         background-color: ${buttonColor};
+    }
+    .bb-feedback-multiplechoice-container:hover
+      input
+      ~ .bb-feedback-multiplechoice-checkmark {
+      border: 2px solid ${buttonColor};
+    }    
+    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {
+      background-color: ${buttonColor};
+      border: 2px solid ${buttonColor};
     }
     .bb-feedback-dialog-header-button {
         color: ${primaryColor};
@@ -60,6 +74,9 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     }
     .bb-feedback-dialog-header {
       background-color: ${headerColor};
+    }
+    .bb-form-progress-inner {
+      background-color: ${headerColor}44;
     }
     .bb-screenshot-editor-rectangle {
       border-color: ${primaryColor};

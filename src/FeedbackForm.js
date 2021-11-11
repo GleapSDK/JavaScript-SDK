@@ -24,69 +24,49 @@ const getFormPageClass = function (formPage) {
 const renderButtonsForPage = function (
   currentPage,
   totalPages,
-  overrideLanguage,
-  privacyPolicyEnabled,
-  privacyPolicyUrl,
-  collectEmail
+  overrideLanguage
 ) {
   const lastButton = currentPage === totalPages - 1;
-  let buttonHTML = "";
-
-  if (
-    privacyPolicyEnabled &&
-    privacyPolicyUrl &&
-    privacyPolicyUrl.length > 0 &&
-    lastButton
-  ) {
-    buttonHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getFormPageClass(
-      currentPage
-    )}">
-      <input id="GleapPrivacyPolicy" class="bb-feedback-privacypolicy" type="checkbox" required />
-      <label for="GleapPrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
-        "I read and accept the ",
-        overrideLanguage
-      )}<a id="bb-privacy-policy-link" href="${privacyPolicyUrl}" target="_blank">${translateText(
-      "privacy policy",
-      overrideLanguage
-    )}</a>.</label>
-    </div>`;
-  }
-
-  buttonHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button ${getFormPageClass(
+  return `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button ${getFormPageClass(
     currentPage
   )}">
-      ${
-        currentPage > 0
-          ? `<div class="bb-feedback-back-button" bb-form-page="${currentPage}">
-      ${translateText(`Back`, overrideLanguage)}
-    </div>`
-          : ""
-      }
       <div class="bb-feedback-send-button bb-feedback-next-btn-${currentPage}" bb-form-page="${currentPage}">${translateText(
     lastButton ? `Submit` : `Next`,
     overrideLanguage
   )}</div>
     </div>`;
+};
 
-  return buttonHTML;
+const isTypeAutoNext = function (type) {
+  if (type === "rating" || type === "onetofive") {
+    return true;
+  }
+
+  return false;
 };
 
 export const buildForm = function (feedbackOptions, overrideLanguage) {
   const form = feedbackOptions.form;
-  var formHTML = "";
+  var formHTML = `<div class="bb-form-progress"><div class="bb-form-progress-inner"></div></div>`;
   for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
     }
 
+    // Determine current page.
+    const currentPage = formItem.page;
+    const formItemData = `bb-form-page="${currentPage}" bb-form-item="${encodeURIComponent(
+      JSON.stringify(formItem)
+    )}"`;
+
     if (formItem.type === "text") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
-        i
+        currentPage
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <input class="bb-feedback-formdata bb-feedback-${
             formItem.name
-          }" bb-form-page="${i}" type="${
+          }" ${formItemData} type="${
         formItem.inputtype
       }" placeholder="${translateText(
         formItem.placeholder,
@@ -96,26 +76,44 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
     }
     if (formItem.type === "textarea") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
-        i
+        currentPage
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <textarea class="bb-feedback-formdata bb-feedback-${
             formItem.name
-          }" bb-form-page="${i}" placeholder="${translateText(
+          }" ${formItemData} placeholder="${translateText(
         formItem.placeholder,
         overrideLanguage
       )}"></textarea>
         </div>`;
     }
+    if (formItem.type === "privacypolicy") {
+      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getFormPageClass(
+        currentPage
+      )}">
+        <input id="gleap-privacy-policy" ${formItemData} class="bb-feedback-${
+        formItem.name
+      }" type="checkbox" required />
+        <label for="gleap-privacy-policy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
+          "I read and accept the ",
+          overrideLanguage
+        )}<a id="bb-privacy-policy-link" href="${
+        formItem.url
+      }" target="_blank">${translateText(
+        "privacy policy",
+        overrideLanguage
+      )}</a>.</label>
+      </div>`;
+    }
     if (formItem.type === "rating") {
       formHTML += `<div class="bb-feedback-rating ${getFormPageClass(
-        i
-      )}">${getTitleHTML(
+        currentPage
+      )} bb-feedback-rating-${formItem.name}" ${formItemData}">${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
       )}<input class="bb-feedback-formdata bb-feedback-${
         formItem.name
-      }" bb-form-page="${i}" type="hidden" />
+      }" ${formItemData} type="hidden" />
           <ul class="bb-feedback-emojigroup">
             <li class="bb-feedback-angry" data-value="0">
               <div>
@@ -180,15 +178,79 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         </svg>
         </div>`;
     }
+    if (formItem.type === "onetofive") {
+      const getNumberButtonHTML = function (formItem, number) {
+        return `<div class="bb-feedback-onetofive-button" data-value="${number}">${number}</div>`;
+      };
 
-    if (formItem.type !== "rating") {
-      formHTML += renderButtonsForPage(
-        i,
-        form.length,
+      formHTML += `<div class="bb-feedback-onetofive ${getFormPageClass(
+        currentPage
+      )} bb-feedback-onetofive-${
+        formItem.name
+      }" ${formItemData}">${getTitleHTML(
+        formItem.title,
         overrideLanguage,
-        feedbackOptions.privacyPolicyEnabled,
-        feedbackOptions.privacyPolicyUrl,
-        feedbackOptions.collectEmail
+        formItem.required
+      )}<input class="bb-feedback-formdata bb-feedback-${
+        formItem.name
+      }" ${formItemData} type="hidden" />
+        <div class="bb-feedback-onetofive-buttons">
+          ${getNumberButtonHTML(formItem, 1)}
+          ${getNumberButtonHTML(formItem, 2)}
+          ${getNumberButtonHTML(formItem, 3)}
+          ${getNumberButtonHTML(formItem, 4)}
+          ${getNumberButtonHTML(formItem, 5)}
+        </div>
+        <div class="bb-feedback-onetofive-description"><span>${translateText(
+          formItem.lowestValueLabel,
+          overrideLanguage
+        )}</span><span>${translateText(
+        formItem.highestValueLabel,
+        overrideLanguage
+      )}</span></div>
+      </div>`;
+    }
+    if (
+      formItem.type === "multiplechoice" &&
+      formItem.choices &&
+      formItem.choices.length > 0
+    ) {
+      const getOptionHTML = function (formItem, value) {
+        return `<label class="bb-feedback-multiplechoice-container" data-value="${value}">${value}
+        <input type="radio" name="${formItem.name}" />
+        <span class="bb-feedback-multiplechoice-checkmark"></span>
+      </label>`;
+      };
+
+      var optionHTML = "";
+      for (var j = 0; j < formItem.choices.length; j++) {
+        optionHTML += getOptionHTML(formItem, formItem.choices[j]);
+      }
+
+      formHTML += `<div class="bb-feedback-multiplechoice ${getFormPageClass(
+        currentPage
+      )} bb-feedback-multiplechoice-${
+        formItem.name
+      }" ${formItemData}>${getTitleHTML(
+        formItem.title,
+        overrideLanguage,
+        formItem.required
+      )}<input class="bb-feedback-formdata bb-feedback-${
+        formItem.name
+      }" ${formItemData} type="hidden" />
+      ${optionHTML}
+      </div>`;
+    }
+
+    if (
+      ((form[i + 1] && form[i + 1].page !== currentPage) ||
+        i + 1 === form.length) &&
+      !isTypeAutoNext(formItem.type)
+    ) {
+      formHTML += renderButtonsForPage(
+        currentPage,
+        feedbackOptions.pages,
+        overrideLanguage
       );
     }
   }
@@ -227,17 +289,6 @@ export const rememberForm = function (form) {
   }
 };
 
-export const validateForm = function (form) {
-  var formValid = true;
-  for (var i = 0; i < form.length; i++) {
-    const formItem = form[i];
-    if (!validateFormItem(formItem)) {
-      formValid = false;
-    }
-  }
-  return formValid;
-};
-
 const validateEmail = function (email) {
   const re =
     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -247,7 +298,7 @@ const validateEmail = function (email) {
 export const validateFormItem = function (formItem, showError = true) {
   var valid = true;
   const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
-  const currentPage = parseInt(formElement.getAttribute("bb-form-page"));
+
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
     formItem.required
@@ -280,6 +331,24 @@ export const validateFormItem = function (formItem, showError = true) {
       formElement.parentElement.classList.remove("bb-feedback-required");
     }
   }
+  if (formItem.type === "onetofive" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError &&
+        formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+  if (formItem.type === "multiplechoice" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError &&
+        formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
   if (formItem.type === "privacypolicy" && formItem.required) {
     if (!formElement.checked) {
       showError &&
@@ -290,26 +359,27 @@ export const validateFormItem = function (formItem, showError = true) {
     }
   }
 
-  if (currentPage) {
-    const currentNextButton = document.querySelector(
-      `.bb-feedback-next-btn-${currentPage}`
-    );
-    if (currentNextButton) {
-      if (!valid) {
-        currentNextButton.setAttribute("disabled", "true");
-        currentNextButton.classList.add("bb-feedback-send-button--disabled");
-      } else {
-        currentNextButton.removeAttribute("disabled");
-        currentNextButton.classList.remove("bb-feedback-send-button--disabled");
-      }
-    }
-  }
-
   return valid;
 };
 
-const handleNextFormStep = function (currentPage, pagesCount, submitForm) {
-  if (currentPage === pagesCount - 1) {
+const updateFormProgressBar = function (currentPage, pages) {
+  const innerProgressBar = document.querySelector(`.bb-form-progress-inner`);
+  if (innerProgressBar && pages > 0) {
+    var progress = Math.round(((currentPage + 1) / pages) * 100);
+    if (progress > 100) {
+      progress = 100;
+    }
+    innerProgressBar.style.width = `${progress}%`;
+  }
+};
+
+const handleNextFormStep = function (currentPage, pages, submitForm) {
+  if (!validateFormPage(currentPage)) {
+    return;
+  }
+
+  updateFormProgressBar(currentPage + 1, pages);
+  if (currentPage === pages - 1) {
     submitForm();
   } else {
     showFormPage(currentPage + 1);
@@ -324,12 +394,9 @@ const showFormPage = function (pageToShow) {
     }
   }
 
-  console.log("SHOW: " + pageToShow);
-
   const formPagesToShow = document.querySelectorAll(
     `.${formPageClass}-${pageToShow}`
   );
-  console.log(formPagesToShow);
   for (var i = 0; i < formPagesToShow.length; i++) {
     if (formPagesToShow[i]) {
       formPagesToShow[i].style.display = "flex";
@@ -337,36 +404,20 @@ const showFormPage = function (pageToShow) {
   }
 };
 
-export const hookForm = function (form, submitForm) {
+export const hookForm = function (formOptions, submitForm) {
+  const form = formOptions.form;
+
   // Hook up submit buttons
   const sendButtons = document.querySelectorAll(".bb-feedback-send-button");
   for (var i = 0; i < sendButtons.length; i++) {
     const sendButton = sendButtons[i];
     sendButton.onclick = function () {
-      console.log(sendButton);
       if (
         sendButton.getAttribute("disabled") !== "true" &&
         sendButton.getAttribute("bb-form-page")
       ) {
         const currentPage = parseInt(sendButton.getAttribute("bb-form-page"));
-        handleNextFormStep(currentPage, form.length, submitForm);
-      }
-    };
-  }
-
-  // Hook up back buttons
-  const backButtons = document.querySelectorAll(".bb-feedback-back-button");
-  for (var i = 0; i < backButtons.length; i++) {
-    const backButton = backButtons[i];
-    backButton.onclick = function () {
-      if (
-        backButton.getAttribute("disabled") !== "true" &&
-        backButton.getAttribute("bb-form-page")
-      ) {
-        const currentFormPage = parseInt(
-          backButton.getAttribute("bb-form-page")
-        );
-        showFormPage(currentFormPage - 1);
+        handleNextFormStep(currentPage, formOptions.pages, submitForm);
       }
     };
   }
@@ -393,16 +444,19 @@ export const hookForm = function (form, submitForm) {
       if (formItem.defaultValue) {
         formInput.value = formItem.defaultValue;
       }
+      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
+        formInput.parentElement.classList.add("bb-feedback-form--hidden");
+      }
       formInput.addEventListener("focusout", function () {
-        validateFormItem(formItem);
+        validateFormPage(currentPage);
       });
       formInput.oninput = function () {
-        validateFormItem(formItem, false);
+        validateFormPage(currentPage, false);
       };
     }
     if (formItem.type === "privacypolicy") {
       formInput.onchange = function () {
-        validateFormItem(formItem);
+        validateFormPage(currentPage);
       };
     }
     if (formItem.type === "textarea") {
@@ -411,20 +465,21 @@ export const hookForm = function (form, submitForm) {
       formInput.oninput = function () {
         formInput.style.height = "inherit";
         formInput.style.height = formInput.scrollHeight + "px";
-        validateFormItem(formItem);
+        validateFormPage(currentPage);
       };
     }
     if (formItem.type === "rating") {
       const ratingItems = document.querySelectorAll(
-        ".bb-feedback-emojigroup li"
+        `.bb-feedback-rating-${formItem.name} .bb-feedback-emojigroup li`
       );
       for (var j = 0; j < ratingItems.length; j++) {
         const ratingItem = ratingItems[j];
         ratingItem.addEventListener("click", function (e) {
           formInput.value = ratingItem.getAttribute("data-value");
-          validateFormItem(formItem);
+          validateFormPage(currentPage);
+
           const lastActiveItem = document.querySelector(
-            ".bb-feedback-emojigroup li.bb-feedback-active"
+            `.bb-feedback-rating-${formItem.name} .bb-feedback-emojigroup li.bb-feedback-active`
           );
           if (lastActiveItem) {
             lastActiveItem.classList.remove("bb-feedback-active");
@@ -433,15 +488,90 @@ export const hookForm = function (form, submitForm) {
           e.preventDefault();
 
           // Show next step.
-          handleNextFormStep(currentPage, form.length, submitForm);
+          handleNextFormStep(currentPage, formOptions.pages, submitForm);
+        });
+      }
+    }
+    if (formItem.type === "onetofive") {
+      const onetofiveItems = document.querySelectorAll(
+        `.bb-feedback-onetofive-${formItem.name} .bb-feedback-onetofive-button`
+      );
+      for (var j = 0; j < onetofiveItems.length; j++) {
+        const onetofiveItem = onetofiveItems[j];
+        onetofiveItem.addEventListener("click", function (e) {
+          formInput.value = onetofiveItem.getAttribute("data-value");
+          validateFormPage(currentPage);
+
+          const lastActiveItem = document.querySelector(
+            `.bb-feedback-onetofive-${formItem.name} .bb-feedback-onetofive-button-active`
+          );
+          if (lastActiveItem) {
+            lastActiveItem.classList.remove(
+              "bb-feedback-onetofive-button-active"
+            );
+          }
+          onetofiveItem.classList.add("bb-feedback-onetofive-button-active");
+          e.preventDefault();
+
+          // Show next step.
+          handleNextFormStep(currentPage, formOptions.pages, submitForm);
+        });
+      }
+    }
+    if (formItem.type === "multiplechoice") {
+      const multiplechoiceItems = document.querySelectorAll(
+        `.bb-feedback-multiplechoice-${formItem.name} .bb-feedback-multiplechoice-container`
+      );
+      for (var j = 0; j < multiplechoiceItems.length; j++) {
+        const multiplechoiceItem = multiplechoiceItems[j];
+        multiplechoiceItem.addEventListener("click", function (e) {
+          formInput.value = multiplechoiceItem.getAttribute("data-value");
+          validateFormPage(currentPage);
         });
       }
     }
 
     // Validate form item initially.
-    validateFormItem(formItem, false);
+    validateFormPage(currentPage, false);
   }
 
   // Show first page.
   showFormPage(0);
+  updateFormProgressBar(0, formOptions.pages);
+};
+
+export const validateFormPage = function (page, showError = true) {
+  var formValid = true;
+
+  const formElementsToCheck = document.querySelectorAll(
+    `[bb-form-page="${page}"]`
+  );
+
+  for (var i = 0; i < formElementsToCheck.length; i++) {
+    const formElementToCheck = formElementsToCheck[i];
+    if (formElementToCheck && formElementToCheck.getAttribute("bb-form-item")) {
+      const formItem = JSON.parse(
+        decodeURIComponent(formElementToCheck.getAttribute("bb-form-item"))
+      );
+
+      if (!validateFormItem(formItem, showError)) {
+        formValid = false;
+      }
+    }
+  }
+
+  const currentNextButton = document.querySelector(
+    `.bb-feedback-next-btn-${page}`
+  );
+  if (currentNextButton) {
+    if (!formValid) {
+      currentNextButton.setAttribute("disabled", "true");
+      currentNextButton.classList.add("bb-feedback-send-button--disabled");
+    } else {
+      currentNextButton.removeAttribute("disabled");
+      currentNextButton.classList.remove("bb-feedback-send-button--disabled");
+    }
+  }
+
+  return formValid;
 };

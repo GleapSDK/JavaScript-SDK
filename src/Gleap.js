@@ -12,13 +12,7 @@ import {
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
 import { isMobile } from "./ImageHelper";
-import {
-  buildForm,
-  getFormData,
-  hookForm,
-  rememberForm,
-  validateForm,
-} from "./FeedbackForm";
+import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
@@ -52,8 +46,6 @@ class Gleap {
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
-  privacyPolicyEnabled = false;
-  privacyPolicyUrl = "https://www.gleap.io/privacy-policy/";
   actionLog = [];
   logArray = [];
   eventArray = [];
@@ -454,7 +446,7 @@ class Gleap {
    * @param {boolean} enabled
    */
   static enablePrivacyPolicy(enabled) {
-    this.getInstance().privacyPolicyEnabled = enabled;
+    console.warn("Gleap: @deprecated enablePrivacyPolicy");
   }
 
   /**
@@ -462,7 +454,7 @@ class Gleap {
    * @param {string} privacyPolicyUrl
    */
   static setPrivacyPolicyUrl(privacyPolicyUrl) {
-    this.getInstance().privacyPolicyUrl = privacyPolicyUrl;
+    console.warn("Gleap: @deprecated setPrivacyPolicyUrl");
   }
 
   /**
@@ -761,34 +753,64 @@ class Gleap {
     }
 
     if (feedbackOptions.form && feedbackOptions.form.length > 0) {
-      // Search for email field
-      if (sessionInstance.session.email) {
-        for (var i = 0; i < feedbackOptions.form.length; i++) {
-          var feedbackOption = feedbackOptions.form[i];
-          if (feedbackOption.name === "reportedBy") {
-            feedbackOption.defaultValue = sessionInstance.session.email;
-          }
+      // Cleanup form from unsupported items.
+      let newFormArray = [];
+      for (var i = 0; i < feedbackOptions.form.length; i++) {
+        var feedbackOption = feedbackOptions.form[i];
+        if (
+          feedbackOption &&
+          feedbackOption.type !== "privacypolicy" &&
+          feedbackOption.type !== "spacer" &&
+          feedbackOption.name !== "reportedBy"
+        ) {
+          newFormArray.push(feedbackOption);
         }
       }
 
+      // Update form.
+      feedbackOptions.form = newFormArray;
+      feedbackOptions.pages = newFormArray.length;
+
+      // Add page id's
+      for (var i = 0; i < feedbackOptions.form.length; i++) {
+        var feedbackOption = feedbackOptions.form[i];
+        if (!feedbackOption.page) {
+          feedbackOption.page = i;
+        }
+      }
+
+      // Collect email
+      if (
+        feedbackOptions.collectEmail === true ||
+        feedbackOptions.collectEmail === undefined
+      ) {
+        var emailFormItem = {
+          title: "Email",
+          placeholder: "Your e-mail",
+          type: "text",
+          inputtype: "email",
+          name: "reportedBy",
+          required: true,
+          remember: true,
+          hideOnDefaultSet: true,
+          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
+        };
+        if (sessionInstance.session && sessionInstance.session.email) {
+          emailFormItem.defaultValue = sessionInstance.session.email;
+        }
+        feedbackOptions.form.push(emailFormItem);
+      }
+
       // Inject privacy policy.
-      if (instance.privacyPolicyEnabled) {
+      if (feedbackOptions.privacyPolicyEnabled) {
         var policyItem = {
-          name: "privacyPolicy",
+          name: "privacypolicy",
           type: "privacypolicy",
           required: true,
-          url: instance.privacyPolicyUrl,
+          url: feedbackOptions.privacyPolicyUrl,
+          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
         };
-        const formPage =
-          feedbackOptions.form[feedbackOptions.form.length - 1].page;
-        if (formPage) {
-          policyItem.page = formPage;
-        }
-        feedbackOptions.form.splice(
-          feedbackOptions.form.length - 1,
-          0,
-          policyItem
-        );
+        feedbackOptions.form.push(policyItem);
       }
     }
 
@@ -1094,18 +1116,13 @@ class Gleap {
     this.openedMenu = true;
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    hookForm(feedbackOptions.form, function () {
+    hookForm(feedbackOptions, function () {
       self.formSubmitAction(feedbackOptions);
     });
   }
 
   formSubmitAction(feedbackOptions) {
     const self = this;
-
-    // Validate form
-    if (!validateForm(feedbackOptions.form)) {
-      return;
-    }
 
     // Remember form items
     rememberForm(feedbackOptions.form);

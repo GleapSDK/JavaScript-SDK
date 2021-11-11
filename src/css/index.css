@@ -1,7 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap");
 
-.bb-feedback-dialog-container input,
-.bb-feedback-dialog-container label {
+.bb-feedback-dialog-container input {
   margin: 0;
   padding: 0;
   border: none;
@@ -320,7 +319,7 @@
   margin-top: 15px;
   font-weight: normal;
   font-size: 28px;
-  line-height: 36px;
+  line-height: 32px;
 }
 
 #bb-user-name {
@@ -402,7 +401,7 @@
   margin-top: 0px;
   line-height: 22px;
   font-family: "Inter", sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -483,6 +482,117 @@
   color: #000000;
 }
 
+.bb-feedback-multiplechoice {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.bb-feedback-multiplechoice-container {
+  display: block;
+  position: relative;
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
+  padding-left: 35px;
+  font-size: 15px;
+  line-height: 25px;
+}
+
+.bb-feedback-multiplechoice-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bb-feedback-multiplechoice-checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 25px;
+  width: 25px;
+  border: 2px solid #eceaf3;
+  border-radius: 50%;
+}
+
+.bb-feedback-multiplechoice-container:hover
+  input
+  ~ .bb-feedback-multiplechoice-checkmark {
+  border: 2px solid #59617d;
+}
+
+.bb-feedback-multiplechoice-container
+  input:checked
+  ~ .bb-feedback-multiplechoice-checkmark {
+  border: 2px solid #000000;
+}
+
+.bb-feedback-multiplechoice-checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.bb-feedback-multiplechoice-container
+  input:checked
+  ~ .bb-feedback-multiplechoice-checkmark:after {
+  display: block;
+}
+
+.bb-feedback-multiplechoice-container
+  .bb-feedback-multiplechoice-checkmark:after {
+  top: 5.5px;
+  left: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.bb-feedback-onetofive {
+  display: flex;
+  flex-direction: column;
+}
+
+.bb-feedback-onetofive-description {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.bb-feedback-onetofive-description span {
+  color: #59617d;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.bb-feedback-onetofive-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bb-feedback-onetofive-button {
+  cursor: pointer;
+  padding: 0px;
+  background-color: #eceaf3;
+  color: #59617d;
+  border-radius: 5px;
+  width: calc(20% - 2px);
+  text-align: center;
+  line-height: 44px;
+  min-height: 44px;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+.bb-feedback-onetofive-button-active,
+.bb-feedback-onetofive-button:hover {
+  background-color: #59617d;
+  color: #fff;
+}
+
 .bb-feedback-type-description {
   font-family: "Inter", sans-serif;
   color: #59617d;
@@ -493,23 +603,23 @@
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 15px;
-  line-height: 19px;
+  font-size: 16px;
+  line-height: 22px;
   text-align: left;
-  margin-bottom: 5px;
+  margin-bottom: 12px;
   margin-top: 0px;
-  font-weight: bold;
+  font-weight: 600;
   color: #000000;
 }
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 19px;
   text-align: left;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   margin-top: 0px;
-  font-weight: bold;
+  font-weight: 600;
   color: #ed4337;
   margin-left: 3px;
 }
@@ -553,12 +663,26 @@
 .bb-feedback-inputgroup {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   padding: 0px;
   flex-direction: column;
 }
 
-.bb-feedback-inputgroup.bb-feedback-formpage {
+.bb-form-progress {
+  position: absolute;
+  top: -25px;
+  left: -25px;
+  right: -25px;
+}
+
+.bb-form-progress-inner {
+  width: 0px;
+  height: 4px;
+  background-color: #eee;
+  transition: width 0.5s ease-in-out;
+}
+
+.bb-feedback-formpage {
   display: none;
 }
 
@@ -570,6 +694,8 @@
 .bb-feedback-inputgroup-button {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-direction: row;
 }
 
 .bb-feedback-inputgroup-text {
@@ -593,14 +719,14 @@
   background-color: #485bff;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 12px 19px;
+  padding: 12px 26px;
   font-size: 16px;
   line-height: 19px;
   font-weight: 600;
   color: #fff;
   text-align: center;
   width: 100%;
-  margin-top: 7px;
+  margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
 }
@@ -614,6 +740,21 @@
 
 .bb-feedback-send-button:hover {
   opacity: 0.9;
+}
+
+.bb-feedback-back-button {
+  width: auto;
+  color: #59617d;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 19px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-right: 30px;
+}
+
+.bb-feedback-back-button:hover {
+  color: #000;
 }
 
 .bb-feedback-inputgroup > input,
@@ -645,6 +786,10 @@ textarea.bb-feedback-required {
   background-color: #da0e0710 !important;
 }
 
+.bb-feedback-rating {
+  flex-direction: column;
+}
+
 .bb-feedback-emojigroup {
   --normal: #eceaf3;
   --normal-shadow: #d9d8e3;
@@ -661,7 +806,8 @@ textarea.bb-feedback-required {
   list-style: none;
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  margin-top: 0px;
 }
 
 .bb-feedback-required .bb-feedback-emojigroup {
@@ -679,7 +825,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-emojigroup li:not(:last-child) {
-  margin-right: 10px;
+  margin-right: 16px;
 }
 
 .bb-feedback-emojigroup li div {
@@ -1051,7 +1197,7 @@ textarea.bb-feedback-required {
   font-weight: normal;
   flex-direction: row;
   width: 100%;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
 }
 
