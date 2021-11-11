@@ -41,8 +41,8 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     }
     .bb-feedback-onetofive-button-active,
     .bb-feedback-onetofive-button:hover {
-      background-color: ${buttonColor};
-      color: ${contrastButtonColor};
+      background-color: ${primaryColor};
+      color: ${contrastColor};
     }    
     .bb-feedback-button-icon {
         background-color: ${buttonColor};
@@ -50,11 +50,11 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-multiplechoice-container:hover
       input
       ~ .bb-feedback-multiplechoice-checkmark {
-      border: 2px solid ${buttonColor};
+      border: 2px solid ${primaryColor};
     }    
     .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {
-      background-color: ${buttonColor};
-      border: 2px solid ${buttonColor};
+      background-color: ${primaryColor};
+      border: 2px solid ${primaryColor};
     }
     .bb-feedback-dialog-header-button {
         color: ${primaryColor};
