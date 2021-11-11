@@ -779,10 +779,10 @@ class Gleap {
           required: true,
           url: instance.privacyPolicyUrl,
         };
-        const showAfter =
-          feedbackOptions.form[feedbackOptions.form.length - 1].showAfter;
-        if (showAfter) {
-          policyItem.showAfter = showAfter;
+        const formPage =
+          feedbackOptions.form[feedbackOptions.form.length - 1].page;
+        if (formPage) {
+          policyItem.page = formPage;
         }
         feedbackOptions.form.splice(
           feedbackOptions.form.length - 1,
@@ -1023,7 +1023,7 @@ class Gleap {
   createBugReportingDialog(feedbackOptions) {
     const self = this;
 
-    const formData = buildForm(feedbackOptions.form, this.overrideLanguage);
+    const formData = buildForm(feedbackOptions, this.overrideLanguage);
     const title = translateText(feedbackOptions.title, this.overrideLanguage);
     const description = this.buildDescription(feedbackOptions);
     const htmlContent = `<div class="bb-feedback-dialog-error">${translateText(
@@ -1061,7 +1061,7 @@ class Gleap {
   </div>
   ${description}
   <div class="bb-feedback-form">
-    ${formData.formHTML}
+    ${formData}
   </div>`;
 
     const getWidgetDialogClass = () => {
@@ -1094,12 +1094,9 @@ class Gleap {
     this.openedMenu = true;
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    hookForm(feedbackOptions.form);
-
-    const sendButton = document.querySelector(".bb-feedback-send-button");
-    sendButton.onclick = function () {
+    hookForm(feedbackOptions.form, function () {
       self.formSubmitAction(feedbackOptions);
-    };
+    });
   }
 
   formSubmitAction(feedbackOptions) {

@@ -320,7 +320,7 @@
   margin-top: 15px;
   font-weight: normal;
   font-size: 28px;
-  line-height: 36px;
+  line-height: 32px;
 }
 
 #bb-user-name {
@@ -402,7 +402,7 @@
   margin-top: 0px;
   line-height: 22px;
   font-family: "Inter", sans-serif;
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 600;
 }
 
@@ -493,23 +493,23 @@
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 15px;
-  line-height: 19px;
+  font-size: 16px;
+  line-height: 22px;
   text-align: left;
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   margin-top: 0px;
-  font-weight: bold;
+  font-weight: 600;
   color: #000000;
 }
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 19px;
   text-align: left;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   margin-top: 0px;
-  font-weight: bold;
+  font-weight: 600;
   color: #ed4337;
   margin-left: 3px;
 }
@@ -553,12 +553,12 @@
 .bb-feedback-inputgroup {
   display: flex;
   justify-content: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
   padding: 0px;
   flex-direction: column;
 }
 
-.bb-feedback-inputgroup.bb-feedback-showafter {
+.bb-feedback-formpage {
   display: none;
 }
 
@@ -570,6 +570,8 @@
 .bb-feedback-inputgroup-button {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-direction: row;
 }
 
 .bb-feedback-inputgroup-text {
@@ -593,14 +595,14 @@
   background-color: #485bff;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 12px 19px;
+  padding: 12px 26px;
   font-size: 16px;
   line-height: 19px;
   font-weight: 600;
   color: #fff;
   text-align: center;
-  width: 100%;
-  margin-top: 7px;
+  width: auto;
+  margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
 }
@@ -614,6 +616,21 @@
 
 .bb-feedback-send-button:hover {
   opacity: 0.9;
+}
+
+.bb-feedback-back-button {
+  width: auto;
+  color: #59617d;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 19px;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-right: 30px;
+}
+
+.bb-feedback-back-button:hover {
+  color: #000;
 }
 
 .bb-feedback-inputgroup > input,
@@ -645,6 +662,10 @@ textarea.bb-feedback-required {
   background-color: #da0e0710 !important;
 }
 
+.bb-feedback-rating {
+  flex-direction: column;
+}
+
 .bb-feedback-emojigroup {
   --normal: #eceaf3;
   --normal-shadow: #d9d8e3;
@@ -661,7 +682,8 @@ textarea.bb-feedback-required {
   list-style: none;
   display: flex;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: 20px;
+  margin-top: 0px;
 }
 
 .bb-feedback-required .bb-feedback-emojigroup {
@@ -679,7 +701,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-emojigroup li:not(:last-child) {
-  margin-right: 10px;
+  margin-right: 16px;
 }
 
 .bb-feedback-emojigroup li div {

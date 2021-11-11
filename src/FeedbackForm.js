@@ -1,6 +1,6 @@
 import { translateText } from "./Translation";
 
-const showAfterClass = "bb-feedback-showafter";
+const formPageClass = "bb-feedback-formpage";
 
 const getTitleHTML = function (title, overrideLanguage, required) {
   if (title === undefined) {
@@ -13,93 +13,109 @@ const getTitleHTML = function (title, overrideLanguage, required) {
   )}${required ? "<span>*</span>" : ""}</div>`;
 };
 
-const getShowAfterHTML = function (showAfter) {
-  if (showAfter === undefined) {
+const getFormPageClass = function (formPage) {
+  if (formPage === undefined) {
     return "";
   }
 
-  return `${showAfterClass} ${showAfterClass}-${showAfter}`;
+  return `${formPageClass} ${formPageClass}-${formPage}`;
 };
 
-export const buildForm = function (form, overrideLanguage) {
+const renderButtonsForPage = function (
+  currentPage,
+  totalPages,
+  overrideLanguage,
+  privacyPolicyEnabled,
+  privacyPolicyUrl,
+  collectEmail
+) {
+  const lastButton = currentPage === totalPages - 1;
+  let buttonHTML = "";
+
+  if (
+    privacyPolicyEnabled &&
+    privacyPolicyUrl &&
+    privacyPolicyUrl.length > 0 &&
+    lastButton
+  ) {
+    buttonHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getFormPageClass(
+      currentPage
+    )}">
+      <input id="GleapPrivacyPolicy" class="bb-feedback-privacypolicy" type="checkbox" required />
+      <label for="GleapPrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
+        "I read and accept the ",
+        overrideLanguage
+      )}<a id="bb-privacy-policy-link" href="${privacyPolicyUrl}" target="_blank">${translateText(
+      "privacy policy",
+      overrideLanguage
+    )}</a>.</label>
+    </div>`;
+  }
+
+  buttonHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button ${getFormPageClass(
+    currentPage
+  )}">
+      ${
+        currentPage > 0
+          ? `<div class="bb-feedback-back-button" bb-form-page="${currentPage}">
+      ${translateText(`Back`, overrideLanguage)}
+    </div>`
+          : ""
+      }
+      <div class="bb-feedback-send-button bb-feedback-next-btn-${currentPage}" bb-form-page="${currentPage}">${translateText(
+    lastButton ? `Submit` : `Next`,
+    overrideLanguage
+  )}</div>
+    </div>`;
+
+  return buttonHTML;
+};
+
+export const buildForm = function (feedbackOptions, overrideLanguage) {
+  const form = feedbackOptions.form;
   var formHTML = "";
-  var formContainsShowAfter = false;
   for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
     }
-    if (formItem.showAfter) {
-      formContainsShowAfter = true;
-    }
+
     if (formItem.type === "text") {
-      formHTML += `<div class="bb-feedback-inputgroup ${getShowAfterHTML(
-        formItem.showAfter
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        i
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <input class="bb-feedback-formdata bb-feedback-${
             formItem.name
-          }" type="${formItem.inputtype}" placeholder="${translateText(
+          }" bb-form-page="${i}" type="${
+        formItem.inputtype
+      }" placeholder="${translateText(
         formItem.placeholder,
         overrideLanguage
       )}" />
         </div>`;
     }
-    if (formItem.type === "privacypolicy") {
-      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getShowAfterHTML(
-        formItem.showAfter
-      )}">
-        <input id="GleapPrivacyPolicy" class="bb-feedback-${
-          formItem.name
-        }" type="checkbox" required />
-        <label for="GleapPrivacyPolicy" class="bb-feedback-inputgroup--privacy-policy-label">${translateText(
-          "I read and accept the",
-          overrideLanguage
-        )}<a id="bb-privacy-policy-link" href="${
-        formItem.url
-      }" target="_blank">${translateText(
-        " privacy policy",
-        overrideLanguage
-      )}</a>.</label>
-      </div>`;
-    }
-    if (formItem.type === "spacer") {
-      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-spacer ${getShowAfterHTML(
-        formItem.showAfter
-      )}"></div>`;
-    }
-    if (formItem.type === "submit") {
-      formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button ${getShowAfterHTML(
-        formItem.showAfter
-      )}">
-        <div class="bb-feedback-send-button">${translateText(
-          formItem.title,
-          overrideLanguage,
-          formItem.required
-        )}</div>
-      </div>`;
-    }
     if (formItem.type === "textarea") {
-      formHTML += `<div class="bb-feedback-inputgroup ${getShowAfterHTML(
-        formItem.showAfter
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        i
       )}">${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
           <textarea class="bb-feedback-formdata bb-feedback-${
             formItem.name
-          }" placeholder="${translateText(
+          }" bb-form-page="${i}" placeholder="${translateText(
         formItem.placeholder,
         overrideLanguage
       )}"></textarea>
         </div>`;
     }
     if (formItem.type === "rating") {
-      formHTML += `<div class="bb-feedback-rating ${getShowAfterHTML(
-        formItem.showAfter
+      formHTML += `<div class="bb-feedback-rating ${getFormPageClass(
+        i
       )}">${getTitleHTML(
         formItem.title,
         overrideLanguage,
         formItem.required
       )}<input class="bb-feedback-formdata bb-feedback-${
         formItem.name
-      }" type="hidden" />
+      }" bb-form-page="${i}" type="hidden" />
           <ul class="bb-feedback-emojigroup">
             <li class="bb-feedback-angry" data-value="0">
               <div>
@@ -164,12 +180,20 @@ export const buildForm = function (form, overrideLanguage) {
         </svg>
         </div>`;
     }
+
+    if (formItem.type !== "rating") {
+      formHTML += renderButtonsForPage(
+        i,
+        form.length,
+        overrideLanguage,
+        feedbackOptions.privacyPolicyEnabled,
+        feedbackOptions.privacyPolicyUrl,
+        feedbackOptions.collectEmail
+      );
+    }
   }
 
-  return {
-    formHTML,
-    formContainsShowAfter,
-  };
+  return formHTML;
 };
 
 export const getFormData = function (form) {
@@ -223,6 +247,7 @@ const validateEmail = function (email) {
 export const validateFormItem = function (formItem, showError = true) {
   var valid = true;
   const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
+  const currentPage = parseInt(formElement.getAttribute("bb-form-page"));
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
     formItem.required
@@ -264,25 +289,96 @@ export const validateFormItem = function (formItem, showError = true) {
       formElement.parentElement.classList.remove("bb-feedback-required");
     }
   }
-  const elementsToShow = document.querySelectorAll(
-    `.${showAfterClass}-${formItem.name}`
-  );
-  for (var i = 0; i < elementsToShow.length; i++) {
-    if (elementsToShow[i]) {
-      elementsToShow[i].style.display = valid ? "flex" : "none";
+
+  if (currentPage) {
+    const currentNextButton = document.querySelector(
+      `.bb-feedback-next-btn-${currentPage}`
+    );
+    if (currentNextButton) {
+      if (!valid) {
+        currentNextButton.setAttribute("disabled", "true");
+        currentNextButton.classList.add("bb-feedback-send-button--disabled");
+      } else {
+        currentNextButton.removeAttribute("disabled");
+        currentNextButton.classList.remove("bb-feedback-send-button--disabled");
+      }
     }
   }
 
   return valid;
 };
 
-export const hookForm = function (form) {
+const handleNextFormStep = function (currentPage, pagesCount, submitForm) {
+  if (currentPage === pagesCount - 1) {
+    submitForm();
+  } else {
+    showFormPage(currentPage + 1);
+  }
+};
+
+const showFormPage = function (pageToShow) {
+  const formPagesToHide = document.querySelectorAll(`.${formPageClass}`);
+  for (var i = 0; i < formPagesToHide.length; i++) {
+    if (formPagesToHide[i]) {
+      formPagesToHide[i].style.display = "none";
+    }
+  }
+
+  console.log("SHOW: " + pageToShow);
+
+  const formPagesToShow = document.querySelectorAll(
+    `.${formPageClass}-${pageToShow}`
+  );
+  console.log(formPagesToShow);
+  for (var i = 0; i < formPagesToShow.length; i++) {
+    if (formPagesToShow[i]) {
+      formPagesToShow[i].style.display = "flex";
+    }
+  }
+};
+
+export const hookForm = function (form, submitForm) {
+  // Hook up submit buttons
+  const sendButtons = document.querySelectorAll(".bb-feedback-send-button");
+  for (var i = 0; i < sendButtons.length; i++) {
+    const sendButton = sendButtons[i];
+    sendButton.onclick = function () {
+      console.log(sendButton);
+      if (
+        sendButton.getAttribute("disabled") !== "true" &&
+        sendButton.getAttribute("bb-form-page")
+      ) {
+        const currentPage = parseInt(sendButton.getAttribute("bb-form-page"));
+        handleNextFormStep(currentPage, form.length, submitForm);
+      }
+    };
+  }
+
+  // Hook up back buttons
+  const backButtons = document.querySelectorAll(".bb-feedback-back-button");
+  for (var i = 0; i < backButtons.length; i++) {
+    const backButton = backButtons[i];
+    backButton.onclick = function () {
+      if (
+        backButton.getAttribute("disabled") !== "true" &&
+        backButton.getAttribute("bb-form-page")
+      ) {
+        const currentFormPage = parseInt(
+          backButton.getAttribute("bb-form-page")
+        );
+        showFormPage(currentFormPage - 1);
+      }
+    };
+  }
+
+  // Hook up form
   for (var i = 0; i < form.length; i++) {
     const formItem = form[i];
     if (!formItem) {
       break;
     }
     const formInput = document.querySelector(`.bb-feedback-${formItem.name}`);
+    const currentPage = parseInt(formInput.getAttribute("bb-form-page"));
     if (formItem.type === "text") {
       if (formItem.remember) {
         try {
@@ -296,9 +392,6 @@ export const hookForm = function (form) {
       }
       if (formItem.defaultValue) {
         formInput.value = formItem.defaultValue;
-      }
-      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
-        formInput.parentElement.classList.add("bb-feedback-form--hidden");
       }
       formInput.addEventListener("focusout", function () {
         validateFormItem(formItem);
@@ -338,8 +431,17 @@ export const hookForm = function (form) {
           }
           ratingItem.classList.add("bb-feedback-active");
           e.preventDefault();
+
+          // Show next step.
+          handleNextFormStep(currentPage, form.length, submitForm);
         });
       }
     }
+
+    // Validate form item initially.
+    validateFormItem(formItem, false);
   }
+
+  // Show first page.
+  showFormPage(0);
 };
