@@ -495,6 +495,7 @@
   padding-left: 35px;
   font-size: 15px;
   line-height: 25px;
+  min-height: 25px;
 }
 
 .bb-feedback-multiplechoice-container input {
@@ -563,6 +564,7 @@
   font-size: 13px;
   font-weight: 500;
   margin-bottom: 20px;
+  font-family: "Inter", sans-serif;
 }
 
 .bb-feedback-onetofive-buttons {
@@ -572,6 +574,7 @@
 }
 
 .bb-feedback-onetofive-button {
+  font-family: "Inter", sans-serif;
   cursor: pointer;
   padding: 0px;
   background-color: #eceaf3;
