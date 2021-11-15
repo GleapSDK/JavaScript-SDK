@@ -24,9 +24,6 @@ export default class Session {
   };
   ready = false;
   onSessionReadyListener = [];
-  performAction = debounceFunc(function (action) {
-    Gleap.getInstance().performAction(action);
-  }, 3000);
 
   // Session singleton
   static instance;
@@ -80,69 +77,53 @@ export default class Session {
   validateSession = (session) => {
     this.session = session;
     this.ready = true;
-
-    if (
-      session.action &&
-      session.action.outbound &&
-      session.action.actionType
-    ) {
-      this.performAction(session.action);
-    }
   };
 
   startSession = () => {
     const self = this;
-    return new Promise((resolve, reject) => {
-      const http = new XMLHttpRequest();
-      http.open("POST", self.apiUrl + "/sessions");
-      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      http.setRequestHeader("Api-Token", self.sdkKey);
-      try {
-        const gleapId = localStorage.getItem(`gleap-id`);
-        const gleapHash = localStorage.getItem(`gleap-hash`);
-        if (gleapId && gleapHash) {
-          http.setRequestHeader("Gleap-Id", gleapId);
-          http.setRequestHeader("Gleap-Hash", gleapHash);
-        }
-      } catch (exp) {}
+    const http = new XMLHttpRequest();
+    http.open("POST", self.apiUrl + "/sessions");
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    http.setRequestHeader("Api-Token", self.sdkKey);
+    try {
+      const gleapId = localStorage.getItem(`gleap-id`);
+      const gleapHash = localStorage.getItem(`gleap-hash`);
+      if (gleapId && gleapHash) {
+        http.setRequestHeader("Gleap-Id", gleapId);
+        http.setRequestHeader("Gleap-Hash", gleapHash);
+      }
+    } catch (exp) {}
 
-      http.onerror = (error) => {
-        self.clearSession(false);
-        reject();
-      };
-      http.onreadystatechange = function (e) {
-        if (http.readyState === XMLHttpRequest.DONE) {
-          if (http.status === 200 || http.status === 201) {
+    http.onerror = (error) => {
+      self.clearSession(false);
+    };
+    http.onreadystatechange = function (e) {
+      if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.status === 200 || http.status === 201) {
+          try {
+            const sessionData = JSON.parse(http.responseText);
+
             try {
-              const sessionData = JSON.parse(http.responseText);
+              localStorage.setItem(`gleap-id`, sessionData.gleapId);
+              localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
+            } catch (exp) {}
 
-              try {
-                localStorage.setItem(`gleap-id`, sessionData.gleapId);
-                localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
-              } catch (exp) {}
+            self.validateSession(sessionData);
 
-              self.validateSession(sessionData);
-
-              // Session is ready. Notify all subscribers.
-              if (self.onSessionReadyListener.length > 0) {
-                for (var i = 0; i < self.onSessionReadyListener.length; i++) {
-                  self.onSessionReadyListener[i]();
-                }
+            // Session is ready. Notify all subscribers.
+            if (self.onSessionReadyListener.length > 0) {
+              for (var i = 0; i < self.onSessionReadyListener.length; i++) {
+                self.onSessionReadyListener[i]();
               }
-              self.onSessionReadyListener = [];
-
-              resolve(sessionData);
-            } catch (exp) {
-              reject(exp);
             }
-          } else {
-            self.clearSession(false);
-            reject();
-          }
+            self.onSessionReadyListener = [];
+          } catch (exp) {}
+        } else {
+          self.clearSession(false);
         }
-      };
-      http.send(JSON.stringify({}));
-    });
+      }
+    };
+    http.send(JSON.stringify({}));
   };
 
   identifySession = (userId, userData) => {

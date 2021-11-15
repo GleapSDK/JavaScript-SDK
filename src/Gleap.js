@@ -16,6 +16,7 @@ import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
+import StreamedEvent from "./StreamedEvent";
 
 if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -28,7 +29,7 @@ if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
   };
 }
 
-const gleapDataParser = function (data) {
+export const gleapDataParser = function (data) {
   if (typeof data === "string" || data instanceof String) {
     try {
       return JSON.parse(data);
@@ -48,7 +49,6 @@ class Gleap {
   screenshot = null;
   actionLog = [];
   logArray = [];
-  eventArray = [];
   customData = {};
   formData = {};
   excludeData = {};
@@ -167,6 +167,9 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.startSession();
     sessionInstance.setOnSessionReady(() => {
+      // Start event stream.
+      StreamedEvent.getInstance().start();
+
       if (
         document.readyState === "complete" ||
         document.readyState === "loaded" ||
@@ -285,7 +288,7 @@ class Gleap {
    * @param {any} data
    */
   static logEvent(name, data) {
-    this.getInstance().logEvent(name, data);
+    StreamedEvent.getInstance().logEvent(name, data);
   }
 
   /**
@@ -858,21 +861,6 @@ class Gleap {
           this.enableIntercomCompatibilityMode(++retries);
         }, 1000);
       }
-    }
-  }
-
-  logEvent(name, data) {
-    var log = {
-      name,
-      date: new Date(),
-    };
-    if (data) {
-      log.data = gleapDataParser(data);
-    }
-    this.eventArray.push(log);
-
-    if (this.eventArray.length > this.logMaxLength) {
-      this.eventArray.shift();
     }
   }
 
@@ -1527,7 +1515,7 @@ class Gleap {
       metaData: this.getMetaData(),
       consoleLog: this.logArray,
       networkLogs: this.networkIntercepter.getRequests(),
-      customEventLog: this.eventArray,
+      customEventLog: StreamedEvent.getInstance().eventArray,
       type: this.feedbackType,
       formData: this.formData,
       isSilent: this.silentBugReport,

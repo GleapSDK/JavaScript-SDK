@@ -1,6 +1,6 @@
 const Gleap = window.Gleap;
 
-// Gleap.setApiUrl("http://localhost:9000");
+Gleap.setApiUrl("http://localhost:9000");
 
 // Sample for feedback type options
 Gleap.setMenuOptions([
@@ -223,4 +223,15 @@ Gleap.setFeedbackActions({
     disableUserScreenshot: true,
   },
 });
-Gleap.initialize("gv6EGFgSAoCOQXQygR1HzSULLPdoQv2h");
+Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
+
+Gleap.identify("613b5dc530aed737108f87a8", {
+  email: "lukas@gleap.io",
+  name: "Lukas",
+});
+
+Gleap.logEvent("signedUp");
+
+Gleap.logEvent("purchased", {
+  name: "BLue tomatos"
+});
