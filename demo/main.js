@@ -1,7 +1,5 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://localhost:9000");
-
 // Sample for feedback type options
 Gleap.setMenuOptions([
   {
@@ -224,6 +222,8 @@ Gleap.setFeedbackActions({
   },
 });
 Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
+
+Gleap.setColors("#FF0000", "#0000FF", "green");
 
 Gleap.identify("613b5dc530aed737108f87a8", {
   email: "lukas@gleap.io",

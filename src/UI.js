@@ -76,7 +76,7 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
       background-color: ${headerColor};
     }
     .bb-form-progress-inner {
-      background-color: ${headerColor}44;
+      background-color: ${headerColor}66;
     }
     .bb-screenshot-editor-rectangle {
       border-color: ${primaryColor};

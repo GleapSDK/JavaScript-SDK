@@ -540,8 +540,8 @@
 
 .bb-feedback-multiplechoice-container
   .bb-feedback-multiplechoice-checkmark:after {
-  top: 5.5px;
-  left: 6px;
+  top: 7.5px;
+  left: 8px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
