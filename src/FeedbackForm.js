@@ -90,6 +90,10 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
       </div>`;
     }
     if (formItem.type === "upload") {
+      var acceptAttribute = "";
+      if (formItem.restrictions && formItem.restrictions.length > 0) {
+        acceptAttribute = `accept="${formItem.restrictions}"`;
+      }
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
         currentPage
       )}">
@@ -117,7 +121,7 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
       }" ${formItemData} type="hidden" />
         <input class="bb-feedback-formdata bb-form-fileupload-${
           formItem.name
-        }" type="file" />
+        }" type="file" ${acceptAttribute} />
         <span class="bb-feedback-filesizeinfo bb-feedback-filesizeinfo-${
           formItem.name
         }">${translateText(

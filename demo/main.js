@@ -1,7 +1,5 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://localhost:9000");
-
 // Sample for feedback type options
 Gleap.setMenuOptions([
   {
@@ -27,6 +25,14 @@ Gleap.setFeedbackActions({
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
     form: [
+      {
+        title: "Describe the issue",
+        description: "Describe what went wrong... Really!",
+        type: "upload",
+        name: "fileupload",
+        required: true,
+        restrictions: ".png",
+      },
       {
         title: "Email",
         placeholder: "Your e-mail",
