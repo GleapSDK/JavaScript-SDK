@@ -21,8 +21,12 @@ export default class StreamedEvent {
   constructor() {}
 
   start() {
+    this.startEventStream();
+    this.startPageListener();
+  }
+
+  startPageListener() {
     const self = this;
-    self.startEventStream();
     setInterval(function () {
       const currentUrl = window.location.href;
       if (currentUrl && currentUrl !== self.lastUrl) {

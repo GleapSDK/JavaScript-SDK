@@ -167,8 +167,10 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.startSession();
     sessionInstance.setOnSessionReady(() => {
-      // Start event stream.
-      StreamedEvent.getInstance().start();
+      if (!instance.widgetCallback) {
+        // Start event stream only on web.
+        StreamedEvent.getInstance().start();
+      }
 
       if (
         document.readyState === "complete" ||
