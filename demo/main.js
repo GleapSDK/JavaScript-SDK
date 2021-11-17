@@ -1,5 +1,7 @@
 const Gleap = window.Gleap;
 
+Gleap.setApiUrl("http://localhost:9000");
+
 // Sample for feedback type options
 Gleap.setMenuOptions([
   {
@@ -37,13 +39,14 @@ Gleap.setFeedbackActions({
       },
       {
         title: "Describe the issue",
-        placeholder: "The more information, the better.",
         description: "Describe what went wrong... Really!",
+        placeholder: "The more information, the better.",
         type: "textarea",
         name: "description",
       },
       { title: "Send report", type: "submit", name: "send" },
     ],
+    disableUserScreenshot: true,
     feedbackType: "BUG",
     excludeData: {
       customData: false,
@@ -233,5 +236,5 @@ Gleap.identify("613b5dc530aed737108f87a8", {
 Gleap.logEvent("signedUp");
 
 Gleap.logEvent("purchased", {
-  name: "BLue tomatos"
+  name: "BLue tomatos",
 });

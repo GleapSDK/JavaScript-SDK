@@ -1,4 +1,6 @@
+import Session from "./Session";
 import { translateText } from "./Translation";
+import { setLoadingIndicatorProgress } from "./UI";
 
 const formPageClass = "bb-feedback-formpage";
 
@@ -85,7 +87,44 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         formItem.placeholder,
         overrideLanguage
       )}" />
-        </div>`;
+      </div>`;
+    }
+    if (formItem.type === "upload") {
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        currentPage
+      )}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+      <div class="bb-feedback-dialog-loading bb-feedback-dialog-loading--${
+        formItem.name
+      }">
+        <svg
+          class="bb--progress-ring"
+          width="120"
+          height="120">
+          <circle
+            class="bb--progress-ring__circle"
+            stroke="${Gleap.getInstance().mainColor}"
+            stroke-width="6"
+            fill="transparent"
+            r="34"
+            cx="60"
+            cy="60"/>
+        </svg>
+      </div>
+      <input class="bb-feedback-formdata bb-feedback-${
+        formItem.name
+      }" ${formItemData} type="hidden" />
+        <input class="bb-feedback-formdata bb-form-fileupload-${
+          formItem.name
+        }" type="file" />
+        <span class="bb-feedback-filesizeinfo bb-feedback-filesizeinfo-${
+          formItem.name
+        }">${translateText(
+        "The file you chose exceeds the file size limit of 3MB.",
+        overrideLanguage
+      )}</span>
+      </div>`;
     }
     if (formItem.type === "textarea") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
@@ -330,6 +369,15 @@ export const validateFormItem = function (formItem, showError = true) {
       formElement.classList.remove("bb-feedback-required");
     }
   }
+  if (formItem.type === "upload" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError &&
+        formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
   if (formItem.type === "rating" && formItem.required) {
     if (!formElement.value || formElement.value === "") {
       showError &&
@@ -470,6 +518,91 @@ export const hookForm = function (formOptions, submitForm) {
       formInput.onchange = function () {
         validateFormPage(currentPage);
       };
+    }
+    if (formItem.type === "upload") {
+      const formFileUploadInput = document.querySelector(
+        `.bb-form-fileupload-${formItem.name}`
+      );
+      const fileSizeInfo = document.querySelector(
+        `.bb-feedback-filesizeinfo-${formItem.name}`
+      );
+      if (formFileUploadInput) {
+        formFileUploadInput.addEventListener("change", function () {
+          validateFormPage(currentPage);
+          if (fileSizeInfo) {
+            fileSizeInfo.style.display = "none";
+          }
+          if (
+            formFileUploadInput.files &&
+            formFileUploadInput.files.length > 0
+          ) {
+            var file = formFileUploadInput.files[0];
+            if (file.size / 1024 / 1024 > 3) {
+              if (fileSizeInfo) {
+                fileSizeInfo.style.display = "block";
+              }
+              return;
+            }
+
+            var formData = new FormData();
+            formData.append("file", file);
+
+            var uploadLoader = document.querySelector(
+              `.bb-feedback-dialog-loading--${formItem.name}`
+            );
+            if (uploadLoader) {
+              uploadLoader.style.display = "flex";
+              formFileUploadInput.style.display = "none";
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open(
+              "POST",
+              Session.getInstance().apiUrl + "/uploads/attachments"
+            );
+            Session.getInstance().injectSession(xhr);
+            xhr.upload.onprogress = function (e) {
+              if (e.lengthComputable) {
+                const percentComplete = parseInt((e.loaded / e.total) * 100);
+                setLoadingIndicatorProgress(percentComplete, formItem.name);
+              }
+            };
+            xhr.onerror = function () {
+              if (uploadLoader) {
+                uploadLoader.style.display = "none";
+              }
+              formFileUploadInput.style.display = "block";
+            };
+            xhr.onreadystatechange = function () {
+              if (
+                xhr.readyState == 4 &&
+                xhr.status == 200 &&
+                xhr.responseText
+              ) {
+                try {
+                  const data = JSON.parse(xhr.responseText);
+                  if (data.fileUrls && data.fileUrls.length > 0) {
+                    formInput.value = data.fileUrls[0];
+
+                    // Show next step.
+                    return handleNextFormStep(
+                      currentPage,
+                      formOptions.pages,
+                      submitForm
+                    );
+                  }
+                } catch (exp) {}
+
+                if (uploadLoader) {
+                  uploadLoader.style.display = "none";
+                }
+                formFileUploadInput.style.display = "block";
+              }
+            };
+            xhr.send(formData);
+          }
+        });
+      }
     }
     if (formItem.type === "textarea") {
       formInput.style.height = "inherit";

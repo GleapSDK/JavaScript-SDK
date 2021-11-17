@@ -450,17 +450,13 @@ class Gleap {
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {
-    console.warn("Gleap: @deprecated enablePrivacyPolicy");
-  }
+  static enablePrivacyPolicy(enabled) {}
 
   /**
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {
-    console.warn("Gleap: @deprecated setPrivacyPolicyUrl");
-  }
+  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
 
   /**
    * Sets the widget info texts.
@@ -1028,7 +1024,7 @@ class Gleap {
     const htmlContent = `<div class="bb-feedback-dialog-error">${translateText(
       "Something went wrong, please try again.",
       self.overrideLanguage
-    )}</div><div class="bb-feedback-dialog-loading">
+    )}</div><div class="bb-feedback-dialog-loading bb-feedback-dialog-loading--main">
     <svg
       class="bb--progress-ring"
       width="120"

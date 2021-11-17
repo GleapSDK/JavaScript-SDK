@@ -1369,12 +1369,24 @@ textarea.bb-feedback-required {
   display: none;
 }
 
+.bb-feedback-filesizeinfo {
+  display: none;
+  font-size: 14px;
+  font-weight: normal;
+  font-family: "Inter", sans-serif;
+  color: #da0e07;
+  margin-top: 10px;
+}
+
 .bb-feedback-dialog-loading {
-  padding: 20px;
   display: none;
   justify-content: center;
   align-items: center;
   flex-grow: 1;
+}
+
+.bb-feedback-dialog-loading--main {
+  padding: 20px;
 }
 
 .bb--progress-ring__circle {

@@ -349,8 +349,13 @@ export const validatePoweredBy = function (poweredByHidden) {
   }
 };
 
-export const setLoadingIndicatorProgress = function (percentComplete) {
-  const circle = window.document.querySelector(".bb--progress-ring__circle");
+export const setLoadingIndicatorProgress = function (
+  percentComplete,
+  loader = "main"
+) {
+  const circle = window.document.querySelector(
+    `.bb-feedback-dialog-loading--${loader} .bb--progress-ring__circle`
+  );
   const circumference = 213.628300444;
   const offset = circumference - (percentComplete / 100) * circumference;
   if (circle) {
@@ -419,7 +424,7 @@ export const loadIcon = function (name, color) {
 
 export const toggleLoading = function (loading) {
   const form = document.querySelector(".bb-feedback-form");
-  const loader = document.querySelector(".bb-feedback-dialog-loading");
+  const loader = document.querySelector(".bb-feedback-dialog-loading--main");
   const next = document.querySelector(".bb-feedback-dialog-header-back");
   const close = document.querySelector(".bb-feedback-dialog-header-close");
 
