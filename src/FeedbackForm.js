@@ -124,11 +124,7 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         currentPage
       )} bb-feedback-rating-${formItem.name}" ${formItemData}">
       ${getDescriptionHTML(formItem.description, overrideLanguage)}
-      ${getTitleHTML(
-        formItem.title,
-        overrideLanguage,
-        formItem.required
-      )}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
       <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
@@ -203,15 +199,9 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
 
       formHTML += `<div class="bb-feedback-onetofive ${getFormPageClass(
         currentPage
-      )} bb-feedback-onetofive-${
-        formItem.name
-      }" ${formItemData}">
+      )} bb-feedback-onetofive-${formItem.name}" ${formItemData}">
       ${getDescriptionHTML(formItem.description, overrideLanguage)}
-      ${getTitleHTML(
-        formItem.title,
-        overrideLanguage,
-        formItem.required
-      )}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
       <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
@@ -250,15 +240,9 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
 
       formHTML += `<div class="bb-feedback-multiplechoice ${getFormPageClass(
         currentPage
-      )} bb-feedback-multiplechoice-${
-        formItem.name
-      }" ${formItemData}>
+      )} bb-feedback-multiplechoice-${formItem.name}" ${formItemData}>
       ${getDescriptionHTML(formItem.description, overrideLanguage)}
-      ${getTitleHTML(
-        formItem.title,
-        overrideLanguage,
-        formItem.required
-      )}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
       <input class="bb-feedback-formdata bb-feedback-${
         formItem.name
       }" ${formItemData} type="hidden" />
@@ -437,6 +421,7 @@ export const hookForm = function (formOptions, submitForm) {
     const sendButton = sendButtons[i];
     sendButton.onclick = function () {
       if (
+        sendButton &&
         sendButton.getAttribute("disabled") !== "true" &&
         sendButton.getAttribute("bb-form-page")
       ) {
@@ -502,6 +487,10 @@ export const hookForm = function (formOptions, submitForm) {
       for (var j = 0; j < ratingItems.length; j++) {
         const ratingItem = ratingItems[j];
         ratingItem.addEventListener("click", function (e) {
+          if (!ratingItem) {
+            return;
+          }
+
           formInput.value = ratingItem.getAttribute("data-value");
           validateFormPage(currentPage);
 
@@ -526,6 +515,10 @@ export const hookForm = function (formOptions, submitForm) {
       for (var j = 0; j < onetofiveItems.length; j++) {
         const onetofiveItem = onetofiveItems[j];
         onetofiveItem.addEventListener("click", function (e) {
+          if (!onetofiveItem) {
+            return;
+          }
+
           formInput.value = onetofiveItem.getAttribute("data-value");
           validateFormPage(currentPage);
 
@@ -552,6 +545,9 @@ export const hookForm = function (formOptions, submitForm) {
       for (var j = 0; j < multiplechoiceItems.length; j++) {
         const multiplechoiceItem = multiplechoiceItems[j];
         multiplechoiceItem.addEventListener("click", function (e) {
+          if (!multiplechoiceItem) {
+            return;
+          }
           formInput.value = multiplechoiceItem.getAttribute("data-value");
           validateFormPage(currentPage);
         });

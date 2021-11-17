@@ -239,7 +239,7 @@ export const createWidgetDialog = function (
     ".bb-feedback-dialog-header-close"
   );
   closeButton.onclick = function () {
-    if (closeButton.getAttribute("d") === "t") {
+    if (closeButton && closeButton.getAttribute("d") === "t") {
       return;
     }
     Gleap.getInstance().closeGleap();
@@ -251,7 +251,7 @@ export const createWidgetDialog = function (
       ".bb-feedback-dialog-header-back"
     );
     backButton.onclick = function () {
-      if (backButton.getAttribute("d") === "t") {
+      if (backButton && backButton.getAttribute("d") === "t") {
         return;
       }
       back();

@@ -233,33 +233,38 @@ const downloadAllCSSUrlResources = (clone, remote) => {
         }
       }
     }
-    if (cssTextContent != "" && !remote) {
-      // Resolve resources.
-      const baseTags = document.getElementsByTagName("base");
-      var basePathURL = baseTags.length
-        ? baseTags[0].href.substr(location.origin.length, 999)
-        : window.location.href;
-      if (styleSheet.href) {
-        basePathURL = styleSheet.href;
-      }
-      const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
-      promises.push(
-        loadCSSUrlResources(cssTextContent, basePath).then((replacedStyle) => {
-          return {
-            styletext: replacedStyle,
+
+    if (styleSheet && styleSheet.ownerNode) {
+      if (cssTextContent != "" && !remote) {
+        // Resolve resources.
+        const baseTags = document.getElementsByTagName("base");
+        var basePathURL = baseTags.length
+          ? baseTags[0].href.substr(location.origin.length, 999)
+          : window.location.href;
+        if (styleSheet.href) {
+          basePathURL = styleSheet.href;
+        }
+        const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
+        promises.push(
+          loadCSSUrlResources(cssTextContent, basePath).then(
+            (replacedStyle) => {
+              return {
+                styletext: replacedStyle,
+                stylesheet: styleSheet,
+                styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
+              };
+            }
+          )
+        );
+      } else {
+        promises.push(
+          Promise.resolve({
+            styletext: cssTextContent,
             stylesheet: styleSheet,
             styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
-          };
-        })
-      );
-    } else {
-      promises.push(
-        Promise.resolve({
-          styletext: cssTextContent,
-          stylesheet: styleSheet,
-          styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
-        })
-      );
+          })
+        );
+      }
     }
   }
 
@@ -440,7 +445,9 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
     // Calculate heights
     const bbElems = clone.querySelectorAll("[bb-element=true]");
     for (var i = 0; i < bbElems.length; ++i) {
-      bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
+      if (bbElems[i]) {
+        bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
+      }
     }
 
     prepareRemoteData(clone, remote).then(() => {
