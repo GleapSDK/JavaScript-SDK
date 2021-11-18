@@ -361,15 +361,17 @@ const deepClone = (host) => {
       }
 
       if (
-        tagName === "SELECT" ||
-        tagName === "TEXTAREA" ||
-        tagName === "INPUT"
+        (tagName === "SELECT" ||
+          tagName === "TEXTAREA" ||
+          tagName === "INPUT") &&
+        !(node.getAttribute("gleap-ignore") === "value")
       ) {
         clone.setAttribute("bb-data-value", node.value);
-        if (node.type === "checkbox" || node.type === "radio") {
-          if (node.checked) {
-            clone.setAttribute("bb-data-checked", true);
-          }
+        if (
+          (node.type === "checkbox" || node.type === "radio") &&
+          node.checked
+        ) {
+          clone.setAttribute("bb-data-checked", true);
         }
       }
     }

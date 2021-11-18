@@ -80,6 +80,10 @@ export default class ReplayRecFrame {
         return;
       }
 
+      if (this.node.getAttribute("gleap-ignore") === "value") {
+        return;
+      }
+
       const id = this.prepEvent(event);
       if (id && "value" in event.target) {
         var val = event.target.value;
