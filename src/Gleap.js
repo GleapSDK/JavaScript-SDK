@@ -769,6 +769,32 @@ class Gleap {
         }
       }
 
+      const emailFormItem =
+        feedbackOptions.collectEmail === true ||
+        feedbackOptions.collectEmail === undefined
+          ? {
+              title: "Email",
+              placeholder: "Your e-mail",
+              type: "text",
+              inputtype: "email",
+              name: "reportedBy",
+              required: true,
+              remember: true,
+            }
+          : null;
+
+      // Collect email when user needs to enter it.
+      console.log(emailFormItem);
+      console.log(sessionInstance.session && sessionInstance.session.email);
+      if (
+        emailFormItem &&
+        !(sessionInstance.session && sessionInstance.session.email)
+      ) {
+        console.log("????");
+        emailFormItem.hideOnDefaultSet = false;
+        newFormArray.push(emailFormItem);
+      }
+
       // Update form.
       feedbackOptions.form = newFormArray;
       feedbackOptions.pages = newFormArray.length;
@@ -781,26 +807,18 @@ class Gleap {
         }
       }
 
-      // Collect email
+      // Add email as hidden default option.
       if (
-        feedbackOptions.collectEmail === true ||
-        feedbackOptions.collectEmail === undefined
+        emailFormItem &&
+        sessionInstance.session &&
+        sessionInstance.session.email
       ) {
-        var emailFormItem = {
-          title: "Email",
-          placeholder: "Your e-mail",
-          type: "text",
-          inputtype: "email",
-          name: "reportedBy",
-          required: true,
-          remember: true,
-          hideOnDefaultSet: true,
-          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
-        };
-        if (sessionInstance.session && sessionInstance.session.email) {
-          emailFormItem.defaultValue = sessionInstance.session.email;
-        }
-        feedbackOptions.form.push(emailFormItem);
+        console.log("????X");
+        emailFormItem.hideOnDefaultSet = true;
+        emailFormItem.defaultValue = sessionInstance.session.email;
+        emailFormItem.page =
+          feedbackOptions.form[feedbackOptions.form.length - 1].page;
+        newFormArray.push(emailFormItem);
       }
 
       // Inject privacy policy.

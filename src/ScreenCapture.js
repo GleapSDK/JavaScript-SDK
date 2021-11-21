@@ -312,15 +312,21 @@ const prepareRemoteData = (clone, remote) => {
 };
 
 const deepClone = (host) => {
-  const cloneNode = (node, parent) => {
-    const walkTree = (nextn, nextp) => {
+  let shadowNodeId = 0;
+  const cloneNode = (node, parent, shadowRoot) => {
+    const walkTree = (nextn, nextp, shadowRoot) => {
       while (nextn) {
-        cloneNode(nextn, nextp);
+        cloneNode(nextn, nextp, shadowRoot);
         nextn = nextn.nextSibling;
       }
     };
 
     const clone = node.cloneNode();
+
+    if (shadowRoot) {
+      clone.setAttribute("bb-shadow-child", shadowRoot);
+    }
+
     if (node instanceof HTMLCanvasElement) {
       clone.setAttribute("bb-canvas-data", node.toDataURL());
     }
@@ -378,7 +384,10 @@ const deepClone = (host) => {
 
     parent.appendChild(clone);
     if (node.shadowRoot) {
-      walkTree(node.shadowRoot.firstChild, clone);
+      walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
+      clone.setAttribute("bb-shadow-parent", shadowNodeId);
+      console.log(clone);
+      ++shadowNodeId;
     }
 
     walkTree(node.firstChild, clone);
