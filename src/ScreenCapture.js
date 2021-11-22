@@ -312,11 +312,11 @@ const prepareRemoteData = (clone, remote) => {
 };
 
 const deepClone = (host) => {
-  let shadowNodeId = 0;
+  let shadowNodeId = 1;
   const cloneNode = (node, parent, shadowRoot) => {
-    const walkTree = (nextn, nextp, shadowRoot) => {
+    const walkTree = (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
-        cloneNode(nextn, nextp, shadowRoot);
+        cloneNode(nextn, nextp, innerShadowRoot);
         nextn = nextn.nextSibling;
       }
     };
