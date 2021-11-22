@@ -784,13 +784,10 @@ class Gleap {
           : null;
 
       // Collect email when user needs to enter it.
-      console.log(emailFormItem);
-      console.log(sessionInstance.session && sessionInstance.session.email);
       if (
         emailFormItem &&
         !(sessionInstance.session && sessionInstance.session.email)
       ) {
-        console.log("????");
         emailFormItem.hideOnDefaultSet = false;
         newFormArray.push(emailFormItem);
       }
@@ -813,7 +810,6 @@ class Gleap {
         sessionInstance.session &&
         sessionInstance.session.email
       ) {
-        console.log("????X");
         emailFormItem.hideOnDefaultSet = true;
         emailFormItem.defaultValue = sessionInstance.session.email;
         emailFormItem.page =

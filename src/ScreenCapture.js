@@ -386,7 +386,6 @@ const deepClone = (host) => {
     if (node.shadowRoot) {
       walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
       clone.setAttribute("bb-shadow-parent", shadowNodeId);
-      console.log(clone);
       ++shadowNodeId;
     }
 
