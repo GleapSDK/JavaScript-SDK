@@ -24,14 +24,8 @@ Gleap.setFeedbackActions({
       "Add more details to your screenshot to let us know what needs fixing.",
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
+    singlePageForm: true,
     form: [
-      {
-        title: "Describe the issue",
-        description: "Describe what went wrong... Really!",
-        placeholder: "The more information, the better.",
-        type: "textarea",
-        name: "description",
-      },
       {
         placeholder: "Explaasdfasdfasdfin your request.",
         title: "Subjedct",
@@ -39,6 +33,13 @@ Gleap.setFeedbackActions({
         inputtype: "text",
         name: "tiffffffftle",
         required: true,
+      },
+      {
+        title: "Describe the issue",
+        description: "Describe what went wrong... Really!",
+        placeholder: "The more information, the better.",
+        type: "textarea",
+        name: "description",
       },
     ],
     disableUserScreenshot: true,
@@ -230,7 +231,7 @@ Gleap.setFeedbackActions({
 });
 Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
 
-Gleap.setColors("#FF0000", "#0000FF", "green");
+Gleap.setColors("#443300", "#0000FF", "green");
 
 Gleap.identify("613b5dc530aed737108f87a8", {
   email: "lukas@gleap.io",

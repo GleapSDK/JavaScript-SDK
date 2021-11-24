@@ -794,12 +794,15 @@ class Gleap {
 
       // Update form.
       feedbackOptions.form = newFormArray;
-      feedbackOptions.pages = newFormArray.length;
+      feedbackOptions.pages =
+        feedbackOptions.singlePageForm === true ? 1 : newFormArray.length;
 
       // Add page id's
       for (var i = 0; i < feedbackOptions.form.length; i++) {
         var feedbackOption = feedbackOptions.form[i];
-        if (!feedbackOption.page) {
+        if (feedbackOptions.singlePageForm === true) {
+          feedbackOption.page = 0;
+        } else {
           feedbackOption.page = i;
         }
       }

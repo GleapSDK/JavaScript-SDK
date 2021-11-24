@@ -346,9 +346,15 @@ const validateEmail = function (email) {
   return re.test(String(email).toLowerCase());
 };
 
-export const validateFormItem = function (formItem, showError = true) {
+export const validateFormItem = function (formItem, shouldShowError = true) {
   var valid = true;
   const formElement = document.querySelector(`.bb-feedback-${formItem.name}`);
+  if (!formElement) {
+    return false;
+  }
+
+  const formElementDirtyFlag = formElement.getAttribute("bb-dirty");
+  const showError = shouldShowError && formElementDirtyFlag === "true";
 
   if (
     (formItem.type === "text" || formItem.type === "textarea") &&
@@ -464,6 +470,10 @@ const showFormPage = function (pageToShow) {
   }
 };
 
+const addDirtyFlagToFormElement = function (formElement) {
+  formElement.setAttribute("bb-dirty", "true");
+};
+
 export const hookForm = function (formOptions, submitForm) {
   const form = formOptions.form;
 
@@ -511,6 +521,9 @@ export const hookForm = function (formOptions, submitForm) {
       if (formItem.defaultValue && formItem.hideOnDefaultSet) {
         formInput.parentElement.classList.add("bb-feedback-form--hidden");
       }
+      formInput.addEventListener("focusin", function () {
+        addDirtyFlagToFormElement(formInput);
+      });
       formInput.addEventListener("focusout", function () {
         validateFormPage(currentPage);
       });
@@ -520,6 +533,7 @@ export const hookForm = function (formOptions, submitForm) {
     }
     if (formItem.type === "privacypolicy") {
       formInput.onchange = function () {
+        addDirtyFlagToFormElement(formInput);
         validateFormPage(currentPage);
       };
     }
@@ -532,6 +546,7 @@ export const hookForm = function (formOptions, submitForm) {
       );
       if (formFileUploadInput) {
         formFileUploadInput.addEventListener("change", function () {
+          addDirtyFlagToFormElement(formInput);
           validateFormPage(currentPage);
           if (fileSizeInfo) {
             fileSizeInfo.style.display = "none";
@@ -611,6 +626,9 @@ export const hookForm = function (formOptions, submitForm) {
     if (formItem.type === "textarea") {
       formInput.style.height = "inherit";
       formInput.style.height = formInput.scrollHeight + "px";
+      formInput.addEventListener("focusin", function () {
+        addDirtyFlagToFormElement(formInput);
+      });
       formInput.oninput = function () {
         formInput.style.height = "inherit";
         formInput.style.height = formInput.scrollHeight + "px";

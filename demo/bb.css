@@ -270,8 +270,8 @@
   font-family: "Inter", sans-serif;
   color: #000000;
   font-weight: normal;
-  margin-top: 4px;
-  margin-bottom: 16px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
 .bb-feedback-form--hidden {
@@ -608,7 +608,7 @@
   font-size: 16px;
   line-height: 22px;
   text-align: left;
-  margin-bottom: 12px;
+  margin-bottom: 5px;
   margin-top: 4px;
   font-weight: 600;
   color: #000000;
@@ -665,7 +665,7 @@
 .bb-feedback-inputgroup {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   padding: 0px;
   flex-direction: column;
 }
@@ -698,6 +698,7 @@
   align-items: center;
   justify-content: flex-end;
   flex-direction: row;
+  margin-top: 20px;
 }
 
 .bb-feedback-inputgroup-text {
