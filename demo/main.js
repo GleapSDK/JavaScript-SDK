@@ -24,8 +24,22 @@ Gleap.setFeedbackActions({
       "Add more details to your screenshot to let us know what needs fixing.",
     thanksMessage:
       "Thanks for submitting your report. You’ve contributed to helping us improve. 🙌",
-    singlePageForm: true,
+    singlePageForm: false,
     form: [
+      {
+        title: "Tell us more about the problem",
+        placeholder: "Describe what went wrong",
+        type: "rating",
+        name: "description",
+        choices: ["asdf", "ffff", "idi", "paososo"]
+      },
+      {
+        title: "Tell us more about the problem",
+        placeholder: "Describe what went wrong",
+        type: "multiplechoice",
+        name: "description",
+        choices: ["asdf", "ffff", "idi", "paososo"]
+      },
       {
         placeholder: "Explaasdfasdfasdfin your request.",
         title: "Subjedct",

@@ -499,6 +499,10 @@
   min-height: 25px;
 }
 
+.bb-feedback-multiplechoice-container:first-of-type {
+  margin-top: 8px;
+}
+
 .bb-feedback-multiplechoice-container input {
   position: absolute;
   opacity: 0;
@@ -541,8 +545,8 @@
 
 .bb-feedback-multiplechoice-container
   .bb-feedback-multiplechoice-checkmark:after {
-  top: 7.5px;
-  left: 8px;
+  top: 5.5px;
+  left: 6px;
   width: 9px;
   height: 9px;
   border-radius: 50%;
@@ -810,7 +814,7 @@ textarea.bb-feedback-required {
   display: flex;
   justify-content: center;
   margin-bottom: 20px;
-  margin-top: 0px;
+  margin-top: 8px;
 }
 
 .bb-feedback-required .bb-feedback-emojigroup {
@@ -828,7 +832,13 @@ textarea.bb-feedback-required {
 }
 
 .bb-feedback-emojigroup li:not(:last-child) {
-  margin-right: 16px;
+  margin-right: 10px;
+}
+
+@media only screen and (max-width: 330px) {
+  .bb-feedback-emojigroup li:not(:last-child) {
+    margin-right: 5px;
+  }
 }
 
 .bb-feedback-emojigroup li div {
