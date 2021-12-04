@@ -298,6 +298,9 @@ export default class ReplayRecorder {
             if (node.type && node.type === "password" && val && val.length) {
               val = new Array(val.length + 1).join("*");
             }
+            if (node.getAttribute("gleap-ignore") === "value") {
+              val = new Array(val.length + 1).join("*");
+            }
             a[REPLAYREC_INPUT] = [id, val];
             actions.push(a);
             const listener = node.ownerDocument.ReplayRecInner.scrollListener;

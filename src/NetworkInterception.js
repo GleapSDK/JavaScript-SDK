@@ -2,10 +2,37 @@ class GleapNetworkIntercepter {
   requestId = 0;
   requests = {};
   maxRequests = 10;
+  filters = [];
   stopped = false;
 
   getRequests() {
-    return Object.values(this.requests);
+    var requests = Object.values(this.requests);
+    if (!this.filters || this.filters.length === 0) {
+      return requests;
+    }
+
+    // Perform network log filtering.
+    for (var i = 0; i < requests.length; i++) {
+      var request = requests[i];
+
+      if (request && request.request && request.request.headers) {
+        for (var j = 0; j < this.filters.length; j++) {
+          delete request.request.headers[this.filters[j]];
+        }
+      }
+
+      if (request && request.response && request.response.responseText) {
+        try {
+          var data = JSON.parse(request.response.responseText);
+          for (var j = 0; j < this.filters.length; j++) {
+            delete data[this.filters[j]];
+          }
+          request.response.responseText = JSON.stringify(data);
+        } catch (e) {}
+      }
+    }
+
+    return requests;
   }
 
   setMaxRequests(maxRequests) {
@@ -14,6 +41,12 @@ class GleapNetworkIntercepter {
 
   setStopped(stopped) {
     this.stopped = stopped;
+  }
+
+  setFilters(filters) {
+    if (filters) {
+      this.filters = filters;
+    }
   }
 
   cleanRequests() {
@@ -140,12 +173,11 @@ class GleapNetworkIntercepter {
         if (
           request &&
           request.bbRequestId &&
-          args.length > 0 &&
           this.requests &&
           this.requests[request.bbRequestId]
         ) {
           this.requests[request.bbRequestId]["request"] = {
-            payload: args[0],
+            payload: args.length > 0 ? args[0] : "{}",
             headers: request.requestHeaders,
           };
         }
@@ -181,14 +213,20 @@ class GleapNetworkIntercepter {
           this.requests[request.currentTarget.bbRequestId]
         ) {
           var target = request.currentTarget;
+          var responseType = target.responseType;
+          var responseText = "<" + responseType + ">";
+          if (responseType === "" || responseType === "text") {
+            responseText =
+              this.calculateTextSize(target.responseText) > 0.5
+                ? "<response_too_large>"
+                : target.responseText;
+          }
+
           this.requests[target.bbRequestId]["success"] = true;
           this.requests[target.bbRequestId]["response"] = {
             status: target.status,
             statusText: target.statusText,
-            responseText:
-              target.responseType === "text"
-                ? target.responseText
-                : "<" + target.responseType + ">",
+            responseText: responseText,
           };
 
           this.calcRequestTime(target.bbRequestId);

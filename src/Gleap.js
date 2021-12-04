@@ -431,6 +431,13 @@ class Gleap {
   }
 
   /**
+   * Enables the network logger.
+   */
+  static setNetworkLogFilters(filters) {
+    this.getInstance().networkIntercepter.setFilters(filters);
+  }
+
+  /**
    * Sets the logo url.
    * @param {string} logoUrl
    */

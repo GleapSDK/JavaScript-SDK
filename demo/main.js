@@ -17,6 +17,11 @@ Gleap.setMenuOptions([
     color: "#FFEEC2",
   },
 ]);
+
+Gleap.setNetworkLogFilters(["Token", "x"]);
+
+Gleap.enableNetworkLogger();
+
 Gleap.setFeedbackActions({
   bugreporting: {
     title: "Report an issue",
@@ -27,28 +32,6 @@ Gleap.setFeedbackActions({
     singlePageForm: false,
     form: [
       {
-        title: "Tell us more about the problem",
-        placeholder: "Describe what went wrong",
-        type: "rating",
-        name: "description",
-        choices: ["asdf", "ffff", "idi", "paososo"]
-      },
-      {
-        title: "Tell us more about the problem",
-        placeholder: "Describe what went wrong",
-        type: "multiplechoice",
-        name: "description",
-        choices: ["asdf", "ffff", "idi", "paososo"]
-      },
-      {
-        placeholder: "Explaasdfasdfasdfin your request.",
-        title: "Subjedct",
-        type: "text",
-        inputtype: "text",
-        name: "tiffffffftle",
-        required: true,
-      },
-      {
         title: "Describe the issue",
         description: "Describe what went wrong... Really!",
         placeholder: "The more information, the better.",
@@ -56,7 +39,7 @@ Gleap.setFeedbackActions({
         name: "description",
       },
     ],
-    disableUserScreenshot: true,
+    disableUserScreenshot: false,
     feedbackType: "BUG",
     collectEmail: true,
     excludeData: {
@@ -243,7 +226,6 @@ Gleap.setFeedbackActions({
     disableUserScreenshot: true,
   },
 });
-Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
 
 Gleap.setColors("#443300", "#0000FF", "green");
 
@@ -255,5 +237,9 @@ Gleap.identify("613b5dc530aed737108f87a8", {
 Gleap.logEvent("signedUp");
 
 Gleap.logEvent("purchased", {
-  name: "BLue tomatos",
+  name: "Blue tomatos",
 });
+
+Gleap.enableReplays(true);
+
+Gleap.initialize("24DuzBy0gjQfagvSsvSukfvQo5g43gfl");

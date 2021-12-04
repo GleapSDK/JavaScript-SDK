@@ -80,14 +80,13 @@ export default class ReplayRecFrame {
         return;
       }
 
-      if (this.node.getAttribute("gleap-ignore") === "value") {
-        return;
-      }
-
       const id = this.prepEvent(event);
       if (id && "value" in event.target) {
         var val = event.target.value;
         if (event.target.type === "password" && val && val.length) {
+          val = new Array(val.length + 1).join("*");
+        }
+        if (event.target.getAttribute("gleap-ignore") === "value") {
           val = new Array(val.length + 1).join("*");
         }
         this.rec.actions.push({

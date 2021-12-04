@@ -367,12 +367,15 @@ const deepClone = (host) => {
       }
 
       if (
-        (tagName === "SELECT" ||
-          tagName === "TEXTAREA" ||
-          tagName === "INPUT") &&
-        !(node.getAttribute("gleap-ignore") === "value")
+        tagName === "SELECT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "INPUT"
       ) {
-        clone.setAttribute("bb-data-value", node.value);
+        var val = node.value;
+        if (node.getAttribute("gleap-ignore") === "value") {
+          val = new Array(val.length + 1).join("*");
+        }
+        clone.setAttribute("bb-data-value", val);
         if (
           (node.type === "checkbox" || node.type === "radio") &&
           node.checked
