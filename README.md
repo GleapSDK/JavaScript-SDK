@@ -1,6 +1,6 @@
 # Gleap JavaScript SDK
 
-![Gleap JavaScript SDK Intro](https://github.com/Gleap/JavaScript-SDK/blob/master/imgs/JavaScriptSDK.png)
+![Gleap JavaScript SDK Intro](https://raw.githubusercontent.com/GleapSDK/Gleap-iOS-SDK/main/Resources/GleapHeaderImage.png)
 
 The Gleap SDK for JavScript is the easiest way to integrate Gleap into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. Gleap offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
 
