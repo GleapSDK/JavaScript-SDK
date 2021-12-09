@@ -1935,4 +1935,15 @@ class Gleap {
   }
 }
 
+// Check for unperformed Gleap actions.
+const GleapActions = window.GleapActions;
+if (GleapActions && GleapActions.length > 0) {
+  for (var i = 0; i < GleapActions.length; i++) {
+    const GLAction = GleapActions[i];
+    if (GLAction && GLAction.e && Gleap[GLAction.e]) {
+      Gleap[GLAction.e].apply(Gleap, GLAction.a);
+    }
+  }
+}
+
 export default Gleap;
