@@ -16,10 +16,15 @@
   "author": "Gleap <hello@gleap.io>",
   "homepage": "https://www.gleap.io/",
   "keywords": [
-    "javascript-bug-reporting",
-    "bug",
     "bug-reporting",
-    "bug-reporting-tool"
+    "bug-reporting-tool",
+    "customer-surveys",
+    "surveys",
+    "customer-feedback",
+    "customer-feedback-sdk",
+    "javascript-bug-reporting",
+    "crash-reporting",
+    "bug"
   ],
   "license": "Commercial",
   "licenseFilename": "LICENSE",

@@ -2,24 +2,11 @@
 
 ![Gleap JavaScript SDK Intro](https://raw.githubusercontent.com/GleapSDK/Gleap-iOS-SDK/main/Resources/GleapHeaderImage.png)
 
-The Gleap SDK for JavScript is the easiest way to integrate Gleap into your apps! Achieve better app quality & ratings with comprehensive in-app bug reporting. Gleap offers affordable In-App Bug Reporting for Apps, WebApps & Websites.
+The Gleap SDK for JavScript is the easiest way to integrate Gleap into your apps! Achieve better app quality with comprehensive in-app bug reporting & customer feedback for your web-apps and websites.
 
 ## 📖 Docs & Examples
 
-Checkout our [documentation](https://docs.gleap.io/docs/javascript-sdk) for full reference.
-
-## ❤️ Demo
-
-[https://jssdk.gleap.io/demo](https://jssdk.gleap.io/demo)
-
-## ⭐️ Features
-
-- Plain and instant setup
-- Enhance your apps with bug reporting
-- Easy integration
-- Datacenter in europe
-- Automatic crash detection
-- Multiple platforms (iOS, Android, JavaScript)
+Checkout our [documentation](https://docs.gleap.io/javascript) for full reference.
 
 ## 🚀 Getting started
 
@@ -31,39 +18,23 @@ Checkout our [documentation](https://docs.gleap.io/docs/javascript-sdk) for full
 
 Install the **Gleap** package via npm or yarn.
 ```
-npm install Gleap --save
+npm install gleap --save
 ```
 
 Import the **Gleap** package.
 ```
-import Gleap from 'Gleap';
-```
-
-### Manual installation
-
-Add the following lines to your website's / webapp's ```<head>```-tag:
-```
-<script src="https://jssdk.gleap.io/latest/index.js"></script>
-<script>var Gleap = window.Gleap.default;</script>
+import Gleap from 'gleap';
 ```
 
 ### Initialize the SDK
 
-Add the following code to to initialize the Gleap JavaScript SDK. Replace "YOUR-SDK-TOKEN-HERE" with your actual SDK token from the [Gleap dashboard](https://app.gleap.io).
+Add the following code to initialize the Gleap JavaScript SDK. Replace "SDK-TOKEN" with your actual SDK token from the [Gleap dashboard](https://app.gleap.io).
 
 ```
-Gleap.initialize("YOUR-SDK-TOKEN-HERE", Gleap.FEEDBACK_BUTTON);
+Gleap.initialize("SDK-TOKEN");
 ```
 
 Congrats, you are now all set! Report your first bug by using the feedback button.
-
-### Types of reports
-
-- Bug report
-- Feature request
-- Rate your experience
-- General feedback
-- Contact support
 
 ## 🤝 Need help?
 
