@@ -87,6 +87,15 @@ module.exports = {
                 input: "./demo/appwidget.css",
                 output: `published/${nodeVersion}/appwidget.min.css`,
               });
+
+              setTimeout(() => {
+                exec(
+                  `mkdir -p published/latest & cp published/${nodeVersion}/* published/latest`,
+                  (err, stdoutx, stderrx) => {
+                    console.log("DONE 🎉");
+                  }
+                );
+              }, 500);
             }
           );
         });
