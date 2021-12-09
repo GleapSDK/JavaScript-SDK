@@ -17,6 +17,7 @@ import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
+import AutoConfig from "./AutoConfig";
 
 if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -167,26 +168,39 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.startSession();
     sessionInstance.setOnSessionReady(() => {
-      if (!instance.widgetCallback) {
-        // Start event stream only on web.
-        StreamedEvent.getInstance().start();
-      }
-
-      if (
-        document.readyState === "complete" ||
-        document.readyState === "loaded" ||
-        document.readyState === "interactive"
-      ) {
-        instance.checkForInitType();
+      if (instance.widgetCallback) {
+        // Directly run post init as we don't need to run the auto config on app.
+        instance.postInit();
       } else {
-        document.addEventListener("DOMContentLoaded", function (event) {
-          instance.checkForInitType();
+        // Run auto configuration.
+        AutoConfig.run().then(function () {
+          instance.postInit();
         });
       }
-      if (instance.widgetCallback) {
-        instance.widgetCallback("sessionReady");
-      }
     });
+  }
+
+  postInit() {
+    if (!this.widgetCallback) {
+      // Start event stream only on web.
+      StreamedEvent.getInstance().start();
+    }
+
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "loaded" ||
+      document.readyState === "interactive"
+    ) {
+      this.checkForInitType();
+    } else {
+      document.addEventListener("DOMContentLoaded", function (event) {
+        this.checkForInitType();
+      });
+    }
+
+    if (this.widgetCallback) {
+      this.widgetCallback("sessionReady");
+    }
   }
 
   /**
@@ -393,9 +407,7 @@ class Gleap {
   /**
    * Enable Intercom compatibility mode
    */
-  static enableIntercomCompatibilityMode() {
-    this.getInstance().enableIntercomCompatibilityMode();
-  }
+  static enableIntercomCompatibilityMode() {}
 
   /**
    * Show or hide the feedback button
@@ -497,11 +509,19 @@ class Gleap {
   }
 
   /**
-   * Set a custom api url to send bug reports to.
+   * Set a custom api url.
    * @param {string} apiUrl
    */
   static setApiUrl(apiUrl) {
     Session.getInstance().apiUrl = apiUrl;
+  }
+
+  /**
+   * Set a custom widget api url.
+   * @param {string} widgetUrl
+   */
+  static setWidgetUrl(widgetUrl) {
+    Session.getInstance().widgetUrl = widgetUrl;
   }
 
   /**
@@ -722,6 +742,27 @@ class Gleap {
     this.getInstance().feedbackTypeActions = options;
   }
 
+  getFeedbackOptions(feedbackFlow) {
+    var feedbackOptions = null;
+
+    // Try to load the specific feedback flow.
+    if (feedbackFlow) {
+      feedbackOptions = this.feedbackActions[feedbackFlow];
+    }
+
+    // Fallback
+    if (!feedbackOptions) {
+      feedbackOptions = this.feedbackActions.bugreporting;
+    }
+
+    // Deep copy to prevent changes.
+    try {
+      feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
+    } catch (e) {}
+
+    return feedbackOptions;
+  }
+
   /**
    * Starts the bug reporting flow.
    */
@@ -736,23 +777,13 @@ class Gleap {
       return;
     }
 
-    var feedbackOptions = null;
-
-    // Try to load the specific feedback flow.
-    if (feedbackFlow) {
-      feedbackOptions = instance.feedbackActions[feedbackFlow];
-    }
-
-    // Fallback
+    // Get feedback options
+    var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
     if (!feedbackOptions) {
-      feedbackOptions = instance.feedbackActions.bugreporting;
+      return;
     }
-
-    // Deep copy to prevent changes.
-    feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
 
     instance.notifyEvent("flow-started", feedbackOptions);
-
     instance.closeModalUI();
     instance.currentlySendingBug = true;
     instance.silentBugReport = silentBugReport;
@@ -861,29 +892,6 @@ class Gleap {
     }
 
     instance.updateFeedbackButtonState();
-  }
-
-  enableIntercomCompatibilityMode(retries = 0) {
-    if (window.Intercom) {
-      Intercom("onShow", function () {
-        Gleap.showFeedbackButton(false);
-      });
-      Intercom("onHide", function () {
-        Gleap.showFeedbackButton(true);
-      });
-      Intercom("hide");
-      Intercom("update", {
-        hide_default_launcher: true,
-      });
-    } else {
-      if (retries > 10) {
-        return;
-      } else {
-        setTimeout(() => {
-          this.enableIntercomCompatibilityMode(++retries);
-        }, 1000);
-      }
-    }
   }
 
   stopBugReportingAnalytics() {

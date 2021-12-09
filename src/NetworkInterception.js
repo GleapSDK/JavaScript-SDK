@@ -3,6 +3,7 @@ class GleapNetworkIntercepter {
   requests = {};
   maxRequests = 10;
   filters = [];
+  initialized = false;
   stopped = false;
 
   getRequests() {
@@ -79,6 +80,11 @@ class GleapNetworkIntercepter {
   }
 
   start() {
+    if (this.initialized) {
+      return;
+    }
+
+    this.initialized = true;
     const self = this;
     this.interceptNetworkRequests({
       onFetch: (params, bbRequestId) => {
@@ -245,10 +251,12 @@ class GleapNetworkIntercepter {
     XMLHttpRequest.prototype.wrappedSetRequestHeader =
       XMLHttpRequest.prototype.setRequestHeader;
     XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
-      this.wrappedSetRequestHeader(header, value);
-
       if (!this.requestHeaders) {
         this.requestHeaders = {};
+      }
+
+      if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
+        return;
       }
 
       if (!this.requestHeaders[header]) {
@@ -256,6 +264,7 @@ class GleapNetworkIntercepter {
       }
 
       this.requestHeaders[header].push(value);
+      this.wrappedSetRequestHeader(header, value);
     };
     XMLHttpRequest.prototype.open = function () {
       this["bbRequestId"] = ++self.requestId;
