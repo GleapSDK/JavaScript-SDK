@@ -69,8 +69,7 @@ module.exports = {
       apply: (compiler) => {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
           const nodeVersion = process.env.npm_package_version;
-
-          exec(
+          return exec(
             `mkdir -p published/${nodeVersion} & cp ./build/index.js published/${nodeVersion}/index.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
@@ -87,15 +86,18 @@ module.exports = {
                 input: "./demo/appwidget.css",
                 output: `published/${nodeVersion}/appwidget.min.css`,
               });
-
-              setTimeout(() => {
-                exec(
-                  `mkdir -p published/latest & cp published/${nodeVersion}/* published/latest`,
-                  (err, stdoutx, stderrx) => {
-                    console.log("DONE 🎉");
-                  }
-                );
-              }, 500);
+              
+              return exec(
+                `mkdir -p published/latest & cp published/${nodeVersion}/* published/latest`,
+                (err, stdoutx, stderrx) => {
+                  exec(
+                    `cp published/${nodeVersion}/index.min.css build/index.min.css`,
+                    (err, stdoutx, stderrx) => {
+                      console.log("DONE 🎉");
+                    }
+                  );
+                }
+              );
             }
           );
         });
