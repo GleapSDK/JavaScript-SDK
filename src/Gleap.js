@@ -186,20 +186,21 @@ class Gleap {
       StreamedEvent.getInstance().start();
     }
 
+    const self = this;
     if (
       document.readyState === "complete" ||
       document.readyState === "loaded" ||
       document.readyState === "interactive"
     ) {
-      this.checkForInitType();
+      self.checkForInitType();
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
-        this.checkForInitType();
+        self.checkForInitType();
       });
     }
 
     if (this.widgetCallback) {
-      this.widgetCallback("sessionReady");
+      self.widgetCallback("sessionReady");
     }
   }
 
