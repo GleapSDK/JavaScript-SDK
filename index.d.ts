@@ -26,6 +26,7 @@ export namespace Gleap {
     function enableShortcuts(enabled: boolean): void;
     function enableReplays(enabled: boolean): void;
     function setLanguage(language: string): void;
+    function clearIdentity(): void;
     function identify(userId: string, customerData: {
         name?: string;
         email?: string;
