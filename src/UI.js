@@ -9,13 +9,51 @@ const calculateContrast = (hex) => {
   return yiq >= 165 ? "black" : "white";
 };
 
-export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
+export const injectStyledCSS = (
+  primaryColor,
+  headerColor,
+  buttonColor,
+  borderRadius
+) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastHeaderColor = calculateContrast(headerColor);
   const contrastButtonColor = calculateContrast(buttonColor);
+
+  var borderRadius = parseInt(borderRadius, 10);
+  if (borderRadius === NaN || borderRadius === undefined) {
+    borderRadius = 20;
+  }
+
+  const containerBorderRadius = Math.round(borderRadius * 0.6);
+  const buttonBorderRadius = Math.round(borderRadius * 1.05);
+  const formItemBorderRadius = Math.round(borderRadius * 0.4);
+  const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
+
   const colorStyleSheet = `
+    .bb-feedback-onetofive-button {
+      border-radius: ${formItemSmallBorderRadius}px;
+    }
+    .bb-feedback-button-classic {
+      border-top-left-radius: ${formItemBorderRadius}px;
+      border-top-right-radius: ${formItemBorderRadius}px;
+    }
+    .bb-feedback-inputgroup textarea,
+    .bb-feedback-inputgroup > input,
+    .bb-feedback-inputgroup input {
+      border-radius: ${formItemBorderRadius}px;
+    }
+    .bb-feedback-dialog-header-back:hover {
+      border-radius: ${containerBorderRadius}px;
+    }
+    .bb-feedback-type {
+      border-radius: ${containerBorderRadius}px;
+    }
+    .bb-feedback-dialog {
+      border-radius: ${borderRadius}px;
+    }
     .bb-screenshot-editor-drag-info {
       color: ${contrastColor};
+      border-radius: ${buttonBorderRadius}px;
     }
     .bb-logo-arrowdown {
       fill: ${contrastButtonColor};
@@ -74,6 +112,8 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     }
     .bb-feedback-dialog-header {
       background-color: ${headerColor};
+      border-top-left-radius: ${borderRadius}px;
+      border-top-right-radius: ${borderRadius}px;
     }
     .bb-form-progress-inner {
       background-color: ${headerColor}66;
@@ -90,6 +130,7 @@ export const injectColorCSS = (primaryColor, headerColor, buttonColor) => {
     .bb-feedback-send-button {
       color: ${contrastColor};
       background-color: ${primaryColor};
+      border-radius: ${buttonBorderRadius}px;
     }
     .bb-screenshot-editor-drag-info {
       background-color: ${primaryColor};
@@ -233,6 +274,10 @@ export const createWidgetDialog = function (
     buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
   ) {
     elem.classList.add("bb-feedback-button--classic");
+  }
+
+  if (buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT) {
+    elem.classList.add("bb-feedback-button--classic-left");
   }
 
   const closeButton = document.querySelector(

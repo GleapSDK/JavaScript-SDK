@@ -4,7 +4,7 @@ import {
   createFeedbackTypeDialog,
   createWidgetDialog,
   loadIcon,
-  injectColorCSS,
+  injectStyledCSS,
   setLoadingIndicatorProgress,
   toggleLoading,
   validatePoweredBy,
@@ -611,27 +611,40 @@ class Gleap {
 
   /**
    * Sets a custom color scheme.
-   * @param {string} color
+   * @param {string} primaryColor
    */
   static setColors(primaryColor, headerColor, buttonColor) {
-    this.getInstance().mainColor = primaryColor;
+    this.setStyles({
+      headerColor,
+      primaryColor,
+      buttonColor,
+    });
+  }
 
-    if (!headerColor) {
-      headerColor = primaryColor;
-    }
-    if (!buttonColor) {
-      buttonColor = primaryColor;
-    }
+  /**
+   * Sets a custom color scheme.
+   * @param {any} styles
+   */
+  static setStyles(styles) {
+    this.getInstance().mainColor = styles.primaryColor;
+
+    var headerColor = styles.headerColor
+      ? styles.headerColor
+      : styles.primaryColor;
+    var buttonColor = styles.buttonColor
+      ? styles.buttonColor
+      : styles.primaryColor;
+    var borderRadius = styles.borderRadius ? styles.borderRadius : 20;
 
     if (
       document.readyState === "complete" ||
       document.readyState === "loaded" ||
       document.readyState === "interactive"
     ) {
-      injectColorCSS(primaryColor, headerColor, buttonColor);
+      injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius);
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
-        injectColorCSS(primaryColor, headerColor, buttonColor);
+        injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius);
       });
     }
   }

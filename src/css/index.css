@@ -59,7 +59,7 @@
   justify-content: center;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.15);
+  box-shadow: 0px 0px 14px 0px rgb(0 0 0 / 15%);
   position: relative;
   z-index: 99;
 }
@@ -67,7 +67,7 @@
 .bb-feedback-button-text:before {
   content: "";
   position: absolute;
-  box-shadow: 6px 6px 5px rgba(0, 0, 0, 0.04);
+  box-shadow: rgb(0 0 0 / 4%) 6px 6px 5px;
   transform: rotate(315deg);
   bottom: 16px;
   right: -4px;
@@ -262,6 +262,11 @@
 .bb-feedback-button--classic .bb-feedback-dialog,
 .bb-feedback-button--disabled .bb-feedback-dialog {
   bottom: 20px;
+}
+
+.bb-feedback-button--classic-left .bb-feedback-dialog {
+  right: auto;
+  left: 16px;
 }
 
 .bb-feedback-form-description {
@@ -1331,7 +1336,7 @@ textarea.bb-feedback-required {
   cursor: pointer;
   margin: 0px;
   padding: 25px 25px;
-  background-color: #fff;
+  background-color: rgb(255, 255, 255);
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   padding-top: 0px;
@@ -1377,7 +1382,7 @@ textarea.bb-feedback-required {
   font-family: "Inter", sans-serif;
   color: #da0e07;
   border: 1px solid #da0e07;
-  box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.05);
+  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
   display: none;
 }
 

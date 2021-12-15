@@ -28,11 +28,12 @@ export default class AutoConfig {
               }
 
               if (flowConfig.color) {
-                Gleap.setColors(
-                  flowConfig.color,
-                  flowConfig.headerColor,
-                  flowConfig.buttonColor
-                );
+                Gleap.setStyles({
+                  primaryColor: flowConfig.color,
+                  headerColor: flowConfig.headerColor,
+                  buttonColor: flowConfig.buttonColor,
+                  borderRadius: flowConfig.borderRadius,
+                });
               }
 
               if (flowConfig.hideBranding) {

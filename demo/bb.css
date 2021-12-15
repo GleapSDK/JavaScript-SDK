@@ -264,6 +264,11 @@
   bottom: 20px;
 }
 
+.bb-feedback-button--classic-left .bb-feedback-dialog {
+  right: auto;
+  left: 16px;
+}
+
 .bb-feedback-form-description {
   font-size: 16px;
   line-height: 19px;
