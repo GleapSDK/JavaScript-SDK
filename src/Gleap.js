@@ -146,7 +146,7 @@ class Gleap {
 
   /**
    * Attaches external network logs that get merged with the internal network logs.
-   * @param {*} externalConsoleLogs 
+   * @param {*} externalConsoleLogs
    */
   static attachNetworkLogs(externalConsoleLogs) {
     this.getInstance().networkIntercepter.externalConsoleLogs =
@@ -652,7 +652,7 @@ class Gleap {
     const buttonColor = styles.buttonColor
       ? styles.buttonColor
       : styles.primaryColor;
-    const borderRadius = styles.borderRadius ? styles.borderRadius : 20;
+    const borderRadius = styles.borderRadius != null ? styles.borderRadius : 20;
 
     if (
       document.readyState === "complete" ||

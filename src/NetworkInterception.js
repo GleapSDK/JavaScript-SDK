@@ -8,8 +8,10 @@ class GleapNetworkIntercepter {
   stopped = false;
 
   getRequests() {
-    var requests = this.externalConsoleLogs.concat(Object.values(this.requests));
-    console.log(requests);
+    var requests = this.externalConsoleLogs.concat(
+      Object.values(this.requests)
+    );
+
     if (!this.filters || this.filters.length === 0) {
       return requests;
     }
