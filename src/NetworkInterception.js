@@ -12,6 +12,8 @@ class GleapNetworkIntercepter {
       Object.values(this.requests)
     );
 
+    console.log(requests);
+
     if (!this.filters || this.filters.length === 0) {
       return requests;
     }
@@ -36,6 +38,8 @@ class GleapNetworkIntercepter {
         } catch (e) {}
       }
     }
+
+    console.log(requests);
 
     return requests;
   }

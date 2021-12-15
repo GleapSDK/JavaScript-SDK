@@ -34,3 +34,35 @@ setTimeout(() => {
   });
   request.send();
 }, 2000);
+
+Gleap.setNetworkLogFilters(["Authentication", "pragma"]);
+
+Gleap.attachNetworkLogs([
+  {
+    type: "GET",
+    url: "https://jsonplaceholder.typicode.com/todos/1",
+    date: "2021-12-15T16:41:37.786",
+    request: {
+      payload: "",
+      headers: {
+        "cache-control": ["no-cache"],
+        "content-type": ["application/json; charset=utf-8"],
+        expires: ["-1"],
+        pragma: ["no-cache"],
+        Authentication: ["asdfasdfasdfasdf"],
+      },
+    },
+    duration: 0,
+    success: null,
+    response: {
+      status: 200,
+      statusText: "",
+      responseText: {
+        userId: 1,
+        id: 1,
+        title: "delectus aut autem",
+        completed: false,
+      },
+    },
+  },
+]);
