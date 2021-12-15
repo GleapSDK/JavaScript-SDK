@@ -145,6 +145,15 @@ class Gleap {
   }
 
   /**
+   * Set if you running on a live site or local environment.
+   * @param {*} isLiveSite
+   */
+  static setLiveSite(isLiveSite) {
+    const instance = this.getInstance();
+    instance.isLiveSite = isLiveSite;
+  }
+
+  /**
    * Initializes the SDK
    * @param {*} sdkKey
    */
@@ -628,23 +637,33 @@ class Gleap {
   static setStyles(styles) {
     this.getInstance().mainColor = styles.primaryColor;
 
-    var headerColor = styles.headerColor
+    const headerColor = styles.headerColor
       ? styles.headerColor
       : styles.primaryColor;
-    var buttonColor = styles.buttonColor
+    const buttonColor = styles.buttonColor
       ? styles.buttonColor
       : styles.primaryColor;
-    var borderRadius = styles.borderRadius ? styles.borderRadius : 20;
+    const borderRadius = styles.borderRadius ? styles.borderRadius : 20;
 
     if (
       document.readyState === "complete" ||
       document.readyState === "loaded" ||
       document.readyState === "interactive"
     ) {
-      injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius);
+      injectStyledCSS(
+        styles.primaryColor,
+        headerColor,
+        buttonColor,
+        borderRadius
+      );
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
-        injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius);
+        injectStyledCSS(
+          styles.primaryColor,
+          headerColor,
+          buttonColor,
+          borderRadius
+        );
       });
     }
   }
@@ -913,34 +932,6 @@ class Gleap {
     if (this.replay && !this.replay.stopped) {
       this.replay.stop(!this.isLiveSite);
     }
-  }
-
-  checkOnlineStatus(url) {
-    return new Promise((resolve, reject) => {
-      var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          try {
-            const status = JSON.parse(xhr.responseText);
-            resolve(status);
-          } catch (exp) {
-            reject();
-          }
-        }
-      };
-      xhr.ontimeout = function () {
-        reject();
-      };
-      xhr.onerror = function () {
-        reject();
-      };
-      xhr.open(
-        "GET",
-        "https://uptime.gleap.io/?url=" + encodeURIComponent(url),
-        true
-      );
-      xhr.send();
-    });
   }
 
   startCrashDetection() {
@@ -1257,26 +1248,25 @@ class Gleap {
     this.enableScroll();
   }
 
-  init() {
-    const self = this;
+  isLocalNetwork(hostname = window.location.hostname) {
+    return (
+      ["localhost", "127.0.0.1", "", "::1"].includes(hostname) ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.0.") ||
+      hostname.endsWith(".local")
+    );
+  }
 
+  init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
     this.registerEscapeListener();
 
-    if (window && window.location && window.location.origin) {
-      this.checkOnlineStatus(window.location.origin)
-        .then(function (status) {
-          if (status && status.up) {
-            self.isLiveSite = true;
-          } else {
-            self.isLiveSite = false;
-          }
-        })
-        .catch(function () {
-          self.isLiveSite = false;
-        });
+    if (this.isLocalNetwork()) {
+      this.isLiveSite = false;
+    } else {
+      this.isLiveSite = true;
     }
   }
 

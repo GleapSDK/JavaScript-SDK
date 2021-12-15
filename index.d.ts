@@ -39,6 +39,7 @@ export namespace Gleap {
   }): void;
   function disableConsoleLogOverwrite(): void;
   function enableNetworkLogger(): void;
+  function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
   function enableReplays(enabled: boolean): void;
   function setLanguage(language: string): void;
