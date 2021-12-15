@@ -145,6 +145,15 @@ class Gleap {
   }
 
   /**
+   * Attaches external network logs that get merged with the internal network logs.
+   * @param {*} externalConsoleLogs 
+   */
+  static attachNetworkLogs(externalConsoleLogs) {
+    this.getInstance().networkIntercepter.externalConsoleLogs =
+      externalConsoleLogs;
+  }
+
+  /**
    * Set if you running on a live site or local environment.
    * @param {*} isLiveSite
    */

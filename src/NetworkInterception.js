@@ -1,13 +1,15 @@
 class GleapNetworkIntercepter {
   requestId = 0;
   requests = {};
+  externalConsoleLogs = [];
   maxRequests = 10;
   filters = [];
   initialized = false;
   stopped = false;
 
   getRequests() {
-    var requests = Object.values(this.requests);
+    var requests = this.externalConsoleLogs.concat(Object.values(this.requests));
+    console.log(requests);
     if (!this.filters || this.filters.length === 0) {
       return requests;
     }

@@ -26,6 +26,7 @@ export namespace Gleap {
   function enableCrashDetector(enabled: boolean, silent?: boolean): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
+  function attachNetworkLogs(externalConsoleLogs: any[]): void;
   function setColors(
     primaryColor: string,
     headerColor: string,
