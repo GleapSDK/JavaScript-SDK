@@ -50,6 +50,10 @@ export default class AutoConfig {
                 Gleap.enableNetworkLogger();
               }
 
+              if (flowConfig.networkLogPropsToIgnore) {
+                Gleap.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
+              }
+
               if (!flowConfig.enableConsoleLogs) {
                 Gleap.disableConsoleLogOverwrite();
               }
