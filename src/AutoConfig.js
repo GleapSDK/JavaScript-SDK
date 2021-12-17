@@ -160,7 +160,7 @@ export default class AutoConfig {
                   }
 
                   // Action flow
-                  if (actionFlow != null) {
+                  if (actionFlow != null || action != null) {
                     var item = {
                       title: menuItem.title,
                       description: menuItem.description,
