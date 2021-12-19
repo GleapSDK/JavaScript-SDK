@@ -16,7 +16,7 @@ const getTitleHTML = function (title, overrideLanguage, required) {
 };
 
 const getDescriptionHTML = function (description, overrideLanguage) {
-  if (description === undefined) {
+  if (description === undefined || description.length === 0) {
     return "";
   }
 
@@ -476,6 +476,7 @@ const addDirtyFlagToFormElement = function (formElement) {
 
 export const hookForm = function (formOptions, submitForm) {
   const form = formOptions.form;
+  const singlePageForm = formOptions.singlePageForm;
 
   // Hook up submit buttons
   const sendButtons = document.querySelectorAll(".bb-feedback-send-button");
@@ -602,13 +603,13 @@ export const hookForm = function (formOptions, submitForm) {
                   const data = JSON.parse(xhr.responseText);
                   if (data.fileUrls && data.fileUrls.length > 0) {
                     formInput.value = data.fileUrls[0];
-
-                    // Show next step.
-                    return handleNextFormStep(
-                      currentPage,
-                      formOptions.pages,
-                      submitForm
-                    );
+                    if (!singlePageForm) {
+                      handleNextFormStep(
+                        currentPage,
+                        formOptions.pages,
+                        submitForm
+                      );
+                    }
                   }
                 } catch (exp) {}
 
@@ -658,8 +659,9 @@ export const hookForm = function (formOptions, submitForm) {
           ratingItem.classList.add("bb-feedback-active");
           e.preventDefault();
 
-          // Show next step.
-          handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          if (!singlePageForm) {
+            handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          }
         });
       }
     }
@@ -688,8 +690,9 @@ export const hookForm = function (formOptions, submitForm) {
           onetofiveItem.classList.add("bb-feedback-onetofive-button-active");
           e.preventDefault();
 
-          // Show next step.
-          handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          if (!singlePageForm) {
+            handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          }
         });
       }
     }
