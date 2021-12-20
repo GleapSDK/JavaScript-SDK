@@ -635,7 +635,7 @@ class Gleap {
     this.setStyles({
       headerColor,
       primaryColor,
-      buttonColor,
+      buttonColor
     });
   }
 
@@ -1341,17 +1341,11 @@ class Gleap {
   injectFeedbackButton() {
     const self = this;
 
-    const title = translateText(self.widgetInfo.title, self.overrideLanguage);
-    const subtitle = translateText(
-      self.widgetInfo.subtitle,
-      self.overrideLanguage
-    );
-
     var buttonIcon = "";
     if (self.customButtonLogoUrl) {
       buttonIcon = `<img class="bb-logo-logo" src="${self.customButtonLogoUrl}" alt="Feedback Button" />`;
     } else {
-      buttonIcon = loadIcon("bblogo", "#192027");
+      buttonIcon = loadIcon("bblogo", "#fff");
     }
 
     var elem = document.createElement("div");
@@ -1376,7 +1370,7 @@ class Gleap {
     } else {
       elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
-        "#192027"
+        "#fff"
       )}</div>`;
     }
 

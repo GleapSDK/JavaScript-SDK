@@ -15,7 +15,7 @@ export const createScreenshotEditor = function (
       <div class="bb-feedback-dialog-header-back ${
         !showBack && "bb-feedback-dialog-header-back--close"
       }">
-        ${loadIcon(showBack ? "arrowleft" : "close", "#192027")}
+        ${loadIcon(showBack ? "arrowleft" : "close", "#fff")}
       </div>
       <div class="bb-feedback-dialog-header-text">
           <div class="bb-feedback-dialog-header-title-small">${translateText(

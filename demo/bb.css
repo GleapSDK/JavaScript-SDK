@@ -103,11 +103,15 @@
   font-weight: 600;
 }
 
+.bb-logo-logo--default path {
+  fill: #fff;
+}
+
 .bb-feedback-button-icon {
   width: 60px;
   height: 60px;
   border-radius: 60px;
-  background-color: #ffffff;
+  background-color: #485bff;
   transition: box-shadow 0.3s ease-in-out;
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -192,10 +196,6 @@
 
 .bb-feedback-button-icon:hover {
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
-}
-
-.bb-feedback-button--sending {
-  padding-left: 5px;
 }
 
 .bb-feedback-button--bottomleft.bb-feedback-button--sending {
@@ -298,9 +298,9 @@
   justify-content: center;
   padding: 25px;
   box-sizing: border-box;
-  background-color: #edefff;
+  background-color: #485bff;
   flex-direction: column;
-  padding-bottom: 65px;
+  padding-bottom: 58px;
   position: relative;
 }
 
@@ -317,13 +317,13 @@
 .bb-feedback-dialog-header-title span {
   font-weight: normal;
   text-align: center;
-  color: #000000;
+  color: #fff;
   font-family: "Inter", sans-serif;
   text-align: left;
   margin-top: 15px;
-  font-weight: normal;
-  font-size: 28px;
-  line-height: 32px;
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 26px;
 }
 
 #bb-user-name {
@@ -333,13 +333,24 @@
 .bb-feedback-dialog-header-description {
   font-weight: normal;
   text-align: center;
-  color: #000000;
+  color: #fff;
   font-family: "Inter", sans-serif;
   text-align: left;
   font-weight: normal;
   margin-top: 5px;
   font-size: 16px;
   line-height: 19px;
+}
+
+.bb-feedback-dialog-header-back svg {
+  fill: #fff;
+}
+.bb-feedback-dialog-header-back:hover svg {
+  fill: #fff;
+}
+
+.bb-logo-arrowdown {
+  fill: #fff;
 }
 
 .bb-feedback-dialog-header-logo svg,
@@ -370,12 +381,9 @@
 }
 
 .bb-feedback-dialog-header-back:hover {
+  background-color: #fff;
   border-radius: 11px;
   cursor: pointer;
-}
-
-.bb-feedback-dialog-header-back:hover {
-  background-color: #00000022;
 }
 
 .bb-feedback-dialog-header--back {
@@ -430,7 +438,7 @@
 
 .bb-feedback-types {
   margin: 35px 0px;
-  margin-top: -55px;
+  margin-top: -45px;
   margin-bottom: 20px;
   flex-grow: 1;
   z-index: 1;
@@ -1354,7 +1362,8 @@ textarea.bb-feedback-required {
 .bb-feedback-poweredbycontainer svg {
   height: 16px;
   width: auto;
-  margin-left: 5px;
+  margin-left: 4px;
+  margin-top: 2px;
 }
 
 .bb--edit-button {
@@ -1374,15 +1383,11 @@ textarea.bb-feedback-required {
 .bb-feedback-dialog-error {
   background-color: #da0e0710;
   padding: 16px;
-  margin: 25px;
-  margin-bottom: -5px;
-  border-radius: 6px;
+  margin: 0px;
   font-size: 14px;
   font-weight: normal;
   font-family: "Inter", sans-serif;
   color: #da0e07;
-  border: 1px solid #da0e07;
-  box-shadow: 0 0 4px 0 rgb(0 0 0 / 5%);
   display: none;
 }
 

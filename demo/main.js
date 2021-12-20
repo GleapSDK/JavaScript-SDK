@@ -1,6 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
+Gleap.setApiUrl("http://localhost:9000");
+Gleap.initialize("J4ADFNfzzCdYWr8NBO4rozcb6NFeyyES");
 
 /*
 
