@@ -83,6 +83,21 @@ class GleapNetworkIntercepter {
     return megaBytes;
   }
 
+  fixPayload(payload) {
+    if (payload === undefined || payload === null) {
+      return "{}";
+    }
+
+    try {
+      if (typeof TextDecoder !== undefined && ArrayBuffer.isView(payload)) {
+        let value = new TextDecoder().decode(payload);
+        return value;
+      }
+    } catch (exp) {}
+
+    return payload;
+  }
+
   start() {
     if (this.initialized) {
       return;
@@ -99,7 +114,7 @@ class GleapNetworkIntercepter {
           var method = params[1] && params[1].method ? params[1].method : "GET";
           this.requests[bbRequestId] = {
             request: {
-              payload: params[1].body,
+              payload: self.fixPayload(params[1].body),
               headers: params[1].headers,
             },
             type: method,
@@ -187,7 +202,7 @@ class GleapNetworkIntercepter {
           this.requests[request.bbRequestId]
         ) {
           this.requests[request.bbRequestId]["request"] = {
-            payload: args.length > 0 ? args[0] : "{}",
+            payload: this.fixPayload(args.length > 0 ? args[0] : "{}"),
             headers: request.requestHeaders,
           };
         }
