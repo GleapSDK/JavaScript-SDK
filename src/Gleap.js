@@ -19,7 +19,7 @@ import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
 
-if (HTMLCanvasElement && HTMLCanvasElement.prototype) {
+if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
     HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
@@ -133,7 +133,9 @@ class Gleap {
    * Main constructor
    */
   constructor() {
-    this.init();
+    if (typeof window !== "undefined") {
+      this.init();
+    }
   }
 
   /**
@@ -635,7 +637,7 @@ class Gleap {
     this.setStyles({
       headerColor,
       primaryColor,
-      buttonColor
+      buttonColor,
     });
   }
 
@@ -1943,12 +1945,14 @@ class Gleap {
 }
 
 // Check for unperformed Gleap actions.
-const GleapActions = window.GleapActions;
-if (GleapActions && GleapActions.length > 0) {
-  for (var i = 0; i < GleapActions.length; i++) {
-    const GLAction = GleapActions[i];
-    if (GLAction && GLAction.e && Gleap[GLAction.e]) {
-      Gleap[GLAction.e].apply(Gleap, GLAction.a);
+if (typeof window !== "undefined") {
+  const GleapActions = window.GleapActions;
+  if (GleapActions && GleapActions.length > 0) {
+    for (var i = 0; i < GleapActions.length; i++) {
+      const GLAction = GleapActions[i];
+      if (GLAction && GLAction.e && Gleap[GLAction.e]) {
+        Gleap[GLAction.e].apply(Gleap, GLAction.a);
+      }
     }
   }
 }
