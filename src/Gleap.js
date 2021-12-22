@@ -87,7 +87,6 @@ class Gleap {
   appBuildNumber = "";
   mainColor = "#485bff";
   feedbackTypeActions = [];
-  previousBodyOverflow;
   customTranslation = {};
   networkIntercepter = new GleapNetworkIntercepter();
   replay = null;
@@ -917,10 +916,6 @@ class Gleap {
 
     instance.stopBugReportingAnalytics();
 
-    if (!instance.silentBugReport && !feedbackOptions.disableUserScreenshot) {
-      instance.disableScroll();
-    }
-
     // Set snapshot position
     instance.snapshotPosition = {
       x: window.scrollX,
@@ -1038,19 +1033,6 @@ class Gleap {
         },
       };
     })(window.console);
-  }
-
-  disableScroll() {
-    this.previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-  }
-
-  enableScroll() {
-    if (this.previousBodyOverflow) {
-      document.body.style.overflow = this.previousBodyOverflow;
-    } else {
-      document.body.style.overflow = null;
-    }
   }
 
   resetLoading(resetProgress) {
@@ -1256,7 +1238,6 @@ class Gleap {
 
     this.notifyEvent("close");
     this.closeModalUI(cleanUp);
-    this.enableScroll();
   }
 
   isLocalNetwork(hostname = window.location.hostname) {
@@ -1749,15 +1730,6 @@ class Gleap {
     bugReportingEditor.innerHTML = `
       <div class="bb-screenshot-editor-container">
         <div class='bb-screenshot-editor-container-inner'>
-          <svg class="bb-screenshot-editor-svg" width="100%" height="100%">
-            <defs>
-              <mask id="bbmask">
-                <rect width="100%" height="100%" fill="white"/>
-                <rect id="bb-markercut" x="0" y="0" width="0" height="0" />
-              </mask>
-            </defs>
-            <rect width="100%" height="100%" style="fill:rgba(0,0,0,0.2);" mask="url(#bbmask)" />
-          </svg>
           <div class='bb-screenshot-editor-borderlayer'></div>
           <div class='bb-screenshot-editor-dot'></div>
           <div class='bb-screenshot-editor-rectangle'></div>
@@ -1778,9 +1750,6 @@ class Gleap {
     );
     const editorRectangle = window.document.querySelector(
       ".bb-screenshot-editor-rectangle"
-    );
-    const editorSVG = window.document.querySelector(
-      ".bb-screenshot-editor-svg"
     );
     const rectangleMarker = window.document.getElementById("bb-markercut");
 
@@ -1871,12 +1840,6 @@ class Gleap {
       }px`;
       editorDot.style.left = `${
         editorDot.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-      editorSVG.style.top = `${
-        editorSVG.offsetTop + document.documentElement.scrollTop
-      }px`;
-      editorSVG.style.left = `${
-        editorSVG.offsetLeft + document.documentElement.scrollLeft
       }px`;
 
       editorDot.parentNode.removeChild(editorDot);
