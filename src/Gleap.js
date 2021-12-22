@@ -1751,7 +1751,6 @@ class Gleap {
     const editorRectangle = window.document.querySelector(
       ".bb-screenshot-editor-rectangle"
     );
-    const rectangleMarker = window.document.getElementById("bb-markercut");
 
     editorBorderLayer.style.height = `${window.innerHeight}px`;
     var addedMarker = false;
@@ -1792,10 +1791,6 @@ class Gleap {
       editorRectangle.style.top = `${top}px`;
       editorRectangle.style.width = `${widthAbs}px`;
       editorRectangle.style.height = `${heightAbs}px`;
-      rectangleMarker.setAttribute("x", left);
-      rectangleMarker.setAttribute("y", top);
-      rectangleMarker.setAttribute("width", `${widthAbs}`);
-      rectangleMarker.setAttribute("height", `${heightAbs}`);
     }
 
     function mouseDownEventHandler(e) {
