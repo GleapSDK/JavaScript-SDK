@@ -20,12 +20,29 @@ class GleapNetworkIntercepter {
     for (var i = 0; i < requests.length; i++) {
       var request = requests[i];
 
+      // Headers
       if (request && request.request && request.request.headers) {
         for (var j = 0; j < this.filters.length; j++) {
           delete request.request.headers[this.filters[j]];
         }
       }
 
+      // Payload
+      if (request && request.request && request.request.payload) {
+        var payloadObj = request.request.payload;
+        try {  
+          payloadObj = JSON.parse(request.request.payload);
+        } catch (e) {}
+        
+        if (payloadObj) {
+          for (var j = 0; j < this.filters.length; j++) {
+            delete payloadObj[this.filters[j]];
+          }
+          request.request.payload = JSON.stringify(payloadObj);
+        }
+      }
+
+      // Response
       if (request && request.response && request.response.responseText) {
         try {
           var data = JSON.parse(request.response.responseText);

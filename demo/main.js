@@ -20,7 +20,7 @@ setTimeout(() => {
   var request = new XMLHttpRequest();
 
   request.open(
-    "GET",
+    "POST",
     "https://wiki.selfhtml.org/wiki/JavaScript/XMLHttpRequest"
   );
   request.setRequestHeader("X-Test", "test1");
@@ -32,7 +32,9 @@ setTimeout(() => {
       console.warn(request.statusText, request.responseText);
     }
   });
-  request.send();
+  request.send(JSON.stringify({
+    "asdf": "asdfasdf"
+  }));
 }, 2000);
 
 Gleap.setNetworkLogFilters(["Authentication", "pragma"]);
