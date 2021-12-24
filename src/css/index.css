@@ -1352,8 +1352,8 @@ textarea.bb-feedback-required {
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   padding-top: 0px;
-  padding-bottom: 22px;
-  margin-top: -10px;
+  padding-bottom: 20px;
+  margin-top: -16px;
 }
 
 .bb-feedback-poweredbycontainer span {
