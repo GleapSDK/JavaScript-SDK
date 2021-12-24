@@ -569,6 +569,9 @@
 .bb-feedback-onetofive {
   display: flex;
   flex-direction: column;
+  animation-duration: 0.3s;
+  animation-fill-mode: both;
+  animation-name: bbFadeInRight;
 }
 
 .bb-feedback-onetofive-description {
@@ -685,7 +688,6 @@
   margin-bottom: 12px;
   padding: 0px;
   flex-direction: column;
-
   animation-duration: 0.3s;
   animation-fill-mode: both;
   animation-name: bbFadeInRight;
