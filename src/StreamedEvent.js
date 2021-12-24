@@ -26,6 +26,8 @@ export default class StreamedEvent {
   }
 
   startPageListener() {
+    this.logEvent("sessionStarted");
+
     const self = this;
     setInterval(function () {
       const currentUrl = window.location.href;
