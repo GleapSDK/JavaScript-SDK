@@ -323,16 +323,18 @@ const deepClone = (host) => {
 
     const clone = node.cloneNode();
 
-    if (shadowRoot) {
-      clone.setAttribute("bb-shadow-child", shadowRoot);
-    }
+    if (typeof clone.setAttribute !== "undefined") {
+      if (shadowRoot) {
+        clone.setAttribute("bb-shadow-child", shadowRoot);
+      }
 
-    if (node instanceof HTMLCanvasElement) {
-      clone.setAttribute("bb-canvas-data", node.toDataURL());
-    }
+      if (node instanceof HTMLCanvasElement) {
+        clone.setAttribute("bb-canvas-data", node.toDataURL());
+      }
 
-    if (node instanceof HTMLCanvasElement) {
-      clone.setAttribute("bb-canvas-data", node.toDataURL());
+      if (node instanceof HTMLCanvasElement) {
+        clone.setAttribute("bb-canvas-data", node.toDataURL());
+      }
     }
 
     if (node.nodeType == Node.ELEMENT_NODE) {
@@ -388,7 +390,9 @@ const deepClone = (host) => {
     parent.appendChild(clone);
     if (node.shadowRoot) {
       walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
-      clone.setAttribute("bb-shadow-parent", shadowNodeId);
+      if (typeof clone.setAttribute !== "undefined") {
+        clone.setAttribute("bb-shadow-parent", shadowNodeId);
+      }
       ++shadowNodeId;
     }
 
