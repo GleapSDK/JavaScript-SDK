@@ -4,9 +4,28 @@ export namespace Gleap {
     gleapId?: string,
     gleapHash?: string
   ): void;
+  /**
+   * @deprecated Please use sendSilentReport instead.
+   */
   function sendSilentBugReport(
     description: string,
     priority: "LOW" | "MEDIUM" | "HIGH"
+  ): void;
+  function sendSilentReport(
+    formData: {
+      [key: string]: string;
+    },
+    priority?: "LOW" | "MEDIUM" | "HIGH",
+    feedbackType?: string,
+    excludeData?: {
+      customData: Boolean;
+      metaData: Boolean;
+      consoleLog: Boolean;
+      networkLogs: Boolean;
+      customEventLog: Boolean;
+      screenshot: Boolean;
+      replays: Boolean;
+    }
   ): void;
   function setCustomerEmail(email: string): void;
   function attachCustomData(customData: any): void;

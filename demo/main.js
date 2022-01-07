@@ -1,6 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
+Gleap.setApiUrl("http://localhost:9000");
+Gleap.initialize("x8FMqDm2Q0Pl8f3SbDqyyIFVwOXa1Mws");
 
 /*
 
@@ -32,9 +33,11 @@ setTimeout(() => {
       console.warn(request.statusText, request.responseText);
     }
   });
-  request.send(JSON.stringify({
-    "asdf": "asdfasdf"
-  }));
+  request.send(
+    JSON.stringify({
+      asdf: "asdfasdf",
+    })
+  );
 }, 2000);
 
 Gleap.setNetworkLogFilters(["Authentication", "pragma"]);
@@ -68,3 +71,8 @@ Gleap.attachNetworkLogs([
     },
   },
 ]);
+
+setTimeout(() => {
+  x();
+  // Gleap.sendSilentBugReport("Rage click detected.");
+}, 5000);

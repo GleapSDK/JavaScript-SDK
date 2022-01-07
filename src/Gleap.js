@@ -621,7 +621,9 @@ class Gleap {
     startRageClickDetector(function (target) {
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
-        Gleap.sendSilentBugReport("Rage click detected.");
+        Gleap.sendSilentReport({
+          description: "Rage click detected.",
+        });
       } else {
         Gleap.startFeedbackFlow("crash");
       }
@@ -680,9 +682,16 @@ class Gleap {
 
   /**
    * Reports a bug silently
-   * @param {*} description
+   * @param {*} formData
+   * @param {*} priority
+   * @param {*} feedbackType
    */
-  static sendSilentBugReport(description, priority = Gleap.PRIORITY_MEDIUM) {
+  static sendSilentReport(
+    formData,
+    priority = Gleap.PRIORITY_MEDIUM,
+    feedbackType = "BUG",
+    excludeData = {}
+  ) {
     const instance = this.getInstance();
     const sessionInstance = Session.getInstance();
 
@@ -690,18 +699,31 @@ class Gleap {
       return;
     }
 
-    instance.formData = {};
+    instance.excludeData = excludeData ? excludeData : {};
+    instance.severity = priority;
+    instance.feedbackType = feedbackType;
+
+    instance.formData = formData ? formData : {};
     if (sessionInstance.session.email) {
       instance.formData.reportedBy = sessionInstance.session.email;
     }
-    if (description) {
-      instance.formData.description = description;
-    }
-
-    instance.severity = priority;
-    instance.feedbackType = "BUG";
 
     this.startFeedbackFlow(null, true);
+  }
+
+  /**
+   * Reports a bug silently
+   * @param {*} description
+   * @deprecated Please use sendSilentReport instead.
+   */
+  static sendSilentBugReport(description, priority = Gleap.PRIORITY_MEDIUM) {
+    return Gleap.sendSilentReport(
+      {
+        description: description,
+      },
+      priority,
+      "BUG"
+    );
   }
 
   /**
@@ -948,7 +970,7 @@ class Gleap {
         "URL: " + url,
         "Line: " + lineNo,
         "Column: " + columnNo,
-        "Error object: " + JSON.stringify(error),
+        "Stack: " + (error && error.stack) ? error.stack : "",
       ];
       self.addLog(message, "ERROR");
 
@@ -959,10 +981,21 @@ class Gleap {
       ) {
         self.appCrashDetected = true;
         if (self.enabledCrashDetectorSilent) {
-          const errorMessage = `Message: ${msg}\nURL: ${url}\nLine: ${lineNo}\nColumn: ${columnNo}\nError object: ${JSON.stringify(
-            error
-          )}\n`;
-          Gleap.sendSilentBugReport(errorMessage);
+          return Gleap.sendSilentReport(
+            {
+              errorMessage: msg,
+              url: url,
+              lineNo: lineNo,
+              columnNo: columnNo,
+              stackTrace: error && error.stack ? error.stack : "",
+            },
+            Gleap.PRIORITY_MEDIUM,
+            "CRASH",
+            {
+              screenshot: true,
+              replays: true,
+            }
+          );
         } else {
           Gleap.startFeedbackFlow("crash");
         }
