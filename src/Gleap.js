@@ -681,7 +681,7 @@ class Gleap {
   }
 
   /**
-   * Reports a bug silently
+   * Sends a silent feedback report
    * @param {*} formData
    * @param {*} priority
    * @param {*} feedbackType
