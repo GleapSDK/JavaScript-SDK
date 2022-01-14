@@ -30,10 +30,10 @@ class GleapNetworkIntercepter {
       // Payload
       if (request && request.request && request.request.payload) {
         var payloadObj = request.request.payload;
-        try {  
+        try {
           payloadObj = JSON.parse(request.request.payload);
         } catch (e) {}
-        
+
         if (payloadObj) {
           for (var j = 0; j < this.filters.length; j++) {
             delete payloadObj[this.filters[j]];
@@ -127,22 +127,44 @@ class GleapNetworkIntercepter {
         if (this.stopped || !bbRequestId || !this.requests) {
           return;
         }
-        if (params.length >= 2 && params[1]) {
-          var method = params[1] && params[1].method ? params[1].method : "GET";
+
+        if (
+          params.length > 0 &&
+          typeof params[0] !== "undefined" &&
+          typeof params[0].url !== "undefined"
+        ) {
           this.requests[bbRequestId] = {
-            request: {
-              payload: self.fixPayload(params[1].body),
-              headers: params[1].headers,
-            },
-            type: method,
-            url: params[0],
+            url: params[0].url,
             date: new Date(),
+            request: {
+              payload: "",
+              headers:
+                typeof params[0].headers !== "undefined"
+                  ? Object.fromEntries(params[0].headers.entries())
+                  : {},
+            },
+            type:
+              typeof params[0].method !== "undefined" ? params[0].method : "",
           };
         } else {
-          this.requests[bbRequestId] = {
-            url: params[0],
-            date: new Date(),
-          };
+          if (params.length >= 2 && params[1]) {
+            var method =
+              params[1] && params[1].method ? params[1].method : "GET";
+            this.requests[bbRequestId] = {
+              request: {
+                payload: self.fixPayload(params[1].body),
+                headers: params[1].headers,
+              },
+              type: method,
+              url: params[0],
+              date: new Date(),
+            };
+          } else {
+            this.requests[bbRequestId] = {
+              url: params[0],
+              date: new Date(),
+            };
+          }
         }
 
         this.cleanRequests();
@@ -157,21 +179,30 @@ class GleapNetworkIntercepter {
           return;
         }
 
-        req.text().then((responseText) => {
+        try {
           this.requests[bbRequestId]["success"] = true;
           this.requests[bbRequestId]["response"] = {
             status: req.status,
-            statusText: req.statusText,
-            responseText:
-              self.calculateTextSize(responseText) > 0.5
-                ? "<response_too_large>"
-                : responseText,
+            statusText: "",
+            responseText: "<request_still_open>",
           };
-
           this.calcRequestTime(bbRequestId);
 
-          this.cleanRequests();
-        });
+          req.text().then((responseText) => {
+            this.requests[bbRequestId]["success"] = true;
+            this.requests[bbRequestId]["response"] = {
+              status: req.status,
+              statusText: req.statusText,
+              responseText:
+                self.calculateTextSize(responseText) > 0.5
+                  ? "<response_too_large>"
+                  : responseText,
+            };
+
+            this.calcRequestTime(bbRequestId);
+            this.cleanRequests();
+          });
+        } catch (exp) {}
       },
       onFetchFailed: (err, bbRequestId) => {
         if (
@@ -327,32 +358,13 @@ class GleapNetworkIntercepter {
 
           return originalFetch
             .apply(this, arguments)
-            .then(function (data) {
-              return data.blob().then((blobData) => {
-                data.text = function () {
-                  return self.blobToTextPromise(blobData);
-                };
-
-                data.json = function () {
-                  return self
-                    .blobToTextPromise(blobData)
-                    .then(function (textData) {
-                      return JSON.parse(textData);
-                    });
-                };
-
-                data.blob = function () {
-                  return Promise.resolve(blobData);
-                };
-
-                data.arrayBuffer = function () {
-                  return blobData.arrayBuffer();
-                };
-
+            .then(function (response) {
+              if (response && typeof response.clone === "function") {
+                const data = response.clone();
                 callback.onFetchLoad(data, bbRequestId);
+              }
 
-                return data;
-              });
+              return response;
             })
             .catch((err) => {
               callback.onFetchFailed(err, bbRequestId);
