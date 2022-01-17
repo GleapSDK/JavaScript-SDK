@@ -1587,48 +1587,6 @@ textarea.bb-feedback-required {
   display: flex;
 }
 
-.bb-select-capture-options {
-  display: flex;
-}
-
-.bb-select-capture-options div:first-of-type {
-  margin-right: 5px;
-}
-
-.bb-select-capture-options div:last-of-type {
-  margin-left: 5px;
-}
-
-.bb-select-capture-option {
-  font-family: "Inter", sans-serif;
-  background-color: #dee1ea;
-  border-radius: 21px;
-  box-sizing: border-box;
-  padding: 12px 26px;
-  font-size: 16px;
-  line-height: 19px;
-  font-weight: 600;
-  color: #9b9fae;
-  text-align: center;
-  width: 100%;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  cursor: pointer;
-}
-
-.bb-select-capture-option--active {
-  background-color: #485bff;
-  color: #fff;
-}
-
-.bb-capture-options {
-  display: none;
-}
-
-.bb-capture-options--active {
-  display: flex;
-}
-
 @media only screen and (max-width: 1024px) {
   .bb-screenshot-editor-drag-info {
     position: absolute;
