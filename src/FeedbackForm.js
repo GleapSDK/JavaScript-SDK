@@ -142,25 +142,28 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         formItem.placeholder,
         overrideLanguage
       )}"></textarea>
-        </div>`;
+      </div>`;
     }
     if (formItem.type === "capture") {
       formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
         currentPage
       )}">
-      ${getDescriptionHTML(formItem.description, overrideLanguage)}
-      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+        ${getDescriptionHTML(formItem.description, overrideLanguage)}
+        ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+        <input class="bb-feedback-formdata bb-feedback-${
+          formItem.name
+        }" ${formItemData} type="hidden" />
         <div class="bb-select-capture-options">
-          <div class="bb-select-capture-option">Screenshot</div>
-          <div class="bb-select-capture-option">Screenrecording</div>
+          <div class="bb-select-capture-option bb-select-capture-option--active" data-type="screenshot">Screenshot</div>
+          <div class="bb-select-capture-option" data-type="video">Video</div>
         </div>
-        <div class="bb-capture-screenshot-options">
-          asdf
+        <div class="bb-capture-options bb-capture-options--active bb-capture-options-screenshot">
+          Screenshot
         </div>
-        <div class="bb-capture-screencapture-options">
-          asdf
+        <div class="bb-capture-options bb-capture-options-video">
+          Video
         </div>
-        </div>`;
+      </div>`;
     }
     if (formItem.type === "privacypolicy") {
       formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getFormPageClass(
@@ -555,6 +558,33 @@ export const hookForm = function (formOptions, submitForm) {
         addDirtyFlagToFormElement(formInput);
         validateFormPage(currentPage);
       };
+    }
+    if (formItem.type === "capture") {
+      const captureOptions = document.querySelectorAll(
+        `.bb-select-capture-option`
+      );
+      const captureOptionTabs =
+        document.querySelectorAll(`.bb-capture-options`);
+
+      const activeClass = "bb-select-capture-option--active";
+      const activeTabClass = "bb-capture-options--active";
+      for (var j = 0; j < captureOptions.length; j++) {
+        const captureOption = captureOptions[j];
+        captureOption.onclick = function () {
+          for (var k = 0; k < captureOptions.length; k++) {
+            captureOptions[k].classList.remove(activeClass);
+          }
+          captureOption.classList.add(activeClass);
+
+          for (var k = 0; k < captureOptionTabs.length; k++) {
+            captureOptionTabs[k].classList.remove(activeTabClass);
+          }
+          const activeTab = document.querySelector(
+            `.bb-capture-options-${captureOption.getAttribute("data-type")}`
+          );
+          activeTab.classList.add(activeTabClass);
+        };
+      }
     }
     if (formItem.type === "upload") {
       const formFileUploadInput = document.querySelector(
