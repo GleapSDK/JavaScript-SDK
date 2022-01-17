@@ -74,6 +74,7 @@ class Gleap {
   initialized = false;
   screenshotFeedbackOptions = null;
   customerInfo = {};
+  showUserName = true;
   welcomeIcon = "👋";
   feedbackButtonText = "Feedback";
   widgetInfo = {
@@ -360,6 +361,14 @@ class Gleap {
   }
 
   /**
+   * Show or hide the user name within the widget header
+   * @param {boolean} showUserName
+   */
+  static setShowUserName(showUserName) {
+    this.getInstance().showUserName = showUserName;
+  }
+
+  /**
    * Sets the button type.
    * @param {string} buttonType
    */
@@ -639,6 +648,7 @@ class Gleap {
       headerColor,
       primaryColor,
       buttonColor,
+      backgroundColor,
     });
   }
 
@@ -656,6 +666,8 @@ class Gleap {
       ? styles.buttonColor
       : styles.primaryColor;
     const borderRadius = styles.borderRadius != null ? styles.borderRadius : 20;
+    const backgroundColor =
+      styles.backgroundColor != null ? styles.backgroundColor : "#fff";
 
     if (
       document.readyState === "complete" ||
@@ -666,7 +678,8 @@ class Gleap {
         styles.primaryColor,
         headerColor,
         buttonColor,
-        borderRadius
+        borderRadius,
+        backgroundColor
       );
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
@@ -674,7 +687,8 @@ class Gleap {
           styles.primaryColor,
           headerColor,
           buttonColor,
-          borderRadius
+          borderRadius,
+          backgroundColor
         );
       });
     }
@@ -748,7 +762,9 @@ class Gleap {
         "Hi",
         instance.overrideLanguage
       )} <span id="bb-user-name">${
-        sessionInstance.session.name ? sessionInstance.session.name : ""
+        instance.showUserName && sessionInstance.session.name
+          ? sessionInstance.session.name
+          : ""
       }</span> ${instance.welcomeIcon}`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
@@ -1275,7 +1291,7 @@ class Gleap {
 
   isLocalNetwork(hostname = window.location.hostname) {
     return (
-      ["localhost", "127.0.0.1", "", "::1"].includes(hostname) ||
+      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
       hostname.startsWith("192.168.") ||
       hostname.startsWith("10.0.") ||
       hostname.endsWith(".local")

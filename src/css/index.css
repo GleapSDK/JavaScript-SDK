@@ -59,7 +59,7 @@
   justify-content: center;
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0px 0px 14px 0px rgb(0 0 0 / 15%);
+  box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.15);
   position: relative;
   z-index: 99;
 }
@@ -67,7 +67,7 @@
 .bb-feedback-button-text:before {
   content: "";
   position: absolute;
-  box-shadow: rgb(0 0 0 / 4%) 6px 6px 5px;
+  box-shadow: rgba(0, 0, 0, 0.04) 6px 6px 5px;
   transform: rotate(315deg);
   bottom: 16px;
   right: -4px;
@@ -652,7 +652,7 @@
   font-size: 16px;
   padding-top: 20px;
   text-align: center;
-  line-height: 19px;
+  line-height: 20px;
 }
 
 .bb-feedback-dialog-success {
@@ -832,7 +832,7 @@ textarea.bb-feedback-required {
   list-style: none;
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   margin-top: 8px;
 }
 
@@ -1275,7 +1275,7 @@ textarea.bb-feedback-required {
   top: 0;
   width: 1.4em;
   height: 1.4em;
-  border: 1px solid #59617d;
+  border: 1px solid #0d1018;
   background: #fff;
   border-radius: 0.2em;
   -webkit-transition: all 0.275s;
@@ -1350,9 +1350,6 @@ textarea.bb-feedback-required {
   cursor: pointer;
   margin: 0px;
   padding: 25px 25px;
-  background-color: rgb(255, 255, 255);
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
   padding-top: 0px;
   padding-bottom: 20px;
   margin-top: -16px;

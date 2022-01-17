@@ -33,6 +33,9 @@ export default class AutoConfig {
                   headerColor: flowConfig.headerColor,
                   buttonColor: flowConfig.buttonColor,
                   borderRadius: flowConfig.borderRadius,
+                  backgroundColor: flowConfig.backgroundColor
+                    ? flowConfig.backgroundColor
+                    : "#FFFFFF",
                 });
               }
 
@@ -97,6 +100,13 @@ export default class AutoConfig {
                 flowConfig.hideWavingHandAfterName
               ) {
                 Gleap.setWelcomeIcon("");
+              }
+
+              if (
+                typeof flowConfig.hideUsersName !== "undefined" &&
+                flowConfig.hideUsersName
+              ) {
+                Gleap.setShowUserName(false);
               }
 
               if (

@@ -1,23 +1,58 @@
 import Gleap from "./Gleap";
 import { translateText } from "./Translation";
 
+const calculateShadeColor = function (col, amt) {
+  col = col.replace(/^#/, "");
+  if (col.length === 3)
+    col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+
+  let [r, g, b] = col.match(/.{2}/g);
+  [r, g, b] = [
+    parseInt(r, 16) + amt,
+    parseInt(g, 16) + amt,
+    parseInt(b, 16) + amt,
+  ];
+
+  r = Math.max(Math.min(255, r), 0).toString(16);
+  g = Math.max(Math.min(255, g), 0).toString(16);
+  b = Math.max(Math.min(255, b), 0).toString(16);
+
+  const rr = (r.length < 2 ? "0" : "") + r;
+  const gg = (g.length < 2 ? "0" : "") + g;
+  const bb = (b.length < 2 ? "0" : "") + b;
+
+  return `#${rr}${gg}${bb}`;
+};
+
 const calculateContrast = (hex) => {
   var r = parseInt(hex.substr(1, 2), 16),
     g = parseInt(hex.substr(3, 2), 16),
     b = parseInt(hex.substr(5, 2), 16),
     yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 165 ? "black" : "white";
+  return yiq >= 165 ? "#000000" : "#ffffff";
 };
 
 export const injectStyledCSS = (
   primaryColor,
   headerColor,
   buttonColor,
-  borderRadius
+  borderRadius,
+  backgroundColor
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastHeaderColor = calculateContrast(headerColor);
   const contrastButtonColor = calculateContrast(buttonColor);
+  const contrastBackgroundColor = calculateContrast(backgroundColor);
+  const isDarkMode = contrastBackgroundColor === "#ffffff";
+  const subTextColor = isDarkMode
+    ? calculateShadeColor(backgroundColor, 100)
+    : calculateShadeColor(backgroundColor, -100);
+  const backgroundColorHover = isDarkMode
+    ? calculateShadeColor(backgroundColor, 30)
+    : calculateShadeColor(backgroundColor, -15);
+  const borderColor = isDarkMode
+    ? calculateShadeColor(backgroundColor, 70)
+    : calculateShadeColor(backgroundColor, -70);
 
   var borderRadius = parseInt(borderRadius, 10);
   if (borderRadius === NaN || borderRadius === undefined) {
@@ -54,9 +89,30 @@ export const injectStyledCSS = (
     }
     .bb-feedback-type {
       border-radius: ${containerBorderRadius}px;
+      background-color: ${backgroundColor};
+    }
+    .bb-feedback-type-description,
+    .bb-feedback-poweredbycontainer span,
+    .bb-feedback-onetofive-description span {
+      color: ${subTextColor};
+    }
+    .bb-feedback-poweredbycontainer svg g {
+      fill: ${subTextColor};
+    }
+    .bb-feedback-type:hover {
+      background-color: ${backgroundColorHover};
+    }
+    .bb-feedback-type-title,
+    .bb-feedback-form-description,
+    .bb-feedback-elementtitle,
+    .bb-feedback-multiplechoice-container,
+    .bb-feedback-dialog-info-text
+    {
+      color: ${contrastBackgroundColor};
     }
     .bb-feedback-dialog {
       border-radius: ${borderRadius}px;
+      background-color: ${backgroundColor};
     }
     .bb-screenshot-editor-drag-info {
       color: ${contrastColor};
@@ -127,6 +183,13 @@ export const injectStyledCSS = (
     }
     .bb-screenshot-editor-rectangle {
       border-color: ${primaryColor};
+    }
+    .bb-feedback-inputgroup textarea,
+    .bb-feedback-inputgroup > input,
+    .bb-feedback-inputgroup input {
+      background-color: ${backgroundColor};
+      color: ${contrastBackgroundColor};
+      border-color: ${borderColor};
     }
     .bb-feedback-inputgroup textarea:focus {
       border-color: ${primaryColor};

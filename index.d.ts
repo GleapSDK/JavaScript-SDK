@@ -62,6 +62,7 @@ export namespace Gleap {
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
   function enableReplays(enabled: boolean): void;
+  function setShowUserName(showUserName: boolean): void;
   function setLanguage(language: string): void;
   function clearIdentity(): void;
   function identify(

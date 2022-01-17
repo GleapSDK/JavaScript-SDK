@@ -1,21 +1,12 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://localhost:9000");
-Gleap.initialize("x8FMqDm2Q0Pl8f3SbDqyyIFVwOXa1Mws");
-
-/*
+// Gleap.setApiUrl("http://localhost:9000");
+Gleap.initialize("wytzEhhSa1EFfTEqK3HXBWuGRt2PREAE");
 
 Gleap.identify("613b5dc530aed737108f87a8", {
   email: "lukas@gleap.io",
   name: "Lukas",
 });
-
-Gleap.logEvent("signedUp");
-
-Gleap.logEvent("purchased", {
-  name: "Blue tomatos",
-});
-*/
 
 setTimeout(() => {
   var request = new XMLHttpRequest();
@@ -71,8 +62,3 @@ Gleap.attachNetworkLogs([
     },
   },
 ]);
-
-setTimeout(() => {
-  x();
-  // Gleap.sendSilentBugReport("Rage click detected.");
-}, 5000);
