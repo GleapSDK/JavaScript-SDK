@@ -144,6 +144,24 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
       )}"></textarea>
         </div>`;
     }
+    if (formItem.type === "capture") {
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        currentPage
+      )}">
+      ${getDescriptionHTML(formItem.description, overrideLanguage)}
+      ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+        <div class="bb-select-capture-options">
+          <div class="bb-select-capture-option">Screenshot</div>
+          <div class="bb-select-capture-option">Screenrecording</div>
+        </div>
+        <div class="bb-capture-screenshot-options">
+          asdf
+        </div>
+        <div class="bb-capture-screencapture-options">
+          asdf
+        </div>
+        </div>`;
+    }
     if (formItem.type === "privacypolicy") {
       formHTML += `<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ${getFormPageClass(
         currentPage
