@@ -10,7 +10,7 @@ export const createScreenshotEditor = function (
 ) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadeinright'>
+  elem.innerHTML = `<div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadeinright'>
     <div class="bb-feedback-dialog-header bb-feedback-dialog-header--back">
       <div class="bb-feedback-dialog-header-back ${
         !showBack && "bb-feedback-dialog-header-back--close"

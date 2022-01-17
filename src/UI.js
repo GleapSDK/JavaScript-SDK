@@ -114,10 +114,6 @@ export const injectStyledCSS = (
       border-radius: ${borderRadius}px;
       background-color: ${backgroundColor};
     }
-    .bb-screenshot-editor-drag-info {
-      color: ${contrastColor};
-      border-radius: ${buttonBorderRadius}px;
-    }
     .bb-logo-arrowdown {
       fill: ${contrastButtonColor};
     }
@@ -163,15 +159,12 @@ export const injectStyledCSS = (
     .bb-drawing-tool-item--active {
       background-color: ${primaryColor};
     }
-    .bb-screenshot-editor-borderlayer {
+    .bb-capture-editor-borderlayer {
         border-color: ${primaryColor};
     }
     .bb-feedback-button-classic {
       background-color: ${buttonColor};
       color: ${contrastButtonColor};
-    }
-    .bb-screenshot-editor-dot {
-      background-color: ${primaryColor};
     }
     .bb-feedback-dialog-header {
       background-color: ${headerColor};
@@ -180,9 +173,6 @@ export const injectStyledCSS = (
     }
     .bb-form-progress-inner {
       background-color: ${headerColor}66;
-    }
-    .bb-screenshot-editor-rectangle {
-      border-color: ${primaryColor};
     }
     .bb-feedback-inputgroup textarea,
     .bb-feedback-inputgroup > input,
@@ -201,9 +191,6 @@ export const injectStyledCSS = (
       color: ${contrastColor};
       background-color: ${primaryColor};
       border-radius: ${buttonBorderRadius}px;
-    }
-    .bb-screenshot-editor-drag-info {
-      background-color: ${primaryColor};
     }
     .bb-double-bounce1,
     .bb-double-bounce2 {
@@ -249,7 +236,7 @@ export const createWidgetDialog = function (
 ) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog ${appendClass}'>
+  elem.innerHTML = `<div class='bb-feedback-dialog ${appendClass}'>
       <div class="bb-feedback-dialog-header${
         back ? " bb-feedback-dialog-header--back" : ""
       }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">

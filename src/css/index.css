@@ -1434,36 +1434,7 @@ textarea.bb-feedback-required {
   z-index: 916777263;
 }
 
-.bb-screenshot-editor-container-inner {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
-}
-
-.bb-screenshot-editor-svg {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100vw;
-  height: 100vh;
-  cursor: crosshair;
-  z-index: 916777268;
-  box-sizing: border-box;
-}
-
-.bb-screenshot-editor-canvas {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  width: 100vw;
-  height: 100vh;
-  height: -webkit-fill-available;
-  cursor: crosshair;
-  z-index: 916777267;
-}
-
-.bb-screenshot-editor-borderlayer {
+.bb-capture-editor-borderlayer {
   position: absolute;
   top: 0px;
   left: 0px;
@@ -1476,54 +1447,8 @@ textarea.bb-feedback-required {
   box-sizing: border-box;
 }
 
-.bb-screenshot-editor--marked .bb-screenshot-editor-svg,
-.bb-screenshot-editor--marked .bb-screenshot-editor-canvas,
-.bb-screenshot-editor--marked .bb-screenshot-editor-borderlayer {
-  cursor: default;
-}
-
-.bb-screenshot-editor-dot {
-  position: absolute;
-  top: -16px;
-  left: -16px;
-  width: 16px;
-  height: 16px;
-  background-color: #485bff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 100%;
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 916777270;
-  box-sizing: border-box;
-}
-
-.bb-screenshot-editor-drag-info {
-  font-family: "Inter", sans-serif;
-  position: absolute;
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translate(-50%, 0);
-  background-color: #485bff;
-  border-radius: 21px;
-  box-sizing: border-box;
-  padding: 10px 16px;
-  font-size: 18px;
-  color: #fff;
-  box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.15);
-  z-index: 916777271;
-  min-width: 300px;
-  text-align: center;
-}
-
-.bb-screenshot-editor-rectangle {
-  position: absolute;
-  top: -100px;
-  left: -100px;
-  width: 0px;
-  height: 0px;
-  border: 5px solid #485bff;
-  box-sizing: border-box;
-  z-index: 916777269;
+.bb-capture-container {
+  padding: 25px;
 }
 
 .bb-anim-fadein {
@@ -1631,7 +1556,7 @@ textarea.bb-feedback-required {
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(8px);
   }
-  .bb-screenshot-editor-borderlayer {
+  .bb-capture-editor-borderlayer {
     border-width: 4px;
   }
   .bb-anim-fadein {

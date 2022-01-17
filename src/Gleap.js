@@ -18,6 +18,7 @@ import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
+import { hookScreenDrawing } from "./ScreenDrawer";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -1095,7 +1096,14 @@ class Gleap {
     }
   }
 
-  createBugReportingDialog(feedbackOptions) {
+  getWidgetDialogClass = () => {
+    if (this.appCrashDetected || this.rageClickDetected) {
+      return "bb-feedback-dialog--crashed";
+    }
+    return "";
+  };
+
+  createFeedbackFormDialog(feedbackOptions) {
     const self = this;
 
     const formData = buildForm(feedbackOptions, this.overrideLanguage);
@@ -1137,31 +1145,16 @@ class Gleap {
     ${formData}
   </div>`;
 
-    const getWidgetDialogClass = () => {
-      if (this.appCrashDetected || this.rageClickDetected) {
-        return "bb-feedback-dialog--crashed";
-      }
-      return "";
-    };
-
     createWidgetDialog(
       title,
       null,
       this.customLogoUrl,
       htmlContent,
       function () {
-        if (self.feedbackTypeActions.length > 0) {
-          // Only go back to feedback menu options
-
-          self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection(true);
-        } else {
-          // Close
-          self.closeGleap();
-        }
+        self.goBackToMainMenu();
       },
       this.openedMenu,
-      `bb-anim-fadeinright ${getWidgetDialogClass()} bb-feedback-dialog-form`
+      `bb-anim-fadeinright ${this.getWidgetDialogClass()} bb-feedback-dialog-form`
     );
 
     this.openedMenu = true;
@@ -1280,7 +1273,7 @@ class Gleap {
     this.updateFeedbackButtonState();
 
     // Remove editor.
-    const editorContainer = document.querySelector(".bb-screenshot-editor");
+    const editorContainer = document.querySelector(".bb-capture-editor");
     if (editorContainer) {
       editorContainer.remove();
     }
@@ -1750,7 +1743,7 @@ class Gleap {
 
     // Stop here if we don't want to show the native screenshot tools.
     if (feedbackOptions.disableUserScreenshot) {
-      this.createBugReportingDialog(feedbackOptions);
+      this.createFeedbackFormDialog(feedbackOptions);
       return;
     }
 
@@ -1774,155 +1767,92 @@ class Gleap {
 
   showScreenshotEditor(feedbackOptions) {
     const self = this;
+    const title = translateText(feedbackOptions.title, this.overrideLanguage);
     var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bb-screenshot-editor";
+    bugReportingEditor.className = "bb-capture-editor";
     bugReportingEditor.innerHTML = `
-      <div class="bb-screenshot-editor-container">
-        <div class='bb-screenshot-editor-container-inner'>
-          <div class='bb-screenshot-editor-borderlayer'></div>
-          <div class='bb-screenshot-editor-dot'></div>
-          <div class='bb-screenshot-editor-rectangle'></div>
-          <div class='bb-screenshot-editor-drag-info'>${translateText(
-            "Click and drag to mark the bug",
-            self.overrideLanguage
-          )}</div>
-        </div>
-      </div>
+      <div class="bb-capture-editor-borderlayer"></div>
+      <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
     `;
     Gleap.appendNode(bugReportingEditor);
 
-    const editorBorderLayer = document.querySelector(
-      ".bb-screenshot-editor-borderlayer"
+    // Hook up the drawing.
+    hookScreenDrawing();
+
+    // Create the widget
+    createWidgetDialog(
+      title,
+      null,
+      null,
+      `<div class="bb-capture-container">
+        <div class="bb-select-capture-options">
+          <div class="bb-select-capture-option bb-select-capture-option--active" data-type="screenshot">Screenshot</div>
+          <div class="bb-select-capture-option" data-type="video">Screenrecording</div>
+        </div>
+        <div class="bb-capture-options bb-capture-options--active bb-capture-options-screenshot">
+          Screenie
+        </div>
+        <div class="bb-capture-options bb-capture-options-video">
+          Video
+        </div>
+        <div class="bb-feedback-send-button">${translateText(
+          `Next`,
+          self.overrideLanguage
+        )}</div>
+      </div>`,
+      function () {
+        if (self.feedbackTypeActions.length > 0) {
+          self.closeGleap(false);
+          Gleap.startFeedbackTypeSelection(true);
+        } else {
+          self.closeGleap();
+        }
+      },
+      true,
+      `bb-anim-fadeinright ${self.getWidgetDialogClass()} bb-feedback-dialog-form`
     );
-    const editorDot = window.document.querySelector(
-      ".bb-screenshot-editor-dot"
+
+    // Hook up the editor
+    const captureOptions = document.querySelectorAll(
+      `.bb-select-capture-option`
     );
-    const editorRectangle = window.document.querySelector(
-      ".bb-screenshot-editor-rectangle"
-    );
+    const captureOptionTabs = document.querySelectorAll(`.bb-capture-options`);
 
-    editorBorderLayer.style.height = `${window.innerHeight}px`;
-    var addedMarker = false;
-    var clickStartX = -1;
-    var clickStartY = -1;
+    const activeClass = "bb-select-capture-option--active";
+    const activeTabClass = "bb-capture-options--active";
+    for (var j = 0; j < captureOptions.length; j++) {
+      const captureOption = captureOptions[j];
+      captureOption.onclick = function () {
+        for (var k = 0; k < captureOptions.length; k++) {
+          captureOptions[k].classList.remove(activeClass);
+        }
+        captureOption.classList.add(activeClass);
 
-    function setStartPoint(x, y) {
-      if (addedMarker) {
-        return;
-      }
-
-      editorDot.style.left = x + 3 - editorDot.offsetWidth / 2 + "px";
-      editorDot.style.top = y + 3 - editorDot.offsetHeight / 2 + "px";
+        for (var k = 0; k < captureOptionTabs.length; k++) {
+          captureOptionTabs[k].classList.remove(activeTabClass);
+        }
+        const activeTab = document.querySelector(
+          `.bb-capture-options-${captureOption.getAttribute("data-type")}`
+        );
+        activeTab.classList.add(activeTabClass);
+      };
     }
 
-    function setMouseMove(x, y) {
-      const dragInfo = document.querySelector(
-        ".bb-screenshot-editor-drag-info"
-      );
-      dragInfo.style.left = `${x + 20}px`;
-      dragInfo.style.top = `${y - dragInfo.offsetHeight / 2}px`;
-      dragInfo.style.right = null;
-      dragInfo.classList.add("bb-screenshot-editor-drag-info--dragged");
+    // Hook up send button
+    document.querySelector(".bb-feedback-send-button").onclick = function () {
+      self.createFeedbackFormDialog(feedbackOptions);
+    };
+  }
 
-      if (addedMarker || clickStartX < 0) {
-        return;
-      }
-
-      const width = x - clickStartX;
-      const height = y - clickStartY;
-
-      var left = width < 0 ? clickStartX + width : clickStartX;
-      var top = height < 0 ? clickStartY + height : clickStartY;
-      var heightAbs = height < 0 ? height * -1 : height;
-      var widthAbs = width < 0 ? width * -1 : width;
-
-      editorRectangle.style.left = `${left}px`;
-      editorRectangle.style.top = `${top}px`;
-      editorRectangle.style.width = `${widthAbs}px`;
-      editorRectangle.style.height = `${heightAbs}px`;
+  goBackToMainMenu() {
+    if (this.feedbackTypeActions.length > 0) {
+      // Go back to menu
+      this.closeGleap(false);
+      Gleap.startFeedbackTypeSelection(true);
+    } else {
+      // Close
+      this.closeGleap();
     }
-
-    function mouseDownEventHandler(e) {
-      clickStartX = e.pageX - document.documentElement.scrollLeft;
-      clickStartY = e.pageY - document.documentElement.scrollTop;
-      setStartPoint(clickStartX, clickStartY);
-    }
-
-    function touchstartEventHandler(e) {
-      clickStartX = e.touches[0].pageX - document.documentElement.scrollLeft;
-      clickStartY = e.touches[0].pageY - document.documentElement.scrollTop;
-      setStartPoint(clickStartX, clickStartY);
-    }
-
-    function mouseMoveEventHandler(e) {
-      const x = e.pageX - document.documentElement.scrollLeft;
-      const y = e.pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-    }
-
-    function touchMoveEventHandler(e) {
-      const x = e.touches[0].pageX - document.documentElement.scrollLeft;
-      const y = e.touches[0].pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-      e.preventDefault();
-    }
-
-    function mouseUpEventHandler(e) {
-      const dragInfo = document.querySelector(
-        ".bb-screenshot-editor-drag-info"
-      );
-      dragInfo.style.display = "none";
-
-      editorRectangle.style.top = `${
-        editorRectangle.offsetTop + document.documentElement.scrollTop
-      }px`;
-      editorRectangle.style.left = `${
-        editorRectangle.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-      editorDot.style.top = `${
-        editorDot.offsetTop + document.documentElement.scrollTop
-      }px`;
-      editorDot.style.left = `${
-        editorDot.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      editorDot.parentNode.removeChild(editorDot);
-      editorRectangle.parentNode.removeChild(editorRectangle);
-
-      bugReportingEditor.appendChild(editorDot);
-      bugReportingEditor.appendChild(editorRectangle);
-
-      bugReportingEditor.classList.add("bb-screenshot-editor--marked");
-      addedMarker = true;
-
-      bugReportingEditor.removeEventListener("mouseup", mouseUpEventHandler);
-      bugReportingEditor.removeEventListener(
-        "mousemove",
-        mouseMoveEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "mousedown",
-        mouseDownEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "touchstart",
-        touchstartEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "touchmove",
-        touchMoveEventHandler
-      );
-      bugReportingEditor.removeEventListener("touchend", mouseUpEventHandler);
-
-      self.createBugReportingDialog(feedbackOptions);
-    }
-
-    bugReportingEditor.addEventListener("mouseup", mouseUpEventHandler);
-    bugReportingEditor.addEventListener("mousemove", mouseMoveEventHandler);
-    bugReportingEditor.addEventListener("mousedown", mouseDownEventHandler);
-    bugReportingEditor.addEventListener("touchstart", touchstartEventHandler);
-    bugReportingEditor.addEventListener("touchmove", touchMoveEventHandler);
-    bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
   }
 
   showMobileScreenshotEditor(feedbackOptions) {
@@ -1933,17 +1863,10 @@ class Gleap {
         // Update screenshot.
         self.screenshot = screenshot;
         self.closeModalUI();
-        self.createBugReportingDialog(feedbackOptions);
+        self.createFeedbackFormDialog(feedbackOptions);
       },
       function () {
-        if (self.feedbackTypeActions.length > 0) {
-          // Go back to menu
-          self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection(true);
-        } else {
-          // Close
-          self.closeGleap();
-        }
+        self.goBackToMainMenu();
       },
       this.overrideLanguage,
       this.feedbackTypeActions.length > 0

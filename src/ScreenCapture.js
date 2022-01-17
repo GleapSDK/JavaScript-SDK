@@ -453,7 +453,7 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
 
     // Do further cleanup.
     const dialogElems = clone.querySelectorAll(
-      ".bb-feedback-dialog-container, .bb-screenshot-editor-borderlayer"
+      ".bb-feedback-dialog-container, .bb-capture-editor-borderlayer"
     );
     for (var i = 0; i < dialogElems.length; ++i) {
       dialogElems[i].remove();
