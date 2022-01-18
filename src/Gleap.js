@@ -643,7 +643,12 @@ class Gleap {
    * Sets a custom color scheme.
    * @param {string} primaryColor
    */
-  static setColors(primaryColor, headerColor, buttonColor) {
+  static setColors(
+    primaryColor,
+    headerColor,
+    buttonColor,
+    backgroundColor = "#fff"
+  ) {
     this.setStyles({
       headerColor,
       primaryColor,
