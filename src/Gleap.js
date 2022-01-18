@@ -1767,30 +1767,36 @@ class Gleap {
 
   showScreenshotEditor(feedbackOptions) {
     const self = this;
-    const title = translateText(feedbackOptions.title, this.overrideLanguage);
+
+    // Manage feedback button
+    const feedbackButton = document.querySelector(".bb-feedback-button");
+    var feedbackButtonStyle = "";
+    if (feedbackButton) {
+      feedbackButtonStyle = feedbackButton.style;
+      feedbackButton.style.display = "none";
+    }
+
+    // Add HTML for drawing and recording
     var bugReportingEditor = document.createElement("div");
     bugReportingEditor.className = "bb-capture-editor";
     bugReportingEditor.innerHTML = `
       <div class="bb-capture-editor-borderlayer"></div>
       <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
-    `;
-    Gleap.appendNode(bugReportingEditor);
-
-    // Hook up the drawing.
-    hookScreenDrawing();
-
-    // Create the widget
-    createWidgetDialog(
-      title,
-      null,
-      null,
-      `<div class="bb-capture-container">
-        <div class="bb-select-capture-options">
-          <div class="bb-select-capture-option bb-select-capture-option--active" data-type="screenshot">Screenshot</div>
-          <div class="bb-select-capture-option" data-type="video">Screenrecording</div>
-        </div>
+      <div class="bb-capture-mousetool"></div>
+      <div class='bb-capture-editor-drag-info'>
+        <svg width="1044px" height="1009px" viewBox="0 0 1044 1009" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g transform="translate(-515.000000, -518.000000)" fill="#FF0000" fill-rule="nonzero">
+                    <g transform="translate(515.268457, 518.009827)">
+                        <path d="M99.477,755.771 L287.807,944.102 L233.288043,998.621573 C222.003043,1009.90657 204.483043,1012.06257 190.800043,1003.85207 L16.8900429,899.502073 C-2.51595711,887.861073 -5.80895711,861.080073 10.1908429,845.080073 L99.477,755.771 Z M874.550043,25.4684733 L1018.11004,169.028473 C1049.11804,200.040473 1052.18404,249.286473 1025.26234,283.908473 L602.872343,826.988473 C600.657543,829.836173 598.270743,832.543173 595.720043,835.090073 C571.607043,859.207073 536.849043,866.195073 506.568043,856.063073 L364.718043,934.868073 C351.140043,942.407173 334.210043,940.036073 323.230043,929.055573 L313.403,919.228 L313.624658,919.007355 L124.827147,730.209845 L124.609,730.428 L114.523543,720.342173 C103.543543,709.362173 101.171543,692.432173 108.711043,678.858173 L187.516043,537.018173 C176.094043,502.979173 186.644953,463.998173 216.590043,440.706173 L759.670043,18.3161733 C794.287043,-8.6058267 843.533043,-5.5388267 874.550043,25.4684733 Z M970.341543,241.190173 C975.728243,234.264373 975.114943,224.417173 968.911843,218.213173 L825.351843,74.6531733 C819.148743,68.4500733 809.300843,67.8367733 802.378843,73.2234733 L259.298843,495.613473 C251.716843,501.507973 250.353543,512.433473 256.248043,520.015473 C256.693353,520.585783 257.169923,521.128773 257.681643,521.636573 L521.921643,785.886573 C528.714643,792.675673 539.726643,792.675673 546.515643,785.886573 C547.027363,785.374853 547.503923,784.831873 547.945343,784.265473 L970.341543,241.190173 Z M447.131543,809.480173 L234.081543,596.430173 L182.261543,689.707173 L353.851543,861.297173 L447.131543,809.480173 Z" id="Shape"></path>
+                    </g>
+                </g>
+            </g>
+        </svg>
+      </div>
+      <div class="bb-capture-toolbar">
         <div class="bb-capture-options bb-capture-options--active bb-capture-options-screenshot">
-          Screenie
+          Marker tools, Video aufnehmen, ...
         </div>
         <div class="bb-capture-options bb-capture-options-video">
           Video
@@ -1799,49 +1805,66 @@ class Gleap {
           `Next`,
           self.overrideLanguage
         )}</div>
-      </div>`,
-      function () {
-        if (self.feedbackTypeActions.length > 0) {
-          self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection(true);
-        } else {
-          self.closeGleap();
-        }
-      },
-      true,
-      `bb-anim-fadeinright ${self.getWidgetDialogClass()} bb-feedback-dialog-form`
-    );
+      </div>
+    `;
+    Gleap.appendNode(bugReportingEditor);
 
-    // Hook up the editor
-    const captureOptions = document.querySelectorAll(
-      `.bb-select-capture-option`
-    );
-    const captureOptionTabs = document.querySelectorAll(`.bb-capture-options`);
+    // Hook up the drawing.
+    hookScreenDrawing();
 
-    const activeClass = "bb-select-capture-option--active";
-    const activeTabClass = "bb-capture-options--active";
-    for (var j = 0; j < captureOptions.length; j++) {
-      const captureOption = captureOptions[j];
-      captureOption.onclick = function () {
-        for (var k = 0; k < captureOptions.length; k++) {
-          captureOptions[k].classList.remove(activeClass);
-        }
-        captureOption.classList.add(activeClass);
+    // Mouse logic
+    function setMouseMove(x, y) {
+      const dragInfo = document.querySelector(".bb-capture-editor-drag-info");
+      if (!dragInfo) {
+        return;
+      }
 
-        for (var k = 0; k < captureOptionTabs.length; k++) {
-          captureOptionTabs[k].classList.remove(activeTabClass);
-        }
-        const activeTab = document.querySelector(
-          `.bb-capture-options-${captureOption.getAttribute("data-type")}`
-        );
-        activeTab.classList.add(activeTabClass);
-      };
+      dragInfo.style.left = `${x + 6}px`;
+      dragInfo.style.top = `${y - 26}px`;
+      dragInfo.style.right = null;
+    }
+
+    function mouseMoveEventHandler(e) {
+      const x = e.pageX - document.documentElement.scrollLeft;
+      const y = e.pageY - document.documentElement.scrollTop;
+      setMouseMove(x, y);
+    }
+
+    function touchMoveEventHandler(e) {
+      const x = e.touches[0].pageX - document.documentElement.scrollLeft;
+      const y = e.touches[0].pageY - document.documentElement.scrollTop;
+      setMouseMove(x, y);
     }
 
     // Hook up send button
     document.querySelector(".bb-feedback-send-button").onclick = function () {
+      // Remove mouse listener.
+      document.documentElement.removeEventListener(
+        "mousemove",
+        mouseMoveEventHandler
+      );
+      document.documentElement.removeEventListener(
+        "touchmove",
+        touchMoveEventHandler
+      );
+
+      // Restore feedback button style.
+      if (feedbackButton) {
+        feedbackButton.style.display = feedbackButtonStyle;
+      }
+
+      // Show form dialog.
       self.createFeedbackFormDialog(feedbackOptions);
     };
+
+    document.documentElement.addEventListener(
+      "mousemove",
+      mouseMoveEventHandler
+    );
+    document.documentElement.addEventListener(
+      "touchmove",
+      touchMoveEventHandler
+    );
   }
 
   goBackToMainMenu() {

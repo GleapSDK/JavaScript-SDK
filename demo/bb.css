@@ -1418,6 +1418,17 @@ textarea.bb-feedback-required {
   cursor: crosshair;
 }
 
+.bb-capture-editor-drag-info {
+  position: fixed;
+  top: -200px;
+  left: 0px;
+}
+
+.bb-capture-editor-drag-info svg {
+  width: 24px;
+  height: 24px;
+}
+
 .bb-capture-editor-borderlayer {
   position: fixed;
   top: 0px;
@@ -1437,8 +1448,22 @@ textarea.bb-feedback-required {
   cursor: default;
 }
 
-.bb-capture-container {
-  padding: 25px;
+.bb-capture-toolbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 916777268;
+  background-color: #fff;
+  padding: 6px;
+  padding-top: 10px;
+  display: flex;
+  border-radius: 8px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+}
+
+.bb-capture-toolbar .bb-feedback-send-button {
+  padding: 8px 12px;
 }
 
 .bb-anim-fadein {
