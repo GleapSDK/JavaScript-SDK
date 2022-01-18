@@ -15,6 +15,7 @@ import { isMobile } from "./ImageHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
+import { ScreenRecorder } from "./ScreenRecorder";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
@@ -1805,6 +1806,10 @@ class Gleap {
           `Next`,
           self.overrideLanguage
         )}</div>
+        <div class="bb-feedback-toggle-audio-button">${translateText(
+          `Toggle audio`,
+          self.overrideLanguage
+        )}</div>
       </div>
     `;
     Gleap.appendNode(bugReportingEditor);
@@ -1836,8 +1841,21 @@ class Gleap {
       setMouseMove(x, y);
     }
 
+    const screenRecorder = new ScreenRecorder();
+
+    document.querySelector(".bb-capture-options-screenshot").onclick =
+      function () {
+        screenRecorder.startScreenRecording();
+      };
+
+    document.querySelector(".bb-feedback-toggle-audio-button").onclick =
+      function () {
+        screenRecorder.toggleAudio();
+      };
+
     // Hook up send button
     document.querySelector(".bb-feedback-send-button").onclick = function () {
+      screenRecorder.stopScreenRecording();
       // Remove mouse listener.
       document.documentElement.removeEventListener(
         "mousemove",
