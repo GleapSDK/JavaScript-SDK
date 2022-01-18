@@ -187,8 +187,11 @@ class GleapNetworkIntercepter {
             responseText: "<request_still_open>",
           };
           this.calcRequestTime(bbRequestId);
+        } catch (exp) {}
 
-          req.text().then((responseText) => {
+        req
+          .text()
+          .then((responseText) => {
             this.requests[bbRequestId]["success"] = true;
             this.requests[bbRequestId]["response"] = {
               status: req.status,
@@ -201,8 +204,10 @@ class GleapNetworkIntercepter {
 
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
+          })
+          .catch((err) => {
+            this.cleanRequests();
           });
-        } catch (exp) {}
       },
       onFetchFailed: (err, bbRequestId) => {
         if (
