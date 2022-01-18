@@ -111,7 +111,7 @@ export const injectStyledCSS = (
     .bb-feedback-type:hover {
       background-color: ${backgroundColorHover};
     }
-    .bb-drawing-colorpopup {
+    #bb-drawing-colorpopup {
       background-color: ${backgroundColor};
     }
     .bb-feedback-type-title,
@@ -124,8 +124,12 @@ export const injectStyledCSS = (
     }
     .bb-drawing-tool-item svg,
     .bb-drawing-tool-item svg g,
-    .bb-drawing-tool-back svg {
+    .bb-drawing-tool-back svg,
+    .bb-drawing-tool-back svg g {
       fill: ${contrastBackgroundColor};
+    }
+    .bb-drawing-tool-spacer {
+      background-color: ${backgroundColorHover};
     }
     .bb-feedback-dialog {
       border-radius: ${borderRadius}px;
