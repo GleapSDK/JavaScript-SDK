@@ -647,7 +647,7 @@ class Gleap {
     primaryColor,
     headerColor,
     buttonColor,
-    backgroundColor = "#fff"
+    backgroundColor = "#ffffff"
   ) {
     this.setStyles({
       headerColor,
