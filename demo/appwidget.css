@@ -53,6 +53,10 @@
 }
 
 .bb-feedback-dialog-header-next svg {
+  fill: #192027;
+}
+
+.bb-feedback-dialog-header-next svg {
   width: 18px;
   height: auto;
   transform: rotate(180deg);

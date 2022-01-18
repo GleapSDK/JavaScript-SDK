@@ -87,6 +87,15 @@ export const injectStyledCSS = (
       background-color: ${contrastHeaderColor};
       border-radius: ${containerBorderRadius}px;
     }
+    .bb-feedback-dialog-header-next {
+      background-color: ${contrastHeaderColor};
+    }
+    .bb-feedback-dialog-header-next span {
+      color: ${headerColor};
+    }
+    .bb-feedback-dialog-header-next svg {
+      fill: ${headerColor};
+    }
     .bb-feedback-type {
       border-radius: ${containerBorderRadius}px;
       background-color: ${backgroundColor};
@@ -102,6 +111,9 @@ export const injectStyledCSS = (
     .bb-feedback-type:hover {
       background-color: ${backgroundColorHover};
     }
+    .bb-drawing-colorpopup {
+      background-color: ${backgroundColor};
+    }
     .bb-feedback-type-title,
     .bb-feedback-form-description,
     .bb-feedback-elementtitle,
@@ -109,6 +121,11 @@ export const injectStyledCSS = (
     .bb-feedback-dialog-info-text
     {
       color: ${contrastBackgroundColor};
+    }
+    .bb-drawing-tool-item svg,
+    .bb-drawing-tool-item svg g,
+    .bb-drawing-tool-back svg {
+      fill: ${contrastBackgroundColor};
     }
     .bb-feedback-dialog {
       border-radius: ${borderRadius}px;
