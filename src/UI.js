@@ -184,6 +184,12 @@ export const injectStyledCSS = (
     .bb-drawing-tool-item--active {
       background-color: ${primaryColor};
     }
+
+    .bb-drawing-tool-item--active svg,
+    .bb-drawing-tool-item--active svg g {
+      fill: ${contrastColor};
+    }
+    
     .bb-screenshot-editor-borderlayer {
         border-color: ${primaryColor};
     }
