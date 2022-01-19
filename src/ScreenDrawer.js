@@ -4,7 +4,7 @@ export class GleapScreenDrawer {
   strPath;
   strokeWidth = 12;
   strokeWidthRect = 6;
-  bufferSize;
+  bufferSize = 4;
   buffer = [];
   startPoint = null;
   tool = "pen";
@@ -97,7 +97,6 @@ export class GleapScreenDrawer {
   }
 
   mouseDownRect(e) {
-    this.bufferSize = 6;
     this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
     this.path.setAttribute("fill", "none");
     this.path.setAttribute("stroke", this.color);
@@ -108,7 +107,6 @@ export class GleapScreenDrawer {
   }
 
   mouseDownPen(e) {
-    this.bufferSize = 6;
     this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     this.path.setAttribute("fill", "none");
     this.path.setAttribute("stroke", this.color + "AA");
@@ -122,8 +120,11 @@ export class GleapScreenDrawer {
     this.svgElement.appendChild(this.path);
   }
 
-  setTool(tool, color) {
+  setTool(tool) {
     this.tool = tool;
+  }
+
+  setColor(color) {
     this.color = color;
   }
 

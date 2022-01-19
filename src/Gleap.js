@@ -1812,10 +1812,21 @@ class Gleap {
               </g>
           </svg>
         </div>
-        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool" data-type="rect" data-active="true">
+        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
           <svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
             <path d="m1168.8 195.51v808.97h-1137.7v-808.97zm-87.84 87.84h-961.98v631.88h961.98z" fill="#000"/>
           </svg>
+        </div>
+        <div class="bb-capture-toolbar-item" data-type="colorpicker">
+          <div class="bb-capture-toolbar-item-selectedcolor">
+            <div class="bb-capture-toolbar-item-colorpicker">
+              <div class="bb-capture-toolbar-item-color" style="background-color: #ff0000"></div>
+              <div class="bb-capture-toolbar-item-color" style="background-color: #000000"></div>
+              <div class="bb-capture-toolbar-item-color" style="background-color: #ffffff"></div>
+              <div class="bb-capture-toolbar-item-color" style="background-color: #00ff00"></div>
+              <div class="bb-capture-toolbar-item-color" style="background-color: #0000ff"></div>
+            </div>
+          </div>
         </div>
         <div class="bb-capture-toolbar-item" data-type="mic" data-active="false">
           <svg
@@ -1907,6 +1918,20 @@ class Gleap {
     // Hookup buttons
     const screenRecorder = new ScreenRecorder();
 
+    const colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+    const selectedColor = document.querySelector(".bb-capture-toolbar-item-selectedcolor");
+    var colorItems = document.querySelectorAll(".bb-capture-toolbar-item-color");
+    for (var i = 0; i < colorItems.length; i++) {
+      const colorItem = colorItems[i];
+      colorItem.onclick = function () {
+        if (colorItem) {
+          screenDrawer.setColor(colorItem.style.backgroundColor);
+          colorpicker.style.display = "none";
+          selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
+        }
+      }
+    }
+
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
@@ -1930,8 +1955,14 @@ class Gleap {
             toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
           }
           toolbarItem.classList.add("bb-capture-toolbar-item--active");
-
-          screenDrawer.setTool(type, "#FF0000");
+          screenDrawer.setTool(type);
+        }
+        if (type === "colorpicker") {
+          if (colorpicker.style.display === "none") {
+            colorpicker.style.display = "flex";
+          } else {
+            colorpicker.style.display = "none";
+          }
         }
         if (type === "mic") {
           screenRecorder.toggleAudio();
