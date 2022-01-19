@@ -1,21 +1,31 @@
+import Session from "./Session";
+
 export class ScreenRecorder {
+  rerender;
   stream;
   mediaRecorder;
   audioMuted = false;
   audioAvailable = true;
   available = true;
+  isRecording = false;
+  file = null;
 
-  constructor() {
+  constructor(rerender) {
+    this.rerender = rerender;
     if (!navigator.mediaDevices) {
       this.available = false;
     }
+
+    setTimeout(() => {
+      this.rerender();
+    }, 100);
   }
 
   startScreenRecording = function () {
     const self = this;
-    if (!navigator.mediaDevices) {
-      // Connection is not secure
-      console.log("Connection is not secure");
+    if (!navigator.mediaDevices || this.isRecording) {
+      this.available = false;
+      this.rerender();
       return;
     }
 
@@ -30,15 +40,16 @@ export class ScreenRecorder {
           self.audioAvailable = false;
           self.handleRecord({ stream: displayStream });
         }
+
+        self.rerender();
       })
       .catch(function (displayErr) {
-        console.log("DISPLAY PERMISSION DENIED");
-        console.log(displayErr);
+        self.rerender();
       });
   };
 
   stopScreenRecording = function () {
-    if (!this.mediaRecorder || !this.stream) {
+    if (!this.mediaRecorder || !this.stream || !this.isRecording) {
       return;
     }
 
@@ -46,6 +57,8 @@ export class ScreenRecorder {
     this.stream.getTracks().forEach((track) => {
       track.stop();
     });
+
+    this.rerender();
   };
 
   startAudioRecording = function () {
@@ -67,15 +80,18 @@ export class ScreenRecorder {
         self.audioMuted = false;
         self.audioAvailable = true;
         self.handleRecord({ stream: self.stream });
+
+        self.rerender();
       })
       .catch(function (audioErr) {
-        console.log("AUDIO ERROR");
-        console.log(audioErr);
+        self.rerender();
       });
   };
 
   toggleAudio = function () {
     this.audioMuted = !this.audioMuted;
+    this.rerender();
+
     if (!this.stream) {
       return;
     }
@@ -89,11 +105,42 @@ export class ScreenRecorder {
     }
   };
 
-  handleRecord = function ({ stream, mimeType = "ideo/webm" }) {
+  uploadScreenRecording = function () {
+    const self = this;
+    return new Promise(function (resolve, reject) {
+      if (self.file == null) {
+        resolve(null);
+      }
+      var xhr = new XMLHttpRequest();
+
+      xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
+      Session.getInstance().injectSession(xhr);
+
+      var formdata = new FormData();
+      formdata.append("file", self.file);
+
+      xhr.send(formdata);
+      xhr.onerror = function () {
+        reject();
+      };
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState == 4) {
+          if (xhr.status == 200) {
+            resolve(JSON.parse(xhr.response).fileUrl);
+          } else {
+            reject();
+          }
+        }
+      };
+    });
+  };
+
+  handleRecord = function ({ stream, mimeType = "video/mp4" }) {
     const self = this;
 
     let recordedChunks = [];
     this.mediaRecorder = new MediaRecorder(stream);
+    this.isRecording = true;
 
     this.mediaRecorder.ondataavailable = function (e) {
       if (e.data.size > 0) {
@@ -105,11 +152,23 @@ export class ScreenRecorder {
       const completeBlob = new Blob(recordedChunks, {
         type: mimeType,
       });
+
+      self.file = new File([completeBlob], "screen-recording.mp4", {
+        type: "video/mp4",
+      });
+
       recordedChunks = [];
+
+      // TODO: remove on production
       document.querySelector("video").src = URL.createObjectURL(completeBlob);
+      //
+
       self.audioAvailable = true;
+      self.isRecording = false;
+      self.rerender();
     };
 
     this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
+    self.rerender();
   };
 }

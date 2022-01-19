@@ -1449,6 +1449,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-toolbar {
+  overflow: hidden;
   position: fixed;
   top: 20px;
   left: 50%;
@@ -1494,6 +1495,22 @@ textarea.bb-feedback-required {
   object-fit: contain;
 }
 
+.bb-capture-toolbar-item-recording[data-active="true"] svg:first-of-type {
+  display: none;
+}
+
+.bb-capture-toolbar-item-recording[data-active="true"] svg:nth-of-type(2) {
+  display: block;
+}
+
+.bb-capture-toolbar-item-recording[data-active="false"] svg:first-of-type {
+  display: block;
+}
+
+.bb-capture-toolbar-item-recording[data-active="false"] svg:nth-of-type(2) {
+  display: none;
+}
+
 .bb-capture-toolbar-item--active {
   background-color: #eee;
 }
@@ -1522,6 +1539,8 @@ textarea.bb-feedback-required {
   width: 26px;
   margin: auto;
   border-radius: 4px;
+  background-color: #e80000;
+  transform: rotate(45deg);
 }
 
 .bb-capture-toolbar-item--inactivecross svg {
@@ -1530,7 +1549,7 @@ textarea.bb-feedback-required {
 
 .bb-capture-toolbar-item .bb-tooltip {
   visibility: hidden;
-  width: 120px;
+  width: 160px;
   background-color: #555;
   color: #fff;
   text-align: center;
@@ -1540,7 +1559,7 @@ textarea.bb-feedback-required {
   z-index: 1;
   bottom: -100%;
   left: 50%;
-  margin-left: -60px;
+  margin-left: -80px;
   opacity: 0;
   transition: opacity 0.3s;
 }

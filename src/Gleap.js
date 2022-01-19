@@ -106,6 +106,7 @@ class Gleap {
   eventListeners = {};
   feedbackActions = {};
   actionToPerform = undefined;
+  screenRecordingUrl = null;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -1218,6 +1219,17 @@ class Gleap {
         this.checkReplayLoaded(++retries);
       }, 1000);
     } else {
+      this.checkForScreenRecording(0);
+    }
+  }
+
+  checkForScreenRecording(retries = 0) {
+    if (this.screenRecordingUrl === "uploading" && retries < 8) {
+      // Replay is not ready yet.
+      setTimeout(() => {
+        this.checkForScreenRecording(++retries);
+      }, 1000);
+    } else {
       this.takeScreenshotAndSend();
     }
   }
@@ -1600,6 +1612,10 @@ class Gleap {
       bugReportData["webReplay"] = this.replay.result;
     }
 
+    if (this.screenRecordingUrl && this.screenRecordingUrl != "uploading") {
+      bugReportData["screenRecordingUrl"] = this.screenRecordingUrl;
+    }
+
     // Exclude data logic.
     const keysToExclude = Object.keys(this.excludeData);
     for (let i = 0; i < keysToExclude.length; i++) {
@@ -1796,11 +1812,6 @@ class Gleap {
         </svg>
       </div>
       <div class="bb-capture-toolbar">
-        <div class="bb-capture-toolbar-drag">
-          <svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#666" d="m650 0h-100c-27.668 0-50 22.398-50 50v100c0 27.602 22.332 50 50 50h100c27.602 0 50-22.398 50-50v-100c0-27.602-22.398-50-50-50m0 333.33h-100c-27.668 0-50 22.402-50 50v100c0 27.602 22.332 50 50 50h100c27.602 0 50-22.398 50-50v-100c0-27.598-22.398-50-50-50m0 333.34h-100c-27.668 0-50 22.332-50 50v100c0 27.598 22.332 50 50 50h100c27.602 0 50-22.402 50-50v-100c0-27.668-22.398-50-50-50m0 333.33h-100c-27.668 0-50 22.398-50 50v100c0 27.602 22.332 50 50 50h100c27.602 0 50-22.398 50-50v-100c0-27.602-22.398-50-50-50" fill-rule="evenodd"/>
-          </svg>
-        </div>
         <div class="bb-capture-toolbar-item bb-capture-toolbar-item--active" data-type="pen" data-active="true">
           <svg width="1072px" height="1034px" viewBox="0 0 1072 1034" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
               <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
@@ -1834,9 +1845,9 @@ class Gleap {
               />
             </g>
           </svg>
-          <span class="bb-tooltip">Tooltip text</span>
+          <span class="bb-tooltip bb-tooltip-audio-recording">Audio-Recording</span>
         </div> 
-        <div class="bb-capture-toolbar-item" data-type="recording" data-active="false">
+        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
           <svg width="1160px" height="1160px" viewBox="0 0 1160 1160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
               <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
                   <g  transform="translate(0.000000, -0.000000)" fill-rule="nonzero">
@@ -1845,7 +1856,10 @@ class Gleap {
                   </g>
               </g>
           </svg>
-          <span class="bb-tooltip">Tooltip text</span>
+          <svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
+            <path d="m600 60c-298.8 0-540 241.2-540 540s241.2 540 540 540 540-241.2 540-540-241.2-540-540-540zm237.6 741.6c0 20.398-15.602 36-36 36h-403.2c-20.398 0-36-15.602-36-36v-403.2c0-20.398 15.602-36 36-36h403.2c20.398 0 36 15.602 36 36z" fill="#d50202"/>
+          </svg>
+          <span class="bb-tooltip bb-tooltip-screen-recording">Screen-Recording</span>
         </div>
         <div class="bb-feedback-send-button">${translateText(
           `Next`,
@@ -1885,6 +1899,15 @@ class Gleap {
     // Hook up send button
     document.querySelector(".bb-feedback-send-button").onclick = function () {
       screenRecorder.stopScreenRecording();
+      self.screenRecordingUrl = "uploading";
+      screenRecorder
+        .uploadScreenRecording()
+        .then(function (screenRecordingUrl) {
+          self.screenRecordingUrl = screenRecordingUrl;
+        })
+        .catch(function (err) {
+          self.screenRecordingUrl = null;
+        });
       // Remove mouse listener.
       document.documentElement.removeEventListener(
         "mousemove",
@@ -1905,7 +1928,66 @@ class Gleap {
     };
 
     // Hookup buttons
-    const screenRecorder = new ScreenRecorder();
+    const screenRecorder = new ScreenRecorder(function () {
+      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+      var screenRecordingTooltip = document.querySelector(
+        ".bb-tooltip-screen-recording"
+      );
+      var audioRecordingTooltip = document.querySelector(
+        ".bb-tooltip-audio-recording"
+      );
+
+      for (var i = 0; i < toolbarItems.length; i++) {
+        const toolbarItem = toolbarItems[i];
+        const type = toolbarItem.getAttribute("data-type");
+
+        switch (type.toString()) {
+          case "mic":
+            if (screenRecorder.audioAvailable && screenRecorder.available) {
+              audioRecordingTooltip.innerHTML = "Audio-Recording";
+              toolbarItem.style.opacity = 1;
+
+              if (!screenRecorder.audioMuted) {
+                toolbarItem.classList.remove(
+                  "bb-capture-toolbar-item--inactivecross"
+                );
+              } else {
+                toolbarItem.style.opacity = 1;
+                toolbarItem.classList.add(
+                  "bb-capture-toolbar-item--inactivecross"
+                );
+              }
+            } else {
+              toolbarItem.style.opacity = 0.3;
+              toolbarItem.classList.add(
+                "bb-capture-toolbar-item--inactivecross"
+              );
+              audioRecordingTooltip.innerHTML = "Audio-Recording not available";
+            }
+            break;
+
+          case "recording":
+            if (screenRecorder.available) {
+              toolbarItem.style.opacity = 1;
+              screenRecordingTooltip.innerHTML = "Screen-Recording";
+
+              if (screenRecorder.isRecording) {
+                toolbarItem.setAttribute("data-active", "true");
+              } else {
+                toolbarItem.setAttribute("data-active", "false");
+              }
+            } else {
+              toolbarItem.style.opacity = 0.3;
+              screenRecordingTooltip.innerHTML =
+                "Screen-Recording not available";
+            }
+            break;
+
+          default:
+            break;
+        }
+      }
+    });
 
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
@@ -1914,12 +1996,14 @@ class Gleap {
         const type = toolbarItem.getAttribute("data-type");
 
         var active = false;
-        if (toolbarItem.getAttribute("data-active")) {
-          toolbarItem.removeAttribute("data-active");
-          active = false;
-        } else {
-          toolbarItem.setAttribute("data-active", "true");
-          active = true;
+        if (type !== "recording") {
+          if (toolbarItem.getAttribute("data-active") === "true") {
+            toolbarItem.setAttribute("data-active", "false");
+            active = false;
+          } else {
+            toolbarItem.setAttribute("data-active", "true");
+            active = true;
+          }
         }
 
         if (type === "pen") {
@@ -1931,16 +2015,9 @@ class Gleap {
         }
         if (type === "mic") {
           screenRecorder.toggleAudio();
-          if (active) {
-            toolbarItem.classList.remove(
-              "bb-capture-toolbar-item--inactivecross"
-            );
-          } else {
-            toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
-          }
         }
         if (type === "recording") {
-          if (active) {
+          if (screenRecorder.isRecording) {
             screenRecorder.stopScreenRecording();
           } else {
             screenRecorder.startScreenRecording();
