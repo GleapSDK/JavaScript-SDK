@@ -1,78 +1,84 @@
-export const hookScreenDrawing = function () {
-  const captureEditor = document.querySelector(".bb-capture-svg");
-  captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
+export class GleapScreenDrawer {
+  svgElement = document.querySelector(".bb-capture-svg");
+  path = null;
+  strPath;
+  strokeWidth = 12;
+  bufferSize;
+  buffer = [];
+  tool = "pen";
+  color = "#FF0000AA";
 
-  // Window resize
-  window.addEventListener(
-    "resize",
-    function (event) {
-      captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
-    },
-    true
-  );
+  constructor() {
+    const self = this;
+    const captureEditor = document.querySelector(".bb-capture-svg");
+    captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
 
-  var svgElement = document.querySelector(".bb-capture-svg");
-  var path = null;
-  var strPath;
-  var strokeWidth = 12;
-  var bufferSize;
-  var buffer = []; // Contains the last positions of the mouse cursor
+    // Window resize
+    window.addEventListener(
+      "resize",
+      function (event) {
+        captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
+      },
+      true
+    );
 
-  svgElement.addEventListener("mousedown", function (e) {
-    bufferSize = 6;
-    path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "#FF0000AA");
-    path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-width", strokeWidth);
-    buffer = [];
-    var pt = getMousePosition(e);
-    appendToBuffer(pt);
-    strPath = "M" + pt.x + " " + pt.y;
-    path.setAttribute("d", strPath);
-    svgElement.appendChild(path);
-    fadeOutToolbar();
-  });
+    this.svgElement.addEventListener("mousedown", function (e) {
+      self.bufferSize = 6;
+      self.path = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "path"
+      );
+      self.path.setAttribute("fill", "none");
+      self.path.setAttribute("stroke", "#FF0000AA");
+      self.path.setAttribute("stroke-linecap", "round");
+      self.path.setAttribute("stroke-width", self.strokeWidth);
+      self.buffer = [];
+      var pt = self.getMousePosition(e);
+      self.appendToBuffer(pt);
+      self.strPath = "M" + pt.x + " " + pt.y;
+      self.path.setAttribute("d", self.strPath);
+      self.svgElement.appendChild(self.path);
+      self.fadeOutToolbar();
+    });
 
-  svgElement.addEventListener("mousemove", function (e) {
-    if (path) {
-      appendToBuffer(getMousePosition(e));
-      updateSvgPath();
-    }
-  });
+    this.svgElement.addEventListener("mousemove", function (e) {
+      if (self.path) {
+        self.appendToBuffer(self.getMousePosition(e));
+        self.updateSvgPath();
+      }
+    });
 
-  svgElement.addEventListener("mouseup", function () {
-    if (path) {
-      path = null;
-    }
-    fadeInToolbar();
-  });
+    this.svgElement.addEventListener("mouseup", function () {
+      if (self.path) {
+        self.path = null;
+      }
+      self.fadeInToolbar();
+    });
+  }
 
-  var getMousePosition = function (e) {
+  setTool(tool, color) {
+    this.tool = tool;
+    this.color = color;
+  }
+
+  getMousePosition(e) {
     return {
       x: e.pageX,
       y: e.pageY,
     };
-  };
-
-  var appendToBuffer = function (pt) {
-    buffer.push(pt);
-    while (buffer.length > bufferSize) {
-      buffer.shift();
-    }
-  };
+  }
 
   // Calculate the average point, starting at offset in the buffer
-  var getAveragePoint = function (offset) {
-    var len = buffer.length;
-    if (len % 2 === 1 || len >= bufferSize) {
+  getAveragePoint(offset) {
+    var len = this.buffer.length;
+    if (len % 2 === 1 || len >= this.bufferSize) {
       var totalX = 0;
       var totalY = 0;
       var pt, i;
       var count = 0;
       for (i = offset; i < len; i++) {
         count++;
-        pt = buffer[i];
+        pt = this.buffer[i];
         totalX += pt.x;
         totalY += pt.y;
       }
@@ -82,37 +88,44 @@ export const hookScreenDrawing = function () {
       };
     }
     return null;
-  };
+  }
 
-  var updateSvgPath = function () {
-    var pt = getAveragePoint(0);
+  updateSvgPath() {
+    var pt = this.getAveragePoint(0);
 
     if (pt) {
       // Get the smoothed part of the path that will not change
-      strPath += " L" + pt.x + " " + pt.y;
+      this.strPath += " L" + pt.x + " " + pt.y;
 
       // Get the last part of the path (close to the current mouse position)
       // This part will change if the mouse moves again
       var tmpPath = "";
-      for (var offset = 2; offset < buffer.length; offset += 2) {
-        pt = getAveragePoint(offset);
+      for (var offset = 2; offset < this.buffer.length; offset += 2) {
+        pt = this.getAveragePoint(offset);
         tmpPath += " L" + pt.x + " " + pt.y;
       }
 
       // Set the complete current path coordinates
-      path.setAttribute("d", strPath + tmpPath);
+      this.path.setAttribute("d", this.strPath + tmpPath);
     }
-  };
-};
+  }
 
-const fadeOutToolbar = function () {
-  var fadeTarget = document.querySelector(".bb-capture-toolbar");
-  fadeTarget.style.opacity = 0;
-  fadeTarget.style.pointerEvents = "none";
-};
+  appendToBuffer(pt) {
+    this.buffer.push(pt);
+    while (this.buffer.length > this.bufferSize) {
+      this.buffer.shift();
+    }
+  }
 
-const fadeInToolbar = function () {
-  var fadeTarget = document.querySelector(".bb-capture-toolbar");
-  fadeTarget.style.opacity = 1;
-  fadeTarget.style.pointerEvents = "auto";
-};
+  fadeOutToolbar() {
+    var fadeTarget = document.querySelector(".bb-capture-toolbar");
+    fadeTarget.style.opacity = 0;
+    fadeTarget.style.pointerEvents = "none";
+  }
+
+  fadeInToolbar() {
+    var fadeTarget = document.querySelector(".bb-capture-toolbar");
+    fadeTarget.style.opacity = 1;
+    fadeTarget.style.pointerEvents = "auto";
+  }
+}
