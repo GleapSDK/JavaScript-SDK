@@ -1931,7 +1931,7 @@ class Gleap {
           }
           toolbarItem.classList.add("bb-capture-toolbar-item--active");
 
-          screenDrawer.setTool(type, "#FF0000AA");
+          screenDrawer.setTool(type, "#FF0000");
         }
         if (type === "mic") {
           screenRecorder.toggleAudio();

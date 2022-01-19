@@ -3,10 +3,12 @@ export class GleapScreenDrawer {
   path = null;
   strPath;
   strokeWidth = 12;
+  strokeWidthRect = 6;
   bufferSize;
   buffer = [];
+  startPoint = null;
   tool = "pen";
-  color = "#FF0000AA";
+  color = "#FF0000";
 
   constructor() {
     const self = this;
@@ -23,37 +25,101 @@ export class GleapScreenDrawer {
     );
 
     this.svgElement.addEventListener("mousedown", function (e) {
-      self.bufferSize = 6;
-      self.path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path"
-      );
-      self.path.setAttribute("fill", "none");
-      self.path.setAttribute("stroke", "#FF0000AA");
-      self.path.setAttribute("stroke-linecap", "round");
-      self.path.setAttribute("stroke-width", self.strokeWidth);
-      self.buffer = [];
-      var pt = self.getMousePosition(e);
-      self.appendToBuffer(pt);
-      self.strPath = "M" + pt.x + " " + pt.y;
-      self.path.setAttribute("d", self.strPath);
-      self.svgElement.appendChild(self.path);
       self.fadeOutToolbar();
+      if (self.tool === "pen") {
+        self.mouseDownPen(e);
+      }
+      if (self.tool === "rect") {
+        self.mouseDownRect(e);
+      }
     });
 
     this.svgElement.addEventListener("mousemove", function (e) {
-      if (self.path) {
-        self.appendToBuffer(self.getMousePosition(e));
-        self.updateSvgPath();
+      if (self.tool === "pen") {
+        self.mouseMovePen(e);
+      }
+      if (self.tool === "rect") {
+        self.mouseMoveRect(e);
       }
     });
 
-    this.svgElement.addEventListener("mouseup", function () {
-      if (self.path) {
-        self.path = null;
-      }
+    this.svgElement.addEventListener("mouseup", function (e) {
       self.fadeInToolbar();
+      if (self.tool === "pen") {
+        self.mouseUpPen(e);
+      }
+      if (self.tool === "rect") {
+        self.mouseUpRect(e);
+      }
     });
+  }
+
+  mouseUpPen() {
+    if (this.path) {
+      this.path = null;
+    }
+  }
+
+  mouseUpRect() {
+    if (this.path) {
+      this.path = null;
+    }
+  }
+
+  mouseMovePen(e) {
+    if (this.path) {
+      this.appendToBuffer(this.getMousePosition(e));
+      this.updateSvgPath();
+    }
+  }
+
+  mouseMoveRect(e) {
+    if (this.path) {
+      var p = this.getMousePosition(e);
+      var w = Math.abs(p.x - this.startPoint.x);
+      var h = Math.abs(p.y - this.startPoint.y);
+      var x = p.x;
+      var y = p.y;
+      if (p.x > this.startPoint.x) {
+        x = this.startPoint.x;
+      }
+      if (p.y > this.startPoint.y) {
+        y = this.startPoint.y;
+      }
+
+      this.path.setAttributeNS(null, "x", x);
+      this.path.setAttributeNS(null, "y", y);
+      this.path.setAttributeNS(null, "width", w);
+      this.path.setAttributeNS(null, "height", h);
+
+      this.svgElement.appendChild(this.path);
+    }
+  }
+
+  mouseDownRect(e) {
+    this.bufferSize = 6;
+    this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    this.path.setAttribute("fill", "none");
+    this.path.setAttribute("stroke", this.color);
+    this.path.setAttribute("stroke-linecap", "round");
+    this.path.setAttribute("stroke-width", this.strokeWidthRect);
+
+    this.startPoint = this.getMousePosition(e);
+  }
+
+  mouseDownPen(e) {
+    this.bufferSize = 6;
+    this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    this.path.setAttribute("fill", "none");
+    this.path.setAttribute("stroke", this.color + "AA");
+    this.path.setAttribute("stroke-linecap", "round");
+    this.path.setAttribute("stroke-width", this.strokeWidth);
+    this.buffer = [];
+    var pt = this.getMousePosition(e);
+    this.appendToBuffer(pt);
+    this.strPath = "M" + pt.x + " " + pt.y;
+    this.path.setAttribute("d", this.strPath);
+    this.svgElement.appendChild(this.path);
   }
 
   setTool(tool, color) {
