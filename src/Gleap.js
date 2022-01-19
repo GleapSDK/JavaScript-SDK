@@ -1834,6 +1834,7 @@ class Gleap {
               />
             </g>
           </svg>
+          <span class="bb-tooltip">Tooltip text</span>
         </div> 
         <div class="bb-capture-toolbar-item" data-type="recording" data-active="false">
           <svg width="1160px" height="1160px" viewBox="0 0 1160 1160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -1844,13 +1845,10 @@ class Gleap {
                   </g>
               </g>
           </svg>
+          <span class="bb-tooltip">Tooltip text</span>
         </div>
         <div class="bb-feedback-send-button">${translateText(
           `Next`,
-          self.overrideLanguage
-        )}</div>
-        <div class="bb-feedback-toggle-audio-button">${translateText(
-          `Toggle audio`,
           self.overrideLanguage
         )}</div>
       </div>
@@ -1884,18 +1882,6 @@ class Gleap {
       setMouseMove(x, y);
     }
 
-    const screenRecorder = new ScreenRecorder();
-
-    document.querySelector(".bb-capture-options-screenshot").onclick =
-      function () {
-        screenRecorder.startScreenRecording();
-      };
-
-    document.querySelector(".bb-feedback-toggle-audio-button").onclick =
-      function () {
-        screenRecorder.toggleAudio();
-      };
-
     // Hook up send button
     document.querySelector(".bb-feedback-send-button").onclick = function () {
       screenRecorder.stopScreenRecording();
@@ -1919,6 +1905,8 @@ class Gleap {
     };
 
     // Hookup buttons
+    const screenRecorder = new ScreenRecorder();
+
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
@@ -1942,12 +1930,20 @@ class Gleap {
           }*/
         }
         if (type === "mic") {
+          screenRecorder.toggleAudio();
           if (active) {
             toolbarItem.classList.remove(
               "bb-capture-toolbar-item--inactivecross"
             );
           } else {
             toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
+          }
+        }
+        if (type === "recording") {
+          if (active) {
+            screenRecorder.stopScreenRecording();
+          } else {
+            screenRecorder.startScreenRecording();
           }
         }
       };

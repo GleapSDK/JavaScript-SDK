@@ -31,6 +31,7 @@ export const hookScreenDrawing = function () {
     strPath = "M" + pt.x + " " + pt.y;
     path.setAttribute("d", strPath);
     svgElement.appendChild(path);
+    fadeOutToolbar();
   });
 
   svgElement.addEventListener("mousemove", function (e) {
@@ -44,6 +45,7 @@ export const hookScreenDrawing = function () {
     if (path) {
       path = null;
     }
+    fadeInToolbar();
   });
 
   var getMousePosition = function (e) {
@@ -101,4 +103,16 @@ export const hookScreenDrawing = function () {
       path.setAttribute("d", strPath + tmpPath);
     }
   };
+};
+
+const fadeOutToolbar = function () {
+  var fadeTarget = document.querySelector(".bb-capture-toolbar");
+  fadeTarget.style.opacity = 0;
+  fadeTarget.style.pointerEvents = "none";
+};
+
+const fadeInToolbar = function () {
+  var fadeTarget = document.querySelector(".bb-capture-toolbar");
+  fadeTarget.style.opacity = 1;
+  fadeTarget.style.pointerEvents = "auto";
 };

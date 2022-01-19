@@ -1459,6 +1459,7 @@ textarea.bb-feedback-required {
   display: flex;
   border-radius: 8px;
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+  transition: opacity 0.3s ease-in-out;
 }
 
 .bb-capture-toolbar .bb-feedback-send-button {
@@ -1521,12 +1522,44 @@ textarea.bb-feedback-required {
   width: 26px;
   margin: auto;
   border-radius: 4px;
-  background-color: #e80000;
-  transform: rotate(45deg);
 }
 
 .bb-capture-toolbar-item--inactivecross svg {
   fill: #eee;
+}
+
+.bb-capture-toolbar-item .bb-tooltip {
+  visibility: hidden;
+  width: 120px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+  position: absolute;
+  z-index: 1;
+  bottom: -100%;
+  left: 50%;
+  margin-left: -60px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.bb-capture-toolbar-item .bb-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  transform: rotate(180deg);
+  border-color: #555 transparent transparent transparent;
+}
+
+.bb-capture-toolbar-item:hover .bb-tooltip {
+  visibility: visible;
+  opacity: 1;
 }
 
 .bb-anim-fadein {
