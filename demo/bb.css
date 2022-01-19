@@ -1407,7 +1407,7 @@ textarea.bb-feedback-required {
 
 .bb-capture-svg {
   position: absolute;
-  z-index: 916777267;
+  z-index: 916777264;
   top: 0px;
   left: 0px;
   right: 0px;
@@ -1422,6 +1422,8 @@ textarea.bb-feedback-required {
   position: fixed;
   top: -200px;
   left: 0px;
+  z-index: 916777266;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .bb-capture-editor-drag-info svg {
@@ -1449,7 +1451,6 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-toolbar {
-  overflow: hidden;
   position: fixed;
   top: 20px;
   left: 50%;
@@ -1496,16 +1497,30 @@ textarea.bb-feedback-required {
 
 .bb-capture-toolbar-item-selectedcolor {
   border-radius: 100%;
-  width: 18px;
-  height: 18px;
-  background-color: #ff0000;
+  width: 20px;
+  height: 20px;
+  background-color: #DB4035;
+}
+
+.bb-capture-toolbar-item[data-active="true"] {
   position: relative;
 }
 
+.bb-capture-toolbar-spacer {
+  height: 28px;
+  margin: 0px 5px;
+  margin-top: 7px;
+  width: 1px;
+  min-width: 1px;
+  background-color: #eee;
+}
+
 .bb-capture-toolbar-item-colorpicker {
-  position: absolute;
-  top: 40px;
-  left: -10px;
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 916777268;
   background-color: #fff;
   display: none;
   padding: 10px;
@@ -1517,8 +1532,9 @@ textarea.bb-feedback-required {
   width: 20px;
   height: 20px;
   border-radius: 100%;
-  margin-right: 10px;
+  margin-right: 12px;
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
 
 .bb-capture-toolbar-item-color:hover {
@@ -1586,7 +1602,7 @@ textarea.bb-feedback-required {
   border-radius: 6px;
   position: absolute;
   z-index: 1;
-  bottom: -100%;
+  bottom: -120%;
   left: 50%;
   margin-left: -80px;
   opacity: 0;
@@ -1724,6 +1740,14 @@ textarea.bb-feedback-required {
     right: 10px;
     display: flex;
     flex-direction: column;
+  }
+  
+  .bb-capture-item-rec {
+    display: none;
+  }
+
+  .bb-capture-editor-drag-info {
+    display: none;
   }
 
   .bb-feedback-button--bottomleft .bb-feedback-dialog {

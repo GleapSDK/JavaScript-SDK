@@ -1,5 +1,5 @@
 export class GleapScreenDrawer {
-  svgElement = document.querySelector(".bb-capture-svg");
+  svgElement = null;
   path = null;
   strPath;
   strokeWidth = 12;
@@ -8,23 +8,34 @@ export class GleapScreenDrawer {
   buffer = [];
   startPoint = null;
   tool = "pen";
-  color = "#FF0000";
+  color = "#DB4035";
+  mouseDown = null;
+  mouseMove = null;
+  mouseUp = null;
+  resizeListener = null;
 
   constructor() {
     const self = this;
-    const captureEditor = document.querySelector(".bb-capture-svg");
-    captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
 
-    // Window resize
-    window.addEventListener(
-      "resize",
-      function (event) {
-        captureEditor.style.minHeight = `${document.documentElement.scrollHeight}px`;
-      },
-      true
-    );
+    this.svgElement = document.querySelector(".bb-capture-svg");
+    this.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
 
-    this.svgElement.addEventListener("mousedown", function (e) {
+    // Window resize listener.
+    this.resizeListener = function (e) {
+      self.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
+    };
+    window.addEventListener("resize", this.resizeListener, true);
+
+    this.mouseDown = function (e) {
+      e.preventDefault();
+
+      const colorpicker = document.querySelector(
+        ".bb-capture-toolbar-item-colorpicker"
+      );
+      if (colorpicker) {
+        colorpicker.style.display = "none";
+      }
+
       self.fadeOutToolbar();
       if (self.tool === "pen") {
         self.mouseDownPen(e);
@@ -32,18 +43,20 @@ export class GleapScreenDrawer {
       if (self.tool === "rect") {
         self.mouseDownRect(e);
       }
-    });
+    };
 
-    this.svgElement.addEventListener("mousemove", function (e) {
+    this.mouseMove = function (e) {
+      e.preventDefault();
       if (self.tool === "pen") {
         self.mouseMovePen(e);
       }
       if (self.tool === "rect") {
         self.mouseMoveRect(e);
       }
-    });
+    };
 
-    this.svgElement.addEventListener("mouseup", function (e) {
+    this.mouseUp = function (e) {
+      e.preventDefault();
       self.fadeInToolbar();
       if (self.tool === "pen") {
         self.mouseUpPen(e);
@@ -51,7 +64,21 @@ export class GleapScreenDrawer {
       if (self.tool === "rect") {
         self.mouseUpRect(e);
       }
-    });
+    };
+
+    this.svgElement.addEventListener("mousedown", this.mouseDown);
+    this.svgElement.addEventListener("mousemove", this.mouseMove);
+    this.svgElement.addEventListener("mouseup", this.mouseUp);
+    this.svgElement.addEventListener("touchstart", this.mouseDown, false);
+    this.svgElement.addEventListener("touchmove", this.mouseMove, false);
+    this.svgElement.addEventListener("touchend", this.mouseUp, false);
+  }
+
+  destroy() {
+    this.svgElement.removeEventListener("mousedown", this.mouseDown);
+    this.svgElement.removeEventListener("mousemove", this.mouseMove);
+    this.svgElement.removeEventListener("mouseup", this.mouseUp);
+    window.removeEventListener("resize", this.resizeListener);
   }
 
   mouseUpPen() {
@@ -129,6 +156,13 @@ export class GleapScreenDrawer {
   }
 
   getMousePosition(e) {
+    if (e.touches && e.touches.length > 0) {
+      return {
+        x: e.touches[0].pageX,
+        y: e.touches[0].pageY,
+      };
+    }
+
     return {
       x: e.pageX,
       y: e.pageY,

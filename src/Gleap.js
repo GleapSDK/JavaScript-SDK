@@ -1800,87 +1800,41 @@ class Gleap {
       <div class="bb-capture-editor-borderlayer"></div>
       <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
       <div class="bb-capture-mousetool"></div>
-      <div class='bb-capture-editor-drag-info'>
-        <svg width="1044px" height="1009px" viewBox="0 0 1044 1009" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                <g transform="translate(-515.000000, -518.000000)" fill="#FF0000" fill-rule="nonzero">
-                    <g transform="translate(515.268457, 518.009827)">
-                        <path d="M99.477,755.771 L287.807,944.102 L233.288043,998.621573 C222.003043,1009.90657 204.483043,1012.06257 190.800043,1003.85207 L16.8900429,899.502073 C-2.51595711,887.861073 -5.80895711,861.080073 10.1908429,845.080073 L99.477,755.771 Z M874.550043,25.4684733 L1018.11004,169.028473 C1049.11804,200.040473 1052.18404,249.286473 1025.26234,283.908473 L602.872343,826.988473 C600.657543,829.836173 598.270743,832.543173 595.720043,835.090073 C571.607043,859.207073 536.849043,866.195073 506.568043,856.063073 L364.718043,934.868073 C351.140043,942.407173 334.210043,940.036073 323.230043,929.055573 L313.403,919.228 L313.624658,919.007355 L124.827147,730.209845 L124.609,730.428 L114.523543,720.342173 C103.543543,709.362173 101.171543,692.432173 108.711043,678.858173 L187.516043,537.018173 C176.094043,502.979173 186.644953,463.998173 216.590043,440.706173 L759.670043,18.3161733 C794.287043,-8.6058267 843.533043,-5.5388267 874.550043,25.4684733 Z M970.341543,241.190173 C975.728243,234.264373 975.114943,224.417173 968.911843,218.213173 L825.351843,74.6531733 C819.148743,68.4500733 809.300843,67.8367733 802.378843,73.2234733 L259.298843,495.613473 C251.716843,501.507973 250.353543,512.433473 256.248043,520.015473 C256.693353,520.585783 257.169923,521.128773 257.681643,521.636573 L521.921643,785.886573 C528.714643,792.675673 539.726643,792.675673 546.515643,785.886573 C547.027363,785.374853 547.503923,784.831873 547.945343,784.265473 L970.341543,241.190173 Z M447.131543,809.480173 L234.081543,596.430173 L182.261543,689.707173 L353.851543,861.297173 L447.131543,809.480173 Z" id="Shape"></path>
-                    </g>
-                </g>
-            </g>
-        </svg>
-      </div>
+      <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
       <div class="bb-capture-toolbar">
         <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
-          <svg width="1072px" height="1034px" viewBox="0 0 1072 1034" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                  <g transform="translate(-907.000000, -217.000000)" fill-rule="nonzero">
-                      <g transform="translate(907.268457, 217.009827)">
-                          <g transform="translate(132.335119, 0.000000)" fill="#000">
-                              <path d="M20.3764235,730.530173 L10.1884235,720.342173 C-0.791576454,709.362173 -3.16357645,692.432173 4.37592355,678.858173 L83.1809235,537.018173 C71.7589235,502.979173 82.3098335,463.998173 112.254924,440.706173 L655.334924,18.3161733 C689.951924,-8.6058267 739.197924,-5.5388267 770.214924,25.4684733 L913.774924,169.028473 C944.782924,200.040473 947.848924,249.286473 920.927224,283.908473 L498.537224,826.988473 C496.322424,829.836173 493.935624,832.543173 491.384924,835.090073 C467.271924,859.207073 432.513924,866.195073 402.232924,856.063073 L260.382924,934.868073 C246.804924,942.407173 229.874924,940.036073 218.894924,929.055573 L208.706924,918.867573 L20.3764235,730.530173 Z M866.006424,241.190173 C871.393124,234.264373 870.779824,224.417173 864.576724,218.213173 L721.016724,74.6531733 C714.813624,68.4500733 704.965724,67.8367733 698.043724,73.2234733 L154.963724,495.613473 C147.381724,501.507973 146.018424,512.433473 151.912924,520.015473 C152.358234,520.585783 152.834804,521.128773 153.346524,521.636573 L417.586524,785.886573 C424.379524,792.675673 435.391524,792.675673 442.180524,785.886573 C442.692244,785.374853 443.168804,784.831873 443.610224,784.265473 L866.006424,241.190173 Z M342.796424,809.480173 L129.746424,596.430173 L77.9264235,689.707173 L249.516424,861.297173 L342.796424,809.480173 Z"></path>
-                          </g>
-                          <g transform="translate(-0.000000, 755.530173)" fill="#D50202">
-                              <path d="M124.711543,0 L313.042043,188.3374 L233.288043,268.0914 C222.003043,279.3764 204.483043,281.5324 190.800043,273.3219 L16.8900429,168.9719 C-2.51595711,157.3309 -5.80895711,130.5499 10.1908429,114.5499 L124.711543,0 Z" id="Shape"></path>
-                          </g>
-                      </g>
-                  </g>
-              </g>
-          </svg>
+          ${loadIcon("pen")}
         </div>
         <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
-          <svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-            <path d="m1168.8 195.51v808.97h-1137.7v-808.97zm-87.84 87.84h-961.98v631.88h961.98z" fill="#000"/>
-          </svg>
+          ${loadIcon("rect")}
         </div>
         <div class="bb-capture-toolbar-item" data-type="colorpicker">
-          <div class="bb-capture-toolbar-item-selectedcolor">
-            <div class="bb-capture-toolbar-item-colorpicker">
-              <div class="bb-capture-toolbar-item-color" style="background-color: #ff0000"></div>
-              <div class="bb-capture-toolbar-item-color" style="background-color: #000000"></div>
-              <div class="bb-capture-toolbar-item-color" style="background-color: #ffffff"></div>
-              <div class="bb-capture-toolbar-item-color" style="background-color: #00ff00"></div>
-              <div class="bb-capture-toolbar-item-color" style="background-color: #0000ff"></div>
-            </div>
-          </div>
+          <div class="bb-capture-toolbar-item-selectedcolor"></div>
         </div>
-        <div class="bb-capture-toolbar-item" data-type="mic" data-active="false">
-          <svg
-            width="1200pt"
-            height="1200pt"
-            version="1.1"
-            viewBox="0 0 1200 1200"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g fill="#000">
-              <path
-                d="m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z"
-              />
-              <path
-                d="m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z"
-              />
-            </g>
-          </svg>
+        <div class="bb-capture-toolbar-spacer"></div>
+        <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
+          ${loadIcon("mic")}
           <span class="bb-tooltip bb-tooltip-audio-recording">Audio-Recording</span>
         </div> 
-        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
-          <svg width="1160px" height="1160px" viewBox="0 0 1160 1160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                  <g  transform="translate(0.000000, -0.000000)" fill-rule="nonzero">
-                      <path d="M579.91,0 C258.38,0 0,261.24 0,579.91 C0,898.57 258.38,1159.82 579.91,1159.82 C901.44,1159.82 1159.82,901.44 1159.82,579.91 C1159.82,258.38 898.57,0 579.91,0 Z M579.91,1045 C324.41,1045 114.84,835.43 114.84,579.93 C114.84,324.43 321.54,114.86 579.91,114.86 C838.29,114.86 1042.11,324.43 1042.11,579.93 C1042.11,835.43 835.41,1045 579.91,1045 Z" fill="#000"></path>
-                      <path d="M815.32,579.905 C815.32,709.915 709.93,815.315 579.91,815.315 C449.89,815.315 344.5,709.925 344.5,579.905 C344.5,449.895 449.89,344.495 579.91,344.495 C709.93,344.495 815.32,449.885 815.32,579.905" fill="#D50202"></path>
-                  </g>
-              </g>
-          </svg>
-          <svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-            <path d="m600 60c-298.8 0-540 241.2-540 540s241.2 540 540 540 540-241.2 540-540-241.2-540-540-540zm237.6 741.6c0 20.398-15.602 36-36 36h-403.2c-20.398 0-36-15.602-36-36v-403.2c0-20.398 15.602-36 36-36h403.2c20.398 0 36 15.602 36 36z" fill="#d50202"/>
-          </svg>
+        <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
+          ${loadIcon("recorderon")}
+          ${loadIcon("recorderoff")}
           <span class="bb-tooltip bb-tooltip-screen-recording">Screen-Recording</span>
         </div>
+        <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>
         <div class="bb-feedback-send-button">${translateText(
           `Next`,
           self.overrideLanguage
         )}</div>
+      </div>
+      <div class="bb-capture-toolbar-item-colorpicker">
+        <div class="bb-capture-toolbar-item-color" data-color="#DB4035"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#FAD000"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#7ECC49"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#158FAD"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#4073FF"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#AF38EB"></div>
+        <div class="bb-capture-toolbar-item-color" data-color="#CCCCCC"></div>
       </div>
     `;
     Gleap.appendNode(bugReportingEditor);
@@ -1889,8 +1843,8 @@ class Gleap {
     const screenDrawer = new GleapScreenDrawer();
 
     // Mouse logic
+    const dragInfo = document.querySelector(".bb-capture-editor-drag-info");
     function setMouseMove(x, y) {
-      const dragInfo = document.querySelector(".bb-capture-editor-drag-info");
       if (!dragInfo) {
         return;
       }
@@ -1899,6 +1853,15 @@ class Gleap {
       dragInfo.style.top = `${y - 26}px`;
       dragInfo.style.right = null;
     }
+
+    const captureSVG = document.querySelector(".bb-capture-svg");
+    captureSVG.addEventListener('mouseenter', e => {
+      dragInfo.style.opacity = 1;
+    });
+    
+    captureSVG.addEventListener('mouseleave', e => {
+      dragInfo.style.opacity = 0;
+    });
 
     function mouseMoveEventHandler(e) {
       const x = e.pageX - document.documentElement.scrollLeft;
@@ -1924,6 +1887,7 @@ class Gleap {
         .catch(function (err) {
           self.screenRecordingUrl = null;
         });
+
       // Remove mouse listener.
       document.documentElement.removeEventListener(
         "mousemove",
@@ -1934,7 +1898,18 @@ class Gleap {
         touchMoveEventHandler
       );
 
+      // Cleanup UI.
+      if (dragInfo) {
+        dragInfo.remove();
+      }
+
+      const dialog = document.querySelector(".bb-capture-toolbar");
+      if (dialog) {
+        dialog.remove();
+      }
+
       // Restore feedback button style.
+      console.log(feedbackButtonStyle);
       if (feedbackButton) {
         feedbackButton.style.display = feedbackButtonStyle;
       }
@@ -2005,18 +1980,29 @@ class Gleap {
       }
     });
 
-    const colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
-    const selectedColor = document.querySelector(".bb-capture-toolbar-item-selectedcolor");
-    var colorItems = document.querySelectorAll(".bb-capture-toolbar-item-color");
+    const colorpicker = document.querySelector(
+      ".bb-capture-toolbar-item-colorpicker"
+    );
+    const selectedColor = document.querySelector(
+      ".bb-capture-toolbar-item-selectedcolor"
+    );
+    const colorItems = document.querySelectorAll(
+      ".bb-capture-toolbar-item-color"
+    );
     for (var i = 0; i < colorItems.length; i++) {
       const colorItem = colorItems[i];
+      const hexColor = colorItem.getAttribute("data-color");
+      colorItem.style.backgroundColor = hexColor;
       colorItem.onclick = function () {
         if (colorItem) {
-          screenDrawer.setColor(colorItem.style.backgroundColor);
-          colorpicker.style.display = "none";
+          screenDrawer.setColor(hexColor);
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
+          const penTips = document.querySelectorAll(".bb-pen-tip");
+          for (var j = 0; j < penTips.length; j++) {
+            penTips[j].style.fill = hexColor;
+          }
         }
-      }
+      };
     }
 
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
@@ -2024,6 +2010,9 @@ class Gleap {
       const toolbarItem = toolbarItems[i];
       toolbarItem.onclick = function () {
         const type = toolbarItem.getAttribute("data-type");
+        if (colorpicker) {
+          colorpicker.style.display = "none";
+        }
 
         var active = false;
         if (type !== "recording") {
@@ -2045,12 +2034,22 @@ class Gleap {
           }
           toolbarItem.classList.add("bb-capture-toolbar-item--active");
           screenDrawer.setTool(type);
+
+          try {
+            var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+            if (svgClone && dragInfo) {
+              dragInfo.innerHTML = '';
+              dragInfo.appendChild(svgClone);
+            }
+          } catch (exp) {
+            console.log(exp);
+          }
         }
         if (type === "colorpicker") {
-          if (colorpicker.style.display === "none") {
-            colorpicker.style.display = "flex";
-          } else {
+          if (colorpicker.style.display === "flex") {
             colorpicker.style.display = "none";
+          } else {
+            colorpicker.style.display = "flex";
           }
         }
         if (type === "mic") {
