@@ -19,7 +19,8 @@ import { ScreenRecorder } from "./ScreenRecorder";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
-import { GleapScreenDrawer } from "./ScreenDrawer";
+import { ScreenDrawer } from "./ScreenDrawer";
+import { ScrollStopper } from "./ScrollStopper";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -1278,6 +1279,7 @@ class Gleap {
       this.reportCleanupOnClose();
     }
 
+    ScrollStopper.enableScroll();
     this.currentlySendingBug = false;
     this.widgetOpened = false;
     this.openedMenu = false;
@@ -1789,9 +1791,12 @@ class Gleap {
     const feedbackButton = document.querySelector(".bb-feedback-button");
     var feedbackButtonStyle = "";
     if (feedbackButton) {
-      feedbackButtonStyle = feedbackButton.style;
+      feedbackButtonStyle = feedbackButton.style.display;
       feedbackButton.style.display = "none";
     }
+
+    // Disable scroll
+    ScrollStopper.disableScroll();
 
     // Add HTML for drawing and recording
     var bugReportingEditor = document.createElement("div");
@@ -1814,14 +1819,15 @@ class Gleap {
         <div class="bb-capture-toolbar-spacer"></div>
         <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
           ${loadIcon("mic")}
-          <span class="bb-tooltip bb-tooltip-audio-recording">Audio-Recording</span>
+          <span class="bb-tooltip bb-tooltip-audio-recording"></span>
         </div> 
         <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
           ${loadIcon("recorderon")}
           ${loadIcon("recorderoff")}
-          <span class="bb-tooltip bb-tooltip-screen-recording">Screen-Recording</span>
+          <span class="bb-tooltip bb-tooltip-screen-recording"></span>
         </div>
         <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>
+        <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
         <div class="bb-feedback-send-button">${translateText(
           `Next`,
           self.overrideLanguage
@@ -1836,11 +1842,30 @@ class Gleap {
         <div class="bb-capture-toolbar-item-color" data-color="#AF38EB"></div>
         <div class="bb-capture-toolbar-item-color" data-color="#CCCCCC"></div>
       </div>
+      <div class="bb-capture-preview">
+        <div class="bb-capture-preview-inner">
+          <video controls muted autoplay></video>
+          <div class="bb-capture-preview-buttons">
+            <div class="bb-capture-preview-retrybutton">${translateText(
+              `Retry`,
+              self.overrideLanguage
+            )}</div>
+            <div class="bb-capture-preview-sendbutton">${translateText(
+              `Next`,
+              self.overrideLanguage
+            )}</div>
+          </div>
+        </div>
+      </div>
     `;
     Gleap.appendNode(bugReportingEditor);
 
     // Hook up the drawing.
-    const screenDrawer = new GleapScreenDrawer();
+    const screenDrawer = new ScreenDrawer();
+
+    // Dialog element
+    const dialog = document.querySelector(".bb-capture-toolbar");
+    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
 
     // Mouse logic
     const dragInfo = document.querySelector(".bb-capture-editor-drag-info");
@@ -1855,11 +1880,11 @@ class Gleap {
     }
 
     const captureSVG = document.querySelector(".bb-capture-svg");
-    captureSVG.addEventListener('mouseenter', e => {
+    captureSVG.addEventListener("mouseenter", (e) => {
       dragInfo.style.opacity = 1;
     });
-    
-    captureSVG.addEventListener('mouseleave', e => {
+
+    captureSVG.addEventListener("mouseleave", (e) => {
       dragInfo.style.opacity = 0;
     });
 
@@ -1875,8 +1900,7 @@ class Gleap {
       setMouseMove(x, y);
     }
 
-    // Hook up send button
-    document.querySelector(".bb-feedback-send-button").onclick = function () {
+    const showNextStep = function () {
       screenRecorder.stopScreenRecording();
       self.screenRecordingUrl = "uploading";
       screenRecorder
@@ -1887,6 +1911,8 @@ class Gleap {
         .catch(function (err) {
           self.screenRecordingUrl = null;
         });
+
+      ScrollStopper.disableScroll();
 
       // Remove mouse listener.
       document.documentElement.removeEventListener(
@@ -1903,13 +1929,15 @@ class Gleap {
         dragInfo.remove();
       }
 
-      const dialog = document.querySelector(".bb-capture-toolbar");
       if (dialog) {
         dialog.remove();
       }
 
+      if (videoPreviewContainer) {
+        videoPreviewContainer.remove();
+      }
+
       // Restore feedback button style.
-      console.log(feedbackButtonStyle);
       if (feedbackButton) {
         feedbackButton.style.display = feedbackButtonStyle;
       }
@@ -1918,34 +1946,68 @@ class Gleap {
       self.createFeedbackFormDialog(feedbackOptions);
     };
 
+    // Hook up send button
+    const nextButton = document.querySelector(".bb-feedback-send-button");
+    const nextButtonPreview = document.querySelector(
+      ".bb-capture-preview-sendbutton"
+    );
+    nextButton.onclick = showNextStep;
+    nextButtonPreview.onclick = showNextStep;
+
+    const retryButton = document.querySelector(
+      ".bb-capture-preview-retrybutton"
+    );
+    retryButton.onclick = function () {
+      screenRecorder.clearPreview();
+    };
+
     // Hookup buttons
-    const screenRecorder = new ScreenRecorder(function () {
-      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
-      var screenRecordingTooltip = document.querySelector(
+    const recRenderer = function () {
+      const spacerItem = document.querySelector(
+        ".bb-capture-toolbar-spacer.bb-capture-item-rec"
+      );
+      const timerLabel = document.querySelector(
+        ".bb-capture-toolbar-item-timer"
+      );
+      const toolbarItems = document.querySelectorAll(
+        ".bb-capture-toolbar-item"
+      );
+      const screenRecordingTooltip = document.querySelector(
         ".bb-tooltip-screen-recording"
       );
-      var audioRecordingTooltip = document.querySelector(
+      const audioRecordingTooltip = document.querySelector(
         ".bb-tooltip-audio-recording"
       );
+
+      // Update screen container.
+      videoPreviewContainer.style.display = screenRecorder.file
+        ? "flex"
+        : "none";
+      dialog.style.display = !screenRecorder.file ? "flex" : "none";
 
       for (var i = 0; i < toolbarItems.length; i++) {
         const toolbarItem = toolbarItems[i];
         const type = toolbarItem.getAttribute("data-type");
-
-        switch (type.toString()) {
+        switch (type) {
           case "mic":
             if (screenRecorder.audioAvailable && screenRecorder.available) {
-              audioRecordingTooltip.innerHTML = "Audio-Recording";
               toolbarItem.style.opacity = 1;
-
               if (!screenRecorder.audioMuted) {
                 toolbarItem.classList.remove(
                   "bb-capture-toolbar-item--inactivecross"
+                );
+                audioRecordingTooltip.innerHTML = translateText(
+                  "Mute",
+                  self.overrideLanguage
                 );
               } else {
                 toolbarItem.style.opacity = 1;
                 toolbarItem.classList.add(
                   "bb-capture-toolbar-item--inactivecross"
+                );
+                audioRecordingTooltip.innerHTML = translateText(
+                  "Unmute",
+                  self.overrideLanguage
                 );
               }
             } else {
@@ -1953,24 +2015,48 @@ class Gleap {
               toolbarItem.classList.add(
                 "bb-capture-toolbar-item--inactivecross"
               );
-              audioRecordingTooltip.innerHTML = "Audio-Recording not available";
+              audioRecordingTooltip.innerHTML = translateText(
+                "Browser not supported",
+                self.overrideLanguage
+              );
             }
             break;
 
           case "recording":
             if (screenRecorder.available) {
               toolbarItem.style.opacity = 1;
-              screenRecordingTooltip.innerHTML = "Screen-Recording";
-
               if (screenRecorder.isRecording) {
                 toolbarItem.setAttribute("data-active", "true");
+                screenRecordingTooltip.innerHTML = translateText(
+                  "Stop screen recording",
+                  self.overrideLanguage
+                );
+
+                nextButton.style.display = "none";
+                spacerItem.style.display = "none";
+                timerLabel.style.display = "block";
+
+                ScrollStopper.enableScroll();
               } else {
                 toolbarItem.setAttribute("data-active", "false");
+                screenRecordingTooltip.innerHTML = translateText(
+                  "Start screen recording",
+                  self.overrideLanguage
+                );
+
+                nextButton.style.display = "block";
+                spacerItem.style.display = "block";
+                timerLabel.style.display = "none";
+
+                ScrollStopper.disableScroll();
               }
             } else {
+              // Recording is not available.
               toolbarItem.style.opacity = 0.3;
-              screenRecordingTooltip.innerHTML =
-                "Screen-Recording not available";
+              screenRecordingTooltip.innerHTML = translateText(
+                "Browser not supported",
+                self.overrideLanguage
+              );
             }
             break;
 
@@ -1978,7 +2064,8 @@ class Gleap {
             break;
         }
       }
-    });
+    };
+    const screenRecorder = new ScreenRecorder(recRenderer);
 
     const colorpicker = document.querySelector(
       ".bb-capture-toolbar-item-colorpicker"
@@ -2038,7 +2125,7 @@ class Gleap {
           try {
             var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
             if (svgClone && dragInfo) {
-              dragInfo.innerHTML = '';
+              dragInfo.innerHTML = "";
               dragInfo.appendChild(svgClone);
             }
           } catch (exp) {

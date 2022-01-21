@@ -9,6 +9,9 @@ export class ScreenRecorder {
   available = true;
   isRecording = false;
   file = null;
+  maxRecordTime = 180;
+  recordTime = 0;
+  recordingTimer = null;
 
   constructor(rerender) {
     this.rerender = rerender;
@@ -19,6 +22,10 @@ export class ScreenRecorder {
     setTimeout(() => {
       this.rerender();
     }, 100);
+  }
+
+  formatTime(s) {
+    return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
   }
 
   startScreenRecording = function () {
@@ -53,6 +60,10 @@ export class ScreenRecorder {
       return;
     }
 
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+      this.recordingTimer = null;
+    }
     this.mediaRecorder.stop();
     this.stream.getTracks().forEach((track) => {
       track.stop();
@@ -97,10 +108,8 @@ export class ScreenRecorder {
     }
 
     const audioTracks = this.stream.getAudioTracks();
-
     for (var i = 0; i < audioTracks.length; i++) {
       const audioTrack = audioTracks[i];
-
       audioTrack.enabled = !this.audioMuted;
     }
   };
@@ -111,8 +120,8 @@ export class ScreenRecorder {
       if (self.file == null) {
         resolve(null);
       }
-      var xhr = new XMLHttpRequest();
 
+      var xhr = new XMLHttpRequest();
       xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
       Session.getInstance().injectSession(xhr);
 
@@ -135,12 +144,32 @@ export class ScreenRecorder {
     });
   };
 
+  clearPreview = function () {
+    document.querySelector(".bb-capture-preview video").src = null;
+    this.file = null;
+    this.rerender();
+  }
+
   handleRecord = function ({ stream, mimeType = "video/mp4" }) {
     const self = this;
 
-    let recordedChunks = [];
+    var recordedChunks = [];
     this.mediaRecorder = new MediaRecorder(stream);
     this.isRecording = true;
+    this.recordTime = 0;
+
+    // Set timer.
+    const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
+    this.recordingTimer = setInterval(() => {
+      self.recordTime++;
+      var remainingTime = self.maxRecordTime - self.recordTime;
+      if (remainingTime > 0) {
+        timerLabel.innerHTML = self.formatTime(remainingTime);
+      } else {
+        timerLabel.innerHTML = "3:00";
+        self.stopScreenRecording();
+      }
+    }, 1000);
 
     this.mediaRecorder.ondataavailable = function (e) {
       if (e.data.size > 0) {
@@ -157,11 +186,8 @@ export class ScreenRecorder {
         type: "video/mp4",
       });
 
-      recordedChunks = [];
-
-      // TODO: remove on production
-      document.querySelector("video").src = URL.createObjectURL(completeBlob);
-      //
+      document.querySelector(".bb-capture-preview video").src =
+        URL.createObjectURL(completeBlob);
 
       self.audioAvailable = true;
       self.isRecording = false;

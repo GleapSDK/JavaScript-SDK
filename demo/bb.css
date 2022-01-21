@@ -1499,7 +1499,7 @@ textarea.bb-feedback-required {
   border-radius: 100%;
   width: 20px;
   height: 20px;
-  background-color: #DB4035;
+  background-color: #db4035;
 }
 
 .bb-capture-toolbar-item[data-active="true"] {
@@ -1513,6 +1513,78 @@ textarea.bb-feedback-required {
   width: 1px;
   min-width: 1px;
   background-color: #eee;
+}
+
+.bb-capture-preview {
+  display: none;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  z-index: 916777270;
+}
+
+.bb-capture-preview-inner {
+  background-color: #fff;
+  padding: 20px;
+  box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  flex-direction: column;
+  max-width: 640px;
+  width: 100%;
+  margin: 20px;
+}
+
+.bb-capture-preview-inner video {
+  border-radius: 8px;
+}
+
+.bb-capture-preview-buttons {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
+.bb-capture-preview-retrybutton {
+  font-family: "Inter", sans-serif;
+  box-sizing: border-box;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 5px;
+  margin-right: 8px;
+  margin-left: 10px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0px 10px;
+  font-size: 16px;
+}
+
+.bb-capture-preview-sendbutton {
+  font-family: "Inter", sans-serif;
+  background-color: #485bff;
+  border-radius: 21px;
+  box-sizing: border-box;
+  padding: 12px 26px;
+  font-size: 16px;
+  line-height: 19px;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  cursor: pointer;
+}
+
+.bb-capture-preview-retrybutton:hover,
+.bb-capture-preview-sendbutton:hover {
+  opacity: 0.9;
 }
 
 .bb-capture-toolbar-item-colorpicker {
@@ -1592,21 +1664,33 @@ textarea.bb-feedback-required {
   fill: #eee;
 }
 
+.bb-capture-toolbar-item-timer {
+  text-align: center;
+  line-height: 32px;
+  padding-right: 10px;
+  font-size: 14px;
+  margin: 5px;
+  color: #666;
+  min-width: 45px;
+  display: none;
+}
+
 .bb-capture-toolbar-item .bb-tooltip {
   visibility: hidden;
-  width: 160px;
   background-color: #555;
   color: #fff;
+  font-size: 14px;
   text-align: center;
-  padding: 5px 0;
+  padding: 5px 10px;
   border-radius: 6px;
   position: absolute;
   z-index: 1;
-  bottom: -120%;
-  left: 50%;
-  margin-left: -80px;
+  top: 45px;
+  left: 0px;
+  transform: translateX(calc(-50% + 21px));
   opacity: 0;
   transition: opacity 0.3s;
+  white-space: nowrap;
 }
 
 .bb-capture-toolbar-item .bb-tooltip::after {
@@ -1741,7 +1825,7 @@ textarea.bb-feedback-required {
     display: flex;
     flex-direction: column;
   }
-  
+
   .bb-capture-item-rec {
     display: none;
   }

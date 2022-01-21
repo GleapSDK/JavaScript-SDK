@@ -1,4 +1,4 @@
-export class GleapScreenDrawer {
+export class ScreenDrawer {
   svgElement = null;
   path = null;
   strPath;
@@ -220,13 +220,17 @@ export class GleapScreenDrawer {
 
   fadeOutToolbar() {
     var fadeTarget = document.querySelector(".bb-capture-toolbar");
-    fadeTarget.style.opacity = 0;
-    fadeTarget.style.pointerEvents = "none";
+    if (fadeTarget) {
+      fadeTarget.style.opacity = 0;
+      fadeTarget.style.pointerEvents = "none";
+    }
   }
 
   fadeInToolbar() {
     var fadeTarget = document.querySelector(".bb-capture-toolbar");
-    fadeTarget.style.opacity = 1;
-    fadeTarget.style.pointerEvents = "auto";
+    if (fadeTarget) {
+      fadeTarget.style.opacity = 1;
+      fadeTarget.style.pointerEvents = "auto";
+    }
   }
 }
