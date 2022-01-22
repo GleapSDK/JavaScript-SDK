@@ -5413,7 +5413,6 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         var audioRecordingTooltip = document.querySelector(".bb-tooltip-audio-recording"); // Update screen container.
 
         videoPreviewContainer.style.display = screenRecorder.file ? "flex" : "none";
-        console.log(videoPreviewContainer.style.display);
         dialog.style.display = !screenRecorder.file ? "flex" : "none";
 
         for (var i = 0; i < toolbarItems.length; i++) {

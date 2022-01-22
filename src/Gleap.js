@@ -15,12 +15,11 @@ import { isMobile } from "./ImageHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
-import { ScreenRecorder } from "./ScreenRecorder";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
-import { ScreenDrawer } from "./ScreenDrawer";
 import { ScrollStopper } from "./ScrollStopper";
+import { isLocalNetwork } from "./NetworkUtils";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -944,6 +943,16 @@ class Gleap {
       }
 
       // Inject privacy policy.
+      if (!feedbackOptions.disableUserScreenshot && !instance.widgetCallback) {
+        var captureItem = {
+          name: "capture",
+          type: "capture",
+          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
+        };
+        feedbackOptions.form.push(captureItem);
+      }
+
+      // Inject privacy policy.
       if (feedbackOptions.privacyPolicyEnabled) {
         var policyItem = {
           name: "privacypolicy",
@@ -957,12 +966,6 @@ class Gleap {
     }
 
     instance.stopBugReportingAnalytics();
-
-    // Set snapshot position
-    instance.snapshotPosition = {
-      x: window.scrollX,
-      y: window.scrollY,
-    };
 
     if (instance.silentBugReport) {
       // Move on
@@ -1297,22 +1300,14 @@ class Gleap {
     this.closeModalUI(cleanUp);
   }
 
-  isLocalNetwork(hostname = window.location.hostname) {
-    return (
-      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.0.") ||
-      hostname.endsWith(".local")
-    );
-  }
-
   init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
     this.registerEscapeListener();
 
-    if (this.isLocalNetwork()) {
+    // Initially check network
+    if (isLocalNetwork()) {
       this.isLiveSite = false;
     } else {
       this.isLiveSite = true;
@@ -1758,408 +1753,22 @@ class Gleap {
   }
 
   showBugReportEditor(feedbackOptions) {
-    const self = this;
-
-    // Stop here if we don't want to show the native screenshot tools.
-    if (feedbackOptions.disableUserScreenshot) {
-      this.createFeedbackFormDialog(feedbackOptions);
-      return;
-    }
-
-    // Predefined screenshot set, show the editor.
-    if (this.screenshot) {
-      this.showMobileScreenshotEditor(feedbackOptions);
-      return;
-    }
-
-    // Fetch screenshot from native SDK.
-    if (this.widgetOnly && this.widgetCallback) {
-      if (this.widgetOnly && this.widgetCallback) {
-        this.screenshotFeedbackOptions = feedbackOptions;
-        this.widgetCallback("requestScreenshot", {});
-      }
-      return;
-    }
-
-    this.showScreenshotEditor(feedbackOptions);
-  }
-
-  showScreenshotEditor(feedbackOptions) {
-    const self = this;
-
-    // Manage feedback button
-    const feedbackButton = document.querySelector(".bb-feedback-button");
-    var feedbackButtonStyle = "";
-    if (feedbackButton) {
-      feedbackButtonStyle = feedbackButton.style.display;
-      feedbackButton.style.display = "none";
-    }
-
-    // Disable scroll
-    ScrollStopper.disableScroll();
-
-    // Add HTML for drawing and recording
-    var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bb-capture-editor";
-    bugReportingEditor.innerHTML = `
-      <div class="bb-capture-editor-borderlayer"></div>
-      <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
-      <div class="bb-capture-mousetool"></div>
-      <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
-      <div class="bb-capture-toolbar">
-        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
-          ${loadIcon("pen")}
-        </div>
-        <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
-          ${loadIcon("rect")}
-        </div>
-        <div class="bb-capture-toolbar-item" data-type="colorpicker">
-          <div class="bb-capture-toolbar-item-selectedcolor"></div>
-        </div>
-        <div class="bb-capture-toolbar-spacer"></div>
-        <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
-          ${loadIcon("mic")}
-          <span class="bb-tooltip bb-tooltip-audio-recording"></span>
-        </div> 
-        <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
-          ${loadIcon("recorderon")}
-          ${loadIcon("recorderoff")}
-          <span class="bb-tooltip bb-tooltip-screen-recording"></span>
-        </div>
-        <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>
-        <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
-        <div class="bb-feedback-send-button">${translateText(
-          `Next`,
-          self.overrideLanguage
-        )}</div>
-      </div>
-      <div class="bb-capture-toolbar-item-colorpicker">
-        <div class="bb-capture-toolbar-item-color" data-color="#DB4035"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#FAD000"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#7ECC49"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#158FAD"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#4073FF"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#AF38EB"></div>
-        <div class="bb-capture-toolbar-item-color" data-color="#CCCCCC"></div>
-      </div>
-      <div class="bb-capture-preview">
-        <div class="bb-capture-preview-inner">
-          <video controls muted autoplay></video>
-          <div class="bb-capture-preview-buttons">
-            <div class="bb-capture-preview-retrybutton">${translateText(
-              `Retry`,
-              self.overrideLanguage
-            )}</div>
-            <div class="bb-capture-preview-sendbutton">${translateText(
-              `Next`,
-              self.overrideLanguage
-            )}</div>
-          </div>
-        </div>
-      </div>
-    `;
-    Gleap.appendNode(bugReportingEditor);
-
-    // Hook up the drawing.
-    const screenDrawer = new ScreenDrawer();
-
-    // Dialog element
-    const dialog = document.querySelector(".bb-capture-toolbar");
-    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
-
-    // Mouse logic
-    const dragInfo = document.querySelector(".bb-capture-editor-drag-info");
-    function setMouseMove(x, y) {
-      if (!dragInfo) {
+    // Native screenshot SDK.
+    if (!feedbackOptions.disableUserScreenshot) {
+      if (this.screenshot) {
+        this.showMobileScreenshotEditor(feedbackOptions);
         return;
       }
 
-      dragInfo.style.left = `${x + 6}px`;
-      dragInfo.style.top = `${y - 26}px`;
-      dragInfo.style.right = null;
+      // Fetch screenshot from native SDK.
+      if (this.widgetOnly && this.widgetCallback) {
+        this.screenshotFeedbackOptions = feedbackOptions;
+        this.widgetCallback("requestScreenshot", {});
+        return;
+      }
     }
 
-    const captureSVG = document.querySelector(".bb-capture-svg");
-    captureSVG.addEventListener("mouseenter", (e) => {
-      dragInfo.style.opacity = 1;
-    });
-
-    captureSVG.addEventListener("mouseleave", (e) => {
-      dragInfo.style.opacity = 0;
-    });
-
-    function mouseMoveEventHandler(e) {
-      const x = e.pageX - document.documentElement.scrollLeft;
-      const y = e.pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-    }
-
-    function touchMoveEventHandler(e) {
-      const x = e.touches[0].pageX - document.documentElement.scrollLeft;
-      const y = e.touches[0].pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-    }
-
-    const showNextStep = function () {
-      screenRecorder.stopScreenRecording();
-      self.screenRecordingUrl = "uploading";
-      screenRecorder
-        .uploadScreenRecording()
-        .then(function (screenRecordingUrl) {
-          self.screenRecordingUrl = screenRecordingUrl;
-        })
-        .catch(function (err) {
-          self.screenRecordingUrl = null;
-        });
-
-      ScrollStopper.disableScroll();
-
-      // Remove mouse listener.
-      document.documentElement.removeEventListener(
-        "mousemove",
-        mouseMoveEventHandler
-      );
-      document.documentElement.removeEventListener(
-        "touchmove",
-        touchMoveEventHandler
-      );
-
-      // Cleanup UI.
-      if (dragInfo) {
-        dragInfo.remove();
-      }
-
-      if (dialog) {
-        dialog.remove();
-      }
-
-      if (videoPreviewContainer) {
-        videoPreviewContainer.remove();
-      }
-
-      // Restore feedback button style.
-      if (feedbackButton) {
-        feedbackButton.style.display = feedbackButtonStyle;
-      }
-
-      // Show form dialog.
-      self.createFeedbackFormDialog(feedbackOptions);
-    };
-
-    // Hook up send button
-    const nextButton = document.querySelector(".bb-feedback-send-button");
-    const nextButtonPreview = document.querySelector(
-      ".bb-capture-preview-sendbutton"
-    );
-    nextButton.onclick = showNextStep;
-    nextButtonPreview.onclick = showNextStep;
-
-    const retryButton = document.querySelector(
-      ".bb-capture-preview-retrybutton"
-    );
-    retryButton.onclick = function () {
-      screenRecorder.clearPreview();
-    };
-
-    // Hookup buttons
-    const recRenderer = function () {
-      const spacerItem = document.querySelector(
-        ".bb-capture-toolbar-spacer.bb-capture-item-rec"
-      );
-      const timerLabel = document.querySelector(
-        ".bb-capture-toolbar-item-timer"
-      );
-      const toolbarItems = document.querySelectorAll(
-        ".bb-capture-toolbar-item"
-      );
-      const screenRecordingTooltip = document.querySelector(
-        ".bb-tooltip-screen-recording"
-      );
-      const audioRecordingTooltip = document.querySelector(
-        ".bb-tooltip-audio-recording"
-      );
-
-      // Update screen container.
-      videoPreviewContainer.style.display = screenRecorder.file
-        ? "flex"
-        : "none";
-      dialog.style.display = !screenRecorder.file ? "flex" : "none";
-
-      for (var i = 0; i < toolbarItems.length; i++) {
-        const toolbarItem = toolbarItems[i];
-        const type = toolbarItem.getAttribute("data-type");
-        switch (type) {
-          case "mic":
-            if (screenRecorder.audioAvailable && screenRecorder.available) {
-              toolbarItem.style.opacity = 1;
-              if (!screenRecorder.audioMuted) {
-                toolbarItem.classList.remove(
-                  "bb-capture-toolbar-item--inactivecross"
-                );
-                audioRecordingTooltip.innerHTML = translateText(
-                  "Mute",
-                  self.overrideLanguage
-                );
-              } else {
-                toolbarItem.style.opacity = 1;
-                toolbarItem.classList.add(
-                  "bb-capture-toolbar-item--inactivecross"
-                );
-                audioRecordingTooltip.innerHTML = translateText(
-                  "Unmute",
-                  self.overrideLanguage
-                );
-              }
-            } else {
-              toolbarItem.style.opacity = 0.3;
-              toolbarItem.classList.add(
-                "bb-capture-toolbar-item--inactivecross"
-              );
-              audioRecordingTooltip.innerHTML = translateText(
-                "Browser not supported",
-                self.overrideLanguage
-              );
-            }
-            break;
-
-          case "recording":
-            if (screenRecorder.available) {
-              toolbarItem.style.opacity = 1;
-              if (screenRecorder.isRecording) {
-                toolbarItem.setAttribute("data-active", "true");
-                screenRecordingTooltip.innerHTML = translateText(
-                  "Stop screen recording",
-                  self.overrideLanguage
-                );
-
-                nextButton.style.display = "none";
-                spacerItem.style.display = "none";
-                timerLabel.style.display = "block";
-
-                ScrollStopper.enableScroll();
-              } else {
-                toolbarItem.setAttribute("data-active", "false");
-                screenRecordingTooltip.innerHTML = translateText(
-                  "Start screen recording",
-                  self.overrideLanguage
-                );
-
-                nextButton.style.display = "block";
-                spacerItem.style.display = "block";
-                timerLabel.style.display = "none";
-
-                ScrollStopper.disableScroll();
-              }
-            } else {
-              // Recording is not available.
-              toolbarItem.style.opacity = 0.3;
-              screenRecordingTooltip.innerHTML = translateText(
-                "Browser not supported",
-                self.overrideLanguage
-              );
-            }
-            break;
-
-          default:
-            break;
-        }
-      }
-    };
-    const screenRecorder = new ScreenRecorder(recRenderer);
-
-    const colorpicker = document.querySelector(
-      ".bb-capture-toolbar-item-colorpicker"
-    );
-    const selectedColor = document.querySelector(
-      ".bb-capture-toolbar-item-selectedcolor"
-    );
-    const colorItems = document.querySelectorAll(
-      ".bb-capture-toolbar-item-color"
-    );
-    for (var i = 0; i < colorItems.length; i++) {
-      const colorItem = colorItems[i];
-      const hexColor = colorItem.getAttribute("data-color");
-      colorItem.style.backgroundColor = hexColor;
-      colorItem.onclick = function () {
-        if (colorItem) {
-          screenDrawer.setColor(hexColor);
-          selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
-          const penTips = document.querySelectorAll(".bb-pen-tip");
-          for (var j = 0; j < penTips.length; j++) {
-            penTips[j].style.fill = hexColor;
-          }
-        }
-      };
-    }
-
-    var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
-    for (var i = 0; i < toolbarItems.length; i++) {
-      const toolbarItem = toolbarItems[i];
-      toolbarItem.onclick = function () {
-        const type = toolbarItem.getAttribute("data-type");
-        if (colorpicker) {
-          colorpicker.style.display = "none";
-        }
-
-        var active = false;
-        if (type !== "recording") {
-          if (toolbarItem.getAttribute("data-active") === "true") {
-            toolbarItem.setAttribute("data-active", "false");
-            active = false;
-          } else {
-            toolbarItem.setAttribute("data-active", "true");
-            active = true;
-          }
-        }
-
-        if (type === "pen" || type === "rect") {
-          const toolbarTools = document.querySelectorAll(
-            ".bb-capture-toolbar-item-tool"
-          );
-          for (let j = 0; j < toolbarTools.length; j++) {
-            toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
-          }
-          toolbarItem.classList.add("bb-capture-toolbar-item--active");
-          screenDrawer.setTool(type);
-
-          try {
-            var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
-            if (svgClone && dragInfo) {
-              dragInfo.innerHTML = "";
-              dragInfo.appendChild(svgClone);
-            }
-          } catch (exp) {
-            console.log(exp);
-          }
-        }
-        if (type === "colorpicker") {
-          if (colorpicker.style.display === "flex") {
-            colorpicker.style.display = "none";
-          } else {
-            colorpicker.style.display = "flex";
-          }
-        }
-        if (type === "mic") {
-          screenRecorder.toggleAudio();
-        }
-        if (type === "recording") {
-          if (screenRecorder.isRecording) {
-            screenRecorder.stopScreenRecording();
-          } else {
-            screenRecorder.startScreenRecording();
-          }
-        }
-      };
-    }
-
-    document.documentElement.addEventListener(
-      "mousemove",
-      mouseMoveEventHandler
-    );
-    document.documentElement.addEventListener(
-      "touchmove",
-      touchMoveEventHandler
-    );
+    this.createFeedbackFormDialog(feedbackOptions);
   }
 
   goBackToMainMenu() {

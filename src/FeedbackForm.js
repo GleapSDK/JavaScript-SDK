@@ -1,3 +1,4 @@
+import MarkerManager from "./MarkerManager";
 import Session from "./Session";
 import { translateText } from "./Translation";
 import { setLoadingIndicatorProgress } from "./UI";
@@ -87,6 +88,21 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         formItem.placeholder,
         overrideLanguage
       )}" />
+      </div>`;
+    }
+    if (formItem.type === "capture") {
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        currentPage
+      )}">
+        ${getDescriptionHTML(formItem.description, overrideLanguage)}
+        ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+        <input class="bb-feedback-formdata bb-feedback-${
+          formItem.name
+        }" ${formItemData} type="hidden" />
+        <div class="bb-feedback-capture-items">
+          <div class="bb-feedback-capture-item" data-type="screenshot">Mark the bug</div>
+          <div class="bb-feedback-capture-item" data-type="capture">Record screen</div>
+        </div>
       </div>`;
     }
     if (formItem.type === "upload") {
@@ -537,6 +553,20 @@ export const hookForm = function (formOptions, submitForm) {
         addDirtyFlagToFormElement(formInput);
         validateFormPage(currentPage);
       };
+    }
+    if (formItem.type === "capture") {
+      const captureItems = document.querySelectorAll(
+        `.bb-feedback-capture-item`
+      );
+
+      for (var j = 0; j < captureItems.length; j++) {
+        const captureItem = captureItems[j];
+        const type = captureItem.getAttribute("data-type");
+        captureItem.onclick = function () {
+          const manager = new MarkerManager(type);
+          manager.show();
+        };
+      }
     }
     if (formItem.type === "upload") {
       const formFileUploadInput = document.querySelector(

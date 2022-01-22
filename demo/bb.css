@@ -107,6 +107,28 @@
   fill: #fff;
 }
 
+.bb-feedback-capture-items {
+  display: flex;
+  justify-content: center;
+}
+
+.bb-feedback-capture-item {
+  font-family: "Inter", sans-serif;
+  background-color: #f3f3f3;
+  border-radius: 21px;
+  box-sizing: border-box;
+  padding: 12px 26px;
+  font-size: 16px;
+  line-height: 19px;
+  font-weight: 600;
+  color: #333;
+  text-align: center;
+  width: 100%;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  cursor: pointer;
+}
+
 .bb-feedback-button-icon {
   width: 60px;
   height: 60px;
@@ -1465,7 +1487,15 @@ textarea.bb-feedback-required {
   padding-left: 8px;
 }
 
-.bb-capture-toolbar .bb-feedback-send-button {
+.bb-capture-button-next {
+  font-family: "Inter", sans-serif;
+  background-color: #485bff;
+  box-sizing: border-box;
+  font-weight: 600;
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  cursor: pointer;
   border-radius: 5px;
   margin: 5px;
   margin-right: 8px;
