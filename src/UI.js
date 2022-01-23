@@ -49,7 +49,10 @@ export const injectStyledCSS = (
     : calculateShadeColor(backgroundColor, -100);
   const backgroundColorHover = isDarkMode
     ? calculateShadeColor(backgroundColor, 30)
-    : calculateShadeColor(backgroundColor, -15);
+    : calculateShadeColor(backgroundColor, -12);
+  const hoverHoverColor = isDarkMode
+    ? calculateShadeColor(backgroundColor, 80)
+    : calculateShadeColor(backgroundColor, -30);
   const borderColor = isDarkMode
     ? calculateShadeColor(backgroundColor, 70)
     : calculateShadeColor(backgroundColor, -70);
@@ -125,7 +128,7 @@ export const injectStyledCSS = (
       color: ${contrastBackgroundColor};
     }
     .bb-feedback-capture-item-selected-action:hover {
-      background-color: ${borderColor};
+      background-color: ${hoverHoverColor};
     }
     .bb-capture-toolbar {
       background-color: ${backgroundColor};
@@ -138,7 +141,7 @@ export const injectStyledCSS = (
       background-color: ${backgroundColorHover};
     }
     .bb-feedback-capture-item:hover {
-      background-color: ${borderColor};
+      background-color: ${hoverHoverColor};
     }
     .bb-feedback-onetofive-button {
       border-radius: ${formItemSmallBorderRadius}px;

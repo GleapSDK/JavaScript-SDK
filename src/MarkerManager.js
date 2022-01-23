@@ -70,6 +70,22 @@ export default class MarkerManager {
     if (dismissUI) {
       dismissUI.style.display = "none";
     }
+
+    // Hide the color picker
+    const colorPicker = document.querySelector(
+      ".bb-capture-toolbar-item-colorpicker"
+    );
+    if (colorPicker) {
+      colorPicker.style.display = "none";
+    }
+
+    // Border layer
+    const borderLayer = document.querySelector(
+      ".bb-capture-editor-borderlayer"
+    );
+    if (borderLayer) {
+      borderLayer.style.display = "none";
+    }
   }
 
   clear() {
@@ -175,11 +191,10 @@ export default class MarkerManager {
             </div>
             ${
               this.type !== "capture"
-                ? `<div class="bb-capture-toolbar-spacer"></div>
-                <div class="bb-capture-button-next">${translateText(
-                  `Next`,
-                  this.overrideLanguage
-                )}</div>`
+                ? `<div class="bb-capture-button-next">${translateText(
+                    `Next`,
+                    this.overrideLanguage
+                  )}</div>`
                 : ""
             }
           </div>
