@@ -100,14 +100,36 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
           formItem.name
         }" ${formItemData} type="hidden" />
         <div class="bb-feedback-capture-items">
-          <div class="bb-feedback-capture-item" data-type="screenshot">
-            ${loadIcon("screenshot")}
-            <span>Mark the bug</span>
-          </div>
-          <div class="bb-feedback-capture-item" data-type="capture">
-            ${loadIcon("camera")}
-            <span>Record screen</span>
-          </div>
+        ${
+          formItem.enableScreenshot
+            ? `<div class="bb-feedback-capture-item" data-type="screenshot">
+        ${loadIcon("screenshot")}
+        <span class="bb-item-title">${translateText(
+          formItem.screenshotTitle,
+          overrideLanguage
+        )}</span>
+        <span class="bb-tooltip">${translateText(
+          formItem.screenshotTooltip,
+          overrideLanguage
+        )}</span>
+      </div>`
+            : ""
+        }
+        ${
+          formItem.enableCapture
+            ? `<div class="bb-feedback-capture-item" data-type="capture">
+        ${loadIcon("camera")}
+        <span class="bb-item-title">${translateText(
+          formItem.captureTitle,
+          overrideLanguage
+        )}</span>
+        <span class="bb-tooltip">${translateText(
+          formItem.captureTooltip,
+          overrideLanguage
+        )}</span>
+      </div>`
+            : ""
+        }
         </div>
         <div class="bb-feedback-capture-item-selected">
           <div class="bb-feedback-capture-item-selected-icon"></div>

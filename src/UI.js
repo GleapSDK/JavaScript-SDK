@@ -65,6 +65,81 @@ export const injectStyledCSS = (
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
 
   const colorStyleSheet = `
+    .bb-capture-preview-retrybutton {
+      color: ${contrastBackgroundColor};
+      border-radius: ${buttonBorderRadius}px;
+    }
+    .bb-capture-preview-retrybutton:hover {
+      background-color: ${backgroundColorHover};
+    }
+    .bb-capture-dismiss {
+      background-color: ${primaryColor};
+    }
+    .bb-capture-dismiss svg path {
+      fill: ${contrastColor};
+    }
+    .bb-tooltip {
+      border-radius: ${formItemBorderRadius}px;
+    }
+    .bb-capture-preview-sendbutton {
+      color: ${contrastColor};
+      background-color: ${primaryColor};
+      border-radius: ${buttonBorderRadius}px;
+    }
+    .bb-capture-button-next {
+      color: ${contrastColor};
+      background-color: ${primaryColor};
+      border-radius: ${formItemSmallBorderRadius}px;
+    }
+    .bb-feedback-capture-item {
+      border-radius: ${buttonBorderRadius}px;
+      background-color: ${backgroundColorHover};
+    }
+    .bb-capture-preview-inner {
+      background-color: ${backgroundColor};
+      border-radius: ${formItemBorderRadius}px;
+    }
+    .bb-feedback-capture-item .bb-item-title {
+      color: ${contrastBackgroundColor};
+    }
+    .bb-capture-toolbar-item-timer {
+      color: ${borderColor};
+    }
+    .bb-capture-toolbar-spacer {
+      background-color: ${backgroundColorHover};
+    }
+    .bb-feedback-capture-item-selected-icon g,
+    .bb-feedback-capture-item-selected-action path,
+    .bb-feedback-capture-item svg,
+    .bb-feedback-capture-item g {
+      fill: ${contrastBackgroundColor};
+    }
+    .bb-svg-path {
+      fill: ${contrastBackgroundColor};
+    }
+    .bb-feedback-capture-item-selected {
+      border-radius: ${buttonBorderRadius}px;
+      background-color: ${backgroundColorHover};
+    }
+    .bb-feedback-capture-item-selected-label {
+      color: ${contrastBackgroundColor};
+    }
+    .bb-feedback-capture-item-selected-action:hover {
+      background-color: ${borderColor};
+    }
+    .bb-capture-toolbar {
+      background-color: ${backgroundColor};
+      border-radius: ${formItemBorderRadius}px;
+    }
+    .bb-capture-toolbar-item-colorpicker {
+      background-color: ${backgroundColor};
+    }
+    .bb-capture-toolbar-item--active {
+      background-color: ${backgroundColorHover};
+    }
+    .bb-feedback-capture-item:hover {
+      background-color: ${borderColor};
+    }
     .bb-feedback-onetofive-button {
       border-radius: ${formItemSmallBorderRadius}px;
     }
@@ -493,7 +568,7 @@ export const loadIcon = function (name, color) {
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-907.000000, -217.000000)" fill-rule="nonzero">
             <g transform="translate(907.268457, 217.009827)">
-                <g transform="translate(132.335119, 0.000000)" fill="#000">
+                <g transform="translate(132.335119, 0.000000)" fill="#000" class="bb-svg-path">
                     <path d="M20.3764235,730.530173 L10.1884235,720.342173 C-0.791576454,709.362173 -3.16357645,692.432173 4.37592355,678.858173 L83.1809235,537.018173 C71.7589235,502.979173 82.3098335,463.998173 112.254924,440.706173 L655.334924,18.3161733 C689.951924,-8.6058267 739.197924,-5.5388267 770.214924,25.4684733 L913.774924,169.028473 C944.782924,200.040473 947.848924,249.286473 920.927224,283.908473 L498.537224,826.988473 C496.322424,829.836173 493.935624,832.543173 491.384924,835.090073 C467.271924,859.207073 432.513924,866.195073 402.232924,856.063073 L260.382924,934.868073 C246.804924,942.407173 229.874924,940.036073 218.894924,929.055573 L208.706924,918.867573 L20.3764235,730.530173 Z M866.006424,241.190173 C871.393124,234.264373 870.779824,224.417173 864.576724,218.213173 L721.016724,74.6531733 C714.813624,68.4500733 704.965724,67.8367733 698.043724,73.2234733 L154.963724,495.613473 C147.381724,501.507973 146.018424,512.433473 151.912924,520.015473 C152.358234,520.585783 152.834804,521.128773 153.346524,521.636573 L417.586524,785.886573 C424.379524,792.675673 435.391524,792.675673 442.180524,785.886573 C442.692244,785.374853 443.168804,784.831873 443.610224,784.265473 L866.006424,241.190173 Z M342.796424,809.480173 L129.746424,596.430173 L77.9264235,689.707173 L249.516424,861.297173 L342.796424,809.480173 Z"></path>
                 </g>
                 <g transform="translate(-0.000000, 755.530173)" fill="#D50202">
@@ -509,7 +584,7 @@ export const loadIcon = function (name, color) {
     return `<svg width="339px" height="241px" viewBox="0 0 339 241" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-0.000865, 0.000000)" fill-rule="nonzero">
-            <g transform="translate(0.000865, 0.000000)" fill="#000000">
+            <g transform="translate(0.000865, 0.000000)" fill="#000000" class="bb-svg-path">
                 <path d="M339,0 L339,241 L0,241 L0,0 L339,0 Z M312.826351,26.168387 L26.1855674,26.168387 L26.1855674,214.41156 L312.826351,214.41156 L312.826351,26.168387 Z"></path>
             </g>
             <g transform="translate(0.000000, 83.206095)" fill="#D50202" class="bb-pen-tip">
@@ -528,26 +603,7 @@ export const loadIcon = function (name, color) {
     viewBox="0 0 1200 1200"
     xmlns="http://www.w3.org/2000/svg"
   >
-    <g fill="#000">
-      <path
-        d="m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z"
-      />
-      <path
-        d="m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z"
-      />
-    </g>
-  </svg>`;
-  }
-
-  if (name === "mic") {
-    return `<svg
-    width="1200pt"
-    height="1200pt"
-    version="1.1"
-    viewBox="0 0 1200 1200"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <g fill="#000">
+    <g class="bb-svg-path">
       <path
         d="m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z"
       />
@@ -562,7 +618,7 @@ export const loadIcon = function (name, color) {
     return `<svg width="1160px" height="1160px" viewBox="0 0 1160 1160" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
           <g  transform="translate(0.000000, -0.000000)" fill-rule="nonzero">
-              <path d="M579.91,0 C258.38,0 0,261.24 0,579.91 C0,898.57 258.38,1159.82 579.91,1159.82 C901.44,1159.82 1159.82,901.44 1159.82,579.91 C1159.82,258.38 898.57,0 579.91,0 Z M579.91,1045 C324.41,1045 114.84,835.43 114.84,579.93 C114.84,324.43 321.54,114.86 579.91,114.86 C838.29,114.86 1042.11,324.43 1042.11,579.93 C1042.11,835.43 835.41,1045 579.91,1045 Z" fill="#000"></path>
+              <path d="M579.91,0 C258.38,0 0,261.24 0,579.91 C0,898.57 258.38,1159.82 579.91,1159.82 C901.44,1159.82 1159.82,901.44 1159.82,579.91 C1159.82,258.38 898.57,0 579.91,0 Z M579.91,1045 C324.41,1045 114.84,835.43 114.84,579.93 C114.84,324.43 321.54,114.86 579.91,114.86 C838.29,114.86 1042.11,324.43 1042.11,579.93 C1042.11,835.43 835.41,1045 579.91,1045 Z" class="bb-svg-path"></path>
               <path d="M815.32,579.905 C815.32,709.915 709.93,815.315 579.91,815.315 C449.89,815.315 344.5,709.925 344.5,579.905 C344.5,449.895 449.89,344.495 579.91,344.495 C709.93,344.495 815.32,449.885 815.32,579.905" fill="#D50202"></path>
           </g>
       </g>

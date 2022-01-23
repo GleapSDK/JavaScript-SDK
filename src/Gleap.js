@@ -947,8 +947,12 @@ class Gleap {
         var captureItem = {
           name: "capture",
           type: "capture",
-          title: "Help us fix the issue",
-          description: "Mark the bug and help us",
+          enableScreenshot: true,
+          enableCapture: true,
+          captureTitle: "Record screen",
+          captureTooltip: "Record a screen recording",
+          screenshotTitle: "Mark the bug",
+          screenshotTooltip: "Draw on the screenshot",
           page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
         };
         feedbackOptions.form.push(captureItem);

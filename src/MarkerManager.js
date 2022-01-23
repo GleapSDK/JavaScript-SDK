@@ -11,6 +11,7 @@ export default class MarkerManager {
   screenRecorder = null;
   callback = null;
   screenDrawer = null;
+  overrideLanguage = Gleap.getInstance().overrideLanguage;
   snapshotPosition = {
     x: 0,
     y: 0,
@@ -177,7 +178,7 @@ export default class MarkerManager {
                 ? `<div class="bb-capture-toolbar-spacer"></div>
                 <div class="bb-capture-button-next">${translateText(
                   `Next`,
-                  self.overrideLanguage
+                  this.overrideLanguage
                 )}</div>`
                 : ""
             }
@@ -197,11 +198,11 @@ export default class MarkerManager {
               <div class="bb-capture-preview-buttons">
                 <div class="bb-capture-preview-retrybutton">${translateText(
                   `Retry`,
-                  self.overrideLanguage
+                  this.overrideLanguage
                 )}</div>
                 <div class="bb-capture-preview-sendbutton">${translateText(
                   `Next`,
-                  self.overrideLanguage
+                  this.overrideLanguage
                 )}</div>
               </div>
             </div>
