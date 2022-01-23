@@ -118,7 +118,7 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         ${
           formItem.enableCapture
             ? `<div class="bb-feedback-capture-item" data-type="capture">
-        ${loadIcon("camera")}
+        ${loadIcon("recorderon")}
         <span class="bb-item-title">${translateText(
           formItem.captureTitle,
           overrideLanguage
@@ -634,7 +634,7 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
               selectedItemIcon.innerHTML =
                 type === "screenshot"
                   ? loadIcon("screenshot")
-                  : loadIcon("camera");
+                  : loadIcon("recorderon");
               captureItemsContainer.style.display = "none";
               selectedItem.style.display = "flex";
               selectedItemAction.onclick = function () {

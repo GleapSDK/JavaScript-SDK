@@ -161,18 +161,18 @@ export default class MarkerManager {
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
           <div class="bb-capture-toolbar">
-            <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
             ${
               this.type === "capture"
                 ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
-                ${loadIcon("recorderon")}
-                ${loadIcon("recorderoff")}
-                <span class="bb-tooltip bb-tooltip-screen-recording"></span>
+                  ${loadIcon("recorderon")}
+                  ${loadIcon("recorderoff")}
+                  <span class="bb-tooltip bb-tooltip-screen-recording"></span>
                 </div>
                 <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
-                ${loadIcon("mic")}
-                <span class="bb-tooltip bb-tooltip-audio-recording"></span>
+                  ${loadIcon("mic")}
+                  <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
+                <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
                 <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>`
                 : ""
             }
@@ -288,6 +288,10 @@ export default class MarkerManager {
     const colorItems = document.querySelectorAll(
       ".bb-capture-toolbar-item-color"
     );
+    const colorpicker = document.querySelector(
+      ".bb-capture-toolbar-item-colorpicker"
+    );
+
     for (var i = 0; i < colorItems.length; i++) {
       const colorItem = colorItems[i];
       const hexColor = colorItem.getAttribute("data-color");
@@ -295,6 +299,9 @@ export default class MarkerManager {
       colorItem.onclick = function () {
         if (colorItem) {
           self.screenDrawer.setColor(hexColor);
+          if (colorpicker) {
+            colorpicker.style.display = "none";
+          }
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
           const penTips = document.querySelectorAll(".bb-pen-tip");
           for (var j = 0; j < penTips.length; j++) {
@@ -334,7 +341,7 @@ export default class MarkerManager {
       const toolbarItem = toolbarItems[i];
       toolbarItem.onclick = function () {
         const type = toolbarItem.getAttribute("data-type");
-        if (colorpicker) {
+        if (colorpicker && type !== "colorpicker") {
           colorpicker.style.display = "none";
         }
 

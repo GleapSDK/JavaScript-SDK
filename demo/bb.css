@@ -1555,7 +1555,6 @@ textarea.bb-feedback-required {
   border-radius: 8px;
   box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
   transition: opacity 0.3s ease-in-out;
-  padding-left: 8px;
 }
 
 .bb-capture-dismiss {
@@ -1607,7 +1606,6 @@ textarea.bb-feedback-required {
   width: 23px;
   height: 23px;
   object-fit: contain;
-  opacity: 0.8;
 }
 
 .bb-capture-toolbar-item-selectedcolor {
@@ -1622,12 +1620,9 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-toolbar-spacer {
-  height: 28px;
-  margin: 0px 5px;
-  margin-top: 7px;
+  height: 42px;
   width: 1px;
   min-width: 1px;
-  background-color: #eee;
 }
 
 .bb-capture-preview {
@@ -1659,6 +1654,8 @@ textarea.bb-feedback-required {
   display: block;
   border: 0px;
   outline: none;
+  width: 100%;
+  max-height: 60vh;
 }
 
 .bb-capture-preview-buttons {
@@ -1698,6 +1695,10 @@ textarea.bb-feedback-required {
 .bb-capture-preview-retrybutton:hover,
 .bb-capture-preview-sendbutton:hover {
   opacity: 0.9;
+}
+
+.bb-capture-toolbar-item-recording {
+  background-color: #d50202;
 }
 
 .bb-capture-toolbar-item-colorpicker {
@@ -1782,7 +1783,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-toolbar-item-timer {
-  text-align: center;
+  text-align: left;
   line-height: 32px;
   font-size: 14px;
   margin: 5px;
