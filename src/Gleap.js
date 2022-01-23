@@ -861,6 +861,12 @@ class Gleap {
       return;
     }
 
+    // Initially set scroll position
+    instance.snapshotPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+    };
+
     // Get feedback options
     var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
     if (!feedbackOptions) {
@@ -1187,7 +1193,7 @@ class Gleap {
     // Remember form items
     rememberForm(feedbackOptions.form);
 
-    window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+    // Show loading spinner
     toggleLoading(true);
 
     // Start fake loading
@@ -1249,12 +1255,18 @@ class Gleap {
   }
 
   takeScreenshotAndSend() {
+    const self = this;
     if (this.excludeData && this.excludeData.screenshot) {
       // Screenshot excluded.
       this.sendBugReportToServer();
     } else {
-      return startScreenCapture(this.snapshotPosition, this.isLiveSite)
+      return startScreenCapture(this.isLiveSite)
         .then((data) => {
+          // Set scroll position
+          if (data) {
+            data["x"] = self.snapshotPosition.x;
+            data["y"] = self.snapshotPosition.y;
+          }
           this.sendBugReportToServer(data);
         })
         .catch((err) => {

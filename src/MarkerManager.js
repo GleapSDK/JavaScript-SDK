@@ -12,10 +12,6 @@ export default class MarkerManager {
   callback = null;
   screenDrawer = null;
   overrideLanguage = Gleap.getInstance().overrideLanguage;
-  snapshotPosition = {
-    x: 0,
-    y: 0,
-  };
 
   constructor(type) {
     this.type = type;
@@ -264,7 +260,8 @@ export default class MarkerManager {
 
     // Setup screenshot data
     if (this.type === "screenshot") {
-      this.snapshotPosition = {
+      // Overwrite snapshot position
+      Gleap.getInstance().snapshotPosition = {
         x: window.scrollX,
         y: window.scrollY,
       };

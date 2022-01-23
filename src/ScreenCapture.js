@@ -1,8 +1,8 @@
 import { isMobile, resizeImage } from "./ImageHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
 
-export const startScreenCapture = (snapshotPosition, isLiveSite) => {
-  return prepareScreenshotData(snapshotPosition, isLiveSite);
+export const startScreenCapture = (isLiveSite) => {
+  return prepareScreenshotData(isLiveSite);
 };
 
 const documentToHTML = (clone) => {
@@ -404,7 +404,7 @@ const deepClone = (host) => {
   return fragment;
 };
 
-const prepareScreenshotData = (snapshotPosition, remote) => {
+const prepareScreenshotData = (remote) => {
   return new Promise((resolve, reject) => {
     const styleTags = window.document.querySelectorAll("style, link");
     for (var i = 0; i < styleTags.length; ++i) {
@@ -473,8 +473,6 @@ const prepareScreenshotData = (snapshotPosition, remote) => {
       resolve({
         html: html,
         baseUrl: baseUrl,
-        x: snapshotPosition.x,
-        y: snapshotPosition.y,
         width: window.innerWidth,
         height: window.innerHeight,
         isMobile: isMobile(),
