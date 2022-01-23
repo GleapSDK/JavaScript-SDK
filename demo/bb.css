@@ -107,9 +107,70 @@
   fill: #fff;
 }
 
-.bb-feedback-capture-items {
+.bb-feedback-capture-item-selected {
+  display: none;
+  font-family: "Inter", sans-serif;
+  background-color: #f3f3f3;
+  border-radius: 21px;
+  box-sizing: border-box;
+  padding: 5px;
+  width: auto;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  margin-right: auto;
+  cursor: pointer;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.bb-feedback-capture-item-selected-label {
+  font-size: 13px;
+  line-height: 19px;
+  font-weight: 600;
+  color: #333;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.bb-feedback-capture-item-selected-icon {
   display: flex;
   justify-content: center;
+  align-items: center;
+  margin-left: 5px;
+}
+
+.bb-feedback-capture-item-selected-icon svg {
+  width: 18px;
+  height: auto;
+}
+
+.bb-feedback-capture-item-selected-action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  padding: 5px;
+  margin-left: 5px;
+}
+
+.bb-feedback-capture-item-selected-action:hover {
+  background-color: #ccc;
+  border-radius: 100%;
+}
+
+.bb-feedback-capture-item-selected-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+.bb-feedback-capture-item-selected-action svg path {
+  fill: #333;
+}
+
+.bb-feedback-capture-items {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
 }
 
 .bb-feedback-capture-item {
@@ -117,16 +178,32 @@
   background-color: #f3f3f3;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 12px 26px;
-  font-size: 16px;
+  padding: 8px 12px;
+  width: auto;
+  margin-top: 5px;
+  margin-right: 5px;
+  margin-bottom: 0px;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.bb-feedback-capture-item:hover {
+  background-color: #ddd;
+}
+
+.bb-feedback-capture-item span {
+  font-size: 13px;
   line-height: 19px;
   font-weight: 600;
   color: #333;
-  text-align: center;
-  width: 100%;
-  margin-top: 0px;
-  margin-bottom: 0px;
-  cursor: pointer;
+  font-weight: normal;
+  margin-left: 8px;
+}
+
+.bb-feedback-capture-item svg {
+  width: 18px;
+  height: auto;
 }
 
 .bb-feedback-button-icon {
@@ -1487,6 +1564,26 @@ textarea.bb-feedback-required {
   padding-left: 8px;
 }
 
+.bb-capture-dismiss {
+  position: fixed;
+  top: 0px;
+  right: 0px;
+  z-index: 916777268;
+  background-color: #485bff;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bb-capture-dismiss svg {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 .bb-capture-button-next {
   font-family: "Inter", sans-serif;
   background-color: #485bff;
@@ -1697,11 +1794,10 @@ textarea.bb-feedback-required {
 .bb-capture-toolbar-item-timer {
   text-align: center;
   line-height: 32px;
-  padding-right: 10px;
   font-size: 14px;
   margin: 5px;
   color: #666;
-  min-width: 45px;
+  min-width: 40px;
   display: none;
 }
 

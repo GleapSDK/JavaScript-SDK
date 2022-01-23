@@ -8,12 +8,13 @@ import { loadIcon } from "./UI";
 export default class MarkerManager {
   type = "screenshot";
   dragCursor = null;
+  screenRecorder = null;
+  callback = null;
+  screenDrawer = null;
   snapshotPosition = {
     x: 0,
     y: 0,
   };
-  screenRecorder = null;
-  screenDrawer = null;
 
   constructor(type) {
     this.type = type;
@@ -32,20 +33,41 @@ export default class MarkerManager {
   }
 
   showWidgetUI() {
+    if (this.type === "screenshot") {
+      ScrollStopper.enableScroll();
+    }
+
+    // Cleanup mouse pointer
+    this.cleanupMousePointer();
+
+    // Remove the toolbar UI
+    const dialog = document.querySelector(".bb-capture-toolbar");
+    if (dialog) {
+      dialog.remove();
+    }
+
+    // Remove the preview UI
+    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
+    if (videoPreviewContainer) {
+      videoPreviewContainer.remove();
+    }
+
+    // Feedback button
     const feedbackButton = document.querySelector(".bb-feedback-button");
     if (feedbackButton) {
       feedbackButton.style.display = "flex";
     }
 
+    // Feedback dialog container
     const dialogUI = document.querySelector(".bb-feedback-dialog-container");
     if (dialogUI) {
       dialogUI.style.display = "block";
     }
-  }
 
-  hide() {
-    if (this.type === "screenshot") {
-      ScrollStopper.enableScroll();
+    // Dismiss button
+    const dismissUI = document.querySelector(".bb-capture-dismiss");
+    if (dismissUI) {
+      dismissUI.style.display = "none";
     }
   }
 
@@ -123,8 +145,24 @@ export default class MarkerManager {
           <div class="bb-capture-editor-borderlayer"></div>
           <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
           <div class="bb-capture-mousetool"></div>
+          <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
           <div class="bb-capture-toolbar">
+            <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
+            ${
+              this.type === "capture"
+                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
+                ${loadIcon("recorderon")}
+                ${loadIcon("recorderoff")}
+                <span class="bb-tooltip bb-tooltip-screen-recording"></span>
+                </div>
+                <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
+                ${loadIcon("mic")}
+                <span class="bb-tooltip bb-tooltip-audio-recording"></span>
+                </div>
+                <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>`
+                : ""
+            }
             <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
               ${loadIcon("pen")}
             </div>
@@ -134,26 +172,15 @@ export default class MarkerManager {
             <div class="bb-capture-toolbar-item" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
             </div>
-            <div class="bb-capture-toolbar-spacer"></div>
             ${
-              this.type === "capture"
-                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
-            ${loadIcon("mic")}
-            <span class="bb-tooltip bb-tooltip-audio-recording"></span>
-          </div>
-          <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
-            ${loadIcon("recorderon")}
-            ${loadIcon("recorderoff")}
-            <span class="bb-tooltip bb-tooltip-screen-recording"></span>
-          </div>
-          <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>`
+              this.type !== "capture"
+                ? `<div class="bb-capture-toolbar-spacer"></div>
+                <div class="bb-capture-button-next">${translateText(
+                  `Next`,
+                  self.overrideLanguage
+                )}</div>`
                 : ""
             }
-            <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
-            <div class="bb-capture-button-next">${translateText(
-              `Next`,
-              self.overrideLanguage
-            )}</div>
           </div>
           <div class="bb-capture-toolbar-item-colorpicker">
             <div class="bb-capture-toolbar-item-color" data-color="#DB4035"></div>
@@ -184,33 +211,30 @@ export default class MarkerManager {
   }
 
   showNextStep = function () {
-    this.screenRecorder.stopScreenRecording();
-    this.screenRecordingUrl = "uploading";
-    this.screenRecorder
-      .uploadScreenRecording()
-      .then(function (screenRecordingUrl) {
-        self.screenRecordingUrl = screenRecordingUrl;
-      })
-      .catch(function (err) {
-        self.screenRecordingUrl = null;
-      });
-
-    this.cleanupMousePointer();
-
-    const dialog = document.querySelector(".bb-capture-toolbar");
-    if (dialog) {
-      dialog.remove();
+    // Start the screen recording upload (optionally)
+    if (this.screenRecorder) {
+      this.screenRecorder.stopScreenRecording();
+      this.screenRecordingUrl = "uploading";
+      this.screenRecorder
+        .uploadScreenRecording()
+        .then(function (screenRecordingUrl) {
+          self.screenRecordingUrl = screenRecordingUrl;
+        })
+        .catch(function (err) {
+          self.screenRecordingUrl = null;
+        });
     }
 
-    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
-    if (videoPreviewContainer) {
-      videoPreviewContainer.remove();
-    }
-
+    // Adapt the UI
     this.showWidgetUI();
+
+    if (this.callback) {
+      this.callback(true);
+    }
   };
 
-  show() {
+  show(callback) {
+    this.callback = callback;
     const self = this;
 
     // Hide widget UI
@@ -271,9 +295,21 @@ export default class MarkerManager {
   setupToolbar() {
     const self = this;
 
+    // Hook up dismiss button
+    const dismissButton = document.querySelector(".bb-capture-dismiss");
+    dismissButton.onclick = function () {
+      self.showWidgetUI();
+
+      if (self.callback) {
+        self.callback(false);
+      }
+    };
+
     // Hook up send button
     const nextButton = document.querySelector(".bb-capture-button-next");
-    nextButton.onclick = this.showNextStep.bind(this);
+    if (nextButton) {
+      nextButton.onclick = this.showNextStep.bind(this);
+    }
 
     const colorpicker = document.querySelector(
       ".bb-capture-toolbar-item-colorpicker"
@@ -346,9 +382,6 @@ export default class MarkerManager {
       return;
     }
 
-    const spacerItem = document.querySelector(
-      ".bb-capture-toolbar-spacer.bb-capture-item-rec"
-    );
     const nextButton = document.querySelector(".bb-capture-button-next");
     const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
     const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
@@ -414,9 +447,6 @@ export default class MarkerManager {
                 "Stop screen recording",
                 this.overrideLanguage
               );
-
-              nextButton.style.display = "none";
-              spacerItem.style.display = "none";
               timerLabel.style.display = "block";
             } else {
               toolbarItem.setAttribute("data-active", "false");
@@ -424,9 +454,6 @@ export default class MarkerManager {
                 "Start screen recording",
                 this.overrideLanguage
               );
-
-              nextButton.style.display = "block";
-              spacerItem.style.display = "block";
               timerLabel.style.display = "none";
             }
           } else {

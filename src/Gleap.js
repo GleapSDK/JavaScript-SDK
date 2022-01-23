@@ -947,6 +947,8 @@ class Gleap {
         var captureItem = {
           name: "capture",
           type: "capture",
+          title: "Help us fix the issue",
+          description: "Mark the bug and help us",
           page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
         };
         feedbackOptions.form.push(captureItem);
@@ -1166,9 +1168,13 @@ class Gleap {
     this.openedMenu = true;
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    hookForm(feedbackOptions, function () {
-      self.formSubmitAction(feedbackOptions);
-    });
+    hookForm(
+      feedbackOptions,
+      function () {
+        self.formSubmitAction(feedbackOptions);
+      },
+      this.overrideLanguage
+    );
   }
 
   formSubmitAction(feedbackOptions) {

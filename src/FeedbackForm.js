@@ -1,7 +1,7 @@
 import MarkerManager from "./MarkerManager";
 import Session from "./Session";
 import { translateText } from "./Translation";
-import { setLoadingIndicatorProgress } from "./UI";
+import { loadIcon, setLoadingIndicatorProgress } from "./UI";
 
 const formPageClass = "bb-feedback-formpage";
 
@@ -100,8 +100,21 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
           formItem.name
         }" ${formItemData} type="hidden" />
         <div class="bb-feedback-capture-items">
-          <div class="bb-feedback-capture-item" data-type="screenshot">Mark the bug</div>
-          <div class="bb-feedback-capture-item" data-type="capture">Record screen</div>
+          <div class="bb-feedback-capture-item" data-type="screenshot">
+            ${loadIcon("screenshot")}
+            <span>Mark the bug</span>
+          </div>
+          <div class="bb-feedback-capture-item" data-type="capture">
+            ${loadIcon("camera")}
+            <span>Record screen</span>
+          </div>
+        </div>
+        <div class="bb-feedback-capture-item-selected">
+          <div class="bb-feedback-capture-item-selected-icon"></div>
+          <div class="bb-feedback-capture-item-selected-label"></div>
+          <div class="bb-feedback-capture-item-selected-action">${loadIcon(
+            "dismiss"
+          )}</div>
         </div>
       </div>`;
     }
@@ -490,7 +503,7 @@ const addDirtyFlagToFormElement = function (formElement) {
   formElement.setAttribute("bb-dirty", "true");
 };
 
-export const hookForm = function (formOptions, submitForm) {
+export const hookForm = function (formOptions, submitForm, overrideLanguage) {
   const form = formOptions.form;
   const singlePageForm = formOptions.singlePageForm;
 
@@ -555,8 +568,23 @@ export const hookForm = function (formOptions, submitForm) {
       };
     }
     if (formItem.type === "capture") {
+      const captureItemsContainer = document.querySelector(
+        `.bb-feedback-capture-items`
+      );
       const captureItems = document.querySelectorAll(
         `.bb-feedback-capture-item`
+      );
+      const selectedItem = document.querySelector(
+        ".bb-feedback-capture-item-selected"
+      );
+      const selectedItemLabel = document.querySelector(
+        ".bb-feedback-capture-item-selected-label"
+      );
+      const selectedItemIcon = document.querySelector(
+        ".bb-feedback-capture-item-selected-icon"
+      );
+      const selectedItemAction = document.querySelector(
+        ".bb-feedback-capture-item-selected-action"
       );
 
       for (var j = 0; j < captureItems.length; j++) {
@@ -564,7 +592,38 @@ export const hookForm = function (formOptions, submitForm) {
         const type = captureItem.getAttribute("data-type");
         captureItem.onclick = function () {
           const manager = new MarkerManager(type);
-          manager.show();
+          manager.show(function (success) {
+            if (!success) {
+              manager.clear();
+            } else {
+              var actionLabel = "";
+              if (type === "screenshot") {
+                actionLabel = translateText(
+                  "Marked screenshot added",
+                  overrideLanguage
+                );
+              } else {
+                actionLabel = translateText(
+                  "Screen recording added",
+                  overrideLanguage
+                );
+              }
+              selectedItemLabel.innerHTML = actionLabel;
+              selectedItemIcon.innerHTML =
+                type === "screenshot"
+                  ? loadIcon("screenshot")
+                  : loadIcon("camera");
+              captureItemsContainer.style.display = "none";
+              selectedItem.style.display = "flex";
+              selectedItemAction.onclick = function () {
+                manager.clear();
+                captureItemsContainer.style.display = "flex";
+                selectedItem.style.display = "none";
+
+                // asdf
+              };
+            }
+          });
         };
       }
     }
