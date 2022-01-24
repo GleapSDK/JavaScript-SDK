@@ -156,7 +156,7 @@ export default class MarkerManager {
     bugReportingEditor.className = "bb-capture-editor";
     bugReportingEditor.innerHTML = `
           <div class="bb-capture-editor-borderlayer"></div>
-          <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve">
+          <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
           <div class="bb-capture-mousetool"></div>
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
