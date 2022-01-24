@@ -127,7 +127,7 @@
 }
 
 .bb-feedback-capture-item-selected-label {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 19px;
   font-weight: 600;
   font-weight: normal;
@@ -719,7 +719,7 @@
   font-size: 16px;
   padding-top: 20px;
   text-align: center;
-  line-height: 19px;
+  line-height: 21px;
 }
 
 .bb-feedback-dialog-success {
@@ -1513,6 +1513,32 @@ textarea.bb-feedback-required {
   padding: 0px;
   margin: 0px;
   cursor: crosshair;
+}
+
+@keyframes bbRecIconContFade {
+  0% {
+    fill: #d1160f;
+  }
+  50% {
+    fill: #ff0000;
+  }
+  100% {
+    fill: #d1160f;
+  }
+}
+
+.bb-rec-on-circle {
+  animation-name: bbRecIconFade;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.bb-rec-on-cont {
+  animation-name: bbRecIconContFade;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
 .bb-capture-editor-drag-info {

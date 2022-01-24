@@ -84,6 +84,17 @@ export const injectStyledCSS = (
     .bb-tooltip {
       border-radius: ${formItemBorderRadius}px;
     }
+    @keyframes bbRecIconFade {
+      0% {
+        fill: transparent;
+      }
+      50% {
+        fill: ${hoverHoverColor};
+      }
+      100% {
+        fill: transparent;
+      }
+    }
     .bb-capture-preview-sendbutton {
       color: ${contrastColor};
       background-color: ${primaryColor};
@@ -639,8 +650,15 @@ export const loadIcon = function (name, color) {
   }
 
   if (name === "recorderoff") {
-    return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-    <path d="m600 60c-298.8 0-540 241.2-540 540s241.2 540 540 540 540-241.2 540-540-241.2-540-540-540zm237.6 741.6c0 20.398-15.602 36-36 36h-403.2c-20.398 0-36-15.602-36-36v-403.2c0-20.398 15.602-36 36-36h403.2c20.398 0 36 15.602 36 36z" fill="#E31810"/>
+    return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+      <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+          <g class="bb-rec-on-circle" fill="#EEEEEE" fill-rule="nonzero">
+              <path d="M625.5,0 C970.954111,0 1251,280.045889 1251,625.5 C1251,970.954111 970.954111,1251 625.5,1251 C280.045889,1251 0,970.954111 0,625.5 C0,280.045889 280.045889,0 625.5,0 Z M626,124 C348.753056,124 124,348.753056 124,626 C124,903.246944 348.753056,1128 626,1128 C903.246944,1128 1128,903.246944 1128,626 C1128,348.753056 903.246944,124 626,124 Z"></path>
+          </g>
+          <g class="bb-rec-on-cont" fill="#E31810" transform="translate(86.000000, 86.000000)" fill-rule="nonzero">
+              <path d="M540,0 C241.2,0 0,241.2 0,540 C0,838.8 241.2,1080 540,1080 C838.8,1080 1080,838.8 1080,540 C1080,241.2 838.8,0 540,0 Z M777.6,741.6 C777.6,761.998 761.998,777.6 741.6,777.6 L338.4,777.6 C318.002,777.6 302.4,761.998 302.4,741.6 L302.4,338.4 C302.4,318.002 318.002,302.4 338.4,302.4 L741.6,302.4 C761.998,302.4 777.6,318.002 777.6,338.4 L777.6,741.6 Z"></path>
+          </g>
+      </g>
   </svg>`;
   }
 
