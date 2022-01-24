@@ -20,6 +20,7 @@ import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
 import { ScrollStopper } from "./ScrollStopper";
 import { isLocalNetwork } from "./NetworkUtils";
+import { ScreenRecorder } from "./ScreenRecorder";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -106,6 +107,7 @@ class Gleap {
   eventListeners = {};
   feedbackActions = {};
   actionToPerform = undefined;
+  screenRecordingData = null;
   screenRecordingUrl = null;
 
   // Feedback button types
@@ -1239,16 +1241,21 @@ class Gleap {
         this.checkReplayLoaded(++retries);
       }, 1000);
     } else {
-      this.checkForScreenRecording(0);
+      this.checkForScreenRecording();
     }
   }
 
-  checkForScreenRecording(retries = 0) {
-    if (this.screenRecordingUrl === "uploading" && retries < 8) {
-      // Replay is not ready yet.
-      setTimeout(() => {
-        this.checkForScreenRecording(++retries);
-      }, 1000);
+  checkForScreenRecording() {
+    const self = this;
+    if (this.screenRecordingData != null) {
+      ScreenRecorder.uploadScreenRecording(this.screenRecordingData)
+        .then(function (recordingUrl) {
+          self.screenRecordingUrl = recordingUrl;
+          self.takeScreenshotAndSend();
+        })
+        .catch(function (err) {
+          self.takeScreenshotAndSend();
+        });
     } else {
       this.takeScreenshotAndSend();
     }

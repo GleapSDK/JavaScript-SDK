@@ -114,10 +114,9 @@ export class ScreenRecorder {
     }
   };
 
-  uploadScreenRecording = function () {
-    const self = this;
+  static uploadScreenRecording = function (screenRecordingData) {
     return new Promise(function (resolve, reject) {
-      if (self.file == null) {
+      if (screenRecordingData == null) {
         resolve(null);
       }
 
@@ -126,7 +125,7 @@ export class ScreenRecorder {
       Session.getInstance().injectSession(xhr);
 
       var formdata = new FormData();
-      formdata.append("file", self.file);
+      formdata.append("file", screenRecordingData);
 
       xhr.send(formdata);
       xhr.onerror = function () {
@@ -148,7 +147,7 @@ export class ScreenRecorder {
     document.querySelector(".bb-capture-preview video").src = null;
     this.file = null;
     this.rerender();
-  }
+  };
 
   handleRecord = function ({ stream, mimeType = "video/mp4" }) {
     const self = this;
@@ -177,24 +176,32 @@ export class ScreenRecorder {
       }
     };
 
+    stream.getVideoTracks()[0].onended = function () {
+      self.prepareRecording(recordedChunks, mimeType);
+    };
+
     this.mediaRecorder.onstop = function () {
-      const completeBlob = new Blob(recordedChunks, {
-        type: mimeType,
-      });
-
-      self.file = new File([completeBlob], "screen-recording.mp4", {
-        type: "video/mp4",
-      });
-
-      document.querySelector(".bb-capture-preview video").src =
-        URL.createObjectURL(completeBlob);
-
-      self.audioAvailable = true;
-      self.isRecording = false;
-      self.rerender();
+      self.prepareRecording(recordedChunks, mimeType);
     };
 
     this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
     self.rerender();
+  };
+
+  prepareRecording = function (recordedChunks, mimeType) {
+    const completeBlob = new Blob(recordedChunks, {
+      type: mimeType,
+    });
+
+    this.file = new File([completeBlob], "screen-recording.mp4", {
+      type: "video/mp4",
+    });
+
+    document.querySelector(".bb-capture-preview video").src =
+      URL.createObjectURL(completeBlob);
+
+    this.audioAvailable = true;
+    this.isRecording = false;
+    this.rerender();
   };
 }
