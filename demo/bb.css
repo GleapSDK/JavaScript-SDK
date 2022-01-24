@@ -109,13 +109,17 @@
 
 .bb-feedback-capture-item-selected {
   display: none;
+}
+
+.bb-feedback-capture-item-selected-button {
+  display: flex;
   font-family: "Inter", sans-serif;
   background-color: #f3f3f3;
   border-radius: 21px;
   box-sizing: border-box;
   padding: 5px;
   width: auto;
-  margin-top: 5px;
+  margin-top: 4px;
   margin-bottom: 0px;
   margin-right: auto;
   justify-content: flex-start;

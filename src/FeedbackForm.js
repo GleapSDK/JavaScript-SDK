@@ -134,11 +134,13 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         }
         </div>
         <div class="bb-feedback-capture-item-selected">
-          <div class="bb-feedback-capture-item-selected-icon"></div>
-          <div class="bb-feedback-capture-item-selected-label"></div>
-          <div class="bb-feedback-capture-item-selected-action">${loadIcon(
-            "dismiss"
-          )}</div>
+          <div class="bb-feedback-capture-item-selected-button">
+            <div class="bb-feedback-capture-item-selected-icon"></div>
+            <div class="bb-feedback-capture-item-selected-label"></div>
+            <div class="bb-feedback-capture-item-selected-action">${loadIcon(
+              "dismiss"
+            )}</div>
+          </div>
         </div>
       </div>`;
     }
