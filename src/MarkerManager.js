@@ -172,17 +172,16 @@ export default class MarkerManager {
                   ${loadIcon("mic")}
                   <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
-                <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
-                <div class="bb-capture-toolbar-spacer bb-capture-item-rec"></div>`
+                <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>`
                 : ""
             }
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
               ${loadIcon("pen")}
             </div>
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
               ${loadIcon("rect")}
             </div>
-            <div class="bb-capture-toolbar-item" data-type="colorpicker">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
             </div>
             ${
@@ -402,7 +401,6 @@ export default class MarkerManager {
       return;
     }
 
-    const nextButton = document.querySelector(".bb-capture-button-next");
     const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
     const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     const screenRecordingTooltip = document.querySelector(
@@ -411,6 +409,16 @@ export default class MarkerManager {
     const audioRecordingTooltip = document.querySelector(
       ".bb-tooltip-audio-recording"
     );
+    const captureEditor = document.querySelector(".bb-capture-editor");
+    const recordingClass = "bb-capture-editor-recording";
+    const notRecordingClass = "bb-capture-editor-notrecording";
+    if (this.screenRecorder.isRecording) {
+      captureEditor.classList.add(recordingClass);
+      captureEditor.classList.remove(notRecordingClass);
+    } else {
+      captureEditor.classList.add(notRecordingClass);
+      captureEditor.classList.remove(recordingClass);
+    }
 
     // Update UI.
     const dialog = document.querySelector(".bb-capture-toolbar");
@@ -507,6 +515,9 @@ export default class MarkerManager {
     );
     retryButton.onclick = function () {
       self.screenRecorder.clearPreview();
+      if (self.screenDrawer) {
+        self.screenDrawer.clear();
+      }
     };
 
     // Setup screen recorder

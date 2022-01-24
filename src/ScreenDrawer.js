@@ -74,6 +74,14 @@ export class ScreenDrawer {
     this.svgElement.addEventListener("touchend", this.mouseUp, false);
   }
 
+  clear() {
+    if (this.svgElement) {
+      while (this.svgElement.firstChild) {
+        this.svgElement.firstChild.remove();
+      }
+    }
+  }
+
   destroy() {
     this.svgElement.removeEventListener("mousedown", this.mouseDown);
     this.svgElement.removeEventListener("mousemove", this.mouseMove);
