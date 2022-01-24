@@ -222,20 +222,6 @@ export default class MarkerManager {
   }
 
   showNextStep = function () {
-    // Start the screen recording upload (optionally)
-    if (this.screenRecorder) {
-      this.screenRecorder.stopScreenRecording();
-      this.screenRecordingUrl = "uploading";
-      this.screenRecorder
-        .uploadScreenRecording()
-        .then(function (screenRecordingUrl) {
-          self.screenRecordingUrl = screenRecordingUrl;
-        })
-        .catch(function (err) {
-          self.screenRecordingUrl = null;
-        });
-    }
-
     // Adapt the UI
     this.showWidgetUI();
 
@@ -401,6 +387,11 @@ export default class MarkerManager {
       return;
     }
 
+    if (this.screenRecorder.file) {
+      Gleap.getInstance().screenRecordingData = this.screenRecorder.file;
+    }
+
+    const nextButton = document.querySelector(".bb-capture-button-next");
     const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
     const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     const screenRecordingTooltip = document.querySelector(
