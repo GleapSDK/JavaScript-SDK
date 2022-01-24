@@ -257,8 +257,6 @@ export const injectStyledCSS = (
     }
     .bb-feedback-dialog-header {
       background-color: ${headerColor};
-      border-top-left-radius: ${borderRadius}px;
-      border-top-right-radius: ${borderRadius}px;
     }
     .bb-form-progress-inner {
       background-color: ${headerColor}66;

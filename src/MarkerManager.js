@@ -11,6 +11,7 @@ export default class MarkerManager {
   screenRecorder = null;
   callback = null;
   screenDrawer = null;
+  escListener = null;
   overrideLanguage = Gleap.getInstance().overrideLanguage;
 
   constructor(type) {
@@ -32,6 +33,11 @@ export default class MarkerManager {
   showWidgetUI() {
     if (this.type === "screenshot") {
       ScrollStopper.enableScroll();
+    }
+
+    // Unregister ESC listener
+    if (this.escListener) {
+      document.removeEventListener("keydown", this.escListener);
     }
 
     // Cleanup mouse pointer
@@ -230,9 +236,28 @@ export default class MarkerManager {
     }
   };
 
+  registerEscapeListener() {
+    const self = this;
+    this.escListener = function (evt) {
+      evt = evt || window.event;
+      var isEscape = false;
+      if ("key" in evt) {
+        isEscape = evt.key === "Escape" || evt.key === "Esc";
+      } else {
+        isEscape = evt.keyCode === 27;
+      }
+      if (isEscape) {
+        self.dismiss();
+      }
+    };
+    document.addEventListener("keydown", this.escListener);
+  }
+
   show(callback) {
     this.callback = callback;
     const self = this;
+
+    this.registerEscapeListener();
 
     // Hide widget UI
     this.hideWidgetUI();
@@ -297,17 +322,21 @@ export default class MarkerManager {
     }
   }
 
+  dismiss() {
+    this.showWidgetUI();
+
+    if (this.callback) {
+      this.callback(false);
+    }
+  }
+
   setupToolbar() {
     const self = this;
 
     // Hook up dismiss button
     const dismissButton = document.querySelector(".bb-capture-dismiss");
     dismissButton.onclick = function () {
-      self.showWidgetUI();
-
-      if (self.callback) {
-        self.callback(false);
-      }
+      self.dismiss();
     };
 
     // Hook up send button

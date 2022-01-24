@@ -4,7 +4,6 @@
   margin: 0;
   padding: 0;
   border: none;
-  background-color: #fff;
 }
 
 .bb-feedback-button {
@@ -143,7 +142,8 @@
 
 .bb-feedback-capture-item-selected-icon svg {
   width: 18px;
-  height: auto;
+  height: 18px;
+  object-fit: contain;
 }
 
 .bb-feedback-capture-item-selected-action {
@@ -201,7 +201,8 @@
 
 .bb-feedback-capture-item svg {
   width: 18px;
-  height: auto;
+  height: 18px;
+  object-fit: contain;
 }
 
 .bb-feedback-button-icon {
@@ -311,7 +312,6 @@
 .bb-feedback-dialog {
   width: 90%;
   max-width: 365px;
-  background-color: #fff;
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 20px;
   box-sizing: border-box;
@@ -319,6 +319,7 @@
   right: 16px;
   bottom: 92px;
   z-index: 2147483105;
+  overflow: hidden;
 }
 
 .bb-feedback-button--bottomleft .bb-feedback-dialog {
@@ -358,8 +359,6 @@
 }
 
 .bb-feedback-dialog-header {
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -440,7 +439,8 @@
 
 .bb-feedback-dialog-header-back svg {
   width: 18px;
-  height: auto;
+  height: 18px;
+  object-fit: contain;
 }
 
 .bb-feedback-dialog-header-back--close svg {
@@ -734,7 +734,8 @@
 
 .bb-feedback-dialog-success svg {
   width: 30px;
-  height: auto;
+  height: 30px;
+  object-fit: contain;
 }
 
 .bb-feedback-dialog-body {

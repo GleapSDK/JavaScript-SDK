@@ -1333,7 +1333,6 @@ class Gleap {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
-    this.registerEscapeListener();
 
     // Initially check network
     if (isLocalNetwork()) {
@@ -1526,22 +1525,6 @@ class Gleap {
         dialogContainer.classList.remove(containerFocusClass);
       }
     }
-  }
-
-  registerEscapeListener() {
-    const self = this;
-    document.addEventListener("keydown", (evt) => {
-      evt = evt || window.event;
-      var isEscape = false;
-      if ("key" in evt) {
-        isEscape = evt.key === "Escape" || evt.key === "Esc";
-      } else {
-        isEscape = evt.keyCode === 27;
-      }
-      if (isEscape) {
-        self.closeGleap();
-      }
-    });
   }
 
   showSuccessMessage() {
