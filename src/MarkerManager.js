@@ -208,12 +208,12 @@ export default class MarkerManager {
             }
           </div>
           <div class="bb-capture-toolbar-item-colorpicker">
-            <div class="bb-capture-toolbar-item-color" data-color="#DB4035"></div>
-            <div class="bb-capture-toolbar-item-color" data-color="#FAD000"></div>
-            <div class="bb-capture-toolbar-item-color" data-color="#7ECC49"></div>
-            <div class="bb-capture-toolbar-item-color" data-color="#158FAD"></div>
-            <div class="bb-capture-toolbar-item-color" data-color="#4073FF"></div>
-            <div class="bb-capture-toolbar-item-color" data-color="#AF38EB"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#EB144C"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#FF6705"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#FDB903"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#9900EE"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#00D082"></div>
+            <div class="bb-capture-toolbar-item-color" data-color="#0A93E4"></div>
             <div class="bb-capture-toolbar-item-color" data-color="#CCCCCC"></div>
           </div>
           <div class="bb-capture-preview">
@@ -323,12 +323,16 @@ export default class MarkerManager {
             colorpicker.style.display = "none";
           }
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
-          const penTips = document.querySelectorAll(".bb-pen-tip");
-          for (var j = 0; j < penTips.length; j++) {
-            penTips[j].style.fill = hexColor;
-          }
+          setPenColor(hexColor);
         }
       };
+    }
+  }
+
+  static setPenColor(hexColor) {
+    const penTips = document.querySelectorAll(".bb-pen-tip");
+    for (var j = 0; j < penTips.length; j++) {
+      penTips[j].style.fill = hexColor;
     }
   }
 

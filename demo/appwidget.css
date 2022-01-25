@@ -1,3 +1,10 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+  border: none;
+}
+
 .bb-feedback-dialog-backdrop {
   display: none !important;
 }
@@ -13,13 +20,8 @@
 .bb-feedback-dialog {
   position: initial;
   animation-name: none;
-  box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 0px 15px 0px rgba(0, 0, 0, 0.2);
   width: calc(100% - 20px);
-  bottom: 0px;
-  left: 0px;
-  right: 0px;
-  border-bottom-left-radius: 0px !important;
-  border-bottom-right-radius: 0px !important;
 }
 
 .bb-feedback-dialog-header-close {
@@ -59,6 +61,10 @@
 }
 
 .bb-feedback-dialog-header-next svg {
+  fill: #192027;
+}
+
+.bb-feedback-dialog-header-next svg {
   width: 18px;
   height: auto;
   transform: rotate(180deg);
@@ -94,6 +100,7 @@
 
 .bb-drawing-tools {
   display: flex;
+  align-items: center;
 }
 
 .bb-drawing-tool-item {
@@ -121,35 +128,26 @@
   cursor: pointer;
 }
 
+.bb-drawing-tool-action svg {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
 .bb-drawing-tool-action--disabled {
   opacity: 0.2;
   cursor: not-allowed;
 }
 
 .bb-drawing-tool-spacer {
-  background-color: #ddd;
   width: 1px;
-  height: 44px;
+  height: 32px;
   margin: 0px 10px;
 }
 
-.bb-drawing-tool-item--active {
-  background-color: #398cfe;
-}
-
-.bb-drawing-tool-item svg,
-.bb-drawing-tool-item svg g {
-  fill: #192027;
-}
-
-.bb-drawing-tool-item--active svg,
-.bb-drawing-tool-item--active svg g {
-  fill: #fff;
-}
-
 .bb-drawing-tool-item svg {
-  width: 100%;
-  height: 100%;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
 }
 

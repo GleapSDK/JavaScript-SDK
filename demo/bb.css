@@ -563,6 +563,7 @@
 }
 
 .bb-feedback-multiplechoice-container {
+  font-family: "Inter", sans-serif;
   display: block;
   position: relative;
   margin-bottom: 12px;
