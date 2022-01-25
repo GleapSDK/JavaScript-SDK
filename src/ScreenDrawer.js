@@ -9,7 +9,7 @@ export class ScreenDrawer {
   buffer = [];
   startPoint = null;
   tool = "pen";
-  color = "#DB4035";
+  color = "#EB144C";
   mouseDown = null;
   mouseMove = null;
   mouseUp = null;
