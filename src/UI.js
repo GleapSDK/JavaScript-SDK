@@ -139,6 +139,7 @@ export const injectStyledCSS = (
     }
     .bb-feedback-capture-item-selected-action:hover {
       background-color: ${hoverHoverColor};
+      border-radius: ${formItemSmallBorderRadius}px;
     }
     .bb-capture-toolbar-item {
       border-radius: ${formItemBorderRadius}px;

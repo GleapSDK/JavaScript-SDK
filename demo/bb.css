@@ -154,10 +154,6 @@
   margin-left: 5px;
 }
 
-.bb-feedback-capture-item-selected-action:hover {
-  border-radius: 100%;
-}
-
 .bb-feedback-capture-item-selected-action svg {
   width: 16px;
   height: 16px;
