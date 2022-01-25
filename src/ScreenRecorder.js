@@ -15,7 +15,7 @@ export class ScreenRecorder {
 
   constructor(rerender) {
     this.rerender = rerender;
-    if (!navigator.mediaDevices) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
       this.available = false;
     }
 
@@ -30,7 +30,11 @@ export class ScreenRecorder {
 
   startScreenRecording = function () {
     const self = this;
-    if (!navigator.mediaDevices || this.isRecording) {
+    if (
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getDisplayMedia ||
+      this.isRecording
+    ) {
       this.available = false;
       this.rerender();
       return;

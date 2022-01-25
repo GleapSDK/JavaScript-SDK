@@ -43,6 +43,10 @@ export default class MarkerManager {
     // Cleanup mouse pointer
     this.cleanupMousePointer();
 
+    if (this.screenDrawer) {
+      this.screenDrawer.destroy();
+    }
+
     // Remove the toolbar UI
     const dialog = document.querySelector(".bb-capture-toolbar");
     if (dialog) {
@@ -182,6 +186,9 @@ export default class MarkerManager {
                 <div class="bb-capture-toolbar-item-spacer"></div>`
                 : ""
             }
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
+              ${loadIcon("undo")}
+            </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
               ${loadIcon("pen")}
             </div>
@@ -285,7 +292,9 @@ export default class MarkerManager {
     }
 
     // Hook up the drawing.
-    this.screenDrawer = new ScreenDrawer();
+    this.screenDrawer = new ScreenDrawer(
+      this.captureScreenDrawerRerender.bind(this)
+    );
 
     this.setupColorPicker();
     this.setupToolbar();
@@ -408,7 +417,36 @@ export default class MarkerManager {
             self.screenRecorder.startScreenRecording();
           }
         }
+        if (type === "undo") {
+          self.screenDrawer.removeLastAddedPathFromSvg();
+        }
       };
+    }
+  }
+
+  captureScreenDrawerRerender() {
+    if (!this.screenDrawer) {
+      return;
+    }
+
+    const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+    for (var i = 0; i < toolbarItems.length; i++) {
+      const toolbarItem = toolbarItems[i];
+      const type = toolbarItem.getAttribute("data-type");
+      switch (type) {
+        case "undo":
+          if (
+            this.screenDrawer.pathBuffer != null &&
+            this.screenDrawer.pathBuffer.length > 0
+          ) {
+            toolbarItem.style.opacity = 1;
+          } else {
+            toolbarItem.style.opacity = 0.3;
+          }
+          break;
+        default:
+          break;
+      }
     }
   }
 
