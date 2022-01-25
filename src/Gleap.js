@@ -713,7 +713,6 @@ class Gleap {
   ) {
     const instance = this.getInstance();
     const sessionInstance = Session.getInstance();
-
     if (!sessionInstance.ready) {
       return;
     }

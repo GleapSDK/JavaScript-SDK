@@ -178,7 +178,8 @@ export default class MarkerManager {
                   ${loadIcon("mic")}
                   <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
-                <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>`
+                <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
+                <div class="bb-capture-toolbar-item-spacer"></div>`
                 : ""
             }
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">

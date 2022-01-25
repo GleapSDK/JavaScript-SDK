@@ -81,6 +81,9 @@ export const injectStyledCSS = (
     .bb-capture-dismiss svg path {
       fill: ${contrastColor};
     }
+    .bb-capture-toolbar-item-spacer {
+      background-color: ${backgroundColorHover};
+    }
     .bb-tooltip {
       border-radius: ${formItemBorderRadius}px;
     }
@@ -137,9 +140,8 @@ export const injectStyledCSS = (
     .bb-feedback-capture-item-selected-action:hover {
       background-color: ${hoverHoverColor};
     }
-    .bb-capture-toolbar-item:first-of-type {
-      border-top-left-radius: ${formItemBorderRadius}px;
-      border-bottom-left-radius: ${formItemBorderRadius}px;
+    .bb-capture-toolbar-item {
+      border-radius: ${formItemBorderRadius}px;
     }
     .bb-capture-toolbar {
       background-color: ${backgroundColor};
@@ -323,7 +325,7 @@ export const createWidgetDialog = function (
 ) {
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = `<div class='bb-feedback-dialog ${appendClass}'>
+  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog ${appendClass}'>
       <div class="bb-feedback-dialog-header${
         back ? " bb-feedback-dialog-header--back" : ""
       }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
