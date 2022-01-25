@@ -77,6 +77,7 @@ export const injectStyledCSS = (
     }
     .bb-capture-dismiss {
       background-color: ${primaryColor};
+      border-bottom-left-radius: ${formItemSmallBorderRadius}px;
     }
     .bb-capture-dismiss svg path {
       fill: ${contrastColor};
@@ -541,8 +542,8 @@ export const loadIcon = function (name, color) {
 
   if (name === "dismiss") {
     return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-    <path d="m1089.5 228.38-117.85-117.85-371.62 371.62-371.62-371.62-117.85 117.85 371.62 371.62-371.62 371.62 117.85 117.85 371.62-371.62 371.62 371.62 117.85-117.85-371.62-371.62z" fill="#fff"/>
-  </svg>`;
+    <path d="m684 600 439.2-439.2c22.801-22.801 22.801-60 0-84s-60-22.801-84 0l-439.2 439.2-439.2-439.2c-22.801-22.801-60-22.801-84 0s-22.801 60 0 84l439.2 439.2-439.2 439.2c-22.801 22.801-22.801 60 0 84 12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801l439.2-439.2 439.2 439.2c12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801 22.801-22.801 22.801-60 0-84z" fill="#333"/>
+   </svg>`;
   }
 
   if (name === "screenshot") {
