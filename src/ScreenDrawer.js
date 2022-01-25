@@ -1,4 +1,5 @@
 export class ScreenDrawer {
+  rerender;
   svgElement = null;
   path = null;
   strPath;
@@ -13,9 +14,12 @@ export class ScreenDrawer {
   mouseMove = null;
   mouseUp = null;
   resizeListener = null;
+  pathBuffer = [];
 
-  constructor() {
+  constructor(rerender) {
     const self = this;
+
+    this.rerender = rerender;
 
     this.svgElement = document.querySelector(".bb-capture-svg");
     this.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
@@ -72,6 +76,10 @@ export class ScreenDrawer {
     this.svgElement.addEventListener("touchstart", this.mouseDown, false);
     this.svgElement.addEventListener("touchmove", this.mouseMove, false);
     this.svgElement.addEventListener("touchend", this.mouseUp, false);
+
+    setTimeout(() => {
+      this.rerender();
+    }, 100);
   }
 
   clear() {
@@ -86,6 +94,9 @@ export class ScreenDrawer {
     this.svgElement.removeEventListener("mousedown", this.mouseDown);
     this.svgElement.removeEventListener("mousemove", this.mouseMove);
     this.svgElement.removeEventListener("mouseup", this.mouseUp);
+    this.svgElement.removeEventListener("touchstart", this.mouseDown);
+    this.svgElement.removeEventListener("touchmove", this.mouseMove);
+    this.svgElement.removeEventListener("touchend", this.mouseUp);
     window.removeEventListener("resize", this.resizeListener);
   }
 
@@ -127,7 +138,7 @@ export class ScreenDrawer {
       this.path.setAttributeNS(null, "width", w);
       this.path.setAttributeNS(null, "height", h);
 
-      this.svgElement.appendChild(this.path);
+      this.appendPathToSvg(this.path);
     }
   }
 
@@ -152,7 +163,7 @@ export class ScreenDrawer {
     this.appendToBuffer(pt);
     this.strPath = "M" + pt.x + " " + pt.y;
     this.path.setAttribute("d", this.strPath);
-    this.svgElement.appendChild(this.path);
+    this.appendPathToSvg(this.path);
   }
 
   setTool(tool) {
@@ -224,6 +235,24 @@ export class ScreenDrawer {
     while (this.buffer.length > this.bufferSize) {
       this.buffer.shift();
     }
+  }
+
+  appendPathToSvg(path) {
+    this.svgElement.appendChild(path);
+    this.pathBuffer.push(path);
+    this.rerender();
+  }
+
+  removeLastAddedPathFromSvg() {
+    if (this.pathBuffer.length <= 0) {
+      return;
+    }
+
+    this.svgElement.removeChild(this.pathBuffer[this.pathBuffer.length - 1]);
+
+    this.pathBuffer.pop();
+
+    this.rerender();
   }
 
   fadeOutToolbar() {

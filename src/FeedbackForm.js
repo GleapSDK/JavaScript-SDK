@@ -118,7 +118,8 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         ${
           formItem.enableCapture &&
           typeof navigator !== "undefined" &&
-          navigator.mediaDevices
+          navigator.mediaDevices &&
+          navigator.mediaDevices.getDisplayMedia
             ? `<div class="bb-feedback-capture-item" data-type="capture">
         ${loadIcon("camera")}
         <span class="bb-item-title">${translateText(

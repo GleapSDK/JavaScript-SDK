@@ -1,1 +1,6473 @@
-!function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t():"function"==typeof define&&define.amd?define([],t):"object"==typeof exports?exports.Gleap=t():e.Gleap=t()}(this,(function(){return(()=>{"use strict";var e={d:(t,n)=>{for(var a in n)e.o(n,a)&&!e.o(t,a)&&Object.defineProperty(t,a,{enumerable:!0,get:n[a]})},o:(e,t)=>Object.prototype.hasOwnProperty.call(e,t)},t={};e.d(t,{default:()=>we});var n=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:400,n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:400;return new Promise((function(a,o){var i=0===e.indexOf("data:image/jpeg"),r=new Image;r.src=e,r.onerror=function(){o()},r.onload=function(){var e=document.createElement("canvas"),o=t,s=n;t>r.width/4&&(o=r.width/4),n>r.height/4&&(s=r.height/4);var c=r.width,l=r.height;c>l?c>o&&(l*=o/c,c=o):l>s&&(c*=s/l,l=s),e.width=c,e.height=l,e.getContext("2d").drawImage(r,0,0,c,l),a(i?e.toDataURL("image/jpeg",.7):e.toDataURL())}}))},a=function(){return!(!/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)&&!/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4)))},o=["//fonts.googleapis.com","//cdn.jsdelivr.net","//cdnjs.cloudflare.com","//ajax.googleapis.com","//use.typekit.net",".amazonaws.com","//jssdk.gleap.io",".gstatic.com"],i=function(e){if(!e)return!1;for(var t=0;t<o.length;t++)if(-1!==e.indexOf(o[t]))return!0;return!1},r=function(e,t){return n=e,a=/url\((.*?)\)/g,o=function(e){return new Promise((function(n,a){if(!e)return n(e);var o=e.substr(4,e.length-5).replaceAll("'","").replaceAll('"',"");if(0===o.indexOf("http")||0===o.indexOf("//")||0===o.indexOf("data"))return n(e);try{var i=o;return t&&(i=t+"/"+o),s(i).then((function(e){return n("url("+e+")")}))}catch(r){return n(e)}}))},new Promise((function(e,t){var i=[];n.replace(a,(function(e){for(var t=arguments.length,n=new Array(t>1?t-1:0),a=1;a<t;a++)n[a-1]=arguments[a];var r=o.apply(void 0,[e].concat(n));i.push(r)})),Promise.all(i).then((function(t){e(n.replace(a,(function(){return t.shift()})))})).catch((function(){t()}))}));var n,a,o},s=function(e){return new Promise((function(t,n){if(e){var a=new XMLHttpRequest;a.onload=function(){var e=new FileReader;e.onloadend=function(){t(e.result)},e.onerror=function(){n()},e.readAsDataURL(a.response)},a.onerror=function(e){t()},a.open("GET",e),a.responseType="blob",a.send()}else t()}))},c=function(e){return new Promise((function(t,a){if(e&&e.src){if(i(e.src))return t();var o=new XMLHttpRequest;o.onload=function(){var a=new FileReader;a.onloadend=function(){!function(e,t,a,o){n(e,500,500).then((function(e){t.src=e,a()})).catch((function(){console.warn("BB: Image resize failed."),a()}))}(a.result,e,t)},a.onerror=function(){t()},a.readAsDataURL(o.response)},o.onerror=function(e){t()};var r=e.src;o.open("GET",r),o.responseType="blob",o.send()}else t()}))},l=function(e,t,n,a){var o=null;t.ownerNode&&(o=e.querySelector('[bb-styleid="'+a+'"]'));try{if(o){var i=null;if(""!=n){var r=e.querySelector("head"),s=window.document.createElement("style");r.appendChild(s),s.type="text/css",s.styleSheet?s.styleSheet.cssText=n:s.appendChild(window.document.createTextNode(n)),i=s}else{var c=window.document.createElement("link");c.rel="stylesheet",c.type=t.type,c.href=t.href,c.media=t.media,i=c}i&&(o.parentNode.insertBefore(i,o),o.remove())}}catch(l){}},d=function(e,t){for(var n=[],a=function(){var e=document.styleSheets[o];i=null;try{e.cssRules?i=e.cssRules:e.rules&&(i=e.rules)}catch(u){}if(s="",i)for(c in i)i[c].cssText&&(s+=i[c].cssText);if(e&&e.ownerNode)if(""==s||t)n.push(Promise.resolve({styletext:s,stylesheet:e,styleId:e.ownerNode.getAttribute("bb-styleid")}));else{var a=document.getElementsByTagName("base");d=a.length?a[0].href.substr(location.origin.length,999):window.location.href,e.href&&(d=e.href);var l=d.substring(0,d.lastIndexOf("/"));n.push(r(s,l).then((function(t){return{styletext:t,stylesheet:e,styleId:e.ownerNode.getAttribute("bb-styleid")}})))}},o=0;o<document.styleSheets.length;o++){var i,s,c,d;a()}return Promise.all(n).then((function(t){if(t)for(var n=0;n<t.length;n++)l(e,t[n].stylesheet,t[n].styletext,t[n].styleId);return!0}))},u=function(e,t){return new Promise((function(n,a){return t?d(e,t).then((function(){n()})).catch((function(){n()})):function(e){for(var t=e.querySelectorAll("img"),n=[],a=0;a<t.length;a++){var o=t[a];n.push(c(o))}return Promise.all(n)}(e).then((function(){return d(e,t).then((function(){n()}))})).catch((function(){console.warn("Gleap: Failed with resolving local resources. Please contact the Gleap support team."),n()}))}))},b=function(e,t){return new Promise((function(n,o){for(var i=window.document.querySelectorAll("style, link"),r=0;r<i.length;++r)i[r].setAttribute("bb-styleid",r);var s,c,l,d=(s=window.document.documentElement,c=1,l=document.createDocumentFragment(),function e(t,n,a){var o=function(t,n,a){for(;t;)e(t,n,a),t=t.nextSibling},i=t.cloneNode();if(void 0!==i.setAttribute&&(a&&i.setAttribute("bb-shadow-child",a),t instanceof HTMLCanvasElement&&i.setAttribute("bb-canvas-data",t.toDataURL()),t instanceof HTMLCanvasElement&&i.setAttribute("bb-canvas-data",t.toDataURL())),t.nodeType==Node.ELEMENT_NODE){var r=t.tagName?t.tagName.toUpperCase():t.tagName;if("IFRAME"==r||"VIDEO"==r||"EMBED"==r||"IMG"==r||"SVG"==r){var s=0;s="border-box"===t.style.boxSizing?t.height+t.marginTop+t.marginBottom+t.bordorTop+t.borderBottom:t.height,i.setAttribute("bb-element",!0),i.setAttribute("bb-height",s)}if("DIV"==r&&(t.scrollTop>0||t.scrollLeft>0)&&(i.setAttribute("bb-scrollpos",!0),i.setAttribute("bb-scrolltop",t.scrollTop),i.setAttribute("bb-scrollleft",t.scrollLeft)),"SELECT"===r||"TEXTAREA"===r||"INPUT"===r){var l=t.value;"value"===t.getAttribute("gleap-ignore")&&(l=new Array(l.length+1).join("*")),i.setAttribute("bb-data-value",l),"checkbox"!==t.type&&"radio"!==t.type||!t.checked||i.setAttribute("bb-data-checked",!0)}}n.appendChild(i),t.shadowRoot&&(o(t.shadowRoot.firstChild,i,c),void 0!==i.setAttribute&&i.setAttribute("bb-shadow-parent",c),++c),o(t.firstChild,i)}(s,l),l),b=d.querySelectorAll("link[rel=import]");for(r=0;r<b.length;++r){var f=b[r];if(f&&f.childNodes&&f.childNodes.length>0){for(var h=f.childNodes;h.length>0;)f.parentNode.insertBefore(h[0],f);f.remove()}}var p=d.querySelectorAll("script, noscript");for(r=0;r<p.length;++r)p[r].remove();var g=d.querySelectorAll("base");for(r=0;r<g.length;++r)g[r].remove();var v=window.location.href.substring(0,window.location.href.lastIndexOf("/"))+"/",y=window.document.createElement("base");y.href=v;var m=d.querySelector("head");m.insertBefore(y,m.firstChild);var k=d.querySelectorAll(".bb-feedback-dialog-container, .bb-screenshot-editor-borderlayer");for(r=0;r<k.length;++r)k[r].remove();var w=d.querySelectorAll("[bb-element=true]");for(r=0;r<w.length;++r)w[r]&&(w[r].style.height=w[r].getAttribute("bb-height"));u(d,t).then((function(){var t=function(e){var t="",n=window.document.doctype;if(n&&(t="<!DOCTYPE "+n.name+(n.publicId?' PUBLIC "'+n.publicId+'"':"")+(!n.publicId&&n.systemId?" SYSTEM":"")+(n.systemId?' "'+n.systemId+'"':"")+">"),e&&e.childNodes&&e.childNodes.length>0)for(var a=0;a<e.childNodes.length;a++)e.childNodes[a]&&(t+=e.childNodes[a].outerHTML);return t}(d);n({html:t,baseUrl:v,x:e.x,y:e.y,width:window.innerWidth,height:window.innerHeight,isMobile:a()})}))}))},f=function(e,t){var n=ke.getInstance(),a=navigator.language;""!==t&&(a=t);for(var o={},i=Object.keys(n.customTranslation),r=0;r<i.length;r++){var s=i[r];a&&a.includes(s)&&n.customTranslation[s]&&(o=n.customTranslation[s])}return o[e]?o[e]:e||""};function h(e,t){return function(e){if(Array.isArray(e))return e}(e)||function(e,t){var n=e&&("undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"]);if(null==n)return;var a,o,i=[],r=!0,s=!1;try{for(n=n.call(e);!(r=(a=n.next()).done)&&(i.push(a.value),!t||i.length!==t);r=!0);}catch(c){s=!0,o=c}finally{try{r||null==n.return||n.return()}finally{if(s)throw o}}return i}(e,t)||function(e,t){if(!e)return;if("string"==typeof e)return p(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);"Object"===n&&e.constructor&&(n=e.constructor.name);if("Map"===n||"Set"===n)return Array.from(e);if("Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return p(e,t)}(e,t)||function(){throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}()}function p(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,a=new Array(t);n<t;n++)a[n]=e[n];return a}var g=function(e,t){3===(e=e.replace(/^#/,"")).length&&(e=e[0]+e[0]+e[1]+e[1]+e[2]+e[2]);var n=h(e.match(/.{2}/g),3),a=n[0],o=n[1],i=n[2],r=[parseInt(a,16)+t,parseInt(o,16)+t,parseInt(i,16)+t];a=r[0],o=r[1],i=r[2],a=Math.max(Math.min(255,a),0).toString(16),o=Math.max(Math.min(255,o),0).toString(16),i=Math.max(Math.min(255,i),0).toString(16);var s=(a.length<2?"0":"")+a,c=(o.length<2?"0":"")+o,l=(i.length<2?"0":"")+i;return"#".concat(s).concat(c).concat(l)},v=function(e){return(299*parseInt(e.substr(1,2),16)+587*parseInt(e.substr(3,2),16)+114*parseInt(e.substr(5,2),16))/1e3>=165?"#000000":"#ffffff"},y=function(e,t,n,a,o){var i=v(e),r=v(t),s=v(n),c=v(o),l="#ffffff"===c,d=g(o,l?100:-100),u=g(o,l?30:-15),b=g(o,l?70:-70);NaN!==(a=parseInt(a,10))&&void 0!==a||(a=20);var f=Math.round(.6*a),h=Math.round(1.05*a),p=Math.round(.4*a),y=Math.round(.25*a),m="\n    .bb-feedback-onetofive-button {\n      border-radius: ".concat(y,"px;\n    }\n    .bb-feedback-button-classic {\n      border-top-left-radius: ").concat(p,"px;\n      border-top-right-radius: ").concat(p,"px;\n    }\n    .bb-logo-logo--default path {\n      fill: ").concat(s,";\n    }\n    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {\n      fill: ").concat(r,";\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      border-radius: ").concat(p,"px;\n    }\n    .bb-feedback-dialog-header-back:hover {\n      background-color: ").concat(r,";\n      border-radius: ").concat(f,"px;\n    }\n    .bb-feedback-dialog-header-next {\n      background-color: ").concat(r,";\n    }\n    .bb-feedback-dialog-header-next span {\n      color: ").concat(t,";\n    }\n    .bb-feedback-dialog-header-next svg {\n      fill: ").concat(t,";\n    }\n    .bb-feedback-type {\n      border-radius: ").concat(f,"px;\n      background-color: ").concat(o,";\n    }\n    .bb-feedback-type-description,\n    .bb-feedback-poweredbycontainer span,\n    .bb-feedback-onetofive-description span {\n      color: ").concat(d,";\n    }\n    .bb-feedback-poweredbycontainer svg g {\n      fill: ").concat(d,";\n    }\n    .bb-feedback-type:hover {\n      background-color: ").concat(u,";\n    }\n    #bb-drawing-colorpopup {\n      background-color: ").concat(o,";\n    }\n    .bb-feedback-type-title,\n    .bb-feedback-form-description,\n    .bb-feedback-elementtitle,\n    .bb-feedback-multiplechoice-container,\n    .bb-feedback-dialog-info-text\n    {\n      color: ").concat(c,";\n    }\n    .bb-drawing-tool-item svg,\n    .bb-drawing-tool-item svg g,\n    .bb-drawing-tool-back svg,\n    .bb-drawing-tool-back svg g {\n      fill: ").concat(c,";\n    }\n    .bb-drawing-tool-spacer {\n      background-color: ").concat(u,";\n    }\n    .bb-feedback-dialog {\n      border-radius: ").concat(a,"px;\n      background-color: ").concat(o,";\n    }\n    .bb-screenshot-editor-drag-info {\n      color: ").concat(i,";\n      border-radius: ").concat(h,"px;\n    }\n    .bb-logo-arrowdown {\n      fill: ").concat(s,";\n    }\n    .bb-feedback-dialog-header-back svg {\n      fill: ").concat(r,";\n    }\n    .bb-feedback-dialog-header-back:hover svg {\n      fill: ").concat(t,";\n    }\n    .bb-feedback-dialog-header-close svg {\n      fill: ").concat(r,";\n    }\n    .bb-feedback-dialog-header-title,\n    .bb-feedback-dialog-header-title span {\n      color: ").concat(r,";\n    }\n    .bb-feedback-dialog-header-title-small {\n      color: ").concat(r,";\n    }\n    .bb-feedback-dialog-header-description {\n      color: ").concat(r,";\n    }\n    .bb-feedback-onetofive-button-active,\n    .bb-feedback-onetofive-button:hover {\n      background-color: ").concat(e,";\n      color: ").concat(i,";\n    }    \n    .bb-feedback-button-icon {\n        background-color: ").concat(n,";\n    }\n    .bb-feedback-multiplechoice-container:hover\n      input\n      ~ .bb-feedback-multiplechoice-checkmark {\n      border: 2px solid ").concat(e,";\n    }    \n    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {\n      background-color: ").concat(e,";\n      border: 2px solid ").concat(e,";\n    }\n    .bb-feedback-dialog-header-button {\n        color: ").concat(e,";\n    }\n    .bb-drawing-tool-item--active {\n      background-color: ").concat(e,";\n    }\n\n    .bb-drawing-tool-item--active svg,\n    .bb-drawing-tool-item--active svg g {\n      fill: ").concat(i,";\n    }\n    \n    .bb-screenshot-editor-borderlayer {\n        border-color: ").concat(e,";\n    }\n    .bb-feedback-button-classic {\n      background-color: ").concat(n,";\n      color: ").concat(s,";\n    }\n    .bb-screenshot-editor-dot {\n      background-color: ").concat(e,";\n    }\n    .bb-feedback-dialog-header {\n      background-color: ").concat(t,";\n      border-top-left-radius: ").concat(a,"px;\n      border-top-right-radius: ").concat(a,"px;\n    }\n    .bb-form-progress-inner {\n      background-color: ").concat(t,"66;\n    }\n    .bb-screenshot-editor-rectangle {\n      border-color: ").concat(e,";\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      background-color: ").concat(o,";\n      color: ").concat(c,";\n      border-color: ").concat(b,";\n    }\n    .bb-feedback-inputgroup textarea:focus {\n      border-color: ").concat(e,";\n    }\n    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {\n      border-color: ").concat(e,";\n    }\n    .bb-feedback-send-button {\n      color: ").concat(i,";\n      background-color: ").concat(e,";\n      border-radius: ").concat(h,"px;\n    }\n    .bb-screenshot-editor-drag-info {\n      background-color: ").concat(e,";\n    }\n    .bb-double-bounce1,\n    .bb-double-bounce2 {\n      background-color: ").concat(e,";\n    }\n    .bb-feedback-dialog-header-button-cancel {\n      background-color: ").concat(e,";\n    }\n    .bb-feedback-type-icon {\n      background-color: ").concat(e,';\n    }\n    .bb-feedback-inputgroup--privacy-policy\n    [type="checkbox"]:not(:checked)\n    + label:after,\n    .bb-feedback-inputgroup--privacy-policy\n    [type="checkbox"]:checked\n    + label:after {\n    color: ').concat(e,";\n    }\n    "),k=document.createElement("style");k.innerHTML=m,ke.appendNode(k)},m=function(e){var t=S("bblogo","#fff");return e&&(t='<img src="'.concat(e,'" alt="bb-logo" />')),t},k=function(e,t,n,a,o){var i=!(arguments.length>5&&void 0!==arguments[5])||arguments[5],r=arguments.length>6&&void 0!==arguments[6]?arguments[6]:"",s=document.createElement("div");s.className="bb-feedback-dialog-container",s.innerHTML='<div class="bb-feedback-dialog-backdrop"></div><div class=\'bb-feedback-dialog '.concat(r,"'>\n      <div class=\"bb-feedback-dialog-header").concat(o?" bb-feedback-dialog-header--back":"").concat(i?"":" bb-feedback-dialog-header--backhidden",'">\n        ').concat(o?'<div class="bb-feedback-dialog-header-back">\n        '.concat(S("arrowleft","#fff"),"\n        </div>"):'<div class="bb-feedback-dialog-header-logo">\n          '.concat(m(n),"\n        </div>"),'\n        <div class="bb-feedback-dialog-header-text">\n          <div class="bb-feedback-dialog-header-title">\n            ').concat(e,"\n          </div>\n          ").concat(null===t?"":'<div class="bb-feedback-dialog-header-description">\n          '.concat(t,"\n        </div>"),'\n        </div>\n        <div class="bb-feedback-dialog-header-close">\n          ').concat(S("close","#fff"),'\n        </div>\n      </div>\n      <div class="bb-feedback-dialog-body">\n        ').concat(a,'\n        <div class="bb-feedback-poweredbycontainer">\n          <span>Powered by</span>\n          <svg width="90px" height="32px" viewBox="0 0 90 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">\n                  <g transform="translate(0.653299, 0.000000)" fill="#59617D" fill-rule="nonzero">\n                      <path d="M16.7989119,8.32577189 L22.1014291,8.32577189 C21.4265888,3.43890649 17.1242771,0 11.5448484,0 C5.02513746,0 0,4.70586291 0,12.7178969 C0,20.5368768 4.69977222,25.3876017 11.6532254,25.3876017 C17.8836188,25.3876017 22.3303551,21.4418423 22.3303551,14.9380999 L22.3303551,11.8250016 L12.0027005,11.8250016 L12.0027005,15.7586204 L17.3052177,15.7586204 C17.2328883,18.823461 15.1479759,20.7661416 11.6773352,20.7661416 C7.76078035,20.7661416 5.29034525,17.8340271 5.29034525,12.6696392 C5.29034525,7.52939191 7.85721955,4.62139446 11.6291156,4.62139446 C14.3165389,4.62139446 16.1362435,6.00903014 16.7989119,8.32577189 Z"></path>\n                      <polygon points="30.2692671 0.337857389 25.1355185 0.337857389 25.1355185 25.0496341 30.2692671 25.0496341"></polygon>\n                      <path d="M41.7991346,25.4117422 C46.3785919,25.4117422 49.4634758,23.1793283 50.1865357,19.7404968 L45.4385438,19.426787 C44.9203002,20.8385398 43.5947294,21.5745684 41.883636,21.5745684 C39.3167617,21.5745684 37.6897014,19.8732229 37.6897014,17.1100453 L37.6897014,17.097975 L50.2951468,17.097975 L50.2951468,15.6862222 C50.2951468,9.38760404 46.486969,6.27448232 41.5943184,6.27448232 C36.1473765,6.27448232 32.6163443,10.1477732 32.6163443,15.8672059 C32.6163443,21.7435053 36.0991569,25.4117422 41.7991346,25.4117422 Z M37.6897014,13.9124785 C37.7983125,11.8008611 39.4010289,10.1115858 41.6785856,10.1115858 C43.9081568,10.1115858 45.4507158,11.7043223 45.4626536,13.9124785 L37.6897014,13.9124785 Z"></path>\n                      <path d="M57.9054165,25.3995548 C60.6410594,25.3995548 62.4125444,24.2049497 63.3163107,22.4795574 L63.4609695,22.4795574 L63.4609695,25.0496341 L68.3295103,25.0496341 L68.3295103,12.5489834 C68.3295103,8.13269445 64.593896,6.27448232 60.4722908,6.27448232 C56.0377263,6.27448232 53.121377,8.39817007 52.410255,11.7767205 L57.1582468,12.162852 C57.5077218,10.9320829 58.6043666,10.0271174 60.448181,10.0271174 C62.1955562,10.0271174 63.1957617,10.9079424 63.1957617,12.4283041 L63.1957617,12.5007023 C63.1957617,13.695284 61.9305825,13.8521272 58.7129777,14.1658604 C55.0494587,14.5037108 51.7595245,15.7344799 51.7595245,19.8732229 C51.7595245,23.5414364 54.3746184,25.3995548 57.9054165,25.3995548 Z M59.375646,21.8521143 C57.7970394,21.8521143 56.664347,21.1160622 56.664347,19.7043095 C56.664347,18.2563459 57.8571969,17.5444343 59.6649636,17.291029 C60.7857181,17.1341858 62.6173606,16.8687102 63.2320434,16.4584616 L63.2320434,18.4252828 C63.2320434,20.3679399 61.629327,21.8521143 59.375646,21.8521143 Z"></path>\n                      <path d="M71.2943133,32 L76.4280619,32 L76.4280619,22.0813791 L76.5846586,22.0813791 C77.2957806,23.6258111 78.8502774,25.3512737 81.8389562,25.3512737 C86.0567665,25.3512737 89.3467007,22.0089575 89.3467007,15.806878 C89.3467007,9.43586168 85.9121077,6.27448232 81.850894,6.27448232 C78.7538382,6.27448232 77.2716708,8.12062418 76.5846586,9.62891568 L76.3557325,9.62891568 L76.3557325,6.5158174 L71.2943133,6.5158174 L71.2943133,32 Z M76.3196849,15.7827375 C76.3196849,12.4765852 77.717585,10.3649677 80.2121299,10.3649677 C82.7548944,10.3649677 84.104575,12.5731005 84.104575,15.7827375 C84.104575,19.016515 82.7307846,21.2608586 80.2121299,21.2608586 C77.7416948,21.2608586 76.3196849,19.0889132 76.3196849,15.7827375 Z"></path>\n                  </g>\n              </g>\n          </svg>\n        </div>\n      </div>\n    </div>'),ke.appendNode(s);var c=ke.getInstance().buttonType;c===ke.FEEDBACK_BUTTON_BOTTOM_LEFT&&s.classList.add("bb-feedback-button--bottomleft"),c===ke.FEEDBACK_BUTTON_NONE&&s.classList.add("bb-feedback-button--disabled"),c!==ke.FEEDBACK_BUTTON_CLASSIC&&c!==ke.FEEDBACK_BUTTON_CLASSIC_LEFT&&c!==ke.FEEDBACK_BUTTON_CLASSIC_BOTTOM||s.classList.add("bb-feedback-button--classic"),c===ke.FEEDBACK_BUTTON_CLASSIC_LEFT&&s.classList.add("bb-feedback-button--classic-left");var l=document.querySelector(".bb-feedback-dialog-header-close");if(l.onclick=function(){l&&"t"===l.getAttribute("d")||ke.getInstance().closeGleap()},o){var d=document.querySelector(".bb-feedback-dialog-header-back");d.onclick=function(){d&&"t"===d.getAttribute("d")||o()}}return s},w=function(e,t,n,a,o,i,r,s){for(var c='<div class="bb-feedback-types">',l=0;l<e.length;l++){var d=e[l];c+='<div id="bb-feedback-type-'.concat(l,'" class="bb-feedback-type">\n        <div class="bb-feedback-type-icon" style="background-color: ').concat(d.color,';">\n          <img src="').concat(d.icon,'">\n        </div>\n        <div class="bb-feedback-type-text">\n          <div class="bb-feedback-type-title">').concat(f(d.title,t),'</div>\n          <div class="bb-feedback-type-description">').concat(f(d.description,t),"</div>\n        </div>\n      </div>")}var u=k(i,r,n,c+="</div>",null,!0,s?"bb-anim-fadeinfromback":"bb-anim-fadein"),b=function(){var t=l;document.getElementById("bb-feedback-type-".concat(t)).onclick=function(){u.remove(),e[t].action&&(ke.getInstance().closeGleap(),e[t].action()),e[t].actionFlow&&ke.startFeedbackFlow(e[t].actionFlow),o&&o()}};for(l=0;l<e.length;l++)b();L(a)},L=function(e){var t=document.querySelector(".bb-feedback-poweredbycontainer");e?t.style.display="none":t.onclick=function(){window.open("https://www.gleap.io/","_blank")}},C=function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:"main",n=window.document.querySelector(".bb-feedback-dialog-loading--".concat(t," .bb--progress-ring__circle")),a=213.628300444,o=a-e/100*a;n&&(n.style.strokeDasharray="".concat(a," ").concat(a),n.style.strokeDashoffset=o)},S=function(e,t){return"bblogo"===e?'<svg class="bb-logo-logo bb-logo-logo--default" width="127px" height="129px" viewBox="0 0 127 129" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">\n            <g transform="translate(-11.000000, -6.000000)">\n                <g transform="translate(11.000000, 6.000000)">\n                    <path d="M27.5507,32.306 C20.4495,41.0714 17.3437,52.8384 17.3438,64.1091 C17.3438,75.3799 20.4497,87.1469 27.5508,95.9123 C34.4039,104.372 45.6889,110.937 64.1725,110.937 C83.6599,110.937 93.3637,102.356 98.4673,94.1976 C102.058,88.4577 103.344,84.2626 103.805,81.4366 C104.114,79.5459 105.616,77.9841 107.531,77.9841 L117.938,77.9841 C119.853,77.9841 121.429,79.5376 121.265,81.4463 C120.835,86.4687 119.175,93.7981 113.171,103.396 C105.135,116.242 90.0723,128.281 64.1725,128.281 C41.0305,128.281 24.5652,119.779 14.0745,106.83 C3.83175,94.1866 -7.10542736e-15,78.2036 -7.10542736e-15,64.1092 C-7.10542736e-15,50.0147 3.83155,34.0317 14.0744,21.3884 C24.0327,9.09622 39.3744,0.811764004 60.7001,0.00243821374 C62.6145,-0.0702130963 64.1725,1.49027 64.1725,3.40601 L64.1725,13.8123 C64.1725,15.728 62.6176,17.2712 60.704,17.3608 C44.2594,18.1311 33.9643,24.3893 27.5507,32.306 Z"></path>\n                    <path d="M126.609,43.2966 C126.609,50.9596 120.397,57.1716 112.734,57.1716 C105.071,57.1716 98.8594,50.9596 98.8594,43.2966 C98.8594,35.6337 105.071,29.4216 112.734,29.4216 C120.397,29.4216 126.609,35.6337 126.609,43.2966 Z" id="Path" fill-rule="nonzero"></path>\n                </g>\n            </g>\n        </g>\n    </svg>':"arrowdown"===e?'<svg class="bb-logo-arrowdown" fill="'.concat(t,'" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">\n    <path d="m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z"/>\n   </svg>'):"arrowleft"===e?'<svg fill="'.concat(t,'" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">\n    <path d="m70.988 1.6211c2.1875-2.168 5.7344-2.168 7.9297 0 2.1836 2.168 2.1836 5.7227 0 7.8906l-46.016 40.445 46.016 40.5c2.1836 2.168 2.1836 5.668 0 7.8906-2.1953 2.168-5.7383 2.168-7.9297 0l-50.039-44.109c-1.168-1.168-1.668-2.7227-1.5898-4.2773-0.078125-1.5 0.42188-3.0547 1.5898-4.2227l50.039-44.109z" fill-rule="evenodd"/>\n   </svg>'):"close"===e?'<svg fill="'.concat(t,'" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">\n    <path d="m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z"/>\n   </svg>'):""},T=function(e){var t=document.querySelector(".bb-feedback-form"),n=document.querySelector(".bb-feedback-dialog-loading--main"),a=document.querySelector(".bb-feedback-dialog-header-back"),o=document.querySelector(".bb-feedback-dialog-header-close");e?(t.style.display="none",n.style.display="flex",a&&(a.setAttribute("d","t"),a.style.opacity="0.2"),o&&(o.setAttribute("d","t"),o.style.opacity="0.2")):(t.style.display="block",n.style.display="none",a&&(a.setAttribute("d","n"),a.style.opacity="1"),o&&(o.setAttribute("d","n"),o.style.opacity="1"))};function I(e){return(I="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e})(e)}function E(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function x(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}const R=function(){function e(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),x(this,"requestId",0),x(this,"requests",{}),x(this,"externalConsoleLogs",[]),x(this,"maxRequests",10),x(this,"filters",[]),x(this,"initialized",!1),x(this,"stopped",!1)}var t,n,a;return t=e,(n=[{key:"getRequests",value:function(){var e=this.externalConsoleLogs.concat(Object.values(this.requests));if(!this.filters||0===this.filters.length)return e;for(var t=0;t<e.length;t++){var n=e[t];if(n&&n.request&&n.request.headers)for(var a=0;a<this.filters.length;a++)delete n.request.headers[this.filters[a]];if(n&&n.request&&n.request.payload){var o=n.request.payload;try{o=JSON.parse(n.request.payload)}catch(r){}if(o){for(a=0;a<this.filters.length;a++)delete o[this.filters[a]];n.request.payload=JSON.stringify(o)}}if(n&&n.response&&n.response.responseText)try{var i=JSON.parse(n.response.responseText);for(a=0;a<this.filters.length;a++)delete i[this.filters[a]];n.response.responseText=JSON.stringify(i)}catch(r){}}return e}},{key:"setMaxRequests",value:function(e){this.maxRequests=e}},{key:"setStopped",value:function(e){this.stopped=e}},{key:"setFilters",value:function(e){e&&(this.filters=e)}},{key:"cleanRequests",value:function(){var e=Object.keys(this.requests);if(e.length>this.maxRequests)for(var t=e.slice(0,e.length-this.maxRequests),n=0;n<t.length;n++)delete this.requests[t[n]]}},{key:"calcRequestTime",value:function(e){if(e&&this.requests&&this.requests[e]){var t=this.requests[e].date;t&&(this.requests[e].duration=(new Date).getTime()-t.getTime())}}},{key:"calculateTextSize",value:function(e){return(new TextEncoder).encode(e).length/1024/1024}},{key:"fixPayload",value:function(e){if(null==e)return"{}";try{if(void 0!==("undefined"==typeof TextDecoder?"undefined":I(TextDecoder))&&ArrayBuffer.isView(e))return(new TextDecoder).decode(e)}catch(t){}return e}},{key:"start",value:function(){var e=this;if(!this.initialized){this.initialized=!0;var t=this;this.interceptNetworkRequests({onFetch:function(n,a){if(!e.stopped&&a&&e.requests){if(n.length>0&&void 0!==n[0]&&void 0!==n[0].url)e.requests[a]={url:n[0].url,date:new Date,request:{payload:"",headers:void 0!==n[0].headers?Object.fromEntries(n[0].headers.entries()):{}},type:void 0!==n[0].method?n[0].method:""};else if(n.length>=2&&n[1]){var o=n[1]&&n[1].method?n[1].method:"GET";e.requests[a]={request:{payload:t.fixPayload(n[1].body),headers:n[1].headers},type:o,url:n[0],date:new Date}}else e.requests[a]={url:n[0],date:new Date};e.cleanRequests()}},onFetchLoad:function(n,a){if(!e.stopped&&a&&e.requests&&e.requests[a]){try{e.requests[a].success=!0,e.requests[a].response={status:n.status,statusText:"",responseText:"<request_still_open>"},e.calcRequestTime(a)}catch(o){}n.text().then((function(o){e.requests[a].success=!0,e.requests[a].response={status:n.status,statusText:n.statusText,responseText:t.calculateTextSize(o)>.5?"<response_too_large>":o},e.calcRequestTime(a),e.cleanRequests()})).catch((function(t){e.cleanRequests()}))}},onFetchFailed:function(t,n){!e.stopped&&n&&e.requests&&e.requests[n]&&(e.requests[n].success=!1,e.calcRequestTime(n),e.cleanRequests())},onOpen:function(t,n){e.stopped||(t&&t.bbRequestId&&n.length>=2&&e.requests&&(e.requests[t.bbRequestId]={type:n[0],url:n[1],date:new Date}),e.cleanRequests())},onSend:function(t,n){e.stopped||(t&&t.bbRequestId&&e.requests&&e.requests[t.bbRequestId]&&(e.requests[t.bbRequestId].request={payload:e.fixPayload(n.length>0?n[0]:"{}"),headers:t.requestHeaders}),e.cleanRequests())},onError:function(t,n){if(!e.stopped&&e.requests&&t&&t.currentTarget&&t.currentTarget.bbRequestId&&e.requests[t.currentTarget.bbRequestId]){var a=t.currentTarget;e.requests[a.bbRequestId].success=!1,e.calcRequestTime(t.bbRequestId)}e.cleanRequests()},onLoad:function(t,n){if(!e.stopped){if(t&&t.currentTarget&&t.currentTarget.bbRequestId&&e.requests&&e.requests[t.currentTarget.bbRequestId]){var a=t.currentTarget,o=a.responseType,i="<"+o+">";""!==o&&"text"!==o||(i=e.calculateTextSize(a.responseText)>.5?"<response_too_large>":a.responseText),e.requests[a.bbRequestId].success=!0,e.requests[a.bbRequestId].response={status:a.status,statusText:a.statusText,responseText:i},e.calcRequestTime(a.bbRequestId)}e.cleanRequests()}}})}}},{key:"interceptNetworkRequests",value:function(e){var t,n=this,a=XMLHttpRequest.prototype.open,o=XMLHttpRequest.prototype.send;return XMLHttpRequest.prototype.wrappedSetRequestHeader=XMLHttpRequest.prototype.setRequestHeader,XMLHttpRequest.prototype.setRequestHeader=function(e,t){this.requestHeaders||(this.requestHeaders={}),this.requestHeaders&&this.requestHeaders.hasOwnProperty(e)||(this.requestHeaders[e]||(this.requestHeaders[e]=[]),this.requestHeaders[e].push(t),this.wrappedSetRequestHeader(e,t))},XMLHttpRequest.prototype.open=function(){return this.bbRequestId=++n.requestId,e.onOpen&&e.onOpen(this,arguments),e.onLoad&&this.addEventListener("load",e.onLoad.bind(e)),e.onError&&this.addEventListener("error",e.onError.bind(e)),a.apply(this,arguments)},XMLHttpRequest.prototype.send=function(){return e.onSend&&e.onSend(this,arguments),o.apply(this,arguments)},window.fetch&&(t=window.fetch,window.fetch=function(){var a=++n.requestId;return e.onFetch(arguments,a),t.apply(this,arguments).then((function(t){if(t&&"function"==typeof t.clone){var n=t.clone();e.onFetchLoad(n,a)}return t})).catch((function(t){throw e.onFetchFailed(t,a),t}))}),e}},{key:"blobToTextPromise",value:function(e){return new Promise((function(t,n){var a=new FileReader;a.onload=function(e){e&&e.target&&e.target.result?t(e.target.result):n()},a.onerror=function(e){n(e)},a.readAsText(e)}))}}])&&E(t.prototype,n),a&&E(t,a),e}();function O(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}function A(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}var q=function(){function e(t,n,a){var o=this;!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),this.win=t,this.node=n,this.rec=a,this.initialState={},this.initialActions=[],this.prepEvent=function(e){var t;return o.flushObserver(),(null===(t=e.target)||void 0===t?void 0:t.ReplayRecID)||0},this.mouseListener=function(e){var t=e.clientX,n=e.clientY,a=e.target,i=o.node;if(i.contains(a)){o.flushObserver();var r,s=i.getBoundingClientRect();switch(t-=s.left,n-=s.top,e.type){case"mousemove":r="m";break;case"mouseup":r="u";break;case"mousedown":r="n";break;default:throw new Error("Unknown event type: ".concat(e.type))}o.rec.actions.push(O({},r,[Math.round(t),Math.round(n)]))}},this.scrollListener=function(e){if(o.node.contains(e.target)){var t=o.prepEvent(e);t&&o.rec.pushScrollAction(t,e.target)}},this.mainScrollListener=function(){o.flushObserver(),o.rec.actions.push(O({},"x",[window.scrollX,window.scrollY]))},this.inputListener=function(e){if(o.node.contains(e.target)){var t=o.prepEvent(e);if(t&&"value"in e.target){var n=e.target.value;"password"===e.target.type&&n&&n.length&&(n=new Array(n.length+1).join("*")),"value"===e.target.getAttribute("gleap-ignore")&&(n=new Array(n.length+1).join("*")),o.rec.actions.push(O({},"i",[t,n]))}if(t&&"type"in e.target&&"checkbox"===e.target.type){var a=e.target.checked;o.rec.actions.push(O({},"z",[t,a]))}}},this.flushListener=function(e){if(o.node.contains(e.target)){var t=o.prepEvent(e);t&&o.rec.actions.push(O({},"f",t))}},this.canvasListener=function(e){if(o.node.contains(e.target)){var t=o.prepEvent(e);t&&o.rec.actions.push(O({},"c",[t,e.target.toDataURL(),"didDraw"]))}},this.focusListener=function(){},n.ownerDocument.ReplayRecInner=this;var i=[],r=this.rec.serializeNode(this.node,i);r&&(this.initialState=r,this.initialActions=i,this.observer=new MutationObserver(a.observerCallback),this.observer.observe(n,{attributes:!0,characterData:!0,childList:!0,subtree:!0}),this.mainScrollListener(),t.addEventListener("input",this.inputListener,{capture:!0,passive:!0}),t.addEventListener("mousemove",this.mouseListener,{capture:!0,passive:!0}),t.addEventListener("mousedown",this.mouseListener,{capture:!0,passive:!0}),t.addEventListener("mouseup",this.mouseListener,{capture:!0,passive:!0}),t.addEventListener("forceStyleFlush",this.flushListener,{capture:!0,passive:!0}),t.addEventListener("didDrawCanvas",this.canvasListener,{capture:!0,passive:!0}),t.addEventListener("focus",this.focusListener,{capture:!0,passive:!0}),t.addEventListener("scroll",this.mainScrollListener,{capture:!0,passive:!0}))}var t,n,a;return t=e,(n=[{key:"stop",value:function(){this.flushObserver(),this.observer.disconnect(),this.win.removeEventListener("input",this.inputListener,{capture:!0,passive:!0}),this.win.removeEventListener("mousemove",this.mouseListener,{capture:!0,passive:!0}),this.win.removeEventListener("mousedown",this.mouseListener,{capture:!0,passive:!0}),this.win.removeEventListener("mouseup",this.mouseListener,{capture:!0,passive:!0}),this.win.removeEventListener("forceStyleFlush",this.flushListener,{capture:!0,passive:!0}),this.win.removeEventListener("didDrawCanvas",this.canvasListener,{capture:!0,passive:!0}),this.win.removeEventListener("focus",this.focusListener,{capture:!0,passive:!0}),this.win.removeEventListener("scroll",this.mainScrollListener,{capture:!0,passive:!0}),this.rec.deleteAllReplayRecIDs(this.node)}},{key:"flushObserver",value:function(){this.rec.observerCallback(this.observer.takeRecords())}}])&&A(t.prototype,n),a&&A(t,a),e}();function D(e,t){var n="undefined"!=typeof Symbol&&e[Symbol.iterator]||e["@@iterator"];if(!n){if(Array.isArray(e)||(n=function(e,t){if(!e)return;if("string"==typeof e)return N(e,t);var n=Object.prototype.toString.call(e).slice(8,-1);"Object"===n&&e.constructor&&(n=e.constructor.name);if("Map"===n||"Set"===n)return Array.from(e);if("Arguments"===n||/^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n))return N(e,t)}(e))||t&&e&&"number"==typeof e.length){n&&(e=n);var a=0,o=function(){};return{s:o,n:function(){return a>=e.length?{done:!0}:{done:!1,value:e[a++]}},e:function(e){throw e},f:o}}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.")}var i,r=!0,s=!1;return{s:function(){n=n.call(e)},n:function(){var e=n.next();return r=e.done,e},e:function(e){s=!0,i=e},f:function(){try{r||null==n.return||n.return()}finally{if(s)throw i}}}}function N(e,t){(null==t||t>e.length)&&(t=e.length);for(var n=0,a=new Array(t);n<t;n++)a[n]=e[n];return a}function B(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function M(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}var F=function(){function e(){var t=this;!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),M(this,"fetchCSSResource",(function(e){return new Promise((function(t,n){if(e){var a=new XMLHttpRequest;a.onload=function(){var e=new FileReader;e.onloadend=function(){t(e.result)},e.onerror=function(){t()},e.readAsDataURL(a.response)},a.onerror=function(e){t()},a.open("GET",e),a.responseType="blob",a.send()}else t()}))})),M(this,"replaceAsync",(function(e,t,n){return new Promise((function(a,o){var i=[];e.replace(t,(function(e){for(var t=arguments.length,a=new Array(t>1?t-1:0),o=1;o<t;o++)a[o-1]=arguments[o];var r=n.apply(void 0,[e].concat(a));i.push(r)})),Promise.all(i).then((function(n){a(e.replace(t,(function(){return n.shift()})))})).catch((function(){o()}))}))})),M(this,"validateStylesheetResources",(function(e,n){var a=n.substring(0,n.lastIndexOf("/")),o=e.split(",");return 2!==o.length?Promise.reject():(e=atob(o[1]),delete o[1],t.replaceAsync(e,/url\((.*?)\)/g,(function(e){return new Promise((function(n,o){var i=e.substr(4,e.length-5).replaceAll("'","").replaceAll('"',"");if(0===i.indexOf("http")||0===i.indexOf("//")||0===i.indexOf("data"))return n(e);try{var r=i;return a&&(r=a+"/"+i),t.fetchCSSResource(r).then((function(t){return 0===i.indexOf("data:text/html")?n(e):n("url("+t+")")}))}catch(s){return n(e)}}))})).then((function(e){return o[0]+","+btoa(e)})))})),M(this,"progressResource",(function(e,a,o,i){e&&0===e.indexOf("data:text/css")?t.validateStylesheetResources(e,a).then((function(e){t.resourcesToResolve[a]=e,o()})):!e||0!==e.indexOf("data:image/jpeg")&&0!==e.indexOf("data:image/png")?(t.resourcesToResolve[a]=e,o()):n(e,500,500).then((function(e){t.resourcesToResolve[a]=e,o()}))})),M(this,"fetchItemResource",(function(e){var n=t;return new Promise((function(t,a){if(e){var o=new XMLHttpRequest;o.onload=function(){var i=new FileReader;i.onloadend=function(){n.progressResource(i.result,e,t,a)},i.onerror=function(){t()},i.readAsDataURL(o.response)},o.onerror=function(e){t()};var i=e;o.open("GET",i),o.responseType="blob",o.send()}else t()}))})),this.stopped=!1,this.startDate=Date.now(),this.node=document.documentElement,this.nextID=1,this.actions=[],this.lastActionTime=Date.now(),this.observerCallback=this.callback.bind(this),this.resourcesToResolve={},this.rootFrame=new q(window,this.node,this),this.evaluateFocus(),this.result=null,this.finalizingResult=!1}var t,o,r;return t=e,(o=[{key:"isFull",value:function(){return!!(this.actions&&this.actions.length>7e3)}},{key:"fetchImageResources",value:function(){for(var e=[],t=Object.keys(this.resourcesToResolve),n=0;n<t.length;n++)i(t[n])||e.push(this.fetchItemResource(t[n]));return Promise.all(e)}},{key:"stop",value:function(){var e=this,t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];if(this.stopped=!0,this.rootFrame){var n={startDate:this.startDate,initialState:this.rootFrame.initialState,initialActions:this.rootFrame.initialActions,actions:this.actions,baseUrl:window.location.origin,width:window.innerWidth,height:window.innerHeight,resourcesToResolve:this.resourcesToResolve,isMobile:a()};if(this.rootFrame.stop(),this.rootFrame=null,this.finalizingResult=!0,t)return this.fetchImageResources().then((function(){e.cleanupAfterStop(n)}));this.cleanupAfterStop(n)}else this.rootFrame=null}},{key:"cleanupAfterStop",value:function(e){this.cleanupResources(),this.result=e,this.finalizingResult=!1}},{key:"cleanupResources",value:function(){for(var e=Object.keys(this.resourcesToResolve),t=0;t<e.length;t++)"--"===this.resourcesToResolve[e[t]]&&delete this.resourcesToResolve[e[t]]}},{key:"evaluateFocus",value:function(){this.rootFrame.flushObserver()}},{key:"allowAttribute",value:function(e,t){switch(t){case"srcdoc":if("IFRAME"===e.tagName)return!1;break;case"title":return!1}return!0}},{key:"pushScrollAction",value:function(e,t,n){var a=n||this.actions,o=t.elementScrolledIntoView;if(o){var i={};if(o.ReplayRecID){var r="elementScrolledIntoViewOffset"in t?t.elementScrolledIntoViewOffset:null;i.s=[e,o.ReplayRecID,r]}else{if("bottom"!==o)throw new Error("Unknown scrolledIntoView: ".concat(o));i.s=[e,o]}a.push(i)}}},{key:"serializeNode",value:function(e,t){if("ReplayRecID"in e)return null;var n=this.nextID++,a={id:n};switch(e.ReplayRecID=n,e.nodeType){case Node.ELEMENT_NODE:var o=e.tagName;switch(o){case"INPUT":case"TEXTAREA":var i={},r=e.value;e.type&&"password"===e.type&&r&&r.length&&(r=new Array(r.length+1).join("*")),"value"===e.getAttribute("gleap-ignore")&&(r=new Array(r.length+1).join("*")),i.i=[n,r],t.push(i);var s=e.ownerDocument.ReplayRecInner.scrollListener;e.addEventListener("scroll",s,{passive:!0});break;case"PRE":case"DIV":if(e.classList.contains("bb-hidden"))return delete e.ReplayRecID,null;var c=e.ownerDocument.ReplayRecInner.scrollListener;e.addEventListener("scroll",c,{passive:!0});break;case"SCRIPT":case"LINK":delete e.ReplayRecID;var l=e.getAttribute("rel");if(e&&e.href&&(e.href.includes(".css")||l&&l.includes("stylesheet"))){this.resourcesToResolve[e.getAttribute("href")]="--";break}if(l&&"import"===l)break;return null;case"CANVAS":var d={};d.c=[n,e.toDataURL()],t.push(d)}a[""]=o;var u,b={},f=!1,h=D(e.attributes);try{for(h.s();!(u=h.n()).done;){var p=u.value,g=p.name;this.allowAttribute(e,g)&&(b[g]=p.value,f=!0)}}catch(O){h.e(O)}finally{h.f()}f&&(a.a=b,a.a&&a.a.src&&"SOURCE"!==o&&"IFRAME"!==o&&this.optionallyAddAttribute("src",a.a.src));var v,y=[],m=D(e.childNodes);try{for(m.s();!(v=m.n()).done;){var k=v.value,w=this.serializeNode(k,t);w&&y.push(w)}}catch(O){m.e(O)}finally{m.f()}y.length>0&&(a.c=y),(e.scrollLeft||e.scrollTop)&&this.pushScrollAction(n,e,t);break;case Node.TEXT_NODE:case Node.CDATA_SECTION_NODE:var L=e.parentNode;if(e.parentNode&&L.tagName&&"STYLE"===L.tagName&&L.ownerDocument){var C=L.ownerDocument.styleSheets;if(C)for(var S=0;S<C.length;S++){var T=C[S];if(T.ownerNode&&T.ownerNode.ReplayRecID&&L.ReplayRecID===T.ownerNode.ReplayRecID){var I=null;if(T.cssRules?I=T.cssRules:T.rules&&(I=T.rules),I){var E="";for(var x in I)I[x].cssText&&(E+=I[x].cssText);a.d=E}}}}var R=e.data;R.length>0&&!a.d&&(a.d=R);break;case Node.PROCESSING_INSTRUCTION_NODE:case Node.COMMENT_NODE:break;default:throw delete e.ReplayRecID,new Error("Bad node ".concat(e))}return a}},{key:"delay",value:function(e){this.lastActionTime-=1e3*e}},{key:"deleteAllReplayRecIDs",value:function(e){delete e.ReplayRecID;var t=e.ownerDocument.ReplayRecInner.scrollListener;e.removeEventListener("scroll",t,{passive:!0});for(var n=e.firstChild;n;n=n.nextSibling)n.ReplayRecID&&this.deleteAllReplayRecIDs(n)}},{key:"optionallyAddAttribute",value:function(e,t){if("src"===e&&t){var n=t;0!==n.indexOf("data")&&(this.resourcesToResolve[n]="--")}}},{key:"callback",value:function(e,t){var n=Date.now();if(n>this.lastActionTime){var a={};a.o=n-this.lastActionTime,this.actions.push(a)}this.lastActionTime=Date.now();try{var o,i=D(e);try{for(i.s();!(o=i.n()).done;){var r=o.value;if(r.target.ReplayRecID&&"childList"===r.type){var s,c=D(r.removedNodes);try{for(c.s();!(s=c.n()).done;){var l=s.value,d=l.ReplayRecID;if(d){var u={};u.v=d,this.actions.push(u),this.deleteAllReplayRecIDs(l)}}}catch(R){c.e(R)}finally{c.f()}}}}catch(R){i.e(R)}finally{i.f()}var b,f=[],h=D(e);try{for(h.s();!(b=h.n()).done;){var p=b.value,g=p.target,v=g.ReplayRecID;if(v)switch(p.type){case"attributes":var y=p.attributeName;if(this.allowAttribute(g,y)){var m={};m.r=[v,y,g.getAttribute(y)],"SOURCE"!==g.tagName&&this.optionallyAddAttribute(y,g.getAttribute(y)),this.actions.push(m)}break;case"characterData":var k={};g.nodeType===Node.TEXT_NODE&&(k.t=[v,g.data]),this.actions.push(k);break;case"childList":p.addedNodes.length>0&&!g.ReplayRecNodesAdded&&(g.ReplayRecNodesAdded=!0,f.push(g))}}}catch(R){h.e(R)}finally{h.f()}for(var w=0,L=f;w<L.length;w++){var C=L[w];delete C.ReplayRecNodesAdded;for(var S=C.lastChild;S;S=S.previousSibling)if(!S.ReplayRecID){var T={},I=[],E=this.serializeNode(S,I);if(E){var x=S.nextSibling;T.p=[C.ReplayRecID,x?x.ReplayRecID:null,E,I],this.actions.push(T)}}}}catch(O){throw O}}}])&&B(t.prototype,o),r&&B(t,r),e}();function P(e,t){var n=Object.keys(e);if(Object.getOwnPropertySymbols){var a=Object.getOwnPropertySymbols(e);t&&(a=a.filter((function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable}))),n.push.apply(n,a)}return n}function U(e){for(var t=1;t<arguments.length;t++){var n=null!=arguments[t]?arguments[t]:{};t%2?P(Object(n),!0).forEach((function(t){H(e,t,n[t])})):Object.getOwnPropertyDescriptors?Object.defineProperties(e,Object.getOwnPropertyDescriptors(n)):P(Object(n)).forEach((function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}))}return e}function _(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function H(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}var j=function(){function e(){var t=this;!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),H(this,"apiUrl","https://api.gleap.io"),H(this,"widgetUrl","https://widget.gleap.io"),H(this,"sdkKey",null),H(this,"session",{gleapId:null,gleapHash:null,name:"",email:""}),H(this,"ready",!1),H(this,"onSessionReadyListener",[]),H(this,"setOnSessionReady",(function(e){t.ready?e():t.onSessionReadyListener.push(e)})),H(this,"injectSession",(function(e){e&&t.session&&(e.setRequestHeader("Api-Token",t.sdkKey),e.setRequestHeader("Gleap-Id",t.session.gleapId),e.setRequestHeader("Gleap-Hash",t.session.gleapHash))})),H(this,"clearSession",(function(){var e=!(arguments.length>0&&void 0!==arguments[0])||arguments[0];try{localStorage.removeItem("gleap-id"),localStorage.removeItem("gleap-hash")}catch(n){}t.session={id:null,hash:null,type:null,name:"",email:""},e&&t.startSession()})),H(this,"validateSession",(function(e){t.session=e,t.ready=!0})),H(this,"startSession",(function(){var e=t,n=new XMLHttpRequest;n.open("POST",e.apiUrl+"/sessions"),n.setRequestHeader("Content-Type","application/json;charset=UTF-8"),n.setRequestHeader("Api-Token",e.sdkKey);try{var a=localStorage.getItem("gleap-id"),o=localStorage.getItem("gleap-hash");a&&o&&(n.setRequestHeader("Gleap-Id",a),n.setRequestHeader("Gleap-Hash",o))}catch(i){}n.onerror=function(t){e.clearSession(!1)},n.onreadystatechange=function(t){if(n.readyState===XMLHttpRequest.DONE)if(200===n.status||201===n.status)try{var a=JSON.parse(n.responseText);try{localStorage.setItem("gleap-id",a.gleapId),localStorage.setItem("gleap-hash",a.gleapHash)}catch(i){}if(e.validateSession(a),e.onSessionReadyListener.length>0)for(var o=0;o<e.onSessionReadyListener.length;o++)e.onSessionReadyListener[o]();e.onSessionReadyListener=[]}catch(i){}else e.clearSession(!1)},n.send(JSON.stringify({}))})),H(this,"identifySession",(function(e,n){var a=t;return new Promise((function(o,i){t.setOnSessionReady((function(){var t=new XMLHttpRequest;t.open("POST",a.apiUrl+"/sessions/identify"),t.setRequestHeader("Content-Type","application/json;charset=UTF-8"),t.setRequestHeader("Api-Token",a.sdkKey);try{var r=localStorage.getItem("gleap-id"),s=localStorage.getItem("gleap-hash");r&&s&&(t.setRequestHeader("Gleap-Id",r),t.setRequestHeader("Gleap-Hash",s))}catch(c){}t.onerror=function(){i()},t.onreadystatechange=function(e){if(t.readyState===XMLHttpRequest.DONE)if(200===t.status||201===t.status)try{var n=JSON.parse(t.responseText);try{localStorage.setItem("gleap-id",n.gleapId),localStorage.setItem("gleap-hash",n.gleapHash)}catch(c){}a.validateSession(n);var r=document.querySelector("#bb-user-name");r&&n.name&&(r.textContent=n.name),o(n)}catch(c){i(c)}else a.clearSession(!1),i()},t.send(JSON.stringify(U(U({},n),{},{userId:e})))}))}))}))}var t,n,a;return t=e,a=[{key:"getInstance",value:function(){return this.instance||(this.instance=new e),this.instance}}],(n=null)&&_(t.prototype,n),a&&_(t,a),e}();H(j,"instance",void 0);var z="bb-feedback-formpage",G=function(e,t,n){return void 0===e?"":'<div class="bb-feedback-elementtitle">'.concat(f(e,t)).concat(n?"<span>*</span>":"","</div>")},V=function(e,t){return void 0===e||0===e.length?"":'<div class="bb-feedback-form-description">'.concat(f(e,t),"</div>")},X=function(e){return void 0===e?"":"".concat(z," ").concat(z,"-").concat(e)},W=function(e,t,n){var a=e===t-1;return'<div class="bb-feedback-inputgroup bb-feedback-inputgroup-button '.concat(X(e),'">\n      <div class="bb-feedback-send-button bb-feedback-next-btn-').concat(e,'" bb-form-page="').concat(e,'">').concat(f(a?"Submit":"Next",n),"</div>\n    </div>")},K=function(e,t){for(var n,a=e.form,o='<div class="bb-form-progress"><div class="bb-form-progress-inner"></div></div>',i=0;i<a.length;i++){var r=a[i];if(!r)break;var s=r.page,c='bb-form-page="'.concat(s,'" bb-form-item="').concat(encodeURIComponent(JSON.stringify(r)),'"');if("text"===r.type&&(o+='<div class="bb-feedback-inputgroup '.concat(X(s),'">\n      ').concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n          <input class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' type="').concat(r.inputtype,'" placeholder="').concat(f(r.placeholder,t),'" />\n      </div>')),"upload"===r.type){var l="";r.restrictions&&r.restrictions.length>0&&(l='accept="'.concat(r.restrictions,'"')),o+='<div class="bb-feedback-inputgroup '.concat(X(s),'">\n      ').concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n      <div class="bb-feedback-dialog-loading bb-feedback-dialog-loading--').concat(r.name,'">\n        <svg\n          class="bb--progress-ring"\n          width="120"\n          height="120">\n          <circle\n            class="bb--progress-ring__circle"\n            stroke="').concat(Gleap.getInstance().mainColor,'"\n            stroke-width="6"\n            fill="transparent"\n            r="34"\n            cx="60"\n            cy="60"/>\n        </svg>\n      </div>\n      <input class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' type="hidden" />\n        <input class="bb-feedback-formdata bb-form-fileupload-').concat(r.name,'" type="file" ').concat(l,' />\n        <span class="bb-feedback-filesizeinfo bb-feedback-filesizeinfo-').concat(r.name,'">').concat(f("The file you chose exceeds the file size limit of 3MB.",t),"</span>\n      </div>")}if("textarea"===r.type&&(o+='<div class="bb-feedback-inputgroup '.concat(X(s),'">\n      ').concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n          <textarea class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' placeholder="').concat(f(r.placeholder,t),'"></textarea>\n        </div>')),"privacypolicy"===r.type&&(o+='<div class="bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy '.concat(X(s),'">\n        <input id="gleap-privacy-policy" ').concat(c,' class="bb-feedback-').concat(r.name,'" type="checkbox" required />\n        <label for="gleap-privacy-policy" class="bb-feedback-inputgroup--privacy-policy-label">').concat(f("I read and accept the ",t),'<a id="bb-privacy-policy-link" href="').concat(r.url,'" target="_blank">').concat(f("privacy policy",t),"</a>.</label>\n      </div>")),"rating"===r.type&&(o+='<div class="bb-feedback-rating '.concat(X(s)," bb-feedback-rating-").concat(r.name,'" ').concat(c,'">\n      ').concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n      <input class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' type="hidden" />\n          <ul class="bb-feedback-emojigroup">\n            <li class="bb-feedback-angry" data-value="0">\n              <div>\n                <svg class="bb-feedback-eye bb-feedback-left">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-eye bb-feedback-right">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-mouth">\n                    <use xlink:href="#mouth">\n                </svg>\n              </div>\n            </li>\n            <li class="bb-feedback-sad" data-value="2.5">\n              <div>\n                <svg class="bb-feedback-eye bb-feedback-left">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-eye bb-feedback-right">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-mouth">\n                    <use xlink:href="#mouth">\n                </svg>\n              </div>\n            </li>\n            <li class="bb-feedback-ok" data-value="5">\n                <div></div>\n            </li>\n            <li class="bb-feedback-good" data-value="7.5">\n              <div>\n                <svg class="bb-feedback-eye bb-feedback-left">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-eye bb-feedback-right">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-mouth">\n                    <use xlink:href="#mouth">\n                </svg>\n              </div>\n            </li>\n            <li class="bb-feedback-happy" data-value="10">\n              <div>\n                <svg class="bb-feedback-eye bb-feedback-left">\n                    <use xlink:href="#eye">\n                </svg>\n                <svg class="bb-feedback-eye bb-feedback-right">\n                    <use xlink:href="#eye">\n                </svg>\n              </div>\n          </li>\n        </ul>\n        <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">\n            <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 7 4" id="eye">\n                <path d="M1,1 C1.83333333,2.16666667 2.66666667,2.75 3.5,2.75 C4.33333333,2.75 5.16666667,2.16666667 6,1"></path>\n            </symbol>\n            <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 7" id="mouth">\n                <path d="M1,5.5 C3.66666667,2.5 6.33333333,1 9,1 C11.6666667,1 14.3333333,2.5 17,5.5"></path>\n            </symbol>\n        </svg>\n        </div>')),"onetofive"===r.type){var d=function(e,t){return'<div class="bb-feedback-onetofive-button" data-value="'.concat(t,'">').concat(t,"</div>")};o+='<div class="bb-feedback-onetofive '.concat(X(s)," bb-feedback-onetofive-").concat(r.name,'" ').concat(c,'">\n      ').concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n      <input class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' type="hidden" />\n        <div class="bb-feedback-onetofive-buttons">\n          ').concat(d(0,1),"\n          ").concat(d(0,2),"\n          ").concat(d(0,3),"\n          ").concat(d(0,4),"\n          ").concat(d(0,5),'\n        </div>\n        <div class="bb-feedback-onetofive-description"><span>').concat(f(r.lowestValueLabel,t),"</span><span>").concat(f(r.highestValueLabel,t),"</span></div>\n      </div>")}if("multiplechoice"===r.type&&r.choices&&r.choices.length>0){for(var u=function(e,t){return'<label class="bb-feedback-multiplechoice-container" data-value="'.concat(t,'">').concat(t,'\n        <input type="radio" name="').concat(e.name,'" />\n        <span class="bb-feedback-multiplechoice-checkmark"></span>\n      </label>')},b="",h=0;h<r.choices.length;h++)b+=u(r,r.choices[h]);o+='<div class="bb-feedback-multiplechoice '.concat(X(s)," bb-feedback-multiplechoice-").concat(r.name,'" ').concat(c,">\n      ").concat(V(r.description,t),"\n      ").concat(G(r.title,t,r.required),'\n      <input class="bb-feedback-formdata bb-feedback-').concat(r.name,'" ').concat(c,' type="hidden" />\n      ').concat(b,"\n      </div>")}(a[i+1]&&a[i+1].page!==s||i+1===a.length)&&("rating"!==(n=r.type)&&"onetofive"!==n)&&(o+=W(s,e.pages,t))}return o},Z=function(e){return/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(String(e).toLowerCase())},J=function(e){var t=!(arguments.length>1&&void 0!==arguments[1])||arguments[1],n=!0,a=document.querySelector(".bb-feedback-".concat(e.name));if(!a)return!1;var o=a.getAttribute("bb-dirty"),i=t&&"true"===o;return"text"!==e.type&&"textarea"!==e.type||!e.required||(a.value&&""!==a.value?a.classList.remove("bb-feedback-required"):(i&&a.classList.add("bb-feedback-required"),n=!1)),"text"===e.type&&"email"===e.inputtype&&e.required&&(Z(a.value)?a.classList.remove("bb-feedback-required"):(i&&a.classList.add("bb-feedback-required"),n=!1)),"upload"===e.type&&e.required&&(a.value&&""!==a.value?a.parentElement.classList.remove("bb-feedback-required"):(i&&a.parentElement.classList.add("bb-feedback-required"),n=!1)),"rating"===e.type&&e.required&&(a.value&&""!==a.value?a.parentElement.classList.remove("bb-feedback-required"):(i&&a.parentElement.classList.add("bb-feedback-required"),n=!1)),"onetofive"===e.type&&e.required&&(a.value&&""!==a.value?a.parentElement.classList.remove("bb-feedback-required"):(i&&a.parentElement.classList.add("bb-feedback-required"),n=!1)),"multiplechoice"===e.type&&e.required&&(a.value&&""!==a.value?a.parentElement.classList.remove("bb-feedback-required"):(i&&a.parentElement.classList.add("bb-feedback-required"),n=!1)),"privacypolicy"===e.type&&e.required&&(a.checked?a.parentElement.classList.remove("bb-feedback-required"):(i&&a.parentElement.classList.add("bb-feedback-required"),n=!1)),n},Y=function(e,t){var n=document.querySelector(".bb-form-progress-inner");if(n&&t>0){var a=Math.round((e+1)/t*100);a>100&&(a=100),n.style.width="".concat(a,"%")}},$=function(e,t,n){te(e)&&(Y(e+1,t),e===t-1?n():Q(e+1))},Q=function(e){for(var t=document.querySelectorAll(".".concat(z)),n=0;n<t.length;n++)t[n]&&(t[n].style.display="none");var a=document.querySelectorAll(".".concat(z,"-").concat(e));for(n=0;n<a.length;n++)a[n]&&(a[n].style.display="flex")},ee=function(e){e.setAttribute("bb-dirty","true")},te=function(e){for(var t=!(arguments.length>1&&void 0!==arguments[1])||arguments[1],n=!0,a=document.querySelectorAll('[bb-form-page="'.concat(e,'"]')),o=0;o<a.length;o++){var i=a[o];if(i&&i.getAttribute("bb-form-item")){var r=JSON.parse(decodeURIComponent(i.getAttribute("bb-form-item")));J(r,t)||(n=!1)}}var s=document.querySelector(".bb-feedback-next-btn-".concat(e));return s&&(n?(s.removeAttribute("disabled"),s.classList.remove("bb-feedback-send-button--disabled")):(s.setAttribute("disabled","true"),s.classList.add("bb-feedback-send-button--disabled"))),n},ne=function(e){var t,n,a,o,i,r;t=function(t,n){e(t)},a=(n={interval:750,limit:4}).interval,o=n.limit,i=1,r=setInterval((function(){i=1}),a),document.addEventListener("click",(function e(n){var a,s,c;i===o&&t((s=""!==(a=n.target).className?"."+a.className:"",c=""!==a.id?"#"+a.id:"",[a.nodeName,s,c].join(" ")),(function(){clearInterval(r),document.removeEventListener("click",e)})),i++}))},ae=function(e,t,n,a,o){var i=document.createElement("div");i.className="bb-feedback-dialog-container",i.innerHTML='<div class="bb-feedback-dialog-backdrop"></div><div class=\'bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadeinright\'>\n    <div class="bb-feedback-dialog-header bb-feedback-dialog-header--back">\n      <div class="bb-feedback-dialog-header-back '.concat(!o&&"bb-feedback-dialog-header-back--close",'">\n        ').concat(S(o?"arrowleft":"close","#fff"),'\n      </div>\n      <div class="bb-feedback-dialog-header-text">\n          <div class="bb-feedback-dialog-header-title-small">').concat(f("Mark the bug",a),'</div>\n      </div>\n      <div class="bb-feedback-dialog-header-next">\n        <span>').concat(f("Next",a),"</span>\n        ").concat(S("arrowleft","#000"),'\n      </div>\n    </div>\n    <div class="bb-feedback-dialog-body">\n        <div class="bb-screenshot-editor-canv">\n            <canvas id="bb-screenshot-editor-canvas" />\n        </div>\n        <div class="bb-drawing-container">\n            <div class="bb-drawing-tools">\n              <div class="bb-drawing-tool-item bb-drawing-tool-item--active" data-tool="pen">\n                <svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n                  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">\n                      <g transform="translate(0.000263, -0.000166)" fill="#000000" fill-rule="nonzero">\n                          <path d="M45.5117372,6.58111838e-05 C41.6679372,-0.0115531888 37.9805372,1.51576581 35.2697372,4.23846581 L4.1017372,35.4104658 C1.4650372,38.0315658 -0.0115628024,41.5940658 6.81945382e-05,45.3088658 L6.81945382e-05,59.999935 L14.6911372,59.999935 C18.4059372,60.0115848 21.9684372,58.5350658 24.5895372,55.8982658 L55.7615372,24.7302658 C58.4763372,22.0114658 59.9998372,18.3279658 59.9998372,14.4842658 C59.9959312,10.6444658 58.4686372,6.96086581 55.7537372,4.24226581 C53.0349372,1.52746581 49.3514372,6.58111838e-05 45.5117372,6.58111838e-05 L45.5117372,6.58111838e-05 Z M20.3397372,51.6601658 C18.8397372,53.1562658 16.8085372,53.9999658 14.6913372,53.9999658 L5.9999372,53.9999658 L5.9999372,45.3085658 C5.9999372,43.1874658 6.8397772,41.1523658 8.3397372,39.6483658 L31.8787372,16.1213658 L43.8787372,28.1213658 L20.3397372,51.6601658 Z M51.5117372,20.4881658 L48.1211372,23.8787658 L36.1211372,11.8787658 L39.5117372,8.48816581 C41.0820372,6.80846581 43.2695372,5.83976581 45.5703372,5.80066581 C47.8672372,5.76160381 50.0859372,6.66004581 51.7148372,8.28506581 C53.3398372,9.91396581 54.2382372,12.1327658 54.1992372,14.4295658 C54.1601742,16.7303658 53.1914372,18.9178658 51.5117372,20.4881658 L51.5117372,20.4881658 Z" id="Shape"></path>\n                      </g>\n                  </g>\n                </svg>\n              </div>\n              <div class="bb-drawing-tool-item bb-drawing-tool-item--last" data-tool="blur">\n                <svg width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">\n                  <path d="m86.5 42.5c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-10 38c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm-27 40c-9.3984 0-17-7.6016-17-17s7.6016-17 17-17 17 7.6016 17 17-7.6016 17-17 17zm9-40c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-12c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-18 12c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-12c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-18 66c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm-10 34c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm0-18c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm28 30c2.1992 0 4 1.8008 4 4s-1.8008 4-4 4-4-1.8008-4-4 1.8008-4 4-4zm0 12c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2zm18-12c2.1992 0 4 1.8008 4 4s-1.8008 4-4 4-4-1.8008-4-4 1.8008-4 4-4zm0 12c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2zm28-28c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2z" fill-rule="evenodd"/>\n                </svg>\n              </div>\n              <div class="bb-drawing-tool-spacer"></div>\n              <div id="bb-drawing-color" style="background-color: #EB144C">\n                <div id="bb-drawing-colorpopup">\n                  <div class="bb-drawing-coloritem bb-drawing-coloritem--active" data-color="#EB144C"></div>\n                  <div class="bb-drawing-coloritem" data-color="#FF6705"></div>\n                  <div class="bb-drawing-coloritem" data-color="#FDB903"></div>\n                  <div class="bb-drawing-coloritem" data-color="#9900EE"></div>\n                  <div class="bb-drawing-coloritem" data-color="#00D082"></div>\n                  <div class="bb-drawing-coloritem" data-color="#0A93E4"></div>\n                </div>\n              </div>\n              <div class="bb-drawing-tool-spacer"></div>\n              <div class="bb-drawing-tool-action bb-drawing-tool-action--disabled bb-drawing-tool-back">\n                <svg width="62px" height="60px" viewBox="0 0 62 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n                  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">\n                    <g transform="translate(-0.000500, 0.001926)" fill="#000000" fill-rule="nonzero">\n                      <path d="M28.0005,51.6270739 C24.9653,51.0684839 22.0825,49.8731739 19.5396,48.1192739 L13.8208,53.8380739 C17.9536,57.0060739 22.8403,59.0333739 28.0008,59.7286739 L28.0005,51.6270739 Z" id="Path"></path>\n                      <path d="M2.2705,33.9980739 C2.96581,39.1582739 4.9932,44.0450739 8.1611,48.1780739 L13.8799,42.4592739 C12.126,39.9162739 10.9307,37.0334739 10.3721,33.9983739 L2.2705,33.9980739 Z" id="Path"></path>\n                      <path d="M61.7305,33.9980739 L53.6289,33.9980739 C53.07031,37.0332739 51.875,39.9160739 50.1211,42.4589739 L55.8399,48.1777739 C59.0079,44.0449739 61.0352,39.1582739 61.7305,33.9977739 L61.7305,33.9980739 Z" id="Path"></path>\n                      <path d="M4.0005,24.9980739 L24.0005,24.9980739 L24.0005,16.9980739 L14.27,16.9980739 C17.6762,12.3613739 22.7622,9.24417393 28.442,8.31057393 C34.1178,7.38088393 39.934,8.70901393 44.645,12.0175739 C49.352,15.3222739 52.5786,20.3417739 53.6294,25.9975739 L61.731,25.9975739 C60.6646,18.0834739 56.4888,10.9235739 50.129,6.09957393 C43.7657,1.27147393 35.746,-0.818426068 27.836,0.290973932 C19.9298,1.39647393 12.793,5.61127393 8,11.9979739 L8,0.997973932 L-3.55271368e-15,0.997973932 L-3.55271368e-15,20.9979739 C-3.55271368e-15,22.0604739 0.42188,23.0760739 1.1719,23.8260739 C1.92192,24.5760739 2.9375,24.9979739 4,24.9979739 L4.0005,24.9980739 Z" id="Path"></path>\n                      <path d="M36.0005,51.6270739 L36.0005,59.7286739 C41.1607,59.0333639 46.0475,57.0059739 50.1805,53.8380739 L44.4617,48.1192739 C41.9187,49.8731739 39.0359,51.0684739 36.0008,51.6270739 L36.0005,51.6270739 Z" id="Path"></path>\n                    </g>\n                  </g>\n                </svg>\n              </div>\n            </div>\n        </div>\n    </div>\n</div>'),document.body.appendChild(i),setTimeout((function(){var e=document.querySelector(".bb-feedback-dialog-drawing");e&&e.classList.remove("bb-anim-fadeinright")}),500);var r=document.querySelector(".bb-drawing-tool-back"),s=document.getElementById("bb-screenshot-editor-canvas"),c=s.getContext("2d"),l="#EB144C",d="pen",u=null,b=[],h=[];function p(){return s.width/s.offsetWidth}function g(){var e=p();"pen"===d?(c.lineWidth=6*e,c.strokeStyle=l,c.lineCap="round"):(c.lineWidth=34*e,c.strokeStyle="#000",c.lineCap="round"),b.push({t:"t",lw:c.lineWidth,ss:c.strokeStyle})}function v(){var e="bb-drawing-tool-action--disabled";h.length>0?r.classList.remove(e):r.classList.add(e)}var y=function(){var e=Math.max(document.documentElement.clientWidth||0,window.innerWidth||0),t=Math.max(document.documentElement.clientHeight||0,window.innerHeight||0),n=0,a=Math.min(e-60,700),o=Math.min(t-200,700),i=s.width,r=s.height;i>a&&(r*=n=a/i,i*=n),r>o&&(i*=n=o/r,r*=n),s.style.width="".concat(i,"px"),s.style.height="".concat(r,"px")};r.addEventListener("click",(function(){!function(){h.pop(),c.drawImage(u,0,0);for(var e=0;e<h.length;e++)for(var t=h[e],n=0;n<t.length;n++){var a=t[n];"t"===a.t&&(c.lineWidth=a.lw,c.strokeStyle=a.ss,c.lineCap="round"),"m"===a.t&&(c.beginPath(),c.lineTo(a.x,a.y)),"l"===a.t&&(c.lineTo(a.x,a.y),c.stroke())}g(),v()}()})),document.querySelector(".bb-feedback-dialog-header-back").addEventListener("click",(function(){window.removeEventListener("resize",y),n()})),document.querySelector(".bb-feedback-dialog-header-next").addEventListener("click",(function(){window.removeEventListener("resize",y),t(s.toDataURL("image/png"))}));var m=document.getElementById("bb-drawing-color"),k=document.getElementById("bb-drawing-colorpopup");k.style.display="none",m.addEventListener("click",(function(){"none"===k.style.display?k.style.display="flex":k.style.display="none"}));for(var w=document.querySelectorAll(".bb-drawing-tool-item"),L=function(e){for(var t="bb-drawing-tool-item--active",n=0;n<w.length;n++){var a=w[n];a.getAttribute("data-tool")===e?a.classList.add(t):a.classList.remove(t)}d=e,g()},C=function(){var e=w[T],t=e.getAttribute("data-tool");e.addEventListener("click",(function(){L(t)}))},T=0;T<w.length;T++)C();var I="bb-drawing-coloritem--active",E=document.querySelectorAll(".bb-drawing-coloritem"),x=function(){var e=E[T],t=e.getAttribute("data-color");e.style.backgroundColor=t,e.addEventListener("click",(function(){for(var n=0;n<E.length;n++)E[n].classList.remove(I);l=t,m.style.backgroundColor=t,e.classList.add(I),L("pen"),g()}))};for(T=0;T<E.length;T++)x();(u=new Image).onload=function(){c.canvas.width=this.width,c.canvas.height=this.height,y(),c.drawImage(this,0,0),g()},u.src=e,window.addEventListener("resize",y);var R=!0;function O(e){var t=p();c.beginPath();var n=(e.pageX-s.offsetLeft)*t,a=(e.pageY-s.offsetTop)*t;c.lineTo(n,a),b.push({t:"m",x:n,y:a}),R=!1}function A(e){if(!R){var t=p(),n=(e.pageX-s.offsetLeft)*t,a=(e.pageY-s.offsetTop)*t;c.lineTo(n,a),c.stroke(),b.push({t:"l",x:n,y:a})}}function q(e){R||(A(e),h.push(b),b=[],v(),R=!0)}s.addEventListener("touchstart",(function(e){O(e.touches[0])}),!1),s.addEventListener("touchmove",(function(e){A(e.touches[0]),e.preventDefault()}),!1),s.addEventListener("touchend",(function(e){q(e.changedTouches[0])}),!1),s.addEventListener("mousedown",O,!1),s.addEventListener("mousemove",A,!1),s.addEventListener("mouseup",q,!1)};function oe(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function ie(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}var re=function(){function e(){var t=this;!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),ie(this,"eventArray",[]),ie(this,"streamedEventArray",[]),ie(this,"eventMaxLength",500),ie(this,"lastUrl",void 0),ie(this,"startEventStream",(function(){var e=t,n=1500;j.getInstance().ready&&e.streamedEventArray&&e.streamedEventArray.length>0&&(e.streamEvents(),n=3e3),setTimeout((function(){e.startEventStream()}),n)})),ie(this,"streamEvents",(function(){if(j.getInstance().ready){var e=new XMLHttpRequest;e.open("POST",j.getInstance().apiUrl+"/sessions/stream"),e.setRequestHeader("Content-Type","application/json;charset=UTF-8"),j.getInstance().injectSession(e),e.onerror=function(e){},e.onreadystatechange=function(t){if(e.readyState===XMLHttpRequest.DONE&&(200===e.status||201===e.status))try{var n=JSON.parse(e.responseText);ke.getInstance().performAction(n)}catch(a){}},e.send(JSON.stringify({events:t.streamedEventArray})),t.streamedEventArray=[]}}))}var t,n,a;return t=e,a=[{key:"getInstance",value:function(){return this.instance||(this.instance=new e),this.instance}}],(n=[{key:"start",value:function(){this.startEventStream(),this.startPageListener()}},{key:"startPageListener",value:function(){this.logEvent("sessionStarted");var e=this;setInterval((function(){var t=window.location.href;t&&t!==e.lastUrl&&(e.lastUrl=t,e.logEvent("pageView",{page:t}))}),1e3)}},{key:"logEvent",value:function(e,t){var n={name:e,date:new Date};t&&(n.data=pe(t)),this.eventArray.push(n),this.streamedEventArray.push(n),this.eventArray.length>this.eventMaxLength&&this.eventArray.shift(),this.streamedEventArray.length>this.eventMaxLength&&this.streamedEventArray.shift()}}])&&oe(t.prototype,n),a&&oe(t,a),e}();ie(re,"instance",void 0);var se,ce,le,de=function e(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e)};function ue(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}function be(e,t){var n=Object.keys(e);if(Object.getOwnPropertySymbols){var a=Object.getOwnPropertySymbols(e);t&&(a=a.filter((function(t){return Object.getOwnPropertyDescriptor(e,t).enumerable}))),n.push.apply(n,a)}return n}function fe(e){for(var t=1;t<arguments.length;t++){var n=null!=arguments[t]?arguments[t]:{};t%2?be(Object(n),!0).forEach((function(t){he(e,t,n[t])})):Object.getOwnPropertyDescriptors?Object.defineProperties(e,Object.getOwnPropertyDescriptors(n)):be(Object(n)).forEach((function(t){Object.defineProperty(e,t,Object.getOwnPropertyDescriptor(n,t))}))}return e}function he(e,t,n){return t in e?Object.defineProperty(e,t,{value:n,enumerable:!0,configurable:!0,writable:!0}):e[t]=n,e}le=function(){return new Promise((function(e){var t=j.getInstance(),n=new XMLHttpRequest;n.open("GET",t.widgetUrl+"/widget/"+t.sdkKey+"/config"),n.setRequestHeader("Content-Type","application/json;charset=UTF-8"),t.injectSession(n),n.onerror=function(){e()},n.onreadystatechange=function(t){if(n.readyState===XMLHttpRequest.DONE){if(200===n.status||201===n.status)try{var a=JSON.parse(n.responseText),o=a.flowConfig,i=a.projectActions;if(o.logo&&o.logo.length>0&&ke.setLogoUrl(o.logo),o.color&&ke.setStyles({primaryColor:o.color,headerColor:o.headerColor,buttonColor:o.buttonColor,borderRadius:o.borderRadius,backgroundColor:o.backgroundColor?o.backgroundColor:"#FFFFFF"}),o.hideBranding&&ke.enablePoweredBy(),o.enableReplays&&ke.enableReplays(o.enableReplays),ke.enableShortcuts(!!o.enableShortcuts),o.enableNetworkLogs&&ke.enableNetworkLogger(),o.networkLogPropsToIgnore&&ke.setNetworkLogFilters(o.networkLogPropsToIgnore),o.enableConsoleLogs||ke.disableConsoleLogOverwrite(),void 0!==o.enableCrashDetector&&o.enableCrashDetector&&ke.enableCrashDetector(!0,o.enableCrashDetector),void 0!==o.enableRageClickDetector&&o.enableRageClickDetector&&ke.enableRageClickDetector(o.enableRageClickDetector),o.customTranslations&&ke.setCustomTranslation(o.customTranslations),void 0!==o.feedbackButtonPosition&&o.feedbackButtonPosition.length>0&&ke.setButtonType(o.feedbackButtonPosition),void 0!==o.widgetButtonText&&o.widgetButtonText.length>0&&ke.setFeedbackButtonText(o.widgetButtonText),void 0!==o.hideWavingHandAfterName&&o.hideWavingHandAfterName&&ke.setWelcomeIcon(""),void 0!==o.hideUsersName&&o.hideUsersName&&ke.setShowUserName(!1),o.widgetInfoTitle&&o.widgetInfoTitle.length>0&&ke.setWidgetInfo({title:o.widgetInfoTitle}),o.widgetInfoSubtitle&&o.widgetInfoSubtitle.length>0&&ke.setWidgetInfo({subtitle:o.widgetInfoSubtitle}),o.widgetInfoDialogSubtitle&&o.widgetInfoDialogSubtitle.length>0&&ke.setWidgetInfo({dialogSubtitle:o.widgetInfoDialogSubtitle}),o.enableMenu&&o.menuItems&&o.menuItems.length>0){for(var r=[],s=function(e){var t=o.menuItems[e],n=null,a=null;"OPEN_INTERCOM"===t.actionType?a=function(){Intercom("showNewMessage")}:"REDIRECT_URL"===t.actionType?a=t.actionOpenInNewTab?function(){window.open(t.actionBody,"_blank").focus()}:function(){window.location.href=t.actionBody}:"CUSTOM_ACTION"===t.actionType?a=function(){ke.triggerCustomAction(t.actionBody)}:n=t.actionType,null==n&&null==a||(l={title:t.title,description:t.description,icon:t.icon,color:t.color},n&&(l.actionFlow=n),a&&(l.action=a),r.push(l))},c=0;c<o.menuItems.length;c++){var l;s(c)}ke.setMenuOptions(r)}i&&ke.setFeedbackActions(i),o.buttonLogo&&o.buttonLogo.length>0&&ke.setButtonLogoUrl(o.buttonLogo)}catch(t){}e()}},n.send()}))},(ce="run")in(se=de)?Object.defineProperty(se,ce,{value:le,enumerable:!0,configurable:!0,writable:!0}):se[ce]=le,"undefined"!=typeof HTMLCanvasElement&&HTMLCanvasElement.prototype&&(HTMLCanvasElement.prototype.__originalGetContext=HTMLCanvasElement.prototype.getContext,HTMLCanvasElement.prototype.getContext=function(e,t){return this.__originalGetContext(e,fe(fe({},t),{},{preserveDrawingBuffer:!0}))});var pe=function(e){if("string"==typeof e||e instanceof String)try{return JSON.parse(e)}catch(t){return{}}return e},ge=function(){function e(){!function(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}(this,e),he(this,"uiContainer",null),he(this,"widgetOnly",!1),he(this,"widgetStartFlow",void 0),he(this,"widgetCallback",null),he(this,"overrideLanguage",""),he(this,"screenshot",null),he(this,"actionLog",[]),he(this,"logArray",[]),he(this,"customData",{}),he(this,"formData",{}),he(this,"excludeData",{}),he(this,"logMaxLength",500),he(this,"buttonType",e.FEEDBACK_BUTTON_BOTTOM_RIGHT),he(this,"feedbackType","BUG"),he(this,"sessionStart",new Date),he(this,"customActionCallbacks",[]),he(this,"poweredByHidden",!1),he(this,"enabledCrashDetector",!1),he(this,"enabledCrashDetectorSilent",!1),he(this,"enabledRageClickDetector",!1),he(this,"enabledRageClickDetectorSilent",!1),he(this,"appCrashDetected",!1),he(this,"rageClickDetected",!1),he(this,"currentlySendingBug",!1),he(this,"isLiveSite",!1),he(this,"replaysEnabled",!1),he(this,"customLogoUrl",null),he(this,"shortcutsEnabled",!0),he(this,"silentBugReport",!1),he(this,"initialized",!1),he(this,"screenshotFeedbackOptions",null),he(this,"customerInfo",{}),he(this,"showUserName",!0),he(this,"welcomeIcon","👋"),he(this,"feedbackButtonText","Feedback"),he(this,"widgetInfo",{title:"Feedback",subtitle:"var us know how we can do better.",dialogSubtitle:"Report a bug, or share your feedback with us."}),he(this,"originalConsoleLog",void 0),he(this,"severity","LOW"),he(this,"appVersionCode",""),he(this,"appBuildNumber",""),he(this,"mainColor","#485bff"),he(this,"feedbackTypeActions",[]),he(this,"customTranslation",{}),he(this,"networkIntercepter",new R),he(this,"replay",null),he(this,"feedbackButton",null),he(this,"fakeLoading",null),he(this,"fakeLoadingProgress",0),he(this,"widgetOpened",!1),he(this,"openedMenu",!1),he(this,"showInfoPopup",!1),he(this,"snapshotPosition",{x:0,y:0}),he(this,"eventListeners",{}),he(this,"feedbackActions",{}),he(this,"actionToPerform",void 0),"undefined"!=typeof window&&this.init()}var t,n,o;return t=e,o=[{key:"getInstance",value:function(){return this.instance||(this.instance=new e),this.instance}},{key:"setUIContainer",value:function(e){this.getInstance().uiContainer=e}},{key:"attachNetworkLogs",value:function(e){this.getInstance().networkIntercepter.externalConsoleLogs=e}},{key:"setLiveSite",value:function(e){this.getInstance().isLiveSite=e}},{key:"initialize",value:function(e,t,n){var a=this.getInstance();if(a.initialized)console.warn("Gleap already initialized.");else{if(a.initialized=!0,t&&n)try{localStorage.setItem("gleap-id",t),localStorage.getItem("gleap-hash",n)}catch(i){}var o=j.getInstance();o.sdkKey=e,o.startSession(),o.setOnSessionReady((function(){a.widgetCallback?a.postInit():de.run().then((function(){a.postInit()}))}))}}},{key:"identify",value:function(e,t){j.getInstance().identifySession(e,pe(t))}},{key:"clearIdentity",value:function(){j.getInstance().clearSession()}},{key:"isOpened",value:function(){return this.getInstance().openedMenu}},{key:"hide",value:function(){this.getInstance().closeGleap()}},{key:"open",value:function(){this.getInstance().showGleap()}},{key:"setCustomTranslation",value:function(e){this.getInstance().customTranslation=e}},{key:"setScreenshot",value:function(e){var t=this.getInstance();t.screenshot=e,t.screenshotFeedbackOptions&&(t.showMobileScreenshotEditor(t.screenshotFeedbackOptions),t.screenshotFeedbackOptions=null)}},{key:"setFeedbackButtonText",value:function(e){this.getInstance().feedbackButtonText=e}},{key:"enableReplays",value:function(e){var t=this.getInstance();t.replaysEnabled=e,e?(t.replay&&(t.replay.stop(),t.replay=null),t.replay=new F):t.replay&&(t.replay.stop(),t.replay=null)}},{key:"logEvent",value:function(e,t){re.getInstance().logEvent(e,t)}},{key:"showInfoPopup",value:function(e){this.getInstance().showInfoPopup=e}},{key:"isWidgetOnly",value:function(e){this.getInstance().widgetOnly=e}},{key:"setWidgetStartFlow",value:function(e){this.getInstance().widgetStartFlow=e}},{key:"setWelcomeIcon",value:function(e){this.getInstance().welcomeIcon=e}},{key:"setShowUserName",value:function(e){this.getInstance().showUserName=e}},{key:"setButtonType",value:function(e){this.getInstance().buttonType=e}},{key:"on",value:function(e,t){var n=this.getInstance();n.eventListeners[e]||(n.eventListeners[e]=[]),n.eventListeners[e].push(t)}},{key:"appendNode",value:function(e){var t=this.getInstance();t.uiContainer?t.uiContainer.appendChild(e):document.body.appendChild(e)}},{key:"widgetCallback",value:function(e){this.getInstance().widgetCallback=e}},{key:"enableShortcuts",value:function(e){this.getInstance().shortcutsEnabled=e}},{key:"enableIntercomCompatibilityMode",value:function(){}},{key:"showFeedbackButton",value:function(e){var t=this.getInstance().feedbackButton;t&&(t.style.display=e?"flex":"none")}},{key:"enablePoweredBy",value:function(e){this.getInstance().poweredByHidden=!e}},{key:"enableNetworkLogger",value:function(){this.getInstance().networkIntercepter.start()}},{key:"setNetworkLogFilters",value:function(e){this.getInstance().networkIntercepter.setFilters(e)}},{key:"setLogoUrl",value:function(e){this.getInstance().customLogoUrl=e}},{key:"setButtonLogoUrl",value:function(e){this.getInstance().customButtonLogoUrl=e}},{key:"enablePrivacyPolicy",value:function(e){}},{key:"setPrivacyPolicyUrl",value:function(e){}},{key:"setWidgetInfo",value:function(e){e&&(this.getInstance().widgetInfo=Object.assign(this.getInstance().widgetInfo,e))}},{key:"setAppVersionCode",value:function(e){this.getInstance().appVersionCode=e}},{key:"setAppBuildNumber",value:function(e){this.getInstance().appBuildNumber=e}},{key:"setApiUrl",value:function(e){j.getInstance().apiUrl=e}},{key:"setWidgetUrl",value:function(e){j.getInstance().widgetUrl=e}},{key:"attachCustomData",value:function(e){var t=this.getInstance();t.customData=Object.assign(t.customData,pe(e))}},{key:"setCustomData",value:function(e,t){this.getInstance().customData[e]=t}},{key:"removeCustomData",value:function(e){delete this.getInstance().customData[e]}},{key:"clearCustomData",value:function(){this.getInstance().customData={}}},{key:"setLanguage",value:function(e){this.getInstance().overrideLanguage=e}},{key:"enableCrashDetector",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=this.getInstance();n.enabledCrashDetector=e,n.enabledCrashDetectorSilent=t}},{key:"enableRageClickDetector",value:function(){var t=arguments.length>0&&void 0!==arguments[0]&&arguments[0],n=this.getInstance();n.enabledRageClickDetector||(n.enabledRageClickDetector=!0,n.enabledRageClickDetectorSilent=t,ne((function(t){n.rageClickDetected=!0,n.enabledRageClickDetectorSilent?e.sendSilentReport({description:"Rage click detected."}):e.startFeedbackFlow("crash")})))}},{key:"setColors",value:function(e,t,n){var a=arguments.length>3&&void 0!==arguments[3]?arguments[3]:"#ffffff";this.setStyles({headerColor:t,primaryColor:e,buttonColor:n,backgroundColor:a})}},{key:"setStyles",value:function(e){this.getInstance().mainColor=e.primaryColor;var t=e.headerColor?e.headerColor:e.primaryColor,n=e.buttonColor?e.buttonColor:e.primaryColor,a=null!=e.borderRadius?e.borderRadius:20,o=null!=e.backgroundColor?e.backgroundColor:"#fff";"complete"===document.readyState||"loaded"===document.readyState||"interactive"===document.readyState?y(e.primaryColor,t,n,a,o):document.addEventListener("DOMContentLoaded",(function(i){y(e.primaryColor,t,n,a,o)}))}},{key:"sendSilentReport",value:function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:e.PRIORITY_MEDIUM,a=arguments.length>2&&void 0!==arguments[2]?arguments[2]:"BUG",o=arguments.length>3&&void 0!==arguments[3]?arguments[3]:{},i=this.getInstance(),r=j.getInstance();r.ready&&(i.excludeData=o||{},i.severity=n,i.feedbackType=a,i.formData=t||{},r.session.email&&(i.formData.reportedBy=r.session.email),this.startFeedbackFlow(null,!0))}},{key:"sendSilentBugReport",value:function(t){var n=arguments.length>1&&void 0!==arguments[1]?arguments[1]:e.PRIORITY_MEDIUM;return e.sendSilentReport({description:t},n,"BUG")}},{key:"startFeedbackTypeSelection",value:function(){var e=arguments.length>0&&void 0!==arguments[0]&&arguments[0],t=j.getInstance(),n=this.getInstance();n.stopBugReportingAnalytics(),n.widgetOpened=!0,n.openedMenu=!0,n.updateFeedbackButtonState(),w(n.feedbackTypeActions,n.overrideLanguage,n.customLogoUrl,n.poweredByHidden,(function(){}),"".concat(f("Hi",n.overrideLanguage),' <span id="bb-user-name">').concat(n.showUserName&&t.session.name?t.session.name:"","</span> ").concat(n.welcomeIcon),f(n.widgetInfo.dialogSubtitle,n.overrideLanguage),e)}},{key:"registerCustomAction",value:function(e){var t=this.getInstance();t.customActionCallbacks&&t.customActionCallbacks.push(e)}},{key:"triggerCustomAction",value:function(e){var t=this.getInstance();if(t.widgetCallback&&t.widgetCallback("customActionCalled",{name:e}),t.customActionCallbacks)for(var n=0;n<t.customActionCallbacks.length;n++){var a=t.customActionCallbacks[n];a&&a({name:e})}}},{key:"setFeedbackActions",value:function(e){this.getInstance().feedbackActions=e}},{key:"setMenuOptions",value:function(e){this.getInstance().feedbackTypeActions=e}},{key:"startFeedbackFlow",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]&&arguments[1],n=j.getInstance(),a=this.getInstance();if(!a.currentlySendingBug&&n.ready){var o=a.getFeedbackOptions(e);if(o){if(a.notifyEvent("flow-started",o),a.closeModalUI(),a.currentlySendingBug=!0,a.silentBugReport=t,t||(a.widgetOpened=!0),o.form&&o.form.length>0){for(var i=[],r=0;r<o.form.length;r++)(c=o.form[r])&&"privacypolicy"!==c.type&&"spacer"!==c.type&&"submit"!==c.type&&"reportedBy"!==c.name&&i.push(c);var s=!0===o.collectEmail||void 0===o.collectEmail?{title:"Email",placeholder:"Your e-mail",type:"text",inputtype:"email",name:"reportedBy",required:!0,remember:!0}:null;for(!s||n.session&&n.session.email||(s.hideOnDefaultSet=!1,i.push(s)),o.form=i,o.pages=!0===o.singlePageForm?1:i.length,r=0;r<o.form.length;r++){var c=o.form[r];!0===o.singlePageForm?c.page=0:c.page=r}if(s&&n.session&&n.session.email&&(s.hideOnDefaultSet=!0,s.defaultValue=n.session.email,s.page=o.form[o.form.length-1].page,i.push(s)),o.privacyPolicyEnabled){var l={name:"privacypolicy",type:"privacypolicy",required:!0,url:o.privacyPolicyUrl,page:o.form[o.form.length-1].page};o.form.push(l)}}a.stopBugReportingAnalytics(),a.snapshotPosition={x:window.scrollX,y:window.scrollY},a.silentBugReport?a.checkReplayLoaded():a.showBugReportEditor(o),a.updateFeedbackButtonState()}}}},{key:"disableConsoleLogOverwrite",value:function(){window.console=this.getInstance().originalConsoleLog}}],(n=[{key:"postInit",value:function(){this.widgetCallback||re.getInstance().start();var e=this;"complete"===document.readyState||"loaded"===document.readyState||"interactive"===document.readyState?e.checkForInitType():document.addEventListener("DOMContentLoaded",(function(t){e.checkForInitType()})),this.widgetCallback&&e.widgetCallback("sessionReady")}},{key:"notifyEvent",value:function(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:{},n=this.eventListeners[e];if(n)for(var a=0;a<n.length;a++){var o=n[a];o&&o(t)}}},{key:"getFeedbackOptions",value:function(e){var t=null;e&&(t=this.feedbackActions[e]),t||(t=this.feedbackActions.bugreporting);try{t=JSON.parse(JSON.stringify(t))}catch(n){}return t}},{key:"stopBugReportingAnalytics",value:function(){this.networkIntercepter.setStopped(!0),this.replay&&!this.replay.stopped&&this.replay.stop(!this.isLiveSite)}},{key:"startCrashDetection",value:function(){var t=this;window.onerror=function(n,a,o,i,r){var s=["Message: "+n,"URL: "+a,"Line: "+o,"Column: "+i,(r&&r.stack,r.stack)];if(t.addLog(s,"ERROR"),t.enabledCrashDetector&&!t.appCrashDetected&&!t.currentlySendingBug){if(t.appCrashDetected=!0,t.enabledCrashDetectorSilent)return e.sendSilentReport({errorMessage:n,url:a,lineNo:o,columnNo:i,stackTrace:r&&r.stack?r.stack:""},e.PRIORITY_MEDIUM,"CRASH",{screenshot:!0,replays:!0});e.startFeedbackFlow("crash")}return!1}}},{key:"truncateString",value:function(e,t){return e.length>t?e.slice(0,t)+"...":e}},{key:"addLog",value:function(e,t){if(e){for(var n="",a=0;a<e.length;a++)n+=e[a]+" ";this.logArray.push({log:this.truncateString(n,1e3),date:new Date,priority:t}),this.logArray.length>this.logMaxLength&&this.logArray.shift()}}},{key:"overwriteConsoleLog",value:function(){var e,t=this;window.console=(e=window.console,window.console&&e||(e={}),t.originalConsoleLog=e,fe(fe({},e),{},{log:function(){t.addLog(arguments,"INFO"),e.log&&e.log.apply(e,arguments)},warn:function(){t.addLog(arguments,"WARNING"),e.warn&&e.warn.apply(e,arguments)},error:function(){t.addLog(arguments,"ERROR"),e.error&&e.error.apply(e,arguments)},info:function(n){t.addLog(arguments,"INFO"),e.info&&e.info.apply(e,arguments)}}))}},{key:"resetLoading",value:function(e){this.fakeLoading&&clearInterval(this.fakeLoading),this.fakeLoading=null,this.fakeLoadingProgress=0,e&&C(1)}},{key:"createBugReportingDialog",value:function(t){var n=this,a=this,o=K(t,this.overrideLanguage),i=f(t.title,this.overrideLanguage),r='<div class="bb-feedback-dialog-error">'.concat(f("Something went wrong, please try again.",a.overrideLanguage),'</div><div class="bb-feedback-dialog-loading bb-feedback-dialog-loading--main">\n    <svg\n      class="bb--progress-ring"\n      width="120"\n      height="120">\n      <circle\n        class="bb--progress-ring__circle"\n        stroke="').concat(this.mainColor,'"\n        stroke-width="6"\n        fill="transparent"\n        r="34"\n        cx="60"\n        cy="60"/>\n    </svg>\n  </div>\n  <div class="bb-feedback-dialog-success">\n    <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">\n        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">\n            <g fill="').concat(this.mainColor,'" fill-rule="nonzero">\n                <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>\n            </g>\n        </g>\n    </svg>\n    <div class="bb-feedback-dialog-info-text">').concat(f(t.thanksMessage?t.thanksMessage:"Thank you!",this.overrideLanguage),'</div>\n  </div>\n  <div class="bb-feedback-form">\n    ').concat(o,"\n  </div>");k(i,null,this.customLogoUrl,r,(function(){a.feedbackTypeActions.length>0?(a.closeGleap(!1),e.startFeedbackTypeSelection(!0)):a.closeGleap()}),this.openedMenu,"bb-anim-fadeinright ".concat(n.appCrashDetected||n.rageClickDetected?"bb-feedback-dialog--crashed":""," bb-feedback-dialog-form")),this.openedMenu=!0,this.resetLoading(!0),L(this.poweredByHidden),function(e,t){for(var n=e.form,a=e.singlePageForm,o=document.querySelectorAll(".bb-feedback-send-button"),i=function(){var n=o[r];n.onclick=function(){if(n&&"true"!==n.getAttribute("disabled")&&n.getAttribute("bb-form-page")){var a=parseInt(n.getAttribute("bb-form-page"));$(a,e.pages,t)}}},r=0;r<o.length;r++)i();var s=function(){var o=n[r];if(!o)return"break";var i=document.querySelector(".bb-feedback-".concat(o.name));if(!i)return"break";var s=parseInt(i.getAttribute("bb-form-page"));if("text"===o.type){if(o.remember)try{var l=localStorage.getItem("bb-remember-".concat(o.name));l&&(i.value=l)}catch(y){}o.defaultValue&&(i.value=o.defaultValue),o.defaultValue&&o.hideOnDefaultSet&&i.parentElement.classList.add("bb-feedback-form--hidden"),i.addEventListener("focusin",(function(){ee(i)})),i.addEventListener("focusout",(function(){te(s)})),i.oninput=function(){te(s,!1)}}if("privacypolicy"===o.type&&(i.onchange=function(){ee(i),te(s)}),"upload"===o.type){var d=document.querySelector(".bb-form-fileupload-".concat(o.name)),u=document.querySelector(".bb-feedback-filesizeinfo-".concat(o.name));d&&d.addEventListener("change",(function(){if(ee(i),te(s),u&&(u.style.display="none"),d.files&&d.files.length>0){var n=d.files[0];if(n.size/1024/1024>3)return void(u&&(u.style.display="block"));var r=new FormData;r.append("file",n);var c=document.querySelector(".bb-feedback-dialog-loading--".concat(o.name));c&&(c.style.display="flex",d.style.display="none");var l=new XMLHttpRequest;l.open("POST",j.getInstance().apiUrl+"/uploads/attachments"),j.getInstance().injectSession(l),l.upload.onprogress=function(e){if(e.lengthComputable){var t=parseInt(e.loaded/e.total*100);C(t,o.name)}},l.onerror=function(){c&&(c.style.display="none"),d.style.display="block"},l.onreadystatechange=function(){if(4==l.readyState&&200==l.status&&l.responseText){try{var n=JSON.parse(l.responseText);n.fileUrls&&n.fileUrls.length>0&&(i.value=n.fileUrls[0],a||$(s,e.pages,t))}catch(y){}c&&(c.style.display="none"),d.style.display="block"}},l.send(r)}}))}if("textarea"===o.type&&(i.style.height="inherit",i.style.height=i.scrollHeight+"px",i.addEventListener("focusin",(function(){ee(i)})),i.oninput=function(){i.style.height="inherit",i.style.height=i.scrollHeight+"px",te(s)}),"rating"===o.type){var b=document.querySelectorAll(".bb-feedback-rating-".concat(o.name," .bb-feedback-emojigroup li")),f=function(){var n=b[c];n.addEventListener("click",(function(r){if(n){i.value=n.getAttribute("data-value"),te(s);var c=document.querySelector(".bb-feedback-rating-".concat(o.name," .bb-feedback-emojigroup li.bb-feedback-active"));c&&c.classList.remove("bb-feedback-active"),n.classList.add("bb-feedback-active"),r.preventDefault(),a||$(s,e.pages,t)}}))};for(c=0;c<b.length;c++)f()}if("onetofive"===o.type){var h=document.querySelectorAll(".bb-feedback-onetofive-".concat(o.name," .bb-feedback-onetofive-button")),p=function(){var n=h[c];n.addEventListener("click",(function(r){if(n){i.value=n.getAttribute("data-value"),te(s);var c=document.querySelector(".bb-feedback-onetofive-".concat(o.name," .bb-feedback-onetofive-button-active"));c&&c.classList.remove("bb-feedback-onetofive-button-active"),n.classList.add("bb-feedback-onetofive-button-active"),r.preventDefault(),a||$(s,e.pages,t)}}))};for(c=0;c<h.length;c++)p()}if("multiplechoice"===o.type){var g=document.querySelectorAll(".bb-feedback-multiplechoice-".concat(o.name," .bb-feedback-multiplechoice-container")),v=function(){var e=g[c];e.addEventListener("click",(function(t){e&&(i.value=e.getAttribute("data-value"),te(s))}))};for(c=0;c<g.length;c++)v()}te(s,!1)};for(r=0;r<n.length;r++){var c;if("break"===s())break}Q(0),Y(0,e.pages)}(t,(function(){a.formSubmitAction(t)}))}},{key:"formSubmitAction",value:function(e){var t=this;!function(e){for(var t=0;t<e.length;t++){var n=e[t];if(n.remember){var a=document.querySelector(".bb-feedback-".concat(n.name));if(a&&a.value)try{localStorage.setItem("bb-remember-".concat(n.name),a.value)}catch(o){}}}}(e.form),window.scrollTo(t.snapshotPosition.x,t.snapshotPosition.y),T(!0),t.fakeLoading=setInterval((function(){t.fakeLoadingProgress>75?t.resetLoading(!1):(t.fakeLoadingProgress+=2,C(t.fakeLoadingProgress))}),150);var n=function(e){for(var t={},n=0;n<e.length;n++){var a=e[n],o=document.querySelector(".bb-feedback-".concat(a.name));o&&o.value&&(t[a.name]=o.value)}return t}(e.form);t.formData=n,t.excludeData=e.excludeData?e.excludeData:{},t.feedbackType=e.feedbackType?e.feedbackType:"BUG",t.widgetOnly&&t.widgetCallback?t.widgetCallback("sendFeedback",{type:t.feedbackType,formData:t.formData,screenshot:t.screenshot,excludeData:t.excludeData}):t.checkReplayLoaded()}},{key:"checkReplayLoaded",value:function(){var e=this,t=arguments.length>0&&void 0!==arguments[0]?arguments[0]:0;this.replaysEnabled&&(!this.replay||!this.replay.result)&&t<5?setTimeout((function(){e.checkReplayLoaded(++t)}),1e3):this.takeScreenshotAndSend()}},{key:"takeScreenshotAndSend",value:function(){var e,t,n=this;if(!this.excludeData||!this.excludeData.screenshot)return(e=this.snapshotPosition,t=this.isLiveSite,b(e,t)).then((function(e){n.sendBugReportToServer(e)})).catch((function(e){n.showError()}));this.sendBugReportToServer()}},{key:"reportCleanupOnClose",value:function(){try{e.enableReplays(this.replaysEnabled)}catch(t){}try{this.networkIntercepter.setStopped(!1)}catch(t){}this.actionToPerform=void 0,this.widgetCallback&&this.widgetCallback("closeGleap",{})}},{key:"closeModalUI",value:function(e){var t=document.querySelector(".bb-feedback-dialog-container");t&&t.remove()}},{key:"closeGleap",value:function(){var e=!(arguments.length>0&&void 0!==arguments[0])||arguments[0];e&&this.reportCleanupOnClose(),this.currentlySendingBug=!1,this.widgetOpened=!1,this.openedMenu=!1,this.appCrashDetected=!1,this.rageClickDetected=!1,this.updateFeedbackButtonState();var t=document.querySelector(".bb-screenshot-editor");t&&t.remove(),this.notifyEvent("close"),this.closeModalUI(e)}},{key:"isLocalNetwork",value:function(){var e=arguments.length>0&&void 0!==arguments[0]?arguments[0]:window.location.hostname;return["localhost","127.0.0.1","0.0.0.0","","::1"].includes(e)||e.startsWith("192.168.")||e.startsWith("10.0.")||e.endsWith(".local")}},{key:"init",value:function(){this.overwriteConsoleLog(),this.startCrashDetection(),this.registerKeyboardListener(),this.registerEscapeListener(),this.isLocalNetwork()?this.isLiveSite=!1:this.isLiveSite=!0}},{key:"registerKeyboardListener",value:function(){var t=this;document.onkeyup=function(n){var a,o,i=(void 0!==(a=n).key?o=a.key:void 0!==a.keyIdentifier?o=a.keyIdentifier:void 0!==a.keyCode&&(o=a.keyCode),o);n.ctrlKey&&("i"===i||"I"===i||73===i)&&t.shortcutsEnabled&&e.startFeedbackFlow()}}},{key:"checkForInitType",value:function(){var t=this;if(window&&window.onGleapLoaded&&window.onGleapLoaded(e),setInterval((function(){t.replay&&t.replay.isFull()&&e.enableReplays(t.replaysEnabled)}),1e3),this.widgetOnly){var n=this;n.widgetStartFlow?e.startFeedbackFlow(n.widgetStartFlow):n.feedbackTypeActions.length>0?e.startFeedbackTypeSelection():e.startFeedbackFlow()}else j.getInstance().setOnSessionReady((function(){t.injectFeedbackButton()}))}},{key:"injectFeedbackButton",value:function(){var t=this,n="";n=t.customButtonLogoUrl?'<img class="bb-logo-logo" src="'.concat(t.customButtonLogoUrl,'" alt="Feedback Button" />'):S("bblogo","#fff");var a=document.createElement("div");a.className="bb-feedback-button",this.buttonType===e.FEEDBACK_BUTTON_CLASSIC||this.buttonType===e.FEEDBACK_BUTTON_CLASSIC_BOTTOM||this.buttonType===e.FEEDBACK_BUTTON_CLASSIC_LEFT?a.innerHTML='<div class="bb-feedback-button-classic '.concat(this.buttonType===e.FEEDBACK_BUTTON_CLASSIC_LEFT?"bb-feedback-button-classic--left":"").concat(this.buttonType===e.FEEDBACK_BUTTON_CLASSIC_BOTTOM?"bb-feedback-button-classic--bottom":"",'">').concat(f(this.feedbackButtonText,this.overrideLanguage),"</div>"):a.innerHTML='<div class="bb-feedback-button-icon">'.concat(n).concat(S("arrowdown","#fff"),"</div>"),a.onclick=function(){t.feedbackButtonPressed()},e.appendNode(a),this.buttonType===e.FEEDBACK_BUTTON_NONE&&a.classList.add("bb-feedback-button--disabled"),this.buttonType===e.FEEDBACK_BUTTON_BOTTOM_LEFT&&a.classList.add("bb-feedback-button--bottomleft"),this.feedbackButton=a}},{key:"showGleap",value:function(){if(!this.widgetOpened){this.feedbackTypeActions.length>0?e.startFeedbackTypeSelection():e.startFeedbackFlow();var t=window.document.getElementsByClassName("bb-feedback-button-shoutout");t&&t.length>0&&t[0].remove();try{localStorage.setItem("bb-fto",!0)}catch(n){}this.notifyEvent("open")}}},{key:"feedbackButtonPressed",value:function(){this.widgetOpened?this.closeGleap():this.showGleap()}},{key:"updateFeedbackButtonState",value:function(){var e=this,t=arguments.length>0&&void 0!==arguments[0]&&arguments[0];if(null!==this.feedbackButton){var n="bb-feedback-button--sending";this.widgetOpened?this.feedbackButton.classList.add(n):this.feedbackButton.classList.remove(n);var a="bb-feedback-button--crashed";this.appCrashDetected||this.rageClickDetected?this.feedbackButton.classList.add(a):this.feedbackButton.classList.remove(a);var o=document.querySelector(".bb-feedback-dialog-container"),i="bb-feedback-dialog-container--focused";o&&(this.appCrashDetected||this.rageClickDetected?o.classList.add(i):o.classList.remove(i))}else t||setTimeout((function(){e.updateFeedbackButtonState(!0)}),500)}},{key:"registerEscapeListener",value:function(){var e=this;document.addEventListener("keydown",(function(t){("key"in(t=t||window.event)?"Escape"===t.key||"Esc"===t.key:27===t.keyCode)&&e.closeGleap()}))}},{key:"showSuccessMessage",value:function(){var e=document.querySelector(".bb-feedback-dialog-success"),t=document.querySelector(".bb-feedback-form"),n=document.querySelector(".bb-feedback-dialog-loading");t.style.display="none",n.style.display="none",e.style.display="flex"}},{key:"performAction",value:function(t){t&&t.outbound&&t.actionType&&(this.actionToPerform=t,e.startFeedbackFlow(t.actionType))}},{key:"sendBugReportToServer",value:function(e){var t=this,n=new XMLHttpRequest;n.open("POST",j.getInstance().apiUrl+"/bugs"),n.setRequestHeader("Content-Type","application/json;charset=UTF-8"),j.getInstance().injectSession(n),n.onerror=function(e){t.silentBugReport?t.closeGleap():t.showError()},n.upload.onprogress=function(e){if(t.silentBugReport)t.closeGleap();else if(e.lengthComputable){var n=parseInt(e.loaded/e.total*100);n>25&&n>t.fakeLoadingProgress&&(t.fakeLoading&&t.resetLoading(!1),C(n))}},n.onreadystatechange=function(e){t.silentBugReport?t.closeGleap():n.readyState===XMLHttpRequest.DONE&&(200===n.status||201===n.status?(t.notifyEvent("feedback-sent"),t.showSuccessAndClose()):t.showError())};var a={priority:this.severity,customData:this.customData,metaData:this.getMetaData(),consoleLog:this.logArray,networkLogs:this.networkIntercepter.getRequests(),customEventLog:re.getInstance().eventArray,type:this.feedbackType,formData:this.formData,isSilent:this.silentBugReport};this.actionToPerform&&this.actionToPerform.outbound&&(a.outbound=this.actionToPerform.outbound),e&&e.fileUrl&&(a.screenshotUrl=e.fileUrl),e&&e.html&&(a.screenshotData=e),this.replay&&this.replay.result&&(a.webReplay=this.replay.result);for(var o=Object.keys(this.excludeData),i=0;i<o.length;i++){var r=o[i];!0===this.excludeData[r]&&(delete a[r],"screenshot"===r&&(delete a.screenshotData,delete a.screenshotUrl),"replays"===r&&delete a.webReplay)}n.send(JSON.stringify(a))}},{key:"jsonSize",value:function(e){(new TextEncoder).encode(JSON.stringify(e)).length}},{key:"showSuccessAndClose",value:function(){var e=this;e.showSuccessMessage(),setTimeout((function(){e.closeGleap()}),2800)}},{key:"showError",value:function(){this.silentBugReport?this.closeGleap():(this.notifyEvent("error-while-sending"),T(!1),document.querySelector(".bb-feedback-dialog-error").style.display="flex")}},{key:"getMetaData",value:function(){var e,t,n,o=navigator.userAgent,i=navigator.appName,r=""+parseFloat(navigator.appVersion),s=parseInt(navigator.appVersion,10);-1!==(t=o.indexOf("Opera"))?(i="Opera",r=o.substring(t+6),-1!==(t=o.indexOf("Version"))&&(r=o.substring(t+8))):-1!==(t=o.indexOf("MSIE"))?(i="Microsoft Internet Explorer",r=o.substring(t+5)):-1!==(t=o.indexOf("Chrome"))?(i="Chrome",r=o.substring(t+7)):-1!==(t=o.indexOf("Safari"))?(i="Safari",r=o.substring(t+7),-1!==(t=o.indexOf("Version"))&&(r=o.substring(t+8))):-1!==(t=o.indexOf("Firefox"))?(i="Firefox",r=o.substring(t+8)):(e=o.lastIndexOf(" ")+1)<(t=o.lastIndexOf("/"))&&(i=o.substring(e,t),r=o.substring(t+1),i.toLowerCase()===i.toUpperCase()&&(i=navigator.appName)),-1!==(n=r.indexOf(";"))&&(r=r.substring(0,n)),-1!==(n=r.indexOf(" "))&&(r=r.substring(0,n)),s=parseInt(""+r,10),isNaN(s)&&(r=""+parseFloat(navigator.appVersion),s=parseInt(navigator.appVersion,10));var c="Unknown OS";-1!==navigator.appVersion.indexOf("Win")&&(c="Windows"),-1!==navigator.appVersion.indexOf("Mac")&&(c="MacOS"),-1!==navigator.appVersion.indexOf("X11")&&(c="UNIX"),-1!==navigator.appVersion.indexOf("Linux")&&(c="Linux"),-1!==navigator.appVersion.indexOf("iPad")&&(c="iPad"),-1!==navigator.appVersion.indexOf("iPhone")&&(c="iPhone"),-1!==navigator.appVersion.indexOf("Android")&&(c="Android");var l=((new Date).getTime()-this.sessionStart.getTime())/1e3;return{browserName:i+"("+r+")",userAgent:o,browser:navigator.appName,systemName:c,buildVersionNumber:this.appBuildNumber,releaseVersionNumber:this.appVersionCode,sessionDuration:l,devicePixelRatio:window.devicePixelRatio,screenWidth:window.screen.width,screenHeight:window.screen.height,innerWidth:window.innerWidth,innerHeight:window.innerHeight,currentUrl:window.location.href,language:navigator.language||navigator.userLanguage,mobile:a(),sdkVersion:"6.6.3",sdkType:"javascript"}}},{key:"showBugReportEditor",value:function(e){e.disableUserScreenshot?this.createBugReportingDialog(e):this.screenshot?this.showMobileScreenshotEditor(e):this.widgetOnly&&this.widgetCallback?this.widgetOnly&&this.widgetCallback&&(this.screenshotFeedbackOptions=e,this.widgetCallback("requestScreenshot",{})):this.showScreenshotEditor(e)}},{key:"showScreenshotEditor",value:function(t){var n=this,a=document.createElement("div");a.className="bb-screenshot-editor",a.innerHTML="\n      <div class=\"bb-screenshot-editor-container\">\n        <div class='bb-screenshot-editor-container-inner'>\n          <div class='bb-screenshot-editor-borderlayer'></div>\n          <div class='bb-screenshot-editor-dot'></div>\n          <div class='bb-screenshot-editor-rectangle'></div>\n          <div class='bb-screenshot-editor-drag-info'>".concat(f("Click and drag to mark the bug",n.overrideLanguage),"</div>\n        </div>\n      </div>\n    "),e.appendNode(a);var o=document.querySelector(".bb-screenshot-editor-borderlayer"),i=window.document.querySelector(".bb-screenshot-editor-dot"),r=window.document.querySelector(".bb-screenshot-editor-rectangle");o.style.height="".concat(window.innerHeight,"px");var s=!1,c=-1,l=-1;function d(e,t){s||(i.style.left=e+3-i.offsetWidth/2+"px",i.style.top=t+3-i.offsetHeight/2+"px")}function u(e,t){var n=document.querySelector(".bb-screenshot-editor-drag-info");if(n.style.left="".concat(e+20,"px"),n.style.top="".concat(t-n.offsetHeight/2,"px"),n.style.right=null,n.classList.add("bb-screenshot-editor-drag-info--dragged"),!(s||c<0)){var a=e-c,o=t-l,i=a<0?c+a:c,d=o<0?l+o:l,u=o<0?-1*o:o,b=a<0?-1*a:a;r.style.left="".concat(i,"px"),r.style.top="".concat(d,"px"),r.style.width="".concat(b,"px"),r.style.height="".concat(u,"px")}}function b(e){c=e.pageX-document.documentElement.scrollLeft,l=e.pageY-document.documentElement.scrollTop,d(c,l)}function h(e){c=e.touches[0].pageX-document.documentElement.scrollLeft,l=e.touches[0].pageY-document.documentElement.scrollTop,d(c,l)}function p(e){u(e.pageX-document.documentElement.scrollLeft,e.pageY-document.documentElement.scrollTop)}function g(e){u(e.touches[0].pageX-document.documentElement.scrollLeft,e.touches[0].pageY-document.documentElement.scrollTop),e.preventDefault()}function v(e){document.querySelector(".bb-screenshot-editor-drag-info").style.display="none",r.style.top="".concat(r.offsetTop+document.documentElement.scrollTop,"px"),r.style.left="".concat(r.offsetLeft+document.documentElement.scrollLeft,"px"),i.style.top="".concat(i.offsetTop+document.documentElement.scrollTop,"px"),i.style.left="".concat(i.offsetLeft+document.documentElement.scrollLeft,"px"),i.parentNode.removeChild(i),r.parentNode.removeChild(r),a.appendChild(i),a.appendChild(r),a.classList.add("bb-screenshot-editor--marked"),s=!0,a.removeEventListener("mouseup",v),a.removeEventListener("mousemove",p),a.removeEventListener("mousedown",b),a.removeEventListener("touchstart",h),a.removeEventListener("touchmove",g),a.removeEventListener("touchend",v),n.createBugReportingDialog(t)}a.addEventListener("mouseup",v),a.addEventListener("mousemove",p),a.addEventListener("mousedown",b),a.addEventListener("touchstart",h),a.addEventListener("touchmove",g),a.addEventListener("touchend",v)}},{key:"showMobileScreenshotEditor",value:function(t){var n=this;ae(this.screenshot,(function(e){n.screenshot=e,n.closeModalUI(),n.createBugReportingDialog(t)}),(function(){n.feedbackTypeActions.length>0?(n.closeGleap(!1),e.startFeedbackTypeSelection(!0)):n.closeGleap()}),this.overrideLanguage,this.feedbackTypeActions.length>0)}}])&&ue(t.prototype,n),o&&ue(t,o),e}();if(he(ge,"FEEDBACK_BUTTON_BOTTOM_RIGHT","BOTTOM_RIGHT"),he(ge,"FEEDBACK_BUTTON_BOTTOM_LEFT","BOTTOM_LEFT"),he(ge,"FEEDBACK_BUTTON_CLASSIC","BUTTON_CLASSIC"),he(ge,"FEEDBACK_BUTTON_CLASSIC_LEFT","BUTTON_CLASSIC_LEFT"),he(ge,"FEEDBACK_BUTTON_CLASSIC_BOTTOM","BUTTON_CLASSIC_BOTTOM"),he(ge,"FEEDBACK_BUTTON_NONE","BUTTON_NONE"),he(ge,"PRIORITY_LOW","LOW"),he(ge,"PRIORITY_MEDIUM","MEDIUM"),he(ge,"PRIORITY_HIGH","HIGH"),he(ge,"instance",void 0),"undefined"!=typeof window){var ve=window.GleapActions;if(ve&&ve.length>0)for(var ye=0;ye<ve.length;ye++){var me=ve[ye];me&&me.e&&ge[me.e]&&ge[me.e].apply(ge,me.a)}}const ke=ge,we=ke;return t=t.default})()}));
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["Gleap"] = factory();
+	else
+		root["Gleap"] = factory();
+})(this, function() {
+return /******/ (() => { // webpackBootstrap
+/******/ 	"use strict";
+/******/ 	// The require scope
+/******/ 	var __webpack_require__ = {};
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+
+// EXPORTS
+__webpack_require__.d(__webpack_exports__, {
+  "default": () => (/* binding */ src)
+});
+
+;// CONCATENATED MODULE: ./src/ImageHelper.js
+var resizeImage = function resizeImage(base64Str) {
+  var maxWidth = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 400;
+  var maxHeight = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 400;
+  return new Promise(function (resolve, reject) {
+    var isJPEG = base64Str.indexOf("data:image/jpeg") === 0;
+    var img = new Image();
+    img.src = base64Str;
+
+    img.onerror = function () {
+      reject();
+    };
+
+    img.onload = function () {
+      var canvas = document.createElement("canvas");
+      var MAX_WIDTH = maxWidth;
+      var MAX_HEIGHT = maxHeight; // Adjust max width / height based on image props
+
+      if (maxWidth > img.width / 4) {
+        MAX_WIDTH = img.width / 4;
+      }
+
+      if (maxHeight > img.height / 4) {
+        MAX_HEIGHT = img.height / 4;
+      }
+
+      var width = img.width;
+      var height = img.height;
+
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width *= MAX_HEIGHT / height;
+          height = MAX_HEIGHT;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      var ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      if (isJPEG) {
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
+      } else {
+        resolve(canvas.toDataURL());
+      }
+    };
+  });
+};
+var isMobile = function isMobile() {
+  if (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0, 4))) {
+    return true;
+  }
+
+  return false;
+};
+;// CONCATENATED MODULE: ./src/ResourceExclusionList.js
+var blacklist = ["//fonts.googleapis.com", "//cdn.jsdelivr.net", "//cdnjs.cloudflare.com", "//ajax.googleapis.com", "//use.typekit.net", ".amazonaws.com", "//jssdk.gleap.io", ".gstatic.com"];
+var isBlacklisted = function isBlacklisted(url) {
+  if (!url) {
+    return false;
+  }
+
+  for (var i = 0; i < blacklist.length; i++) {
+    if (url.indexOf(blacklist[i]) !== -1) {
+      return true;
+    }
+  }
+
+  return false;
+};
+;// CONCATENATED MODULE: ./src/ScreenCapture.js
+
+
+var startScreenCapture = function startScreenCapture(snapshotPosition, isLiveSite) {
+  return prepareScreenshotData(snapshotPosition, isLiveSite);
+};
+
+var documentToHTML = function documentToHTML(clone) {
+  var html = "";
+  var node = window.document.doctype;
+
+  if (node) {
+    html = "<!DOCTYPE " + node.name + (node.publicId ? ' PUBLIC "' + node.publicId + '"' : "") + (!node.publicId && node.systemId ? " SYSTEM" : "") + (node.systemId ? ' "' + node.systemId + '"' : "") + ">";
+  }
+
+  if (clone && clone.childNodes && clone.childNodes.length > 0) {
+    for (var i = 0; i < clone.childNodes.length; i++) {
+      if (clone.childNodes[i]) {
+        html += clone.childNodes[i].outerHTML;
+      }
+    }
+  }
+
+  return html;
+};
+
+var replaceAsync = function replaceAsync(str, regex, asyncFn) {
+  return new Promise(function (resolve, reject) {
+    var promises = [];
+    str.replace(regex, function (match) {
+      for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+        args[_key - 1] = arguments[_key];
+      }
+
+      var promise = asyncFn.apply(void 0, [match].concat(args));
+      promises.push(promise);
+    });
+    Promise.all(promises).then(function (data) {
+      resolve(str.replace(regex, function () {
+        return data.shift();
+      }));
+    })["catch"](function () {
+      reject();
+    });
+  });
+};
+
+var loadCSSUrlResources = function loadCSSUrlResources(data, basePath) {
+  return replaceAsync(data, /url\((.*?)\)/g, function (matchedData) {
+    return new Promise(function (resolve, reject) {
+      if (!matchedData) {
+        return resolve(matchedData);
+      }
+
+      var matchedUrl = matchedData.substr(4, matchedData.length - 5).replaceAll("'", "").replaceAll('"', ""); // Remote file or data
+
+      if (matchedUrl.indexOf("http") === 0 || matchedUrl.indexOf("//") === 0 || matchedUrl.indexOf("data") === 0) {
+        return resolve(matchedData);
+      }
+
+      try {
+        var resourcePath = matchedUrl;
+
+        if (basePath) {
+          resourcePath = basePath + "/" + matchedUrl;
+        }
+
+        return fetchCSSResource(resourcePath).then(function (resourceData) {
+          return resolve("url(" + resourceData + ")");
+        });
+      } catch (exp) {
+        return resolve(matchedData);
+      }
+    });
+  });
+};
+
+var fetchCSSResource = function fetchCSSResource(url) {
+  return new Promise(function (resolve, reject) {
+    if (url) {
+      var xhr = new XMLHttpRequest();
+
+      xhr.onload = function () {
+        var reader = new FileReader();
+
+        reader.onloadend = function () {
+          resolve(reader.result);
+        };
+
+        reader.onerror = function () {
+          reject();
+        };
+
+        reader.readAsDataURL(xhr.response);
+      };
+
+      xhr.onerror = function (err) {
+        resolve();
+      };
+
+      xhr.open("GET", url);
+      xhr.responseType = "blob";
+      xhr.send();
+    } else {
+      resolve();
+    }
+  });
+};
+
+var progressResource = function progressResource(data, elem, resolve, reject) {
+  resizeImage(data, 500, 500).then(function (data) {
+    elem.src = data;
+    resolve();
+  })["catch"](function () {
+    console.warn("BB: Image resize failed.");
+    resolve();
+  });
+};
+
+var fetchItemResource = function fetchItemResource(elem) {
+  return new Promise(function (resolve, reject) {
+    if (elem && elem.src) {
+      if (isBlacklisted(elem.src)) {
+        return resolve();
+      }
+
+      var xhr = new XMLHttpRequest();
+
+      xhr.onload = function () {
+        var reader = new FileReader();
+
+        reader.onloadend = function () {
+          progressResource(reader.result, elem, resolve, reject);
+        };
+
+        reader.onerror = function () {
+          resolve();
+        };
+
+        reader.readAsDataURL(xhr.response);
+      };
+
+      xhr.onerror = function (err) {
+        resolve();
+      };
+
+      var url = elem.src;
+      xhr.open("GET", url);
+      xhr.responseType = "blob";
+      xhr.send();
+    } else {
+      resolve();
+    }
+  });
+};
+
+var downloadAllImages = function downloadAllImages(dom) {
+  var imgItems = dom.querySelectorAll("img");
+  var imgItemsPromises = [];
+
+  for (var i = 0; i < imgItems.length; i++) {
+    var item = imgItems[i];
+    imgItemsPromises.push(fetchItemResource(item));
+  }
+
+  return Promise.all(imgItemsPromises);
+};
+
+var replaceStyleNodes = function replaceStyleNodes(clone, styleSheet, cssTextContent, styleId) {
+  {
+    var cloneTargetNode = null;
+
+    if (styleSheet.ownerNode) {
+      cloneTargetNode = clone.querySelector('[bb-styleid="' + styleId + '"]');
+    }
+
+    try {
+      if (cloneTargetNode) {
+        var replacementNode = null;
+
+        if (cssTextContent != "") {
+          // Create node.
+          var head = clone.querySelector("head");
+          var styleNode = window.document.createElement("style");
+          head.appendChild(styleNode);
+          styleNode.type = "text/css";
+
+          if (styleNode.styleSheet) {
+            styleNode.styleSheet.cssText = cssTextContent;
+          } else {
+            styleNode.appendChild(window.document.createTextNode(cssTextContent));
+          }
+
+          replacementNode = styleNode;
+        } else {
+          var linkNode = window.document.createElement("link");
+          linkNode.rel = "stylesheet";
+          linkNode.type = styleSheet.type;
+          linkNode.href = styleSheet.href;
+          linkNode.media = styleSheet.media;
+          replacementNode = linkNode;
+        }
+
+        if (replacementNode) {
+          cloneTargetNode.parentNode.insertBefore(replacementNode, cloneTargetNode);
+          cloneTargetNode.remove();
+        }
+      }
+    } catch (exp) {}
+  }
+};
+
+var downloadAllCSSUrlResources = function downloadAllCSSUrlResources(clone, remote) {
+  var promises = [];
+
+  var _loop = function _loop() {
+    var styleSheet = document.styleSheets[i];
+    cssRules = null;
+
+    try {
+      if (styleSheet.cssRules) {
+        cssRules = styleSheet.cssRules;
+      } else if (styleSheet.rules) {
+        cssRules = styleSheet.rules;
+      }
+    } catch (exp) {}
+
+    cssTextContent = "";
+
+    if (cssRules) {
+      for (cssRuleItem in cssRules) {
+        if (cssRules[cssRuleItem].cssText) {
+          cssTextContent += cssRules[cssRuleItem].cssText;
+        }
+      }
+    }
+
+    if (styleSheet && styleSheet.ownerNode) {
+      if (cssTextContent != "" && !remote) {
+        // Resolve resources.
+        var baseTags = document.getElementsByTagName("base");
+        basePathURL = baseTags.length ? baseTags[0].href.substr(location.origin.length, 999) : window.location.href;
+
+        if (styleSheet.href) {
+          basePathURL = styleSheet.href;
+        }
+
+        var basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
+        promises.push(loadCSSUrlResources(cssTextContent, basePath).then(function (replacedStyle) {
+          return {
+            styletext: replacedStyle,
+            stylesheet: styleSheet,
+            styleId: styleSheet.ownerNode.getAttribute("bb-styleid")
+          };
+        }));
+      } else {
+        promises.push(Promise.resolve({
+          styletext: cssTextContent,
+          stylesheet: styleSheet,
+          styleId: styleSheet.ownerNode.getAttribute("bb-styleid")
+        }));
+      }
+    }
+  };
+
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    var cssRules;
+    var cssTextContent;
+    var cssRuleItem;
+    var basePathURL;
+
+    _loop();
+  }
+
+  return Promise.all(promises).then(function (results) {
+    if (results) {
+      for (var i = 0; i < results.length; i++) {
+        replaceStyleNodes(clone, results[i].stylesheet, results[i].styletext, results[i].styleId);
+      }
+    }
+
+    return true;
+  });
+};
+
+var prepareRemoteData = function prepareRemoteData(clone, remote) {
+  return new Promise(function (resolve, reject) {
+    if (remote) {
+      // Always download CSS.
+      return downloadAllCSSUrlResources(clone, remote).then(function () {
+        resolve();
+      })["catch"](function () {
+        resolve();
+      });
+    } else {
+      return downloadAllImages(clone).then(function () {
+        return downloadAllCSSUrlResources(clone, remote).then(function () {
+          resolve();
+        });
+      })["catch"](function () {
+        console.warn("Gleap: Failed with resolving local resources. Please contact the Gleap support team.");
+        resolve();
+      });
+    }
+  });
+};
+
+var deepClone = function deepClone(host) {
+  var shadowNodeId = 1;
+
+  var cloneNode = function cloneNode(node, parent, shadowRoot) {
+    var walkTree = function walkTree(nextn, nextp, innerShadowRoot) {
+      while (nextn) {
+        cloneNode(nextn, nextp, innerShadowRoot);
+        nextn = nextn.nextSibling;
+      }
+    };
+
+    var clone = node.cloneNode();
+
+    if (typeof clone.setAttribute !== "undefined") {
+      if (shadowRoot) {
+        clone.setAttribute("bb-shadow-child", shadowRoot);
+      }
+
+      if (node instanceof HTMLCanvasElement) {
+        clone.setAttribute("bb-canvas-data", node.toDataURL());
+      }
+
+      if (node instanceof HTMLCanvasElement) {
+        clone.setAttribute("bb-canvas-data", node.toDataURL());
+      }
+    }
+
+    if (node.nodeType == Node.ELEMENT_NODE) {
+      var tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
+
+      if (tagName == "IFRAME" || tagName == "VIDEO" || tagName == "EMBED" || tagName == "IMG" || tagName == "SVG") {
+        var height = 0;
+
+        if (node.style.boxSizing === "border-box") {
+          height = node.height + node.marginTop + node.marginBottom + node.bordorTop + node.borderBottom;
+        } else {
+          height = node.height;
+        }
+
+        clone.setAttribute("bb-element", true);
+        clone.setAttribute("bb-height", height);
+      }
+
+      if (tagName == "DIV" && (node.scrollTop > 0 || node.scrollLeft > 0)) {
+        clone.setAttribute("bb-scrollpos", true);
+        clone.setAttribute("bb-scrolltop", node.scrollTop);
+        clone.setAttribute("bb-scrollleft", node.scrollLeft);
+      }
+
+      if (tagName === "SELECT" || tagName === "TEXTAREA" || tagName === "INPUT") {
+        var val = node.value;
+
+        if (node.getAttribute("gleap-ignore") === "value") {
+          val = new Array(val.length + 1).join("*");
+        }
+
+        clone.setAttribute("bb-data-value", val);
+
+        if ((node.type === "checkbox" || node.type === "radio") && node.checked) {
+          clone.setAttribute("bb-data-checked", true);
+        }
+      }
+    }
+
+    parent.appendChild(clone);
+
+    if (node.shadowRoot) {
+      walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
+
+      if (typeof clone.setAttribute !== "undefined") {
+        clone.setAttribute("bb-shadow-parent", shadowNodeId);
+      }
+
+      ++shadowNodeId;
+    }
+
+    walkTree(node.firstChild, clone);
+  };
+
+  var fragment = document.createDocumentFragment();
+  cloneNode(host, fragment);
+  return fragment;
+};
+
+var prepareScreenshotData = function prepareScreenshotData(snapshotPosition, remote) {
+  return new Promise(function (resolve, reject) {
+    var styleTags = window.document.querySelectorAll("style, link");
+
+    for (var i = 0; i < styleTags.length; ++i) {
+      styleTags[i].setAttribute("bb-styleid", i);
+    }
+
+    var clone = deepClone(window.document.documentElement); // Fix for web imports (depracted).
+
+    var linkImportElems = clone.querySelectorAll("link[rel=import]");
+
+    for (var i = 0; i < linkImportElems.length; ++i) {
+      var referenceNode = linkImportElems[i];
+
+      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
+        var childNodes = referenceNode.childNodes;
+
+        while (childNodes.length > 0) {
+          referenceNode.parentNode.insertBefore(childNodes[0], referenceNode);
+        }
+
+        referenceNode.remove();
+      }
+    } // Remove all scripts & style
+
+
+    var scriptElems = clone.querySelectorAll("script, noscript");
+
+    for (var i = 0; i < scriptElems.length; ++i) {
+      scriptElems[i].remove();
+    } // Cleanup base path
+
+
+    var baseElems = clone.querySelectorAll("base");
+
+    for (var i = 0; i < baseElems.length; ++i) {
+      baseElems[i].remove();
+    } // Fix base node
+
+
+    var baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/";
+    var baseNode = window.document.createElement("base");
+    baseNode.href = baseUrl;
+    var head = clone.querySelector("head");
+    head.insertBefore(baseNode, head.firstChild); // Do further cleanup.
+
+    var dialogElems = clone.querySelectorAll(".bb-feedback-dialog-container, .bb-capture-editor-borderlayer");
+
+    for (var i = 0; i < dialogElems.length; ++i) {
+      dialogElems[i].remove();
+    } // Calculate heights
+
+
+    var bbElems = clone.querySelectorAll("[bb-element=true]");
+
+    for (var i = 0; i < bbElems.length; ++i) {
+      if (bbElems[i]) {
+        bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
+      }
+    }
+
+    prepareRemoteData(clone, remote).then(function () {
+      var html = documentToHTML(clone);
+      resolve({
+        html: html,
+        baseUrl: baseUrl,
+        x: snapshotPosition.x,
+        y: snapshotPosition.y,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        isMobile: isMobile()
+      });
+    });
+  });
+};
+;// CONCATENATED MODULE: ./src/Translation.js
+
+var translateText = function translateText(key, overrideLanguage) {
+  var instance = src_Gleap.getInstance();
+  var language = navigator.language;
+
+  if (overrideLanguage !== "") {
+    language = overrideLanguage;
+  }
+
+  var customTranslation = {};
+  var translationKeys = Object.keys(instance.customTranslation);
+
+  for (var i = 0; i < translationKeys.length; i++) {
+    var translationKey = translationKeys[i];
+
+    if (language && language.includes(translationKey)) {
+      if (instance.customTranslation[translationKey]) {
+        customTranslation = instance.customTranslation[translationKey];
+      }
+    }
+  }
+
+  if (customTranslation[key]) {
+    return customTranslation[key];
+  }
+
+  if (!key) {
+    return "";
+  }
+
+  return key;
+};
+;// CONCATENATED MODULE: ./src/UI.js
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr && (typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]); if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+
+
+
+var calculateShadeColor = function calculateShadeColor(col, amt) {
+  col = col.replace(/^#/, "");
+  if (col.length === 3) col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+
+  var _col$match = col.match(/.{2}/g),
+      _col$match2 = _slicedToArray(_col$match, 3),
+      r = _col$match2[0],
+      g = _col$match2[1],
+      b = _col$match2[2];
+
+  var _ref = [parseInt(r, 16) + amt, parseInt(g, 16) + amt, parseInt(b, 16) + amt];
+  r = _ref[0];
+  g = _ref[1];
+  b = _ref[2];
+  r = Math.max(Math.min(255, r), 0).toString(16);
+  g = Math.max(Math.min(255, g), 0).toString(16);
+  b = Math.max(Math.min(255, b), 0).toString(16);
+  var rr = (r.length < 2 ? "0" : "") + r;
+  var gg = (g.length < 2 ? "0" : "") + g;
+  var bb = (b.length < 2 ? "0" : "") + b;
+  return "#".concat(rr).concat(gg).concat(bb);
+};
+
+var calculateContrast = function calculateContrast(hex) {
+  var r = parseInt(hex.substr(1, 2), 16),
+      g = parseInt(hex.substr(3, 2), 16),
+      b = parseInt(hex.substr(5, 2), 16),
+      yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 165 ? "#000000" : "#ffffff";
+};
+
+var injectStyledCSS = function injectStyledCSS(primaryColor, headerColor, buttonColor, borderRadius, backgroundColor) {
+  var contrastColor = calculateContrast(primaryColor);
+  var contrastHeaderColor = calculateContrast(headerColor);
+  var contrastButtonColor = calculateContrast(buttonColor);
+  var contrastBackgroundColor = calculateContrast(backgroundColor);
+  var isDarkMode = contrastBackgroundColor === "#ffffff";
+  var subTextColor = isDarkMode ? calculateShadeColor(backgroundColor, 100) : calculateShadeColor(backgroundColor, -100);
+  var backgroundColorHover = isDarkMode ? calculateShadeColor(backgroundColor, 30) : calculateShadeColor(backgroundColor, -15);
+  var borderColor = isDarkMode ? calculateShadeColor(backgroundColor, 70) : calculateShadeColor(backgroundColor, -70);
+  var borderRadius = parseInt(borderRadius, 10);
+
+  if (borderRadius === NaN || borderRadius === undefined) {
+    borderRadius = 20;
+  }
+
+  var containerBorderRadius = Math.round(borderRadius * 0.6);
+  var buttonBorderRadius = Math.round(borderRadius * 1.05);
+  var formItemBorderRadius = Math.round(borderRadius * 0.4);
+  var formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
+  var colorStyleSheet = "\n    .bb-feedback-onetofive-button {\n      border-radius: ".concat(formItemSmallBorderRadius, "px;\n    }\n    .bb-feedback-button-classic {\n      border-top-left-radius: ").concat(formItemBorderRadius, "px;\n      border-top-right-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-logo-logo--default path {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-feedback-dialog-header-back:hover {\n      background-color: ").concat(contrastHeaderColor, ";\n      border-radius: ").concat(containerBorderRadius, "px;\n    }\n    .bb-feedback-type {\n      border-radius: ").concat(containerBorderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-feedback-type-description,\n    .bb-feedback-poweredbycontainer span,\n    .bb-feedback-onetofive-description span {\n      color: ").concat(subTextColor, ";\n    }\n    .bb-feedback-poweredbycontainer svg g {\n      fill: ").concat(subTextColor, ";\n    }\n    .bb-feedback-type:hover {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-feedback-type-title,\n    .bb-feedback-form-description,\n    .bb-feedback-elementtitle,\n    .bb-feedback-multiplechoice-container,\n    .bb-feedback-dialog-info-text\n    {\n      color: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-feedback-dialog {\n      border-radius: ").concat(borderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-logo-arrowdown {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-back svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-back:hover svg {\n      fill: ").concat(headerColor, ";\n    }\n    .bb-feedback-dialog-header-close svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title,\n    .bb-feedback-dialog-header-title span {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title-small {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-description {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-onetofive-button-active,\n    .bb-feedback-onetofive-button:hover {\n      background-color: ").concat(primaryColor, ";\n      color: ").concat(contrastColor, ";\n    }    \n    .bb-feedback-button-icon {\n        background-color: ").concat(buttonColor, ";\n    }\n    .bb-feedback-multiplechoice-container:hover\n      input\n      ~ .bb-feedback-multiplechoice-checkmark {\n      border: 2px solid ").concat(primaryColor, ";\n    }    \n    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {\n      background-color: ").concat(primaryColor, ";\n      border: 2px solid ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button {\n        color: ").concat(primaryColor, ";\n    }\n    .bb-drawing-tool-item--active {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-capture-editor-borderlayer {\n        border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-button-classic {\n      background-color: ").concat(buttonColor, ";\n      color: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header {\n      background-color: ").concat(headerColor, ";\n      border-top-left-radius: ").concat(borderRadius, "px;\n      border-top-right-radius: ").concat(borderRadius, "px;\n    }\n    .bb-form-progress-inner {\n      background-color: ").concat(headerColor, "66;\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      background-color: ").concat(backgroundColor, ";\n      color: ").concat(contrastBackgroundColor, ";\n      border-color: ").concat(borderColor, ";\n    }\n    .bb-feedback-inputgroup textarea:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-send-button {\n      color: ").concat(contrastColor, ";\n      background-color: ").concat(primaryColor, ";\n      border-radius: ").concat(buttonBorderRadius, "px;\n    }\n    .bb-double-bounce1,\n    .bb-double-bounce2 {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button-cancel {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-type-icon {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:not(:checked)\n    + label:after,\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:checked\n    + label:after {\n    color: ").concat(primaryColor, ";\n    }\n    ");
+  var node = document.createElement("style");
+  node.innerHTML = colorStyleSheet;
+  src_Gleap.appendNode(node);
+};
+var getHeaderImage = function getHeaderImage(customLogoUrl) {
+  var headerImage = loadIcon("bblogo", "#fff");
+
+  if (customLogoUrl) {
+    headerImage = "<img src=\"".concat(customLogoUrl, "\" alt=\"bb-logo\" />");
+  }
+
+  return headerImage;
+};
+var createWidgetDialog = function createWidgetDialog(title, description, customLogoUrl, content, back) {
+  var showBack = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : true;
+  var appendClass = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : "";
+  var elem = document.createElement("div");
+  elem.className = "bb-feedback-dialog-container";
+  elem.innerHTML = "<div class='bb-feedback-dialog ".concat(appendClass, "'>\n      <div class=\"bb-feedback-dialog-header").concat(back ? " bb-feedback-dialog-header--back" : "").concat(!showBack ? " bb-feedback-dialog-header--backhidden" : "", "\">\n        ").concat(back ? "<div class=\"bb-feedback-dialog-header-back\">\n        ".concat(loadIcon("arrowleft", "#fff"), "\n        </div>") : "<div class=\"bb-feedback-dialog-header-logo\">\n          ".concat(getHeaderImage(customLogoUrl), "\n        </div>"), "\n        <div class=\"bb-feedback-dialog-header-text\">\n          <div class=\"bb-feedback-dialog-header-title\">\n            ").concat(title, "\n          </div>\n          ").concat(description === null ? "" : "<div class=\"bb-feedback-dialog-header-description\">\n          ".concat(description, "\n        </div>"), "\n        </div>\n        <div class=\"bb-feedback-dialog-header-close\">\n          ").concat(loadIcon("close", "#fff"), "\n        </div>\n      </div>\n      <div class=\"bb-feedback-dialog-body\">\n        ").concat(content, "\n        <div class=\"bb-feedback-poweredbycontainer\">\n          <span>Powered by</span>\n          <svg width=\"90px\" height=\"32px\" viewBox=\"0 0 90 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n              <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n                  <g transform=\"translate(0.653299, 0.000000)\" fill=\"#59617D\" fill-rule=\"nonzero\">\n                      <path d=\"M16.7989119,8.32577189 L22.1014291,8.32577189 C21.4265888,3.43890649 17.1242771,0 11.5448484,0 C5.02513746,0 0,4.70586291 0,12.7178969 C0,20.5368768 4.69977222,25.3876017 11.6532254,25.3876017 C17.8836188,25.3876017 22.3303551,21.4418423 22.3303551,14.9380999 L22.3303551,11.8250016 L12.0027005,11.8250016 L12.0027005,15.7586204 L17.3052177,15.7586204 C17.2328883,18.823461 15.1479759,20.7661416 11.6773352,20.7661416 C7.76078035,20.7661416 5.29034525,17.8340271 5.29034525,12.6696392 C5.29034525,7.52939191 7.85721955,4.62139446 11.6291156,4.62139446 C14.3165389,4.62139446 16.1362435,6.00903014 16.7989119,8.32577189 Z\"></path>\n                      <polygon points=\"30.2692671 0.337857389 25.1355185 0.337857389 25.1355185 25.0496341 30.2692671 25.0496341\"></polygon>\n                      <path d=\"M41.7991346,25.4117422 C46.3785919,25.4117422 49.4634758,23.1793283 50.1865357,19.7404968 L45.4385438,19.426787 C44.9203002,20.8385398 43.5947294,21.5745684 41.883636,21.5745684 C39.3167617,21.5745684 37.6897014,19.8732229 37.6897014,17.1100453 L37.6897014,17.097975 L50.2951468,17.097975 L50.2951468,15.6862222 C50.2951468,9.38760404 46.486969,6.27448232 41.5943184,6.27448232 C36.1473765,6.27448232 32.6163443,10.1477732 32.6163443,15.8672059 C32.6163443,21.7435053 36.0991569,25.4117422 41.7991346,25.4117422 Z M37.6897014,13.9124785 C37.7983125,11.8008611 39.4010289,10.1115858 41.6785856,10.1115858 C43.9081568,10.1115858 45.4507158,11.7043223 45.4626536,13.9124785 L37.6897014,13.9124785 Z\"></path>\n                      <path d=\"M57.9054165,25.3995548 C60.6410594,25.3995548 62.4125444,24.2049497 63.3163107,22.4795574 L63.4609695,22.4795574 L63.4609695,25.0496341 L68.3295103,25.0496341 L68.3295103,12.5489834 C68.3295103,8.13269445 64.593896,6.27448232 60.4722908,6.27448232 C56.0377263,6.27448232 53.121377,8.39817007 52.410255,11.7767205 L57.1582468,12.162852 C57.5077218,10.9320829 58.6043666,10.0271174 60.448181,10.0271174 C62.1955562,10.0271174 63.1957617,10.9079424 63.1957617,12.4283041 L63.1957617,12.5007023 C63.1957617,13.695284 61.9305825,13.8521272 58.7129777,14.1658604 C55.0494587,14.5037108 51.7595245,15.7344799 51.7595245,19.8732229 C51.7595245,23.5414364 54.3746184,25.3995548 57.9054165,25.3995548 Z M59.375646,21.8521143 C57.7970394,21.8521143 56.664347,21.1160622 56.664347,19.7043095 C56.664347,18.2563459 57.8571969,17.5444343 59.6649636,17.291029 C60.7857181,17.1341858 62.6173606,16.8687102 63.2320434,16.4584616 L63.2320434,18.4252828 C63.2320434,20.3679399 61.629327,21.8521143 59.375646,21.8521143 Z\"></path>\n                      <path d=\"M71.2943133,32 L76.4280619,32 L76.4280619,22.0813791 L76.5846586,22.0813791 C77.2957806,23.6258111 78.8502774,25.3512737 81.8389562,25.3512737 C86.0567665,25.3512737 89.3467007,22.0089575 89.3467007,15.806878 C89.3467007,9.43586168 85.9121077,6.27448232 81.850894,6.27448232 C78.7538382,6.27448232 77.2716708,8.12062418 76.5846586,9.62891568 L76.3557325,9.62891568 L76.3557325,6.5158174 L71.2943133,6.5158174 L71.2943133,32 Z M76.3196849,15.7827375 C76.3196849,12.4765852 77.717585,10.3649677 80.2121299,10.3649677 C82.7548944,10.3649677 84.104575,12.5731005 84.104575,15.7827375 C84.104575,19.016515 82.7307846,21.2608586 80.2121299,21.2608586 C77.7416948,21.2608586 76.3196849,19.0889132 76.3196849,15.7827375 Z\"></path>\n                  </g>\n              </g>\n          </svg>\n        </div>\n      </div>\n    </div>");
+  src_Gleap.appendNode(elem);
+  var buttonType = src_Gleap.getInstance().buttonType;
+
+  if (buttonType === src_Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+    elem.classList.add("bb-feedback-button--bottomleft");
+  }
+
+  if (buttonType === src_Gleap.FEEDBACK_BUTTON_NONE) {
+    elem.classList.add("bb-feedback-button--disabled");
+  }
+
+  if (buttonType === src_Gleap.FEEDBACK_BUTTON_CLASSIC || buttonType === src_Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT || buttonType === src_Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
+    elem.classList.add("bb-feedback-button--classic");
+  }
+
+  if (buttonType === src_Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT) {
+    elem.classList.add("bb-feedback-button--classic-left");
+  }
+
+  var closeButton = document.querySelector(".bb-feedback-dialog-header-close");
+
+  closeButton.onclick = function () {
+    if (closeButton && closeButton.getAttribute("d") === "t") {
+      return;
+    }
+
+    src_Gleap.getInstance().closeGleap();
+  }; // Hook back action
+
+
+  if (back) {
+    var backButton = document.querySelector(".bb-feedback-dialog-header-back");
+
+    backButton.onclick = function () {
+      if (backButton && backButton.getAttribute("d") === "t") {
+        return;
+      }
+
+      back();
+    };
+  }
+
+  return elem;
+};
+/**
+ * Creates the feedback type dialog
+ */
+
+var createFeedbackTypeDialog = function createFeedbackTypeDialog(feedbackTypeActions, overrideLanguage, customLogoUrl, poweredByHidden, selectedMenuOption, title, subtitle, fromBack) {
+  // Generate options
+  var optionsHTML = "<div class=\"bb-feedback-types\">";
+
+  for (var i = 0; i < feedbackTypeActions.length; i++) {
+    var action = feedbackTypeActions[i];
+    optionsHTML += "<div id=\"bb-feedback-type-".concat(i, "\" class=\"bb-feedback-type\">\n        <div class=\"bb-feedback-type-icon\" style=\"background-color: ").concat(action.color, ";\">\n          <img src=\"").concat(action.icon, "\">\n        </div>\n        <div class=\"bb-feedback-type-text\">\n          <div class=\"bb-feedback-type-title\">").concat(translateText(action.title, overrideLanguage), "</div>\n          <div class=\"bb-feedback-type-description\">").concat(translateText(action.description, overrideLanguage), "</div>\n        </div>\n      </div>");
+  }
+
+  optionsHTML += "</div>";
+  var dialog = createWidgetDialog(title, subtitle, customLogoUrl, optionsHTML, null, true, fromBack ? "bb-anim-fadeinfromback" : "bb-anim-fadein"); // Hook actions
+
+  var _loop = function _loop() {
+    var index = i;
+
+    document.getElementById("bb-feedback-type-".concat(index)).onclick = function () {
+      dialog.remove();
+
+      if (feedbackTypeActions[index].action) {
+        // Cleanup widget.
+        src_Gleap.getInstance().closeGleap(); // Call custom action.
+
+        feedbackTypeActions[index].action();
+      }
+
+      if (feedbackTypeActions[index].actionFlow) {
+        src_Gleap.startFeedbackFlow(feedbackTypeActions[index].actionFlow);
+      }
+
+      if (selectedMenuOption) {
+        selectedMenuOption();
+      }
+    };
+  };
+
+  for (var i = 0; i < feedbackTypeActions.length; i++) {
+    _loop();
+  }
+
+  validatePoweredBy(poweredByHidden);
+};
+var validatePoweredBy = function validatePoweredBy(poweredByHidden) {
+  var poweredByContainer = document.querySelector(".bb-feedback-poweredbycontainer");
+
+  if (poweredByHidden) {
+    poweredByContainer.style.display = "none";
+  } else {
+    poweredByContainer.onclick = function () {
+      window.open("https://www.gleap.io/", "_blank");
+    };
+  }
+};
+var setLoadingIndicatorProgress = function setLoadingIndicatorProgress(percentComplete) {
+  var loader = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : "main";
+  var circle = window.document.querySelector(".bb-feedback-dialog-loading--".concat(loader, " .bb--progress-ring__circle"));
+  var circumference = 213.628300444;
+  var offset = circumference - percentComplete / 100 * circumference;
+
+  if (circle) {
+    circle.style.strokeDasharray = "".concat(circumference, " ").concat(circumference);
+    circle.style.strokeDashoffset = offset;
+  }
+};
+var loadIcon = function loadIcon(name, color) {
+  if (name === "bblogo") {
+    return "<svg class=\"bb-logo-logo bb-logo-logo--default\" width=\"127px\" height=\"129px\" viewBox=\"0 0 127 129\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n        <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n            <g transform=\"translate(-11.000000, -6.000000)\">\n                <g transform=\"translate(11.000000, 6.000000)\">\n                    <path d=\"M27.5507,32.306 C20.4495,41.0714 17.3437,52.8384 17.3438,64.1091 C17.3438,75.3799 20.4497,87.1469 27.5508,95.9123 C34.4039,104.372 45.6889,110.937 64.1725,110.937 C83.6599,110.937 93.3637,102.356 98.4673,94.1976 C102.058,88.4577 103.344,84.2626 103.805,81.4366 C104.114,79.5459 105.616,77.9841 107.531,77.9841 L117.938,77.9841 C119.853,77.9841 121.429,79.5376 121.265,81.4463 C120.835,86.4687 119.175,93.7981 113.171,103.396 C105.135,116.242 90.0723,128.281 64.1725,128.281 C41.0305,128.281 24.5652,119.779 14.0745,106.83 C3.83175,94.1866 -7.10542736e-15,78.2036 -7.10542736e-15,64.1092 C-7.10542736e-15,50.0147 3.83155,34.0317 14.0744,21.3884 C24.0327,9.09622 39.3744,0.811764004 60.7001,0.00243821374 C62.6145,-0.0702130963 64.1725,1.49027 64.1725,3.40601 L64.1725,13.8123 C64.1725,15.728 62.6176,17.2712 60.704,17.3608 C44.2594,18.1311 33.9643,24.3893 27.5507,32.306 Z\"></path>\n                    <path d=\"M126.609,43.2966 C126.609,50.9596 120.397,57.1716 112.734,57.1716 C105.071,57.1716 98.8594,50.9596 98.8594,43.2966 C98.8594,35.6337 105.071,29.4216 112.734,29.4216 C120.397,29.4216 126.609,35.6337 126.609,43.2966 Z\" id=\"Path\" fill-rule=\"nonzero\"></path>\n                </g>\n            </g>\n        </g>\n    </svg>";
+  }
+
+  if (name === "pen") {
+    return "<svg width=\"1072px\" height=\"1034px\" viewBox=\"0 0 1072 1034\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-907.000000, -217.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(907.268457, 217.009827)\">\n                <g transform=\"translate(132.335119, 0.000000)\" fill=\"#000\">\n                    <path d=\"M20.3764235,730.530173 L10.1884235,720.342173 C-0.791576454,709.362173 -3.16357645,692.432173 4.37592355,678.858173 L83.1809235,537.018173 C71.7589235,502.979173 82.3098335,463.998173 112.254924,440.706173 L655.334924,18.3161733 C689.951924,-8.6058267 739.197924,-5.5388267 770.214924,25.4684733 L913.774924,169.028473 C944.782924,200.040473 947.848924,249.286473 920.927224,283.908473 L498.537224,826.988473 C496.322424,829.836173 493.935624,832.543173 491.384924,835.090073 C467.271924,859.207073 432.513924,866.195073 402.232924,856.063073 L260.382924,934.868073 C246.804924,942.407173 229.874924,940.036073 218.894924,929.055573 L208.706924,918.867573 L20.3764235,730.530173 Z M866.006424,241.190173 C871.393124,234.264373 870.779824,224.417173 864.576724,218.213173 L721.016724,74.6531733 C714.813624,68.4500733 704.965724,67.8367733 698.043724,73.2234733 L154.963724,495.613473 C147.381724,501.507973 146.018424,512.433473 151.912924,520.015473 C152.358234,520.585783 152.834804,521.128773 153.346524,521.636573 L417.586524,785.886573 C424.379524,792.675673 435.391524,792.675673 442.180524,785.886573 C442.692244,785.374853 443.168804,784.831873 443.610224,784.265473 L866.006424,241.190173 Z M342.796424,809.480173 L129.746424,596.430173 L77.9264235,689.707173 L249.516424,861.297173 L342.796424,809.480173 Z\"></path>\n                </g>\n                <g transform=\"translate(-0.000000, 755.530173)\" fill=\"#D50202\">\n                    <path d=\"M124.711543,0 L313.042043,188.3374 L233.288043,268.0914 C222.003043,279.3764 204.483043,281.5324 190.800043,273.3219 L16.8900429,168.9719 C-2.51595711,157.3309 -5.80895711,130.5499 10.1908429,114.5499 L124.711543,0 Z\" class=\"bb-pen-tip\"></path>\n                </g>\n            </g>\n        </g>\n    </g>\n</svg>";
+  }
+
+  if (name === "rect") {
+    return "<svg width=\"339px\" height=\"241px\" viewBox=\"0 0 339 241\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-0.000865, 0.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(0.000865, 0.000000)\" fill=\"#000000\">\n                <path d=\"M339,0 L339,241 L0,241 L0,0 L339,0 Z M312.826351,26.168387 L26.1855674,26.168387 L26.1855674,214.41156 L312.826351,214.41156 L312.826351,26.168387 Z\"></path>\n            </g>\n            <g transform=\"translate(0.000000, 83.206095)\" fill=\"#D50202\" class=\"bb-pen-tip\">\n                <path d=\"M0,0 L26.186,26.186 L26.1864325,131.205465 L131.204,131.205 L157.792,157.793 L0.000865118243,157.793905 L0,0 Z\"></path>\n            </g>\n        </g>\n    </g>\n</svg>";
+  }
+
+  if (name === "mic") {
+    return "<svg\n    width=\"1200pt\"\n    height=\"1200pt\"\n    version=\"1.1\"\n    viewBox=\"0 0 1200 1200\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g fill=\"#000\">\n      <path\n        d=\"m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z\"\n      />\n      <path\n        d=\"m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z\"\n      />\n    </g>\n  </svg>";
+  }
+
+  if (name === "mic") {
+    return "<svg\n    width=\"1200pt\"\n    height=\"1200pt\"\n    version=\"1.1\"\n    viewBox=\"0 0 1200 1200\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g fill=\"#000\">\n      <path\n        d=\"m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z\"\n      />\n      <path\n        d=\"m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z\"\n      />\n    </g>\n  </svg>";
+  }
+
+  if (name === "recorderon") {
+    return "<svg width=\"1160px\" height=\"1160px\" viewBox=\"0 0 1160 1160\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n      <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n          <g  transform=\"translate(0.000000, -0.000000)\" fill-rule=\"nonzero\">\n              <path d=\"M579.91,0 C258.38,0 0,261.24 0,579.91 C0,898.57 258.38,1159.82 579.91,1159.82 C901.44,1159.82 1159.82,901.44 1159.82,579.91 C1159.82,258.38 898.57,0 579.91,0 Z M579.91,1045 C324.41,1045 114.84,835.43 114.84,579.93 C114.84,324.43 321.54,114.86 579.91,114.86 C838.29,114.86 1042.11,324.43 1042.11,579.93 C1042.11,835.43 835.41,1045 579.91,1045 Z\" fill=\"#000\"></path>\n              <path d=\"M815.32,579.905 C815.32,709.915 709.93,815.315 579.91,815.315 C449.89,815.315 344.5,709.925 344.5,579.905 C344.5,449.895 449.89,344.495 579.91,344.495 C709.93,344.495 815.32,449.885 815.32,579.905\" fill=\"#D50202\"></path>\n          </g>\n      </g>\n  </svg>";
+  }
+
+  if (name === "recorderoff") {
+    return "<svg width=\"1200pt\" height=\"1200pt\" version=\"1.1\" viewBox=\"0 0 1200 1200\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m600 60c-298.8 0-540 241.2-540 540s241.2 540 540 540 540-241.2 540-540-241.2-540-540-540zm237.6 741.6c0 20.398-15.602 36-36 36h-403.2c-20.398 0-36-15.602-36-36v-403.2c0-20.398 15.602-36 36-36h403.2c20.398 0 36 15.602 36 36z\" fill=\"#d50202\"/>\n  </svg>";
+  }
+
+  if (name === "arrowdown") {
+    return "<svg class=\"bb-logo-arrowdown\" fill=\"".concat(color, "\" width=\"100pt\" height=\"100pt\" version=\"1.1\" viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z\"/>\n   </svg>");
+  }
+
+  if (name === "arrowleft") {
+    return "<svg fill=\"".concat(color, "\" width=\"100pt\" height=\"100pt\" version=\"1.1\" viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m70.988 1.6211c2.1875-2.168 5.7344-2.168 7.9297 0 2.1836 2.168 2.1836 5.7227 0 7.8906l-46.016 40.445 46.016 40.5c2.1836 2.168 2.1836 5.668 0 7.8906-2.1953 2.168-5.7383 2.168-7.9297 0l-50.039-44.109c-1.168-1.168-1.668-2.7227-1.5898-4.2773-0.078125-1.5 0.42188-3.0547 1.5898-4.2227l50.039-44.109z\" fill-rule=\"evenodd\"/>\n   </svg>");
+  }
+
+  if (name === "close") {
+    return "<svg fill=\"".concat(color, "\" width=\"100pt\" height=\"100pt\" version=\"1.1\" viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z\"/>\n   </svg>");
+  }
+
+  return "";
+};
+var toggleLoading = function toggleLoading(loading) {
+  var form = document.querySelector(".bb-feedback-form");
+  var loader = document.querySelector(".bb-feedback-dialog-loading--main");
+  var next = document.querySelector(".bb-feedback-dialog-header-back");
+  var close = document.querySelector(".bb-feedback-dialog-header-close");
+
+  if (loading) {
+    form.style.display = "none";
+    loader.style.display = "flex";
+
+    if (next) {
+      next.setAttribute("d", "t");
+      next.style.opacity = "0.2";
+    }
+
+    if (close) {
+      close.setAttribute("d", "t");
+      close.style.opacity = "0.2";
+    }
+  } else {
+    form.style.display = "block";
+    loader.style.display = "none";
+
+    if (next) {
+      next.setAttribute("d", "n");
+      next.style.opacity = "1";
+    }
+
+    if (close) {
+      close.setAttribute("d", "n");
+      close.style.opacity = "1";
+    }
+  }
+};
+;// CONCATENATED MODULE: ./src/NetworkInterception.js
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var GleapNetworkIntercepter = /*#__PURE__*/function () {
+  function GleapNetworkIntercepter() {
+    _classCallCheck(this, GleapNetworkIntercepter);
+
+    _defineProperty(this, "requestId", 0);
+
+    _defineProperty(this, "requests", {});
+
+    _defineProperty(this, "externalConsoleLogs", []);
+
+    _defineProperty(this, "maxRequests", 10);
+
+    _defineProperty(this, "filters", []);
+
+    _defineProperty(this, "initialized", false);
+
+    _defineProperty(this, "stopped", false);
+  }
+
+  _createClass(GleapNetworkIntercepter, [{
+    key: "getRequests",
+    value: function getRequests() {
+      var requests = this.externalConsoleLogs.concat(Object.values(this.requests));
+
+      if (!this.filters || this.filters.length === 0) {
+        return requests;
+      } // Perform network log filtering.
+
+
+      for (var i = 0; i < requests.length; i++) {
+        var request = requests[i]; // Headers
+
+        if (request && request.request && request.request.headers) {
+          for (var j = 0; j < this.filters.length; j++) {
+            delete request.request.headers[this.filters[j]];
+          }
+        } // Payload
+
+
+        if (request && request.request && request.request.payload) {
+          var payloadObj = request.request.payload;
+
+          try {
+            payloadObj = JSON.parse(request.request.payload);
+          } catch (e) {}
+
+          if (payloadObj) {
+            for (var j = 0; j < this.filters.length; j++) {
+              delete payloadObj[this.filters[j]];
+            }
+
+            request.request.payload = JSON.stringify(payloadObj);
+          }
+        } // Response
+
+
+        if (request && request.response && request.response.responseText) {
+          try {
+            var data = JSON.parse(request.response.responseText);
+
+            for (var j = 0; j < this.filters.length; j++) {
+              delete data[this.filters[j]];
+            }
+
+            request.response.responseText = JSON.stringify(data);
+          } catch (e) {}
+        }
+      }
+
+      return requests;
+    }
+  }, {
+    key: "setMaxRequests",
+    value: function setMaxRequests(maxRequests) {
+      this.maxRequests = maxRequests;
+    }
+  }, {
+    key: "setStopped",
+    value: function setStopped(stopped) {
+      this.stopped = stopped;
+    }
+  }, {
+    key: "setFilters",
+    value: function setFilters(filters) {
+      if (filters) {
+        this.filters = filters;
+      }
+    }
+  }, {
+    key: "cleanRequests",
+    value: function cleanRequests() {
+      var keys = Object.keys(this.requests);
+
+      if (keys.length > this.maxRequests) {
+        var keysToRemove = keys.slice(0, keys.length - this.maxRequests);
+
+        for (var i = 0; i < keysToRemove.length; i++) {
+          delete this.requests[keysToRemove[i]];
+        }
+      }
+    }
+  }, {
+    key: "calcRequestTime",
+    value: function calcRequestTime(bbRequestId) {
+      if (!bbRequestId || !this.requests || !this.requests[bbRequestId]) {
+        return;
+      }
+
+      var startDate = this.requests[bbRequestId]["date"];
+
+      if (startDate) {
+        this.requests[bbRequestId]["duration"] = new Date().getTime() - startDate.getTime();
+      }
+    }
+  }, {
+    key: "calculateTextSize",
+    value: function calculateTextSize(text) {
+      var size = new TextEncoder().encode(text).length;
+      var kiloBytes = size / 1024;
+      var megaBytes = kiloBytes / 1024;
+      return megaBytes;
+    }
+  }, {
+    key: "fixPayload",
+    value: function fixPayload(payload) {
+      if (payload === undefined || payload === null) {
+        return "{}";
+      }
+
+      try {
+        if ((typeof TextDecoder === "undefined" ? "undefined" : _typeof(TextDecoder)) !== undefined && ArrayBuffer.isView(payload)) {
+          var value = new TextDecoder().decode(payload);
+          return value;
+        }
+      } catch (exp) {}
+
+      return payload;
+    }
+  }, {
+    key: "start",
+    value: function start() {
+      var _this = this;
+
+      if (this.initialized) {
+        return;
+      }
+
+      this.initialized = true;
+      var self = this;
+      this.interceptNetworkRequests({
+        onFetch: function onFetch(params, bbRequestId) {
+          if (_this.stopped || !bbRequestId || !_this.requests) {
+            return;
+          }
+
+          if (params.length > 0 && typeof params[0] !== "undefined" && typeof params[0].url !== "undefined") {
+            _this.requests[bbRequestId] = {
+              url: params[0].url,
+              date: new Date(),
+              request: {
+                payload: "",
+                headers: typeof params[0].headers !== "undefined" ? Object.fromEntries(params[0].headers.entries()) : {}
+              },
+              type: typeof params[0].method !== "undefined" ? params[0].method : ""
+            };
+          } else {
+            if (params.length >= 2 && params[1]) {
+              var method = params[1] && params[1].method ? params[1].method : "GET";
+              _this.requests[bbRequestId] = {
+                request: {
+                  payload: self.fixPayload(params[1].body),
+                  headers: params[1].headers
+                },
+                type: method,
+                url: params[0],
+                date: new Date()
+              };
+            } else {
+              _this.requests[bbRequestId] = {
+                url: params[0],
+                date: new Date()
+              };
+            }
+          }
+
+          _this.cleanRequests();
+        },
+        onFetchLoad: function onFetchLoad(req, bbRequestId) {
+          if (_this.stopped || !bbRequestId || !_this.requests || !_this.requests[bbRequestId]) {
+            return;
+          }
+
+          try {
+            _this.requests[bbRequestId]["success"] = true;
+            _this.requests[bbRequestId]["response"] = {
+              status: req.status,
+              statusText: "",
+              responseText: "<request_still_open>"
+            };
+
+            _this.calcRequestTime(bbRequestId);
+
+            req.text().then(function (responseText) {
+              _this.requests[bbRequestId]["success"] = true;
+              _this.requests[bbRequestId]["response"] = {
+                status: req.status,
+                statusText: req.statusText,
+                responseText: self.calculateTextSize(responseText) > 0.5 ? "<response_too_large>" : responseText
+              };
+
+              _this.calcRequestTime(bbRequestId);
+
+              _this.cleanRequests();
+            });
+          } catch (exp) {}
+        },
+        onFetchFailed: function onFetchFailed(err, bbRequestId) {
+          if (_this.stopped || !bbRequestId || !_this.requests || !_this.requests[bbRequestId]) {
+            return;
+          }
+
+          _this.requests[bbRequestId]["success"] = false;
+
+          _this.calcRequestTime(bbRequestId);
+
+          _this.cleanRequests();
+        },
+        onOpen: function onOpen(request, args) {
+          if (_this.stopped) {
+            return;
+          }
+
+          if (request && request.bbRequestId && args.length >= 2 && _this.requests) {
+            _this.requests[request.bbRequestId] = {
+              type: args[0],
+              url: args[1],
+              date: new Date()
+            };
+          }
+
+          _this.cleanRequests();
+        },
+        onSend: function onSend(request, args) {
+          if (_this.stopped) {
+            return;
+          }
+
+          if (request && request.bbRequestId && _this.requests && _this.requests[request.bbRequestId]) {
+            _this.requests[request.bbRequestId]["request"] = {
+              payload: _this.fixPayload(args.length > 0 ? args[0] : "{}"),
+              headers: request.requestHeaders
+            };
+          }
+
+          _this.cleanRequests();
+        },
+        onError: function onError(request, args) {
+          if (!_this.stopped && _this.requests && request && request.currentTarget && request.currentTarget.bbRequestId && _this.requests[request.currentTarget.bbRequestId]) {
+            var target = request.currentTarget;
+            _this.requests[target.bbRequestId]["success"] = false;
+
+            _this.calcRequestTime(request.bbRequestId);
+          }
+
+          _this.cleanRequests();
+        },
+        onLoad: function onLoad(request, args) {
+          if (_this.stopped) {
+            return;
+          }
+
+          if (request && request.currentTarget && request.currentTarget.bbRequestId && _this.requests && _this.requests[request.currentTarget.bbRequestId]) {
+            var target = request.currentTarget;
+            var responseType = target.responseType;
+            var responseText = "<" + responseType + ">";
+
+            if (responseType === "" || responseType === "text") {
+              responseText = _this.calculateTextSize(target.responseText) > 0.5 ? "<response_too_large>" : target.responseText;
+            }
+
+            _this.requests[target.bbRequestId]["success"] = true;
+            _this.requests[target.bbRequestId]["response"] = {
+              status: target.status,
+              statusText: target.statusText,
+              responseText: responseText
+            };
+
+            _this.calcRequestTime(target.bbRequestId);
+          }
+
+          _this.cleanRequests();
+        }
+      });
+    }
+  }, {
+    key: "interceptNetworkRequests",
+    value: function interceptNetworkRequests(callback) {
+      var self = this;
+      var open = XMLHttpRequest.prototype.open;
+      var send = XMLHttpRequest.prototype.send;
+      XMLHttpRequest.prototype.wrappedSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+      XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+        if (!this.requestHeaders) {
+          this.requestHeaders = {};
+        }
+
+        if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
+          return;
+        }
+
+        if (!this.requestHeaders[header]) {
+          this.requestHeaders[header] = [];
+        }
+
+        this.requestHeaders[header].push(value);
+        this.wrappedSetRequestHeader(header, value);
+      };
+
+      XMLHttpRequest.prototype.open = function () {
+        this["bbRequestId"] = ++self.requestId;
+        callback.onOpen && callback.onOpen(this, arguments);
+
+        if (callback.onLoad) {
+          this.addEventListener("load", callback.onLoad.bind(callback));
+        }
+
+        if (callback.onError) {
+          this.addEventListener("error", callback.onError.bind(callback));
+        }
+
+        return open.apply(this, arguments);
+      };
+
+      XMLHttpRequest.prototype.send = function () {
+        callback.onSend && callback.onSend(this, arguments);
+        return send.apply(this, arguments);
+      };
+
+      if (window.fetch) {
+        (function () {
+          var originalFetch = window.fetch;
+
+          window.fetch = function () {
+            var bbRequestId = ++self.requestId;
+            callback.onFetch(arguments, bbRequestId);
+            return originalFetch.apply(this, arguments).then(function (response) {
+              if (response && typeof response.clone === "function") {
+                var data = response.clone();
+                callback.onFetchLoad(data, bbRequestId);
+              }
+
+              return response;
+            })["catch"](function (err) {
+              callback.onFetchFailed(err, bbRequestId);
+              throw err;
+            });
+          };
+        })();
+      }
+
+      return callback;
+    }
+  }, {
+    key: "blobToTextPromise",
+    value: function blobToTextPromise(blob) {
+      return new Promise(function (resolve, reject) {
+        var fr = new FileReader();
+
+        fr.onload = function (evt) {
+          if (evt && evt.target && evt.target.result) {
+            resolve(evt.target.result);
+          } else {
+            reject();
+          }
+        };
+
+        fr.onerror = function (err) {
+          reject(err);
+        };
+
+        fr.readAsText(blob);
+      });
+    }
+  }]);
+
+  return GleapNetworkIntercepter;
+}();
+
+/* harmony default export */ const NetworkInterception = (GleapNetworkIntercepter);
+;// CONCATENATED MODULE: ./src/ReplayConstants.js
+var REPLAYREC_ADD = "p";
+var REPLAYREC_CANVAS_DATA = "c";
+var REPLAYREC_DELAY = "o";
+var REPLAYREC_FORCE_STYLE_FLUSH = "f";
+var REPLAYREC_INPUT = "i";
+var REPLAYREC_INPUTCHECK = "z";
+var REPLAYREC_MOUSE_MOVE = "m";
+var REPLAYREC_MOUSE_DOWN = "n";
+var REPLAYREC_ATTR = "r";
+var REPLAYREC_TEXT = "t";
+var REPLAYREC_MOUSE_UP = "u";
+var REPLAYREC_REMOVE = "v";
+var REPLAYREC_SCROLL = "s";
+var REPLAYREC_MAINSCROLL = "x";
+;// CONCATENATED MODULE: ./src/ReplayRecFrame.js
+function ReplayRecFrame_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+function ReplayRecFrame_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ReplayRecFrame_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ReplayRecFrame_createClass(Constructor, protoProps, staticProps) { if (protoProps) ReplayRecFrame_defineProperties(Constructor.prototype, protoProps); if (staticProps) ReplayRecFrame_defineProperties(Constructor, staticProps); return Constructor; }
+
+
+
+var ReplayRecFrame = /*#__PURE__*/function () {
+  function ReplayRecFrame(win, node, rec) {
+    var _this = this;
+
+    ReplayRecFrame_classCallCheck(this, ReplayRecFrame);
+
+    this.win = win;
+    this.node = node;
+    this.rec = rec;
+    this.initialState = {};
+    this.initialActions = [];
+
+    this.prepEvent = function (event) {
+      var _a;
+
+      _this.flushObserver();
+
+      return ((_a = event.target) === null || _a === void 0 ? void 0 : _a.ReplayRecID) || 0;
+    };
+
+    this.mouseListener = function (event) {
+      var x = event.clientX;
+      var y = event.clientY;
+      var target = event.target;
+      var mouseEventNode = _this.node;
+
+      if (!mouseEventNode.contains(target)) {
+        return;
+      }
+
+      _this.flushObserver();
+
+      var nodeRect = mouseEventNode.getBoundingClientRect();
+      x -= nodeRect.left;
+      y -= nodeRect.top;
+      var key;
+
+      switch (event.type) {
+        case "mousemove":
+          key = REPLAYREC_MOUSE_MOVE;
+          break;
+
+        case "mouseup":
+          key = REPLAYREC_MOUSE_UP;
+          break;
+
+        case "mousedown":
+          key = REPLAYREC_MOUSE_DOWN;
+          break;
+
+        default:
+          throw new Error("Unknown event type: ".concat(event.type));
+      }
+
+      _this.rec.actions.push(ReplayRecFrame_defineProperty({}, key, [Math.round(x), Math.round(y)]));
+    };
+
+    this.scrollListener = function (event) {
+      if (!_this.node.contains(event.target)) {
+        return;
+      }
+
+      var id = _this.prepEvent(event);
+
+      if (id) {
+        _this.rec.pushScrollAction(id, event.target);
+      }
+    };
+
+    this.mainScrollListener = function () {
+      _this.flushObserver();
+
+      _this.rec.actions.push(ReplayRecFrame_defineProperty({}, REPLAYREC_MAINSCROLL, [window.scrollX, window.scrollY]));
+    };
+
+    this.inputListener = function (event) {
+      if (!_this.node.contains(event.target)) {
+        return;
+      }
+
+      var id = _this.prepEvent(event);
+
+      if (id && "value" in event.target) {
+        var val = event.target.value;
+
+        if (event.target.type === "password" && val && val.length) {
+          val = new Array(val.length + 1).join("*");
+        }
+
+        if (event.target.getAttribute("gleap-ignore") === "value") {
+          val = new Array(val.length + 1).join("*");
+        }
+
+        _this.rec.actions.push(ReplayRecFrame_defineProperty({}, REPLAYREC_INPUT, [id, val]));
+      }
+
+      if (id && "type" in event.target && event.target.type === "checkbox") {
+        var checked = event.target.checked;
+
+        _this.rec.actions.push(ReplayRecFrame_defineProperty({}, REPLAYREC_INPUTCHECK, [id, checked]));
+      }
+    };
+
+    this.flushListener = function (event) {
+      if (!_this.node.contains(event.target)) {
+        return;
+      }
+
+      var id = _this.prepEvent(event);
+
+      if (id) {
+        _this.rec.actions.push(ReplayRecFrame_defineProperty({}, REPLAYREC_FORCE_STYLE_FLUSH, id));
+      }
+    };
+
+    this.canvasListener = function (event) {
+      if (!_this.node.contains(event.target)) {
+        return;
+      }
+
+      var id = _this.prepEvent(event);
+
+      if (id) {
+        _this.rec.actions.push(ReplayRecFrame_defineProperty({}, REPLAYREC_CANVAS_DATA, [id, event.target.toDataURL(), "didDraw"]));
+      }
+    };
+
+    this.focusListener = function () {};
+
+    node.ownerDocument.ReplayRecInner = this;
+    var initialActions = [];
+    var serializedNode = this.rec.serializeNode(this.node, initialActions);
+
+    if (serializedNode) {
+      this.initialState = serializedNode;
+      this.initialActions = initialActions;
+      this.observer = new MutationObserver(rec.observerCallback);
+      this.observer.observe(node, {
+        attributes: true,
+        characterData: true,
+        childList: true,
+        subtree: true
+      }); // Get scroll position
+
+      this.mainScrollListener();
+      win.addEventListener("input", this.inputListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("mousemove", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("mousedown", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("mouseup", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("forceStyleFlush", this.flushListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("didDrawCanvas", this.canvasListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("focus", this.focusListener, {
+        capture: true,
+        passive: true
+      });
+      win.addEventListener("scroll", this.mainScrollListener, {
+        capture: true,
+        passive: true
+      });
+    }
+  }
+
+  ReplayRecFrame_createClass(ReplayRecFrame, [{
+    key: "stop",
+    value: function stop() {
+      this.flushObserver();
+      this.observer.disconnect();
+      this.win.removeEventListener("input", this.inputListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("mousemove", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("mousedown", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("mouseup", this.mouseListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("forceStyleFlush", this.flushListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("didDrawCanvas", this.canvasListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("focus", this.focusListener, {
+        capture: true,
+        passive: true
+      });
+      this.win.removeEventListener("scroll", this.mainScrollListener, {
+        capture: true,
+        passive: true
+      });
+      this.rec.deleteAllReplayRecIDs(this.node);
+    }
+  }, {
+    key: "flushObserver",
+    value: function flushObserver() {
+      this.rec.observerCallback(this.observer.takeRecords());
+    }
+  }]);
+
+  return ReplayRecFrame;
+}();
+
+
+;// CONCATENATED MODULE: ./src/ReplayRecorder.js
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = ReplayRecorder_unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it["return"] != null) it["return"](); } finally { if (didErr) throw err; } } }; }
+
+function ReplayRecorder_unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return ReplayRecorder_arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return ReplayRecorder_arrayLikeToArray(o, minLen); }
+
+function ReplayRecorder_arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+function ReplayRecorder_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ReplayRecorder_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ReplayRecorder_createClass(Constructor, protoProps, staticProps) { if (protoProps) ReplayRecorder_defineProperties(Constructor.prototype, protoProps); if (staticProps) ReplayRecorder_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ReplayRecorder_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+var ReplayRecorder = /*#__PURE__*/function () {
+  function ReplayRecorder() {
+    var _this = this;
+
+    ReplayRecorder_classCallCheck(this, ReplayRecorder);
+
+    ReplayRecorder_defineProperty(this, "fetchCSSResource", function (url) {
+      var self = _this;
+      return new Promise(function (resolve, reject) {
+        if (url) {
+          var xhr = new XMLHttpRequest();
+
+          xhr.onload = function () {
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+              resolve(reader.result);
+            };
+
+            reader.onerror = function () {
+              resolve();
+            };
+
+            reader.readAsDataURL(xhr.response);
+          };
+
+          xhr.onerror = function (err) {
+            resolve();
+          };
+
+          xhr.open("GET", url);
+          xhr.responseType = "blob";
+          xhr.send();
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    ReplayRecorder_defineProperty(this, "replaceAsync", function (str, regex, asyncFn) {
+      return new Promise(function (resolve, reject) {
+        var promises = [];
+        str.replace(regex, function (match) {
+          for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+            args[_key - 1] = arguments[_key];
+          }
+
+          var promise = asyncFn.apply(void 0, [match].concat(args));
+          promises.push(promise);
+        });
+        Promise.all(promises).then(function (data) {
+          resolve(str.replace(regex, function () {
+            return data.shift();
+          }));
+        })["catch"](function () {
+          reject();
+        });
+      });
+    });
+
+    ReplayRecorder_defineProperty(this, "validateStylesheetResources", function (data, url) {
+      var basePath = url.substring(0, url.lastIndexOf("/"));
+      var split = data.split(",");
+
+      if (split.length !== 2) {
+        return Promise.reject();
+      }
+
+      data = atob(split[1]);
+      delete split[1];
+      return _this.replaceAsync(data, /url\((.*?)\)/g, function (matchedData) {
+        return new Promise(function (resolve, reject) {
+          var matchedUrl = matchedData.substr(4, matchedData.length - 5).replaceAll("'", "").replaceAll('"', ""); // Remote file or data
+
+          if (matchedUrl.indexOf("http") === 0 || matchedUrl.indexOf("//") === 0 || matchedUrl.indexOf("data") === 0) {
+            return resolve(matchedData);
+          }
+
+          try {
+            var resourcePath = matchedUrl;
+
+            if (basePath) {
+              resourcePath = basePath + "/" + matchedUrl;
+            }
+
+            return _this.fetchCSSResource(resourcePath).then(function (resourceData) {
+              if (matchedUrl.indexOf("data:text/html") === 0) {
+                return resolve(matchedData);
+              }
+
+              return resolve("url(" + resourceData + ")");
+            });
+          } catch (exp) {
+            return resolve(matchedData);
+          }
+        });
+      }).then(function (result) {
+        return split[0] + "," + btoa(result);
+      });
+    });
+
+    ReplayRecorder_defineProperty(this, "progressResource", function (data, src, resolve, reject) {
+      if (data && data.indexOf("data:text/css") === 0) {
+        _this.validateStylesheetResources(data, src).then(function (data) {
+          _this.resourcesToResolve[src] = data;
+          resolve();
+        });
+      } else if (data && (data.indexOf("data:image/jpeg") === 0 || data.indexOf("data:image/png") === 0)) {
+        resizeImage(data, 500, 500).then(function (data) {
+          _this.resourcesToResolve[src] = data;
+          resolve();
+        });
+      } else {
+        _this.resourcesToResolve[src] = data;
+        resolve();
+      }
+    });
+
+    ReplayRecorder_defineProperty(this, "fetchItemResource", function (src) {
+      var self = _this;
+      return new Promise(function (resolve, reject) {
+        if (src) {
+          var xhr = new XMLHttpRequest();
+
+          xhr.onload = function () {
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+              self.progressResource(reader.result, src, resolve, reject);
+            };
+
+            reader.onerror = function () {
+              resolve();
+            };
+
+            reader.readAsDataURL(xhr.response);
+          };
+
+          xhr.onerror = function (err) {
+            resolve();
+          };
+
+          var url = src;
+          xhr.open("GET", url);
+          xhr.responseType = "blob";
+          xhr.send();
+        } else {
+          resolve();
+        }
+      });
+    });
+
+    this.stopped = false;
+    this.startDate = Date.now();
+    this.node = document.documentElement;
+    this.nextID = 1;
+    this.actions = [];
+    this.lastActionTime = Date.now();
+    this.observerCallback = this.callback.bind(this);
+    this.resourcesToResolve = {};
+    this.rootFrame = new ReplayRecFrame(window, this.node, this);
+    this.evaluateFocus();
+    this.result = null;
+    this.finalizingResult = false;
+  }
+
+  ReplayRecorder_createClass(ReplayRecorder, [{
+    key: "isFull",
+    value: function isFull() {
+      if (this.actions && this.actions.length > 7000) {
+        return true;
+      }
+
+      return false;
+    }
+  }, {
+    key: "fetchImageResources",
+    value: function fetchImageResources() {
+      var resolvePromises = [];
+      var resourceKeys = Object.keys(this.resourcesToResolve);
+
+      for (var i = 0; i < resourceKeys.length; i++) {
+        if (!isBlacklisted(resourceKeys[i])) {
+          resolvePromises.push(this.fetchItemResource(resourceKeys[i]));
+        }
+      }
+
+      return Promise.all(resolvePromises);
+    }
+  }, {
+    key: "stop",
+    value: function stop() {
+      var _this2 = this;
+
+      var fetchResources = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      this.stopped = true;
+
+      if (!this.rootFrame) {
+        this.rootFrame = null;
+        return;
+      }
+
+      var replayResult = {
+        startDate: this.startDate,
+        initialState: this.rootFrame.initialState,
+        initialActions: this.rootFrame.initialActions,
+        actions: this.actions,
+        baseUrl: window.location.origin,
+        width: window.innerWidth,
+        height: window.innerHeight,
+        resourcesToResolve: this.resourcesToResolve,
+        isMobile: isMobile()
+      };
+      this.rootFrame.stop();
+      this.rootFrame = null;
+      this.finalizingResult = true;
+
+      if (fetchResources) {
+        return this.fetchImageResources().then(function () {
+          _this2.cleanupAfterStop(replayResult);
+        });
+      } else {
+        this.cleanupAfterStop(replayResult);
+      }
+    }
+  }, {
+    key: "cleanupAfterStop",
+    value: function cleanupAfterStop(replayResult) {
+      this.cleanupResources();
+      this.result = replayResult;
+      this.finalizingResult = false;
+    }
+  }, {
+    key: "cleanupResources",
+    value: function cleanupResources() {
+      var resourceKeys = Object.keys(this.resourcesToResolve);
+
+      for (var i = 0; i < resourceKeys.length; i++) {
+        if (this.resourcesToResolve[resourceKeys[i]] === "--") {
+          delete this.resourcesToResolve[resourceKeys[i]];
+        }
+      }
+    }
+  }, {
+    key: "evaluateFocus",
+    value: function evaluateFocus() {
+      this.rootFrame.flushObserver();
+    }
+  }, {
+    key: "allowAttribute",
+    value: function allowAttribute(e, name) {
+      // eslint-disable-next-line default-case
+      switch (name) {
+        case "srcdoc":
+          if (e.tagName === "IFRAME") {
+            return false;
+          }
+
+          break;
+
+        case "title":
+          return false;
+      }
+
+      return true;
+    }
+  }, {
+    key: "pushScrollAction",
+    value: function pushScrollAction(id, element, actionsList) {
+      var actions = actionsList ? actionsList : this.actions;
+      var scrolledIntoView = element.elementScrolledIntoView;
+
+      if (scrolledIntoView) {
+        var a = {};
+
+        if (scrolledIntoView.ReplayRecID) {
+          var scrolledIntoViewOffset = "elementScrolledIntoViewOffset" in element ? element.elementScrolledIntoViewOffset : null;
+          a[REPLAYREC_SCROLL] = [id, scrolledIntoView.ReplayRecID, scrolledIntoViewOffset];
+        } else {
+          if (scrolledIntoView !== "bottom") {
+            throw new Error("Unknown scrolledIntoView: ".concat(scrolledIntoView));
+          }
+
+          a[REPLAYREC_SCROLL] = [id, scrolledIntoView];
+        }
+
+        actions.push(a);
+      }
+    }
+  }, {
+    key: "serializeNode",
+    value: function serializeNode(node, actions) {
+      if ("ReplayRecID" in node) {
+        return null;
+      }
+
+      var id = this.nextID++;
+      var obj = {
+        id: id
+      };
+      node.ReplayRecID = id;
+
+      switch (node.nodeType) {
+        case Node.ELEMENT_NODE:
+          {
+            var tag = node.tagName; // eslint-disable-next-line default-case
+
+            switch (tag) {
+              case "INPUT":
+              case "TEXTAREA":
+                {
+                  var a = {};
+                  var val = node.value;
+
+                  if (node.type && node.type === "password" && val && val.length) {
+                    val = new Array(val.length + 1).join("*");
+                  }
+
+                  if (node.getAttribute("gleap-ignore") === "value") {
+                    val = new Array(val.length + 1).join("*");
+                  }
+
+                  a[REPLAYREC_INPUT] = [id, val];
+                  actions.push(a);
+                  var listener = node.ownerDocument.ReplayRecInner.scrollListener;
+                  node.addEventListener("scroll", listener, {
+                    passive: true
+                  });
+                  break;
+                }
+
+              case "PRE":
+              case "DIV":
+                {
+                  if (node.classList.contains("bb-hidden")) {
+                    delete node.ReplayRecID;
+                    return null;
+                  } // In Pernosco all scrollable elements happen to be DIV/INPUT/TEXTAREA
+
+
+                  var _listener = node.ownerDocument.ReplayRecInner.scrollListener;
+                  node.addEventListener("scroll", _listener, {
+                    passive: true
+                  });
+                  break;
+                }
+
+              case "SCRIPT":
+              case "LINK":
+                delete node.ReplayRecID;
+                var nodeRel = node.getAttribute("rel"); // Stylesheets
+
+                if (node && node.href && (node.href.includes(".css") || nodeRel && nodeRel.includes("stylesheet"))) {
+                  this.resourcesToResolve[node.getAttribute("href")] = "--";
+                  break;
+                } // HTML Imports
+
+
+                if (nodeRel && nodeRel === "import") {
+                  break;
+                }
+
+                return null;
+
+              case "CANVAS":
+                {
+                  var _a = {};
+                  _a[REPLAYREC_CANVAS_DATA] = [id, node.toDataURL()];
+                  actions.push(_a);
+                  break;
+                }
+            }
+
+            obj[""] = tag;
+            var attrs = {};
+            var hasAttr = false;
+
+            var _iterator = _createForOfIteratorHelper(node.attributes),
+                _step;
+
+            try {
+              for (_iterator.s(); !(_step = _iterator.n()).done;) {
+                var _a2 = _step.value;
+                var name = _a2.name;
+
+                if (this.allowAttribute(node, name)) {
+                  attrs[name] = _a2.value;
+                  hasAttr = true;
+                }
+              }
+            } catch (err) {
+              _iterator.e(err);
+            } finally {
+              _iterator.f();
+            }
+
+            if (hasAttr) {
+              obj.a = attrs;
+
+              if (obj.a && obj.a.src && tag !== "SOURCE" && tag !== "IFRAME") {
+                this.optionallyAddAttribute("src", obj.a.src);
+              }
+            }
+
+            var children = [];
+
+            var _iterator2 = _createForOfIteratorHelper(node.childNodes),
+                _step2;
+
+            try {
+              for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+                var c = _step2.value;
+                var serialized = this.serializeNode(c, actions);
+
+                if (serialized) {
+                  children.push(serialized);
+                }
+              }
+            } catch (err) {
+              _iterator2.e(err);
+            } finally {
+              _iterator2.f();
+            }
+
+            if (children.length > 0) {
+              obj.c = children;
+            }
+
+            if (node.scrollLeft || node.scrollTop) {
+              this.pushScrollAction(id, node, actions);
+            }
+
+            break;
+          }
+
+        case Node.TEXT_NODE:
+        case Node.CDATA_SECTION_NODE:
+          {
+            // Check if it's a child of a style node.
+            var parentNode = node.parentNode;
+
+            if (node.parentNode && parentNode.tagName && parentNode.tagName === "STYLE" && parentNode.ownerDocument) {
+              var styleSheets = parentNode.ownerDocument.styleSheets;
+
+              if (styleSheets) {
+                for (var i = 0; i < styleSheets.length; i++) {
+                  var styleSheet = styleSheets[i];
+
+                  if (styleSheet.ownerNode && styleSheet.ownerNode.ReplayRecID && parentNode.ReplayRecID === styleSheet.ownerNode.ReplayRecID) {
+                    var cssRules = null;
+
+                    if (styleSheet.cssRules) {
+                      cssRules = styleSheet.cssRules;
+                    } else if (styleSheet.rules) {
+                      cssRules = styleSheet.rules;
+                    }
+
+                    if (cssRules) {
+                      var cssTextContent = "";
+
+                      for (var cssRuleItem in cssRules) {
+                        if (cssRules[cssRuleItem].cssText) {
+                          cssTextContent += cssRules[cssRuleItem].cssText;
+                        }
+                      }
+
+                      obj.d = cssTextContent;
+                    }
+                  }
+                }
+              }
+            } // Simply pass the data of the text.
+
+
+            var data = node.data;
+
+            if (data.length > 0 && !obj.d) {
+              obj.d = data;
+            }
+
+            break;
+          }
+
+        case Node.PROCESSING_INSTRUCTION_NODE:
+        case Node.COMMENT_NODE:
+          break;
+
+        default:
+          delete node.ReplayRecID;
+          throw new Error("Bad node ".concat(node));
+      }
+
+      return obj;
+    }
+  }, {
+    key: "delay",
+    value: function delay(seconds) {
+      this.lastActionTime -= seconds * 1000;
+    }
+  }, {
+    key: "deleteAllReplayRecIDs",
+    value: function deleteAllReplayRecIDs(e) {
+      delete e.ReplayRecID;
+      var listener = e.ownerDocument.ReplayRecInner.scrollListener;
+      e.removeEventListener("scroll", listener, {
+        passive: true
+      });
+
+      for (var c = e.firstChild; c; c = c.nextSibling) {
+        if (c.ReplayRecID) {
+          this.deleteAllReplayRecIDs(c);
+        }
+      }
+    }
+  }, {
+    key: "optionallyAddAttribute",
+    value: function optionallyAddAttribute(name, value) {
+      if (name === "src" && value) {
+        var url = value;
+
+        if (url.indexOf("data") !== 0) {
+          this.resourcesToResolve[url] = "--";
+        }
+      }
+    }
+  }, {
+    key: "callback",
+    value: function callback(records, // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    observer) {
+      var now = Date.now();
+
+      if (now > this.lastActionTime) {
+        var a = {};
+        a[REPLAYREC_DELAY] = now - this.lastActionTime;
+        this.actions.push(a);
+      }
+
+      this.lastActionTime = Date.now();
+
+      try {
+        var _iterator3 = _createForOfIteratorHelper(records),
+            _step3;
+
+        try {
+          for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+            var r = _step3.value;
+
+            if (r.target.ReplayRecID && r.type === "childList") {
+              var _iterator5 = _createForOfIteratorHelper(r.removedNodes),
+                  _step5;
+
+              try {
+                for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+                  var child = _step5.value;
+                  var childID = child.ReplayRecID;
+
+                  if (!childID) {
+                    continue;
+                  }
+
+                  var _a4 = {};
+                  _a4[REPLAYREC_REMOVE] = childID;
+                  this.actions.push(_a4);
+                  this.deleteAllReplayRecIDs(child);
+                }
+              } catch (err) {
+                _iterator5.e(err);
+              } finally {
+                _iterator5.f();
+              }
+            }
+          }
+        } catch (err) {
+          _iterator3.e(err);
+        } finally {
+          _iterator3.f();
+        }
+
+        var nodesWithAddedChildren = [];
+
+        var _iterator4 = _createForOfIteratorHelper(records),
+            _step4;
+
+        try {
+          for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+            var _r = _step4.value;
+            var target = _r.target;
+            var id = target.ReplayRecID;
+
+            if (!id) {
+              continue;
+            } // eslint-disable-next-line default-case
+
+
+            switch (_r.type) {
+              case "attributes":
+                {
+                  var attributeName = _r.attributeName;
+
+                  if (this.allowAttribute(target, attributeName)) {
+                    var _a5 = {};
+                    _a5[REPLAYREC_ATTR] = [id, attributeName, target.getAttribute(attributeName)];
+
+                    if (target.tagName !== "SOURCE") {
+                      this.optionallyAddAttribute(attributeName, target.getAttribute(attributeName));
+                    }
+
+                    this.actions.push(_a5);
+                  }
+
+                  break;
+                }
+
+              case "characterData":
+                {
+                  var _a6 = {};
+
+                  if (target.nodeType === Node.TEXT_NODE) {
+                    _a6[REPLAYREC_TEXT] = [id, target.data];
+                  }
+
+                  this.actions.push(_a6);
+                  break;
+                }
+
+              case "childList":
+                {
+                  if (_r.addedNodes.length > 0 && !target.ReplayRecNodesAdded) {
+                    target.ReplayRecNodesAdded = true;
+                    nodesWithAddedChildren.push(target);
+                  }
+                }
+            }
+          }
+        } catch (err) {
+          _iterator4.e(err);
+        } finally {
+          _iterator4.f();
+        }
+
+        for (var _i = 0, _nodesWithAddedChildr = nodesWithAddedChildren; _i < _nodesWithAddedChildr.length; _i++) {
+          var node = _nodesWithAddedChildr[_i];
+          delete node.ReplayRecNodesAdded;
+
+          for (var c = node.lastChild; c; c = c.previousSibling) {
+            if (c.ReplayRecID) {
+              continue;
+            }
+
+            var _a3 = {};
+            var actions = [];
+            var serializedNode = this.serializeNode(c, actions);
+
+            if (!serializedNode) {
+              continue;
+            }
+
+            var nextSibling = c.nextSibling;
+            _a3[REPLAYREC_ADD] = [node.ReplayRecID, nextSibling ? nextSibling.ReplayRecID : null, serializedNode, actions];
+            this.actions.push(_a3);
+          }
+        }
+      } catch (ex) {
+        throw ex;
+      }
+    }
+  }]);
+
+  return ReplayRecorder;
+}();
+
+
+;// CONCATENATED MODULE: ./src/Session.js
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { Session_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function Session_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function Session_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function Session_createClass(Constructor, protoProps, staticProps) { if (protoProps) Session_defineProperties(Constructor.prototype, protoProps); if (staticProps) Session_defineProperties(Constructor, staticProps); return Constructor; }
+
+function Session_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var Session = /*#__PURE__*/function () {
+  function Session() {
+    var _this = this;
+
+    Session_classCallCheck(this, Session);
+
+    Session_defineProperty(this, "apiUrl", "https://api.gleap.io");
+
+    Session_defineProperty(this, "widgetUrl", "https://widget.gleap.io");
+
+    Session_defineProperty(this, "sdkKey", null);
+
+    Session_defineProperty(this, "session", {
+      gleapId: null,
+      gleapHash: null,
+      name: "",
+      email: ""
+    });
+
+    Session_defineProperty(this, "ready", false);
+
+    Session_defineProperty(this, "onSessionReadyListener", []);
+
+    Session_defineProperty(this, "setOnSessionReady", function (onSessionReady) {
+      if (_this.ready) {
+        onSessionReady();
+      } else {
+        _this.onSessionReadyListener.push(onSessionReady);
+      }
+    });
+
+    Session_defineProperty(this, "injectSession", function (http) {
+      if (http && _this.session) {
+        http.setRequestHeader("Api-Token", _this.sdkKey);
+        http.setRequestHeader("Gleap-Id", _this.session.gleapId);
+        http.setRequestHeader("Gleap-Hash", _this.session.gleapHash);
+      }
+    });
+
+    Session_defineProperty(this, "clearSession", function () {
+      var renewSession = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      try {
+        localStorage.removeItem("gleap-id");
+        localStorage.removeItem("gleap-hash");
+      } catch (exp) {}
+
+      _this.session = {
+        id: null,
+        hash: null,
+        type: null,
+        name: "",
+        email: ""
+      }; // Start guest session.
+
+      if (renewSession) {
+        _this.startSession();
+      }
+    });
+
+    Session_defineProperty(this, "validateSession", function (session) {
+      _this.session = session;
+      _this.ready = true;
+    });
+
+    Session_defineProperty(this, "startSession", function () {
+      var self = _this;
+      var http = new XMLHttpRequest();
+      http.open("POST", self.apiUrl + "/sessions");
+      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      http.setRequestHeader("Api-Token", self.sdkKey);
+
+      try {
+        var gleapId = localStorage.getItem("gleap-id");
+        var gleapHash = localStorage.getItem("gleap-hash");
+
+        if (gleapId && gleapHash) {
+          http.setRequestHeader("Gleap-Id", gleapId);
+          http.setRequestHeader("Gleap-Hash", gleapHash);
+        }
+      } catch (exp) {}
+
+      http.onerror = function (error) {
+        self.clearSession(false);
+      };
+
+      http.onreadystatechange = function (e) {
+        if (http.readyState === XMLHttpRequest.DONE) {
+          if (http.status === 200 || http.status === 201) {
+            try {
+              var sessionData = JSON.parse(http.responseText);
+
+              try {
+                localStorage.setItem("gleap-id", sessionData.gleapId);
+                localStorage.setItem("gleap-hash", sessionData.gleapHash);
+              } catch (exp) {}
+
+              self.validateSession(sessionData); // Session is ready. Notify all subscribers.
+
+              if (self.onSessionReadyListener.length > 0) {
+                for (var i = 0; i < self.onSessionReadyListener.length; i++) {
+                  self.onSessionReadyListener[i]();
+                }
+              }
+
+              self.onSessionReadyListener = [];
+            } catch (exp) {}
+          } else {
+            self.clearSession(false);
+          }
+        }
+      };
+
+      http.send(JSON.stringify({}));
+    });
+
+    Session_defineProperty(this, "identifySession", function (userId, userData) {
+      var self = _this;
+      return new Promise(function (resolve, reject) {
+        // Wait for gleap session to be ready.
+        _this.setOnSessionReady(function () {
+          var http = new XMLHttpRequest();
+          http.open("POST", self.apiUrl + "/sessions/identify");
+          http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+          http.setRequestHeader("Api-Token", self.sdkKey);
+
+          try {
+            var gleapId = localStorage.getItem("gleap-id");
+            var gleapHash = localStorage.getItem("gleap-hash");
+
+            if (gleapId && gleapHash) {
+              http.setRequestHeader("Gleap-Id", gleapId);
+              http.setRequestHeader("Gleap-Hash", gleapHash);
+            }
+          } catch (exp) {}
+
+          http.onerror = function () {
+            reject();
+          };
+
+          http.onreadystatechange = function (e) {
+            if (http.readyState === XMLHttpRequest.DONE) {
+              if (http.status === 200 || http.status === 201) {
+                try {
+                  var sessionData = JSON.parse(http.responseText);
+
+                  try {
+                    localStorage.setItem("gleap-id", sessionData.gleapId);
+                    localStorage.setItem("gleap-hash", sessionData.gleapHash);
+                  } catch (exp) {}
+
+                  self.validateSession(sessionData); // Optionally update UI.
+
+                  var userNameInfo = document.querySelector("#bb-user-name");
+
+                  if (userNameInfo && sessionData.name) {
+                    userNameInfo.textContent = sessionData.name;
+                  }
+
+                  resolve(sessionData);
+                } catch (exp) {
+                  reject(exp);
+                }
+              } else {
+                self.clearSession(false);
+                reject();
+              }
+            }
+          };
+
+          http.send(JSON.stringify(_objectSpread(_objectSpread({}, userData), {}, {
+            userId: userId
+          })));
+        });
+      });
+    });
+  }
+
+  Session_createClass(Session, null, [{
+    key: "getInstance",
+    value: // Session singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new Session();
+        return this.instance;
+      } else {
+        return this.instance;
+      }
+    }
+  }]);
+
+  return Session;
+}();
+
+Session_defineProperty(Session, "instance", void 0);
+
+
+;// CONCATENATED MODULE: ./src/FeedbackForm.js
+
+
+
+var formPageClass = "bb-feedback-formpage";
+
+var getTitleHTML = function getTitleHTML(title, overrideLanguage, required) {
+  if (title === undefined) {
+    return "";
+  }
+
+  return "<div class=\"bb-feedback-elementtitle\">".concat(translateText(title, overrideLanguage)).concat(required ? "<span>*</span>" : "", "</div>");
+};
+
+var getDescriptionHTML = function getDescriptionHTML(description, overrideLanguage) {
+  if (description === undefined || description.length === 0) {
+    return "";
+  }
+
+  return "<div class=\"bb-feedback-form-description\">".concat(translateText(description, overrideLanguage), "</div>");
+};
+
+var getFormPageClass = function getFormPageClass(formPage) {
+  if (formPage === undefined) {
+    return "";
+  }
+
+  return "".concat(formPageClass, " ").concat(formPageClass, "-").concat(formPage);
+};
+
+var renderButtonsForPage = function renderButtonsForPage(currentPage, totalPages, overrideLanguage) {
+  var lastButton = currentPage === totalPages - 1;
+  return "<div class=\"bb-feedback-inputgroup bb-feedback-inputgroup-button ".concat(getFormPageClass(currentPage), "\">\n      <div class=\"bb-feedback-send-button bb-feedback-next-btn-").concat(currentPage, "\" bb-form-page=\"").concat(currentPage, "\">").concat(translateText(lastButton ? "Submit" : "Next", overrideLanguage), "</div>\n    </div>");
+};
+
+var isTypeAutoNext = function isTypeAutoNext(type) {
+  if (type === "rating" || type === "onetofive") {
+    return true;
+  }
+
+  return false;
+};
+
+var buildForm = function buildForm(feedbackOptions, overrideLanguage) {
+  var form = feedbackOptions.form;
+  var formHTML = "<div class=\"bb-form-progress\"><div class=\"bb-form-progress-inner\"></div></div>";
+
+  for (var i = 0; i < form.length; i++) {
+    var formItem = form[i];
+
+    if (!formItem) {
+      break;
+    } // Determine current page.
+
+
+    var currentPage = formItem.page;
+    var formItemData = "bb-form-page=\"".concat(currentPage, "\" bb-form-item=\"").concat(encodeURIComponent(JSON.stringify(formItem)), "\"");
+
+    if (formItem.type === "text") {
+      formHTML += "<div class=\"bb-feedback-inputgroup ".concat(getFormPageClass(currentPage), "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n          <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"").concat(formItem.inputtype, "\" placeholder=\"").concat(translateText(formItem.placeholder, overrideLanguage), "\" />\n      </div>");
+    }
+
+    if (formItem.type === "upload") {
+      var acceptAttribute = "";
+
+      if (formItem.restrictions && formItem.restrictions.length > 0) {
+        acceptAttribute = "accept=\"".concat(formItem.restrictions, "\"");
+      }
+
+      formHTML += "<div class=\"bb-feedback-inputgroup ".concat(getFormPageClass(currentPage), "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n      <div class=\"bb-feedback-dialog-loading bb-feedback-dialog-loading--").concat(formItem.name, "\">\n        <svg\n          class=\"bb--progress-ring\"\n          width=\"120\"\n          height=\"120\">\n          <circle\n            class=\"bb--progress-ring__circle\"\n            stroke=\"").concat(Gleap.getInstance().mainColor, "\"\n            stroke-width=\"6\"\n            fill=\"transparent\"\n            r=\"34\"\n            cx=\"60\"\n            cy=\"60\"/>\n        </svg>\n      </div>\n      <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"hidden\" />\n        <input class=\"bb-feedback-formdata bb-form-fileupload-").concat(formItem.name, "\" type=\"file\" ").concat(acceptAttribute, " />\n        <span class=\"bb-feedback-filesizeinfo bb-feedback-filesizeinfo-").concat(formItem.name, "\">").concat(translateText("The file you chose exceeds the file size limit of 3MB.", overrideLanguage), "</span>\n      </div>");
+    }
+
+    if (formItem.type === "textarea") {
+      formHTML += "<div class=\"bb-feedback-inputgroup ".concat(getFormPageClass(currentPage), "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n          <textarea class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " placeholder=\"").concat(translateText(formItem.placeholder, overrideLanguage), "\"></textarea>\n        </div>");
+    }
+
+    if (formItem.type === "privacypolicy") {
+      formHTML += "<div class=\"bb-feedback-inputgroup bb-feedback-inputgroup--privacy-policy ".concat(getFormPageClass(currentPage), "\">\n        <input id=\"gleap-privacy-policy\" ").concat(formItemData, " class=\"bb-feedback-").concat(formItem.name, "\" type=\"checkbox\" required />\n        <label for=\"gleap-privacy-policy\" class=\"bb-feedback-inputgroup--privacy-policy-label\">").concat(translateText("I read and accept the ", overrideLanguage), "<a id=\"bb-privacy-policy-link\" href=\"").concat(formItem.url, "\" target=\"_blank\">").concat(translateText("privacy policy", overrideLanguage), "</a>.</label>\n      </div>");
+    }
+
+    if (formItem.type === "rating") {
+      formHTML += "<div class=\"bb-feedback-rating ".concat(getFormPageClass(currentPage), " bb-feedback-rating-").concat(formItem.name, "\" ").concat(formItemData, "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n      <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"hidden\" />\n          <ul class=\"bb-feedback-emojigroup\">\n            <li class=\"bb-feedback-angry\" data-value=\"0\">\n              <div>\n                <svg class=\"bb-feedback-eye bb-feedback-left\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-eye bb-feedback-right\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-mouth\">\n                    <use xlink:href=\"#mouth\">\n                </svg>\n              </div>\n            </li>\n            <li class=\"bb-feedback-sad\" data-value=\"2.5\">\n              <div>\n                <svg class=\"bb-feedback-eye bb-feedback-left\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-eye bb-feedback-right\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-mouth\">\n                    <use xlink:href=\"#mouth\">\n                </svg>\n              </div>\n            </li>\n            <li class=\"bb-feedback-ok\" data-value=\"5\">\n                <div></div>\n            </li>\n            <li class=\"bb-feedback-good\" data-value=\"7.5\">\n              <div>\n                <svg class=\"bb-feedback-eye bb-feedback-left\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-eye bb-feedback-right\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-mouth\">\n                    <use xlink:href=\"#mouth\">\n                </svg>\n              </div>\n            </li>\n            <li class=\"bb-feedback-happy\" data-value=\"10\">\n              <div>\n                <svg class=\"bb-feedback-eye bb-feedback-left\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n                <svg class=\"bb-feedback-eye bb-feedback-right\">\n                    <use xlink:href=\"#eye\">\n                </svg>\n              </div>\n          </li>\n        </ul>\n        <svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\n            <symbol xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 7 4\" id=\"eye\">\n                <path d=\"M1,1 C1.83333333,2.16666667 2.66666667,2.75 3.5,2.75 C4.33333333,2.75 5.16666667,2.16666667 6,1\"></path>\n            </symbol>\n            <symbol xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 18 7\" id=\"mouth\">\n                <path d=\"M1,5.5 C3.66666667,2.5 6.33333333,1 9,1 C11.6666667,1 14.3333333,2.5 17,5.5\"></path>\n            </symbol>\n        </svg>\n        </div>");
+    }
+
+    if (formItem.type === "onetofive") {
+      var getNumberButtonHTML = function getNumberButtonHTML(formItem, number) {
+        return "<div class=\"bb-feedback-onetofive-button\" data-value=\"".concat(number, "\">").concat(number, "</div>");
+      };
+
+      formHTML += "<div class=\"bb-feedback-onetofive ".concat(getFormPageClass(currentPage), " bb-feedback-onetofive-").concat(formItem.name, "\" ").concat(formItemData, "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n      <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"hidden\" />\n        <div class=\"bb-feedback-onetofive-buttons\">\n          ").concat(getNumberButtonHTML(formItem, 1), "\n          ").concat(getNumberButtonHTML(formItem, 2), "\n          ").concat(getNumberButtonHTML(formItem, 3), "\n          ").concat(getNumberButtonHTML(formItem, 4), "\n          ").concat(getNumberButtonHTML(formItem, 5), "\n        </div>\n        <div class=\"bb-feedback-onetofive-description\"><span>").concat(translateText(formItem.lowestValueLabel, overrideLanguage), "</span><span>").concat(translateText(formItem.highestValueLabel, overrideLanguage), "</span></div>\n      </div>");
+    }
+
+    if (formItem.type === "multiplechoice" && formItem.choices && formItem.choices.length > 0) {
+      var getOptionHTML = function getOptionHTML(formItem, value) {
+        return "<label class=\"bb-feedback-multiplechoice-container\" data-value=\"".concat(value, "\">").concat(value, "\n        <input type=\"radio\" name=\"").concat(formItem.name, "\" />\n        <span class=\"bb-feedback-multiplechoice-checkmark\"></span>\n      </label>");
+      };
+
+      var optionHTML = "";
+
+      for (var j = 0; j < formItem.choices.length; j++) {
+        optionHTML += getOptionHTML(formItem, formItem.choices[j]);
+      }
+
+      formHTML += "<div class=\"bb-feedback-multiplechoice ".concat(getFormPageClass(currentPage), " bb-feedback-multiplechoice-").concat(formItem.name, "\" ").concat(formItemData, ">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n      <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"hidden\" />\n      ").concat(optionHTML, "\n      </div>");
+    }
+
+    if ((form[i + 1] && form[i + 1].page !== currentPage || i + 1 === form.length) && !isTypeAutoNext(formItem.type)) {
+      formHTML += renderButtonsForPage(currentPage, feedbackOptions.pages, overrideLanguage);
+    }
+  }
+
+  return formHTML;
+};
+var getFormData = function getFormData(form) {
+  var formData = {};
+
+  for (var i = 0; i < form.length; i++) {
+    var formItem = form[i];
+    var formElement = document.querySelector(".bb-feedback-".concat(formItem.name));
+
+    if (formElement && formElement.value) {
+      formData[formItem.name] = formElement.value;
+    }
+  }
+
+  return formData;
+};
+var rememberForm = function rememberForm(form) {
+  for (var i = 0; i < form.length; i++) {
+    var formItem = form[i];
+
+    if (formItem.remember) {
+      var formElement = document.querySelector(".bb-feedback-".concat(formItem.name));
+
+      if (formElement && formElement.value) {
+        try {
+          localStorage.setItem("bb-remember-".concat(formItem.name), formElement.value);
+        } catch (exp) {}
+      }
+    }
+  }
+};
+
+var validateEmail = function validateEmail(email) {
+  var re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email).toLowerCase());
+};
+
+var validateFormItem = function validateFormItem(formItem) {
+  var shouldShowError = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+  var valid = true;
+  var formElement = document.querySelector(".bb-feedback-".concat(formItem.name));
+
+  if (!formElement) {
+    return false;
+  }
+
+  var formElementDirtyFlag = formElement.getAttribute("bb-dirty");
+  var showError = shouldShowError && formElementDirtyFlag === "true";
+
+  if ((formItem.type === "text" || formItem.type === "textarea") && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError && formElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "text" && formItem.inputtype === "email" && formItem.required) {
+    if (!validateEmail(formElement.value)) {
+      showError && formElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "upload" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError && formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "rating" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError && formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "onetofive" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError && formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "multiplechoice" && formItem.required) {
+    if (!formElement.value || formElement.value === "") {
+      showError && formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  if (formItem.type === "privacypolicy" && formItem.required) {
+    if (!formElement.checked) {
+      showError && formElement.parentElement.classList.add("bb-feedback-required");
+      valid = false;
+    } else {
+      formElement.parentElement.classList.remove("bb-feedback-required");
+    }
+  }
+
+  return valid;
+};
+
+var updateFormProgressBar = function updateFormProgressBar(currentPage, pages) {
+  var innerProgressBar = document.querySelector(".bb-form-progress-inner");
+
+  if (innerProgressBar && pages > 0) {
+    var progress = Math.round((currentPage + 1) / pages * 100);
+
+    if (progress > 100) {
+      progress = 100;
+    }
+
+    innerProgressBar.style.width = "".concat(progress, "%");
+  }
+};
+
+var handleNextFormStep = function handleNextFormStep(currentPage, pages, submitForm) {
+  if (!validateFormPage(currentPage)) {
+    return;
+  }
+
+  updateFormProgressBar(currentPage + 1, pages);
+
+  if (currentPage === pages - 1) {
+    submitForm();
+  } else {
+    showFormPage(currentPage + 1);
+  }
+};
+
+var showFormPage = function showFormPage(pageToShow) {
+  var formPagesToHide = document.querySelectorAll(".".concat(formPageClass));
+
+  for (var i = 0; i < formPagesToHide.length; i++) {
+    if (formPagesToHide[i]) {
+      formPagesToHide[i].style.display = "none";
+    }
+  }
+
+  var formPagesToShow = document.querySelectorAll(".".concat(formPageClass, "-").concat(pageToShow));
+
+  for (var i = 0; i < formPagesToShow.length; i++) {
+    if (formPagesToShow[i]) {
+      formPagesToShow[i].style.display = "flex";
+    }
+  }
+};
+
+var addDirtyFlagToFormElement = function addDirtyFlagToFormElement(formElement) {
+  formElement.setAttribute("bb-dirty", "true");
+};
+
+var hookForm = function hookForm(formOptions, submitForm) {
+  var form = formOptions.form;
+  var singlePageForm = formOptions.singlePageForm; // Hook up submit buttons
+
+  var sendButtons = document.querySelectorAll(".bb-feedback-send-button");
+
+  var _loop = function _loop() {
+    var sendButton = sendButtons[i];
+
+    sendButton.onclick = function () {
+      if (sendButton && sendButton.getAttribute("disabled") !== "true" && sendButton.getAttribute("bb-form-page")) {
+        var currentPage = parseInt(sendButton.getAttribute("bb-form-page"));
+        handleNextFormStep(currentPage, formOptions.pages, submitForm);
+      }
+    };
+  };
+
+  for (var i = 0; i < sendButtons.length; i++) {
+    _loop();
+  } // Hook up form
+
+
+  var _loop2 = function _loop2() {
+    var formItem = form[i];
+
+    if (!formItem) {
+      return "break";
+    }
+
+    var formInput = document.querySelector(".bb-feedback-".concat(formItem.name));
+
+    if (!formInput) {
+      return "break";
+    }
+
+    var currentPage = parseInt(formInput.getAttribute("bb-form-page"));
+
+    if (formItem.type === "text") {
+      if (formItem.remember) {
+        try {
+          var rememberedValue = localStorage.getItem("bb-remember-".concat(formItem.name));
+
+          if (rememberedValue) {
+            formInput.value = rememberedValue;
+          }
+        } catch (exp) {}
+      }
+
+      if (formItem.defaultValue) {
+        formInput.value = formItem.defaultValue;
+      }
+
+      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
+        formInput.parentElement.classList.add("bb-feedback-form--hidden");
+      }
+
+      formInput.addEventListener("focusin", function () {
+        addDirtyFlagToFormElement(formInput);
+      });
+      formInput.addEventListener("focusout", function () {
+        validateFormPage(currentPage);
+      });
+
+      formInput.oninput = function () {
+        validateFormPage(currentPage, false);
+      };
+    }
+
+    if (formItem.type === "privacypolicy") {
+      formInput.onchange = function () {
+        addDirtyFlagToFormElement(formInput);
+        validateFormPage(currentPage);
+      };
+    }
+
+    if (formItem.type === "upload") {
+      var formFileUploadInput = document.querySelector(".bb-form-fileupload-".concat(formItem.name));
+      var fileSizeInfo = document.querySelector(".bb-feedback-filesizeinfo-".concat(formItem.name));
+
+      if (formFileUploadInput) {
+        formFileUploadInput.addEventListener("change", function () {
+          addDirtyFlagToFormElement(formInput);
+          validateFormPage(currentPage);
+
+          if (fileSizeInfo) {
+            fileSizeInfo.style.display = "none";
+          }
+
+          if (formFileUploadInput.files && formFileUploadInput.files.length > 0) {
+            var file = formFileUploadInput.files[0];
+
+            if (file.size / 1024 / 1024 > 3) {
+              if (fileSizeInfo) {
+                fileSizeInfo.style.display = "block";
+              }
+
+              return;
+            }
+
+            var formData = new FormData();
+            formData.append("file", file);
+            var uploadLoader = document.querySelector(".bb-feedback-dialog-loading--".concat(formItem.name));
+
+            if (uploadLoader) {
+              uploadLoader.style.display = "flex";
+              formFileUploadInput.style.display = "none";
+            }
+
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", Session.getInstance().apiUrl + "/uploads/attachments");
+            Session.getInstance().injectSession(xhr);
+
+            xhr.upload.onprogress = function (e) {
+              if (e.lengthComputable) {
+                var percentComplete = parseInt(e.loaded / e.total * 100);
+                setLoadingIndicatorProgress(percentComplete, formItem.name);
+              }
+            };
+
+            xhr.onerror = function () {
+              if (uploadLoader) {
+                uploadLoader.style.display = "none";
+              }
+
+              formFileUploadInput.style.display = "block";
+            };
+
+            xhr.onreadystatechange = function () {
+              if (xhr.readyState == 4 && xhr.status == 200 && xhr.responseText) {
+                try {
+                  var data = JSON.parse(xhr.responseText);
+
+                  if (data.fileUrls && data.fileUrls.length > 0) {
+                    formInput.value = data.fileUrls[0];
+
+                    if (!singlePageForm) {
+                      handleNextFormStep(currentPage, formOptions.pages, submitForm);
+                    }
+                  }
+                } catch (exp) {}
+
+                if (uploadLoader) {
+                  uploadLoader.style.display = "none";
+                }
+
+                formFileUploadInput.style.display = "block";
+              }
+            };
+
+            xhr.send(formData);
+          }
+        });
+      }
+    }
+
+    if (formItem.type === "textarea") {
+      formInput.style.height = "inherit";
+      formInput.style.height = formInput.scrollHeight + "px";
+      formInput.addEventListener("focusin", function () {
+        addDirtyFlagToFormElement(formInput);
+      });
+
+      formInput.oninput = function () {
+        formInput.style.height = "inherit";
+        formInput.style.height = formInput.scrollHeight + "px";
+        validateFormPage(currentPage);
+      };
+    }
+
+    if (formItem.type === "rating") {
+      var ratingItems = document.querySelectorAll(".bb-feedback-rating-".concat(formItem.name, " .bb-feedback-emojigroup li"));
+
+      var _loop3 = function _loop3() {
+        var ratingItem = ratingItems[j];
+        ratingItem.addEventListener("click", function (e) {
+          if (!ratingItem) {
+            return;
+          }
+
+          formInput.value = ratingItem.getAttribute("data-value");
+          validateFormPage(currentPage);
+          var lastActiveItem = document.querySelector(".bb-feedback-rating-".concat(formItem.name, " .bb-feedback-emojigroup li.bb-feedback-active"));
+
+          if (lastActiveItem) {
+            lastActiveItem.classList.remove("bb-feedback-active");
+          }
+
+          ratingItem.classList.add("bb-feedback-active");
+          e.preventDefault();
+
+          if (!singlePageForm) {
+            handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          }
+        });
+      };
+
+      for (j = 0; j < ratingItems.length; j++) {
+        _loop3();
+      }
+    }
+
+    if (formItem.type === "onetofive") {
+      var onetofiveItems = document.querySelectorAll(".bb-feedback-onetofive-".concat(formItem.name, " .bb-feedback-onetofive-button"));
+
+      var _loop4 = function _loop4() {
+        var onetofiveItem = onetofiveItems[j];
+        onetofiveItem.addEventListener("click", function (e) {
+          if (!onetofiveItem) {
+            return;
+          }
+
+          formInput.value = onetofiveItem.getAttribute("data-value");
+          validateFormPage(currentPage);
+          var lastActiveItem = document.querySelector(".bb-feedback-onetofive-".concat(formItem.name, " .bb-feedback-onetofive-button-active"));
+
+          if (lastActiveItem) {
+            lastActiveItem.classList.remove("bb-feedback-onetofive-button-active");
+          }
+
+          onetofiveItem.classList.add("bb-feedback-onetofive-button-active");
+          e.preventDefault();
+
+          if (!singlePageForm) {
+            handleNextFormStep(currentPage, formOptions.pages, submitForm);
+          }
+        });
+      };
+
+      for (j = 0; j < onetofiveItems.length; j++) {
+        _loop4();
+      }
+    }
+
+    if (formItem.type === "multiplechoice") {
+      var multiplechoiceItems = document.querySelectorAll(".bb-feedback-multiplechoice-".concat(formItem.name, " .bb-feedback-multiplechoice-container"));
+
+      var _loop5 = function _loop5() {
+        var multiplechoiceItem = multiplechoiceItems[j];
+        multiplechoiceItem.addEventListener("click", function (e) {
+          if (!multiplechoiceItem) {
+            return;
+          }
+
+          formInput.value = multiplechoiceItem.getAttribute("data-value");
+          validateFormPage(currentPage);
+        });
+      };
+
+      for (j = 0; j < multiplechoiceItems.length; j++) {
+        _loop5();
+      }
+    } // Validate form item initially.
+
+
+    validateFormPage(currentPage, false);
+  };
+
+  for (var i = 0; i < form.length; i++) {
+    var j;
+    var j;
+    var j;
+
+    var _ret = _loop2();
+
+    if (_ret === "break") break;
+  } // Show first page.
+
+
+  showFormPage(0);
+  updateFormProgressBar(0, formOptions.pages);
+};
+var validateFormPage = function validateFormPage(page) {
+  var showError = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+  var formValid = true;
+  var formElementsToCheck = document.querySelectorAll("[bb-form-page=\"".concat(page, "\"]"));
+
+  for (var i = 0; i < formElementsToCheck.length; i++) {
+    var formElementToCheck = formElementsToCheck[i];
+
+    if (formElementToCheck && formElementToCheck.getAttribute("bb-form-item")) {
+      var formItem = JSON.parse(decodeURIComponent(formElementToCheck.getAttribute("bb-form-item")));
+
+      if (!validateFormItem(formItem, showError)) {
+        formValid = false;
+      }
+    }
+  }
+
+  var currentNextButton = document.querySelector(".bb-feedback-next-btn-".concat(page));
+
+  if (currentNextButton) {
+    if (!formValid) {
+      currentNextButton.setAttribute("disabled", "true");
+      currentNextButton.classList.add("bb-feedback-send-button--disabled");
+    } else {
+      currentNextButton.removeAttribute("disabled");
+      currentNextButton.classList.remove("bb-feedback-send-button--disabled");
+    }
+  }
+
+  return formValid;
+};
+;// CONCATENATED MODULE: ./src/UXDetectors.js
+var getSelectorFromTarget = function getSelectorFromTarget(target) {
+  var className = target.className !== "" ? "." + target.className : "";
+  var targetId = target.id !== "" ? "#" + target.id : "";
+  return [target.nodeName, className, targetId].join(" ");
+};
+
+var detectRageClicks = function detectRageClicks(subscribe, options) {
+  var interval = options.interval,
+      limit = options.limit;
+  var count = 1;
+  var countClear = setInterval(function () {
+    count = 1;
+  }, interval);
+
+  var listener = function listener(event) {
+    if (count === limit) {
+      subscribe(getSelectorFromTarget(event.target), function () {
+        clearInterval(countClear);
+        document.removeEventListener("click", listener);
+      });
+    }
+
+    count++;
+  };
+
+  document.addEventListener("click", listener);
+};
+
+var startRageClickDetector = function startRageClickDetector(callback) {
+  detectRageClicks(function (target, unsubscribe) {
+    callback(target);
+  }, {
+    interval: 750,
+    limit: 4
+  });
+};
+;// CONCATENATED MODULE: ./src/DrawingCanvas.js
+
+
+var createScreenshotEditor = function createScreenshotEditor(screenshot, onDone, onCancel, overrideLanguage, showBack) {
+  var elem = document.createElement("div");
+  elem.className = "bb-feedback-dialog-container";
+  elem.innerHTML = "<div class='bb-feedback-dialog bb-feedback-dialog-drawing bb-anim-fadeinright'>\n    <div class=\"bb-feedback-dialog-header bb-feedback-dialog-header--back\">\n      <div class=\"bb-feedback-dialog-header-back ".concat(!showBack && "bb-feedback-dialog-header-back--close", "\">\n        ").concat(loadIcon(showBack ? "arrowleft" : "close", "#fff"), "\n      </div>\n      <div class=\"bb-feedback-dialog-header-text\">\n          <div class=\"bb-feedback-dialog-header-title-small\">").concat(translateText("Mark the bug", overrideLanguage), "</div>\n      </div>\n      <div class=\"bb-feedback-dialog-header-next\">\n        <span>").concat(translateText("Next", overrideLanguage), "</span>\n        ").concat(loadIcon("arrowleft", "#000"), "\n      </div>\n    </div>\n    <div class=\"bb-feedback-dialog-body\">\n        <div class=\"bb-screenshot-editor-canv\">\n            <canvas id=\"bb-screenshot-editor-canvas\" />\n        </div>\n        <div class=\"bb-drawing-container\">\n            <div class=\"bb-drawing-tools\">\n              <div class=\"bb-drawing-tool-item bb-drawing-tool-item--active\" data-tool=\"pen\">\n                <svg width=\"60px\" height=\"60px\" viewBox=\"0 0 60 60\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n                  <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n                      <g transform=\"translate(0.000263, -0.000166)\" fill=\"#000000\" fill-rule=\"nonzero\">\n                          <path d=\"M45.5117372,6.58111838e-05 C41.6679372,-0.0115531888 37.9805372,1.51576581 35.2697372,4.23846581 L4.1017372,35.4104658 C1.4650372,38.0315658 -0.0115628024,41.5940658 6.81945382e-05,45.3088658 L6.81945382e-05,59.999935 L14.6911372,59.999935 C18.4059372,60.0115848 21.9684372,58.5350658 24.5895372,55.8982658 L55.7615372,24.7302658 C58.4763372,22.0114658 59.9998372,18.3279658 59.9998372,14.4842658 C59.9959312,10.6444658 58.4686372,6.96086581 55.7537372,4.24226581 C53.0349372,1.52746581 49.3514372,6.58111838e-05 45.5117372,6.58111838e-05 L45.5117372,6.58111838e-05 Z M20.3397372,51.6601658 C18.8397372,53.1562658 16.8085372,53.9999658 14.6913372,53.9999658 L5.9999372,53.9999658 L5.9999372,45.3085658 C5.9999372,43.1874658 6.8397772,41.1523658 8.3397372,39.6483658 L31.8787372,16.1213658 L43.8787372,28.1213658 L20.3397372,51.6601658 Z M51.5117372,20.4881658 L48.1211372,23.8787658 L36.1211372,11.8787658 L39.5117372,8.48816581 C41.0820372,6.80846581 43.2695372,5.83976581 45.5703372,5.80066581 C47.8672372,5.76160381 50.0859372,6.66004581 51.7148372,8.28506581 C53.3398372,9.91396581 54.2382372,12.1327658 54.1992372,14.4295658 C54.1601742,16.7303658 53.1914372,18.9178658 51.5117372,20.4881658 L51.5117372,20.4881658 Z\" id=\"Shape\"></path>\n                      </g>\n                  </g>\n                </svg>\n              </div>\n              <div class=\"bb-drawing-tool-item bb-drawing-tool-item--last\" data-tool=\"blur\">\n                <svg width=\"100pt\" height=\"100pt\" version=\"1.1\" viewBox=\"0 0 100 100\" xmlns=\"http://www.w3.org/2000/svg\">\n                  <path d=\"m86.5 42.5c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-10 38c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm-27 40c-9.3984 0-17-7.6016-17-17s7.6016-17 17-17 17 7.6016 17 17-7.6016 17-17 17zm9-40c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-12c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-18 12c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-12c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm-18 66c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm0-18c-2.1992 0-4-1.8008-4-4s1.8008-4 4-4 4 1.8008 4 4-1.8008 4-4 4zm-10 34c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm0-18c-1.1016 0-2-0.89844-2-2s0.89844-2 2-2 2 0.89844 2 2-0.89844 2-2 2zm28 30c2.1992 0 4 1.8008 4 4s-1.8008 4-4 4-4-1.8008-4-4 1.8008-4 4-4zm0 12c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2zm18-12c2.1992 0 4 1.8008 4 4s-1.8008 4-4 4-4-1.8008-4-4 1.8008-4 4-4zm0 12c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2zm28-28c1.1016 0 2 0.89844 2 2s-0.89844 2-2 2-2-0.89844-2-2 0.89844-2 2-2z\" fill-rule=\"evenodd\"/>\n                </svg>\n              </div>\n              <div class=\"bb-drawing-tool-spacer\"></div>\n              <div id=\"bb-drawing-color\" style=\"background-color: #EB144C\">\n                <div id=\"bb-drawing-colorpopup\">\n                  <div class=\"bb-drawing-coloritem bb-drawing-coloritem--active\" data-color=\"#EB144C\"></div>\n                  <div class=\"bb-drawing-coloritem\" data-color=\"#FF6705\"></div>\n                  <div class=\"bb-drawing-coloritem\" data-color=\"#FDB903\"></div>\n                  <div class=\"bb-drawing-coloritem\" data-color=\"#9900EE\"></div>\n                  <div class=\"bb-drawing-coloritem\" data-color=\"#00D082\"></div>\n                  <div class=\"bb-drawing-coloritem\" data-color=\"#0A93E4\"></div>\n                </div>\n              </div>\n              <div class=\"bb-drawing-tool-spacer\"></div>\n              <div class=\"bb-drawing-tool-action bb-drawing-tool-action--disabled bb-drawing-tool-back\">\n                <svg width=\"62px\" height=\"60px\" viewBox=\"0 0 62 60\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n                  <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n                    <g transform=\"translate(-0.000500, 0.001926)\" fill=\"#000000\" fill-rule=\"nonzero\">\n                      <path d=\"M28.0005,51.6270739 C24.9653,51.0684839 22.0825,49.8731739 19.5396,48.1192739 L13.8208,53.8380739 C17.9536,57.0060739 22.8403,59.0333739 28.0008,59.7286739 L28.0005,51.6270739 Z\" id=\"Path\"></path>\n                      <path d=\"M2.2705,33.9980739 C2.96581,39.1582739 4.9932,44.0450739 8.1611,48.1780739 L13.8799,42.4592739 C12.126,39.9162739 10.9307,37.0334739 10.3721,33.9983739 L2.2705,33.9980739 Z\" id=\"Path\"></path>\n                      <path d=\"M61.7305,33.9980739 L53.6289,33.9980739 C53.07031,37.0332739 51.875,39.9160739 50.1211,42.4589739 L55.8399,48.1777739 C59.0079,44.0449739 61.0352,39.1582739 61.7305,33.9977739 L61.7305,33.9980739 Z\" id=\"Path\"></path>\n                      <path d=\"M4.0005,24.9980739 L24.0005,24.9980739 L24.0005,16.9980739 L14.27,16.9980739 C17.6762,12.3613739 22.7622,9.24417393 28.442,8.31057393 C34.1178,7.38088393 39.934,8.70901393 44.645,12.0175739 C49.352,15.3222739 52.5786,20.3417739 53.6294,25.9975739 L61.731,25.9975739 C60.6646,18.0834739 56.4888,10.9235739 50.129,6.09957393 C43.7657,1.27147393 35.746,-0.818426068 27.836,0.290973932 C19.9298,1.39647393 12.793,5.61127393 8,11.9979739 L8,0.997973932 L-3.55271368e-15,0.997973932 L-3.55271368e-15,20.9979739 C-3.55271368e-15,22.0604739 0.42188,23.0760739 1.1719,23.8260739 C1.92192,24.5760739 2.9375,24.9979739 4,24.9979739 L4.0005,24.9980739 Z\" id=\"Path\"></path>\n                      <path d=\"M36.0005,51.6270739 L36.0005,59.7286739 C41.1607,59.0333639 46.0475,57.0059739 50.1805,53.8380739 L44.4617,48.1192739 C41.9187,49.8731739 39.0359,51.0684739 36.0008,51.6270739 L36.0005,51.6270739 Z\" id=\"Path\"></path>\n                    </g>\n                  </g>\n                </svg>\n              </div>\n            </div>\n        </div>\n    </div>\n</div>");
+  document.body.appendChild(elem);
+  setTimeout(function () {
+    var drawingDialog = document.querySelector(".bb-feedback-dialog-drawing");
+
+    if (drawingDialog) {
+      drawingDialog.classList.remove("bb-anim-fadeinright");
+    }
+  }, 500);
+  var drawBack = document.querySelector(".bb-drawing-tool-back");
+  var canvas = document.getElementById("bb-screenshot-editor-canvas");
+  var ctx = canvas.getContext("2d");
+  var currentColor = "#EB144C";
+  var currentTool = "pen";
+  var baseImage = null;
+  var drawingStack = [];
+  var drawingHistory = [];
+
+  function getCanvasScale() {
+    return canvas.width / canvas.offsetWidth;
+  }
+
+  function updateDrawingTools() {
+    var scale = getCanvasScale();
+
+    if (currentTool === "pen") {
+      ctx.lineWidth = 6 * scale;
+      ctx.strokeStyle = currentColor;
+      ctx.lineCap = "round";
+    } else {
+      ctx.lineWidth = 34 * scale;
+      ctx.strokeStyle = "#000";
+      ctx.lineCap = "round";
+    }
+
+    drawingStack.push({
+      t: "t",
+      lw: ctx.lineWidth,
+      ss: ctx.strokeStyle
+    });
+  }
+
+  function validateBackButton() {
+    var disabled = "bb-drawing-tool-action--disabled";
+
+    if (drawingHistory.length > 0) {
+      drawBack.classList.remove(disabled);
+    } else {
+      drawBack.classList.add(disabled);
+    }
+  }
+
+  function drawBackAction() {
+    drawingHistory.pop(); // Redraw base image
+
+    ctx.drawImage(baseImage, 0, 0); // Replay
+
+    for (var i = 0; i < drawingHistory.length; i++) {
+      var steps = drawingHistory[i];
+
+      for (var j = 0; j < steps.length; j++) {
+        var step = steps[j];
+
+        if (step.t === "t") {
+          ctx.lineWidth = step.lw;
+          ctx.strokeStyle = step.ss;
+          ctx.lineCap = "round";
+        }
+
+        if (step.t === "m") {
+          ctx.beginPath();
+          ctx.lineTo(step.x, step.y);
+        }
+
+        if (step.t === "l") {
+          ctx.lineTo(step.x, step.y);
+          ctx.stroke();
+        }
+      }
+    } // Reset tools to current
+
+
+    updateDrawingTools(); // Update back button
+
+    validateBackButton();
+  }
+
+  var resizeCanvas = function resizeCanvas() {
+    // Calculate canvas scale.
+    var vw = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+    var vh = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+    var ratio = 0;
+    var maxWidth = Math.min(vw - 60, 700);
+    var maxHeight = Math.min(vh - 200, 700);
+    var width = canvas.width;
+    var height = canvas.height;
+
+    if (width > maxWidth) {
+      ratio = maxWidth / width;
+      height = height * ratio;
+      width = width * ratio;
+    }
+
+    if (height > maxHeight) {
+      ratio = maxHeight / height;
+      width = width * ratio;
+      height = height * ratio;
+    }
+
+    canvas.style.width = "".concat(width, "px");
+    canvas.style.height = "".concat(height, "px");
+  };
+
+  drawBack.addEventListener("click", function () {
+    drawBackAction();
+  });
+  var backButton = document.querySelector(".bb-feedback-dialog-header-back");
+  backButton.addEventListener("click", function () {
+    window.removeEventListener("resize", resizeCanvas);
+    onCancel();
+  });
+  var nextButton = document.querySelector(".bb-feedback-dialog-header-next");
+  nextButton.addEventListener("click", function () {
+    window.removeEventListener("resize", resizeCanvas);
+    onDone(canvas.toDataURL("image/png"));
+  });
+  var colorItem = document.getElementById("bb-drawing-color");
+  var colorPopup = document.getElementById("bb-drawing-colorpopup");
+  colorPopup.style.display = "none";
+  colorItem.addEventListener("click", function () {
+    if (colorPopup.style.display === "none") {
+      colorPopup.style.display = "flex";
+    } else {
+      colorPopup.style.display = "none";
+    }
+  }); // Prepare tools
+
+  var drawingItems = document.querySelectorAll(".bb-drawing-tool-item");
+
+  var selectTool = function selectTool(tool) {
+    var activeTool = "bb-drawing-tool-item--active";
+
+    for (var i = 0; i < drawingItems.length; i++) {
+      var drawingItem = drawingItems[i];
+      var drawingItemTool = drawingItem.getAttribute("data-tool");
+
+      if (drawingItemTool === tool) {
+        drawingItem.classList.add(activeTool);
+      } else {
+        drawingItem.classList.remove(activeTool);
+      }
+    }
+
+    currentTool = tool;
+    updateDrawingTools();
+  };
+
+  var _loop = function _loop() {
+    var drawingItem = drawingItems[i];
+    var tool = drawingItem.getAttribute("data-tool");
+    drawingItem.addEventListener("click", function () {
+      selectTool(tool);
+    });
+  };
+
+  for (var i = 0; i < drawingItems.length; i++) {
+    _loop();
+  } // Prepare drawing color.
+
+
+  var drawingColorActive = "bb-drawing-coloritem--active";
+  var drawingColors = document.querySelectorAll(".bb-drawing-coloritem");
+
+  var _loop2 = function _loop2() {
+    var drawingColor = drawingColors[i];
+    var color = drawingColor.getAttribute("data-color");
+    drawingColor.style.backgroundColor = color;
+    drawingColor.addEventListener("click", function () {
+      for (var j = 0; j < drawingColors.length; j++) {
+        drawingColors[j].classList.remove(drawingColorActive);
+      }
+
+      currentColor = color;
+      colorItem.style.backgroundColor = color;
+      drawingColor.classList.add(drawingColorActive);
+      selectTool("pen");
+      updateDrawingTools();
+    });
+  };
+
+  for (var i = 0; i < drawingColors.length; i++) {
+    _loop2();
+  } // Draw screenshot.
+
+
+  baseImage = new Image();
+
+  baseImage.onload = function () {
+    ctx.canvas.width = this.width;
+    ctx.canvas.height = this.height;
+    resizeCanvas();
+    ctx.drawImage(this, 0, 0);
+    updateDrawingTools();
+  };
+
+  baseImage.src = screenshot;
+  window.addEventListener("resize", resizeCanvas);
+  var isIdle = true;
+
+  function drawstart(event) {
+    var scale = getCanvasScale();
+    ctx.beginPath();
+    var x = (event.pageX - canvas.offsetLeft) * scale;
+    var y = (event.pageY - canvas.offsetTop) * scale;
+    ctx.lineTo(x, y);
+    drawingStack.push({
+      t: "m",
+      x: x,
+      y: y
+    });
+    isIdle = false;
+  }
+
+  function drawmove(event) {
+    if (isIdle) return;
+    var scale = getCanvasScale();
+    var x = (event.pageX - canvas.offsetLeft) * scale;
+    var y = (event.pageY - canvas.offsetTop) * scale;
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    drawingStack.push({
+      t: "l",
+      x: x,
+      y: y
+    });
+  }
+
+  function drawend(event) {
+    if (isIdle) return;
+    drawmove(event);
+    drawingHistory.push(drawingStack);
+    drawingStack = [];
+    validateBackButton();
+    isIdle = true;
+  }
+
+  function touchstart(event) {
+    drawstart(event.touches[0]);
+  }
+
+  function touchmove(event) {
+    drawmove(event.touches[0]);
+    event.preventDefault();
+  }
+
+  function touchend(event) {
+    drawend(event.changedTouches[0]);
+  }
+
+  canvas.addEventListener("touchstart", touchstart, false);
+  canvas.addEventListener("touchmove", touchmove, false);
+  canvas.addEventListener("touchend", touchend, false);
+  canvas.addEventListener("mousedown", drawstart, false);
+  canvas.addEventListener("mousemove", drawmove, false);
+  canvas.addEventListener("mouseup", drawend, false);
+};
+;// CONCATENATED MODULE: ./src/ScreenRecorder.js
+function ScreenRecorder_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScreenRecorder_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScreenRecorder_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenRecorder_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenRecorder_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScreenRecorder_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+var ScreenRecorder = /*#__PURE__*/function () {
+  function ScreenRecorder(rerender) {
+    var _this = this;
+
+    ScreenRecorder_classCallCheck(this, ScreenRecorder);
+
+    ScreenRecorder_defineProperty(this, "rerender", void 0);
+
+    ScreenRecorder_defineProperty(this, "stream", void 0);
+
+    ScreenRecorder_defineProperty(this, "mediaRecorder", void 0);
+
+    ScreenRecorder_defineProperty(this, "audioMuted", false);
+
+    ScreenRecorder_defineProperty(this, "audioAvailable", true);
+
+    ScreenRecorder_defineProperty(this, "available", true);
+
+    ScreenRecorder_defineProperty(this, "isRecording", false);
+
+    ScreenRecorder_defineProperty(this, "file", null);
+
+    ScreenRecorder_defineProperty(this, "maxRecordTime", 180);
+
+    ScreenRecorder_defineProperty(this, "recordTime", 0);
+
+    ScreenRecorder_defineProperty(this, "recordingTimer", null);
+
+    ScreenRecorder_defineProperty(this, "startScreenRecording", function () {
+      var self = this;
+
+      if (!navigator.mediaDevices || this.isRecording) {
+        this.available = false;
+        this.rerender();
+        return;
+      }
+
+      navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      }).then(function (displayStream) {
+        self.stream = displayStream;
+
+        if (!self.audioMuted) {
+          self.startAudioRecording();
+        } else {
+          self.audioAvailable = false;
+          self.handleRecord({
+            stream: displayStream
+          });
+        }
+
+        self.rerender();
+      })["catch"](function (displayErr) {
+        self.rerender();
+      });
+    });
+
+    ScreenRecorder_defineProperty(this, "stopScreenRecording", function () {
+      if (!this.mediaRecorder || !this.stream || !this.isRecording) {
+        return;
+      }
+
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
+      }
+
+      this.mediaRecorder.stop();
+      this.stream.getTracks().forEach(function (track) {
+        track.stop();
+      });
+      this.rerender();
+    });
+
+    ScreenRecorder_defineProperty(this, "startAudioRecording", function () {
+      var self = this;
+
+      if (!this.stream) {
+        return;
+      }
+
+      navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      }).then(function (voiceStream) {
+        for (var i = 0; i < voiceStream.getAudioTracks().length; i++) {
+          self.stream.addTrack(voiceStream.getAudioTracks()[i]);
+        }
+
+        self.audioMuted = false;
+        self.audioAvailable = true;
+        self.handleRecord({
+          stream: self.stream
+        });
+        self.rerender();
+      })["catch"](function (audioErr) {
+        self.rerender();
+      });
+    });
+
+    ScreenRecorder_defineProperty(this, "toggleAudio", function () {
+      this.audioMuted = !this.audioMuted;
+      this.rerender();
+
+      if (!this.stream) {
+        return;
+      }
+
+      var audioTracks = this.stream.getAudioTracks();
+
+      for (var i = 0; i < audioTracks.length; i++) {
+        var audioTrack = audioTracks[i];
+        audioTrack.enabled = !this.audioMuted;
+      }
+    });
+
+    ScreenRecorder_defineProperty(this, "uploadScreenRecording", function () {
+      var self = this;
+      return new Promise(function (resolve, reject) {
+        if (self.file == null) {
+          resolve(null);
+        }
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
+        Session.getInstance().injectSession(xhr);
+        var formdata = new FormData();
+        formdata.append("file", self.file);
+        xhr.send(formdata);
+
+        xhr.onerror = function () {
+          reject();
+        };
+
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              resolve(JSON.parse(xhr.response).fileUrl);
+            } else {
+              reject();
+            }
+          }
+        };
+      });
+    });
+
+    ScreenRecorder_defineProperty(this, "handleRecord", function (_ref) {
+      var stream = _ref.stream,
+          _ref$mimeType = _ref.mimeType,
+          mimeType = _ref$mimeType === void 0 ? "video/mp4" : _ref$mimeType;
+      var self = this;
+      var recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.isRecording = true;
+      this.recordTime = 0; // Set timer.
+
+      var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
+      this.recordingTimer = setInterval(function () {
+        self.recordTime++;
+        var remainingTime = self.maxRecordTime - self.recordTime;
+
+        if (remainingTime > 0) {
+          timerLabel.innerHTML = self.formatTime(remainingTime);
+        } else {
+          timerLabel.innerHTML = "3:00";
+          self.stopScreenRecording();
+        }
+      }, 1000);
+
+      this.mediaRecorder.ondataavailable = function (e) {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      this.mediaRecorder.onstop = function () {
+        var completeBlob = new Blob(recordedChunks, {
+          type: mimeType
+        });
+        self.file = new File([completeBlob], "screen-recording.mp4", {
+          type: "video/mp4"
+        });
+        document.querySelector(".bb-capture-preview video").src = URL.createObjectURL(completeBlob);
+        self.audioAvailable = true;
+        self.isRecording = false;
+        self.rerender();
+      };
+
+      this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
+
+      self.rerender();
+    });
+
+    this.rerender = rerender;
+
+    if (!navigator.mediaDevices) {
+      this.available = false;
+    }
+
+    setTimeout(function () {
+      _this.rerender();
+    }, 100);
+  }
+
+  ScreenRecorder_createClass(ScreenRecorder, [{
+    key: "formatTime",
+    value: function formatTime(s) {
+      return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
+    }
+  }]);
+
+  return ScreenRecorder;
+}();
+;// CONCATENATED MODULE: ./src/StreamedEvent.js
+function StreamedEvent_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function StreamedEvent_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function StreamedEvent_createClass(Constructor, protoProps, staticProps) { if (protoProps) StreamedEvent_defineProperties(Constructor.prototype, protoProps); if (staticProps) StreamedEvent_defineProperties(Constructor, staticProps); return Constructor; }
+
+function StreamedEvent_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+var StreamedEvent = /*#__PURE__*/function () {
+  function StreamedEvent() {
+    var _this = this;
+
+    StreamedEvent_classCallCheck(this, StreamedEvent);
+
+    StreamedEvent_defineProperty(this, "eventArray", []);
+
+    StreamedEvent_defineProperty(this, "streamedEventArray", []);
+
+    StreamedEvent_defineProperty(this, "eventMaxLength", 500);
+
+    StreamedEvent_defineProperty(this, "lastUrl", undefined);
+
+    StreamedEvent_defineProperty(this, "startEventStream", function () {
+      var self = _this;
+      var interval = 1500;
+
+      if (Session.getInstance().ready && self.streamedEventArray && self.streamedEventArray.length > 0) {
+        self.streamEvents();
+        interval = 3000;
+      }
+
+      setTimeout(function () {
+        self.startEventStream();
+      }, interval);
+    });
+
+    StreamedEvent_defineProperty(this, "streamEvents", function () {
+      if (Session.getInstance().ready) {
+        var http = new XMLHttpRequest();
+        http.open("POST", Session.getInstance().apiUrl + "/sessions/stream");
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        Session.getInstance().injectSession(http);
+
+        http.onerror = function (error) {};
+
+        http.onreadystatechange = function (e) {
+          if (http.readyState === XMLHttpRequest.DONE) {
+            if (http.status === 200 || http.status === 201) {
+              try {
+                var action = JSON.parse(http.responseText);
+                src_Gleap.getInstance().performAction(action);
+              } catch (exp) {}
+            }
+          }
+        };
+
+        http.send(JSON.stringify({
+          events: _this.streamedEventArray
+        }));
+        _this.streamedEventArray = [];
+      }
+    });
+  }
+
+  StreamedEvent_createClass(StreamedEvent, [{
+    key: "start",
+    value: function start() {
+      this.startEventStream();
+      this.startPageListener();
+    }
+  }, {
+    key: "startPageListener",
+    value: function startPageListener() {
+      this.logEvent("sessionStarted");
+      var self = this;
+      setInterval(function () {
+        var currentUrl = window.location.href;
+
+        if (currentUrl && currentUrl !== self.lastUrl) {
+          self.lastUrl = currentUrl;
+          self.logEvent("pageView", {
+            page: currentUrl
+          });
+        }
+      }, 1000);
+    }
+  }, {
+    key: "logEvent",
+    value: function logEvent(name, data) {
+      var log = {
+        name: name,
+        date: new Date()
+      };
+
+      if (data) {
+        log.data = gleapDataParser(data);
+      }
+
+      this.eventArray.push(log);
+      this.streamedEventArray.push(log); // Check max size of event log
+
+      if (this.eventArray.length > this.eventMaxLength) {
+        this.eventArray.shift();
+      } // Check max size of streamed event log
+
+
+      if (this.streamedEventArray.length > this.eventMaxLength) {
+        this.streamedEventArray.shift();
+      }
+    }
+  }], [{
+    key: "getInstance",
+    value: // Session singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new StreamedEvent();
+        return this.instance;
+      } else {
+        return this.instance;
+      }
+    }
+  }]);
+
+  return StreamedEvent;
+}();
+
+StreamedEvent_defineProperty(StreamedEvent, "instance", void 0);
+
+
+;// CONCATENATED MODULE: ./src/AutoConfig.js
+function AutoConfig_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function AutoConfig_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+var AutoConfig = function AutoConfig() {
+  AutoConfig_classCallCheck(this, AutoConfig);
+};
+
+AutoConfig_defineProperty(AutoConfig, "run", function () {
+  return new Promise(function (resolve) {
+    var session = Session.getInstance();
+    var http = new XMLHttpRequest();
+    http.open("GET", session.widgetUrl + "/widget/" + session.sdkKey + "/config");
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    session.injectSession(http);
+
+    http.onerror = function () {
+      resolve();
+    };
+
+    http.onreadystatechange = function (e) {
+      if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.status === 200 || http.status === 201) {
+          try {
+            var config = JSON.parse(http.responseText);
+            var flowConfig = config.flowConfig;
+            var projectActions = config.projectActions;
+
+            if (flowConfig.logo && flowConfig.logo.length > 0) {
+              src_Gleap.setLogoUrl(flowConfig.logo);
+            }
+
+            if (flowConfig.color) {
+              src_Gleap.setStyles({
+                primaryColor: flowConfig.color,
+                headerColor: flowConfig.headerColor,
+                buttonColor: flowConfig.buttonColor,
+                borderRadius: flowConfig.borderRadius,
+                backgroundColor: flowConfig.backgroundColor ? flowConfig.backgroundColor : "#FFFFFF"
+              });
+            }
+
+            if (flowConfig.hideBranding) {
+              src_Gleap.enablePoweredBy();
+            }
+
+            if (flowConfig.enableReplays) {
+              src_Gleap.enableReplays(flowConfig.enableReplays);
+            }
+
+            src_Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
+
+            if (flowConfig.enableNetworkLogs) {
+              src_Gleap.enableNetworkLogger();
+            }
+
+            if (flowConfig.networkLogPropsToIgnore) {
+              src_Gleap.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
+            }
+
+            if (!flowConfig.enableConsoleLogs) {
+              src_Gleap.disableConsoleLogOverwrite();
+            }
+
+            if (typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector) {
+              src_Gleap.enableCrashDetector(true, flowConfig.enableCrashDetector);
+            }
+
+            if (typeof flowConfig.enableRageClickDetector !== "undefined" && flowConfig.enableRageClickDetector) {
+              src_Gleap.enableRageClickDetector(flowConfig.enableRageClickDetector);
+            }
+
+            if (flowConfig.customTranslations) {
+              src_Gleap.setCustomTranslation(flowConfig.customTranslations);
+            }
+
+            if (typeof flowConfig.feedbackButtonPosition !== "undefined" && flowConfig.feedbackButtonPosition.length > 0) {
+              src_Gleap.setButtonType(flowConfig.feedbackButtonPosition);
+            }
+
+            if (typeof flowConfig.widgetButtonText !== "undefined" && flowConfig.widgetButtonText.length > 0) {
+              src_Gleap.setFeedbackButtonText(flowConfig.widgetButtonText);
+            }
+
+            if (typeof flowConfig.hideWavingHandAfterName !== "undefined" && flowConfig.hideWavingHandAfterName) {
+              src_Gleap.setWelcomeIcon("");
+            }
+
+            if (typeof flowConfig.hideUsersName !== "undefined" && flowConfig.hideUsersName) {
+              src_Gleap.setShowUserName(false);
+            }
+
+            if (flowConfig.widgetInfoTitle && flowConfig.widgetInfoTitle.length > 0) {
+              src_Gleap.setWidgetInfo({
+                title: flowConfig.widgetInfoTitle
+              });
+            }
+
+            if (flowConfig.widgetInfoSubtitle && flowConfig.widgetInfoSubtitle.length > 0) {
+              src_Gleap.setWidgetInfo({
+                subtitle: flowConfig.widgetInfoSubtitle
+              });
+            }
+
+            if (flowConfig.widgetInfoDialogSubtitle && flowConfig.widgetInfoDialogSubtitle.length > 0) {
+              src_Gleap.setWidgetInfo({
+                dialogSubtitle: flowConfig.widgetInfoDialogSubtitle
+              });
+            }
+
+            if (flowConfig.enableMenu && flowConfig.menuItems && flowConfig.menuItems.length > 0) {
+              var menuItems = [];
+
+              var _loop = function _loop(i) {
+                var menuItem = flowConfig.menuItems[i];
+                var actionFlow = null;
+                var action = null;
+
+                if (menuItem.actionType === "OPEN_INTERCOM") {
+                  action = function action() {
+                    Intercom("showNewMessage");
+                  };
+                } else if (menuItem.actionType === "REDIRECT_URL") {
+                  if (menuItem.actionOpenInNewTab) {
+                    action = function action() {
+                      window.open(menuItem.actionBody, "_blank").focus();
+                    };
+                  } else {
+                    action = function action() {
+                      window.location.href = menuItem.actionBody;
+                    };
+                  }
+                } else if (menuItem.actionType === "CUSTOM_ACTION") {
+                  action = function action() {
+                    src_Gleap.triggerCustomAction(menuItem.actionBody);
+                  };
+                } else {
+                  actionFlow = menuItem.actionType;
+                } // Action flow
+
+
+                if (actionFlow != null || action != null) {
+                  item = {
+                    title: menuItem.title,
+                    description: menuItem.description,
+                    icon: menuItem.icon,
+                    color: menuItem.color
+                  };
+
+                  if (actionFlow) {
+                    item["actionFlow"] = actionFlow;
+                  }
+
+                  if (action) {
+                    item["action"] = action;
+                  }
+
+                  menuItems.push(item);
+                }
+              };
+
+              for (var i = 0; i < flowConfig.menuItems.length; i++) {
+                var item;
+
+                _loop(i);
+              }
+
+              src_Gleap.setMenuOptions(menuItems);
+            }
+
+            if (projectActions) {
+              src_Gleap.setFeedbackActions(projectActions);
+            }
+
+            if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
+              src_Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
+            }
+          } catch (e) {}
+        }
+
+        resolve();
+      }
+    };
+
+    http.send();
+  });
+});
+
+
+;// CONCATENATED MODULE: ./src/ScreenDrawer.js
+function ScreenDrawer_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScreenDrawer_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScreenDrawer_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenDrawer_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenDrawer_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScreenDrawer_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ScreenDrawer = /*#__PURE__*/function () {
+  function ScreenDrawer() {
+    ScreenDrawer_classCallCheck(this, ScreenDrawer);
+
+    ScreenDrawer_defineProperty(this, "svgElement", null);
+
+    ScreenDrawer_defineProperty(this, "path", null);
+
+    ScreenDrawer_defineProperty(this, "strPath", void 0);
+
+    ScreenDrawer_defineProperty(this, "strokeWidth", 12);
+
+    ScreenDrawer_defineProperty(this, "strokeWidthRect", 6);
+
+    ScreenDrawer_defineProperty(this, "bufferSize", 4);
+
+    ScreenDrawer_defineProperty(this, "buffer", []);
+
+    ScreenDrawer_defineProperty(this, "startPoint", null);
+
+    ScreenDrawer_defineProperty(this, "tool", "pen");
+
+    ScreenDrawer_defineProperty(this, "color", "#DB4035");
+
+    ScreenDrawer_defineProperty(this, "mouseDown", null);
+
+    ScreenDrawer_defineProperty(this, "mouseMove", null);
+
+    ScreenDrawer_defineProperty(this, "mouseUp", null);
+
+    ScreenDrawer_defineProperty(this, "resizeListener", null);
+
+    var self = this;
+    this.svgElement = document.querySelector(".bb-capture-svg");
+    this.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px"); // Window resize listener.
+
+    this.resizeListener = function (e) {
+      self.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px");
+    };
+
+    window.addEventListener("resize", this.resizeListener, true);
+
+    this.mouseDown = function (e) {
+      e.preventDefault();
+      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+
+      if (colorpicker) {
+        colorpicker.style.display = "none";
+      }
+
+      self.fadeOutToolbar();
+
+      if (self.tool === "pen") {
+        self.mouseDownPen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseDownRect(e);
+      }
+    };
+
+    this.mouseMove = function (e) {
+      e.preventDefault();
+
+      if (self.tool === "pen") {
+        self.mouseMovePen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseMoveRect(e);
+      }
+    };
+
+    this.mouseUp = function (e) {
+      e.preventDefault();
+      self.fadeInToolbar();
+
+      if (self.tool === "pen") {
+        self.mouseUpPen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseUpRect(e);
+      }
+    };
+
+    this.svgElement.addEventListener("mousedown", this.mouseDown);
+    this.svgElement.addEventListener("mousemove", this.mouseMove);
+    this.svgElement.addEventListener("mouseup", this.mouseUp);
+    this.svgElement.addEventListener("touchstart", this.mouseDown, false);
+    this.svgElement.addEventListener("touchmove", this.mouseMove, false);
+    this.svgElement.addEventListener("touchend", this.mouseUp, false);
+  }
+
+  ScreenDrawer_createClass(ScreenDrawer, [{
+    key: "destroy",
+    value: function destroy() {
+      this.svgElement.removeEventListener("mousedown", this.mouseDown);
+      this.svgElement.removeEventListener("mousemove", this.mouseMove);
+      this.svgElement.removeEventListener("mouseup", this.mouseUp);
+      window.removeEventListener("resize", this.resizeListener);
+    }
+  }, {
+    key: "mouseUpPen",
+    value: function mouseUpPen() {
+      if (this.path) {
+        this.path = null;
+      }
+    }
+  }, {
+    key: "mouseUpRect",
+    value: function mouseUpRect() {
+      if (this.path) {
+        this.path = null;
+      }
+    }
+  }, {
+    key: "mouseMovePen",
+    value: function mouseMovePen(e) {
+      if (this.path) {
+        this.appendToBuffer(this.getMousePosition(e));
+        this.updateSvgPath();
+      }
+    }
+  }, {
+    key: "mouseMoveRect",
+    value: function mouseMoveRect(e) {
+      if (this.path) {
+        var p = this.getMousePosition(e);
+        var w = Math.abs(p.x - this.startPoint.x);
+        var h = Math.abs(p.y - this.startPoint.y);
+        var x = p.x;
+        var y = p.y;
+
+        if (p.x > this.startPoint.x) {
+          x = this.startPoint.x;
+        }
+
+        if (p.y > this.startPoint.y) {
+          y = this.startPoint.y;
+        }
+
+        this.path.setAttributeNS(null, "x", x);
+        this.path.setAttributeNS(null, "y", y);
+        this.path.setAttributeNS(null, "width", w);
+        this.path.setAttributeNS(null, "height", h);
+        this.svgElement.appendChild(this.path);
+      }
+    }
+  }, {
+    key: "mouseDownRect",
+    value: function mouseDownRect(e) {
+      this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      this.path.setAttribute("fill", "none");
+      this.path.setAttribute("stroke", this.color);
+      this.path.setAttribute("stroke-linecap", "round");
+      this.path.setAttribute("stroke-width", this.strokeWidthRect);
+      this.startPoint = this.getMousePosition(e);
+    }
+  }, {
+    key: "mouseDownPen",
+    value: function mouseDownPen(e) {
+      this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      this.path.setAttribute("fill", "none");
+      this.path.setAttribute("stroke", this.color + "AA");
+      this.path.setAttribute("stroke-linecap", "round");
+      this.path.setAttribute("stroke-width", this.strokeWidth);
+      this.buffer = [];
+      var pt = this.getMousePosition(e);
+      this.appendToBuffer(pt);
+      this.strPath = "M" + pt.x + " " + pt.y;
+      this.path.setAttribute("d", this.strPath);
+      this.svgElement.appendChild(this.path);
+    }
+  }, {
+    key: "setTool",
+    value: function setTool(tool) {
+      this.tool = tool;
+    }
+  }, {
+    key: "setColor",
+    value: function setColor(color) {
+      this.color = color;
+    }
+  }, {
+    key: "getMousePosition",
+    value: function getMousePosition(e) {
+      if (e.touches && e.touches.length > 0) {
+        return {
+          x: e.touches[0].pageX,
+          y: e.touches[0].pageY
+        };
+      }
+
+      return {
+        x: e.pageX,
+        y: e.pageY
+      };
+    } // Calculate the average point, starting at offset in the buffer
+
+  }, {
+    key: "getAveragePoint",
+    value: function getAveragePoint(offset) {
+      var len = this.buffer.length;
+
+      if (len % 2 === 1 || len >= this.bufferSize) {
+        var totalX = 0;
+        var totalY = 0;
+        var pt, i;
+        var count = 0;
+
+        for (i = offset; i < len; i++) {
+          count++;
+          pt = this.buffer[i];
+          totalX += pt.x;
+          totalY += pt.y;
+        }
+
+        return {
+          x: totalX / count,
+          y: totalY / count
+        };
+      }
+
+      return null;
+    }
+  }, {
+    key: "updateSvgPath",
+    value: function updateSvgPath() {
+      var pt = this.getAveragePoint(0);
+
+      if (pt) {
+        // Get the smoothed part of the path that will not change
+        this.strPath += " L" + pt.x + " " + pt.y; // Get the last part of the path (close to the current mouse position)
+        // This part will change if the mouse moves again
+
+        var tmpPath = "";
+
+        for (var offset = 2; offset < this.buffer.length; offset += 2) {
+          pt = this.getAveragePoint(offset);
+          tmpPath += " L" + pt.x + " " + pt.y;
+        } // Set the complete current path coordinates
+
+
+        this.path.setAttribute("d", this.strPath + tmpPath);
+      }
+    }
+  }, {
+    key: "appendToBuffer",
+    value: function appendToBuffer(pt) {
+      this.buffer.push(pt);
+
+      while (this.buffer.length > this.bufferSize) {
+        this.buffer.shift();
+      }
+    }
+  }, {
+    key: "fadeOutToolbar",
+    value: function fadeOutToolbar() {
+      var fadeTarget = document.querySelector(".bb-capture-toolbar");
+      fadeTarget.style.opacity = 0;
+      fadeTarget.style.pointerEvents = "none";
+    }
+  }, {
+    key: "fadeInToolbar",
+    value: function fadeInToolbar() {
+      var fadeTarget = document.querySelector(".bb-capture-toolbar");
+      fadeTarget.style.opacity = 1;
+      fadeTarget.style.pointerEvents = "auto";
+    }
+  }]);
+
+  return ScreenDrawer;
+}();
+;// CONCATENATED MODULE: ./src/ScrollStopper.js
+function ScrollStopper_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScrollStopper_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScrollStopper_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScrollStopper_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScrollStopper_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScrollStopper_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ScrollStopper = /*#__PURE__*/function () {
+  function ScrollStopper() {
+    ScrollStopper_classCallCheck(this, ScrollStopper);
+
+    ScrollStopper_defineProperty(this, "keys", {
+      37: 1,
+      38: 1,
+      39: 1,
+      40: 1
+    });
+
+    ScrollStopper_defineProperty(this, "supportsPassive", false);
+
+    ScrollStopper_defineProperty(this, "wheelOpt", this.supportsPassive ? {
+      passive: false
+    } : false);
+
+    ScrollStopper_defineProperty(this, "wheelEvent", "onwheel" in document.createElement("div") ? "wheel" : "mousewheel");
+
+    ScrollStopper_defineProperty(this, "scrollDisabled", false);
+
+    var self = this;
+
+    try {
+      window.addEventListener("test", null, Object.defineProperty({}, "passive", {
+        get: function get() {
+          self.supportsPassive = true;
+          self.wheelOpt = self.supportsPassive ? {
+            passive: false
+          } : false;
+        }
+      }));
+    } catch (e) {}
+  }
+
+  ScrollStopper_createClass(ScrollStopper, [{
+    key: "preventDefault",
+    value: function preventDefault(e) {
+      e.preventDefault();
+    }
+  }, {
+    key: "preventDefaultForScrollKeys",
+    value: function preventDefaultForScrollKeys(e) {
+      if (this.keys && this.keys[e.keyCode]) {
+        this.preventDefault(e);
+        return false;
+      }
+    }
+  }], [{
+    key: "getInstance",
+    value: // ScrollStopper singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new ScrollStopper();
+        return this.instance;
+      } else {
+        return this.instance;
+      }
+    }
+  }, {
+    key: "disableScroll",
+    value: function disableScroll() {
+      var instance = this.getInstance();
+
+      if (instance.scrollDisabled) {
+        return;
+      }
+
+      instance.scrollDisabled = true;
+      window.addEventListener("DOMMouseScroll", instance.preventDefault, false); // older FF
+
+      window.addEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt); // modern desktop
+
+      window.addEventListener("touchmove", instance.preventDefault, instance.wheelOpt); // mobile
+
+      window.addEventListener("keydown", instance.preventDefaultForScrollKeys, false);
+    }
+  }, {
+    key: "enableScroll",
+    value: function enableScroll() {
+      var instance = this.getInstance();
+
+      if (!instance.scrollDisabled) {
+        return;
+      }
+
+      instance.scrollDisabled = false;
+      window.removeEventListener("DOMMouseScroll", instance.preventDefault, false);
+      window.removeEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt);
+      window.removeEventListener("touchmove", instance.preventDefault, instance.wheelOpt);
+      window.removeEventListener("keydown", instance.preventDefaultForScrollKeys, false);
+    }
+  }]);
+
+  return ScrollStopper;
+}();
+
+ScrollStopper_defineProperty(ScrollStopper, "instance", void 0);
+;// CONCATENATED MODULE: ./src/Gleap.js
+function Gleap_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function Gleap_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function Gleap_createClass(Constructor, protoProps, staticProps) { if (protoProps) Gleap_defineProperties(Constructor.prototype, protoProps); if (staticProps) Gleap_defineProperties(Constructor, staticProps); return Constructor; }
+
+function Gleap_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function Gleap_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { Gleap_ownKeys(Object(source), true).forEach(function (key) { Gleap_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { Gleap_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function Gleap_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
+  HTMLCanvasElement.prototype.__originalGetContext = HTMLCanvasElement.prototype.getContext;
+
+  HTMLCanvasElement.prototype.getContext = function (type, options) {
+    return this.__originalGetContext(type, Gleap_objectSpread(Gleap_objectSpread({}, options), {}, {
+      preserveDrawingBuffer: true
+    }));
+  };
+}
+
+var gleapDataParser = function gleapDataParser(data) {
+  if (typeof data === "string" || data instanceof String) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  return data;
+};
+
+var Gleap_Gleap = /*#__PURE__*/function () {
+  /**
+   * Main constructor
+   */
+  function Gleap() {
+    var _this = this;
+
+    Gleap_classCallCheck(this, Gleap);
+
+    Gleap_defineProperty(this, "uiContainer", null);
+
+    Gleap_defineProperty(this, "widgetOnly", false);
+
+    Gleap_defineProperty(this, "widgetStartFlow", undefined);
+
+    Gleap_defineProperty(this, "widgetCallback", null);
+
+    Gleap_defineProperty(this, "overrideLanguage", "");
+
+    Gleap_defineProperty(this, "screenshot", null);
+
+    Gleap_defineProperty(this, "actionLog", []);
+
+    Gleap_defineProperty(this, "logArray", []);
+
+    Gleap_defineProperty(this, "customData", {});
+
+    Gleap_defineProperty(this, "formData", {});
+
+    Gleap_defineProperty(this, "excludeData", {});
+
+    Gleap_defineProperty(this, "logMaxLength", 500);
+
+    Gleap_defineProperty(this, "buttonType", Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT);
+
+    Gleap_defineProperty(this, "feedbackType", "BUG");
+
+    Gleap_defineProperty(this, "sessionStart", new Date());
+
+    Gleap_defineProperty(this, "customActionCallbacks", []);
+
+    Gleap_defineProperty(this, "poweredByHidden", false);
+
+    Gleap_defineProperty(this, "enabledCrashDetector", false);
+
+    Gleap_defineProperty(this, "enabledCrashDetectorSilent", false);
+
+    Gleap_defineProperty(this, "enabledRageClickDetector", false);
+
+    Gleap_defineProperty(this, "enabledRageClickDetectorSilent", false);
+
+    Gleap_defineProperty(this, "appCrashDetected", false);
+
+    Gleap_defineProperty(this, "rageClickDetected", false);
+
+    Gleap_defineProperty(this, "currentlySendingBug", false);
+
+    Gleap_defineProperty(this, "isLiveSite", false);
+
+    Gleap_defineProperty(this, "replaysEnabled", false);
+
+    Gleap_defineProperty(this, "customLogoUrl", null);
+
+    Gleap_defineProperty(this, "shortcutsEnabled", true);
+
+    Gleap_defineProperty(this, "silentBugReport", false);
+
+    Gleap_defineProperty(this, "initialized", false);
+
+    Gleap_defineProperty(this, "screenshotFeedbackOptions", null);
+
+    Gleap_defineProperty(this, "customerInfo", {});
+
+    Gleap_defineProperty(this, "showUserName", true);
+
+    Gleap_defineProperty(this, "welcomeIcon", "👋");
+
+    Gleap_defineProperty(this, "feedbackButtonText", "Feedback");
+
+    Gleap_defineProperty(this, "widgetInfo", {
+      title: "Feedback",
+      subtitle: "var us know how we can do better.",
+      dialogSubtitle: "Report a bug, or share your feedback with us."
+    });
+
+    Gleap_defineProperty(this, "originalConsoleLog", void 0);
+
+    Gleap_defineProperty(this, "severity", "LOW");
+
+    Gleap_defineProperty(this, "appVersionCode", "");
+
+    Gleap_defineProperty(this, "appBuildNumber", "");
+
+    Gleap_defineProperty(this, "mainColor", "#485bff");
+
+    Gleap_defineProperty(this, "feedbackTypeActions", []);
+
+    Gleap_defineProperty(this, "customTranslation", {});
+
+    Gleap_defineProperty(this, "networkIntercepter", new NetworkInterception());
+
+    Gleap_defineProperty(this, "replay", null);
+
+    Gleap_defineProperty(this, "feedbackButton", null);
+
+    Gleap_defineProperty(this, "fakeLoading", null);
+
+    Gleap_defineProperty(this, "fakeLoadingProgress", 0);
+
+    Gleap_defineProperty(this, "widgetOpened", false);
+
+    Gleap_defineProperty(this, "openedMenu", false);
+
+    Gleap_defineProperty(this, "showInfoPopup", false);
+
+    Gleap_defineProperty(this, "snapshotPosition", {
+      x: 0,
+      y: 0
+    });
+
+    Gleap_defineProperty(this, "eventListeners", {});
+
+    Gleap_defineProperty(this, "feedbackActions", {});
+
+    Gleap_defineProperty(this, "actionToPerform", undefined);
+
+    Gleap_defineProperty(this, "screenRecordingUrl", null);
+
+    Gleap_defineProperty(this, "getWidgetDialogClass", function () {
+      if (_this.appCrashDetected || _this.rageClickDetected) {
+        return "bb-feedback-dialog--crashed";
+      }
+
+      return "";
+    });
+
+    if (typeof window !== "undefined") {
+      this.init();
+    }
+  }
+  /**
+   * Sets a custom UI container.
+   */
+
+
+  Gleap_createClass(Gleap, [{
+    key: "postInit",
+    value: function postInit() {
+      if (!this.widgetCallback) {
+        // Start event stream only on web.
+        StreamedEvent.getInstance().start();
+      }
+
+      var self = this;
+
+      if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        self.checkForInitType();
+      } else {
+        document.addEventListener("DOMContentLoaded", function (event) {
+          self.checkForInitType();
+        });
+      }
+
+      if (this.widgetCallback) {
+        self.widgetCallback("sessionReady");
+      }
+    }
+    /**
+     * Indentifies the user session
+     * @param {string} userId
+     * @param {*} userData
+     */
+
+  }, {
+    key: "notifyEvent",
+    value:
+    /**
+     * Notify all registrants for event.
+     */
+    function notifyEvent(event) {
+      var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      var eventListeners = this.eventListeners[event];
+
+      if (eventListeners) {
+        for (var i = 0; i < eventListeners.length; i++) {
+          var eventListener = eventListeners[i];
+
+          if (eventListener) {
+            eventListener(data);
+          }
+        }
+      }
+    }
+    /**
+     * Appends a node to the widgets container.
+     * @param {*} node
+     */
+
+  }, {
+    key: "getFeedbackOptions",
+    value: function getFeedbackOptions(feedbackFlow) {
+      var feedbackOptions = null; // Try to load the specific feedback flow.
+
+      if (feedbackFlow) {
+        feedbackOptions = this.feedbackActions[feedbackFlow];
+      } // Fallback
+
+
+      if (!feedbackOptions) {
+        feedbackOptions = this.feedbackActions.bugreporting;
+      } // Deep copy to prevent changes.
+
+
+      try {
+        feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
+      } catch (e) {}
+
+      return feedbackOptions;
+    }
+    /**
+     * Starts the bug reporting flow.
+     */
+
+  }, {
+    key: "stopBugReportingAnalytics",
+    value: function stopBugReportingAnalytics() {
+      this.networkIntercepter.setStopped(true);
+
+      if (this.replay && !this.replay.stopped) {
+        this.replay.stop(!this.isLiveSite);
+      }
+    }
+  }, {
+    key: "startCrashDetection",
+    value: function startCrashDetection() {
+      var self = this;
+
+      window.onerror = function (msg, url, lineNo, columnNo, error) {
+        var message = ["Message: " + msg, "URL: " + url, "Line: " + lineNo, "Column: " + columnNo, "Stack: " + (error && error.stack) ? error.stack : 0];
+        self.addLog(message, "ERROR");
+
+        if (self.enabledCrashDetector && !self.appCrashDetected && !self.currentlySendingBug) {
+          self.appCrashDetected = true;
+
+          if (self.enabledCrashDetectorSilent) {
+            return Gleap.sendSilentReport({
+              errorMessage: msg,
+              url: url,
+              lineNo: lineNo,
+              columnNo: columnNo,
+              stackTrace: error && error.stack ? error.stack : ""
+            }, Gleap.PRIORITY_MEDIUM, "CRASH", {
+              screenshot: true,
+              replays: true
+            });
+          } else {
+            Gleap.startFeedbackFlow("crash");
+          }
+        }
+
+        return false;
+      };
+    }
+  }, {
+    key: "truncateString",
+    value: function truncateString(str, num) {
+      if (str.length > num) {
+        return str.slice(0, num) + "...";
+      } else {
+        return str;
+      }
+    }
+  }, {
+    key: "addLog",
+    value: function addLog(args, priority) {
+      if (!args) {
+        return;
+      }
+
+      var log = "";
+
+      for (var i = 0; i < args.length; i++) {
+        log += args[i] + " ";
+      }
+
+      this.logArray.push({
+        log: this.truncateString(log, 1000),
+        date: new Date(),
+        priority: priority
+      });
+
+      if (this.logArray.length > this.logMaxLength) {
+        this.logArray.shift();
+      }
+    }
+  }, {
+    key: "overwriteConsoleLog",
+    value: function overwriteConsoleLog() {
+      var self = this;
+
+      window.console = function (origConsole) {
+        if (!window.console || !origConsole) {
+          origConsole = {};
+        }
+
+        self.originalConsoleLog = origConsole;
+        return Gleap_objectSpread(Gleap_objectSpread({}, origConsole), {}, {
+          log: function log() {
+            self.addLog(arguments, "INFO");
+            origConsole.log && origConsole.log.apply(origConsole, arguments);
+          },
+          warn: function warn() {
+            self.addLog(arguments, "WARNING");
+            origConsole.warn && origConsole.warn.apply(origConsole, arguments);
+          },
+          error: function error() {
+            self.addLog(arguments, "ERROR");
+            origConsole.error && origConsole.error.apply(origConsole, arguments);
+          },
+          info: function info(v) {
+            self.addLog(arguments, "INFO");
+            origConsole.info && origConsole.info.apply(origConsole, arguments);
+          }
+        });
+      }(window.console);
+    }
+  }, {
+    key: "resetLoading",
+    value: function resetLoading(resetProgress) {
+      if (this.fakeLoading) {
+        clearInterval(this.fakeLoading);
+      }
+
+      this.fakeLoading = null;
+      this.fakeLoadingProgress = 0;
+
+      if (resetProgress) {
+        setLoadingIndicatorProgress(1);
+      }
+    }
+  }, {
+    key: "createFeedbackFormDialog",
+    value: function createFeedbackFormDialog(feedbackOptions) {
+      var self = this;
+      var formData = buildForm(feedbackOptions, this.overrideLanguage);
+      var title = translateText(feedbackOptions.title, this.overrideLanguage);
+      var htmlContent = "<div class=\"bb-feedback-dialog-error\">".concat(translateText("Something went wrong, please try again.", self.overrideLanguage), "</div><div class=\"bb-feedback-dialog-loading bb-feedback-dialog-loading--main\">\n    <svg\n      class=\"bb--progress-ring\"\n      width=\"120\"\n      height=\"120\">\n      <circle\n        class=\"bb--progress-ring__circle\"\n        stroke=\"").concat(this.mainColor, "\"\n        stroke-width=\"6\"\n        fill=\"transparent\"\n        r=\"34\"\n        cx=\"60\"\n        cy=\"60\"/>\n    </svg>\n  </div>\n  <div class=\"bb-feedback-dialog-success\">\n    <svg width=\"120px\" height=\"92px\" viewBox=\"0 0 120 92\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n        <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n            <g fill=\"").concat(this.mainColor, "\" fill-rule=\"nonzero\">\n                <path d=\"M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z\" id=\"Path\"></path>\n            </g>\n        </g>\n    </svg>\n    <div class=\"bb-feedback-dialog-info-text\">").concat(translateText(feedbackOptions.thanksMessage ? feedbackOptions.thanksMessage : "Thank you!", this.overrideLanguage), "</div>\n  </div>\n  <div class=\"bb-feedback-form\">\n    ").concat(formData, "\n  </div>");
+      createWidgetDialog(title, null, this.customLogoUrl, htmlContent, function () {
+        self.goBackToMainMenu();
+      }, this.openedMenu, "bb-anim-fadeinright ".concat(this.getWidgetDialogClass(), " bb-feedback-dialog-form"));
+      this.openedMenu = true;
+      this.resetLoading(true);
+      validatePoweredBy(this.poweredByHidden);
+      hookForm(feedbackOptions, function () {
+        self.formSubmitAction(feedbackOptions);
+      });
+    }
+  }, {
+    key: "formSubmitAction",
+    value: function formSubmitAction(feedbackOptions) {
+      var self = this; // Remember form items
+
+      rememberForm(feedbackOptions.form);
+      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+      toggleLoading(true); // Start fake loading
+
+      self.fakeLoading = setInterval(function () {
+        if (self.fakeLoadingProgress > 75) {
+          self.resetLoading(false);
+          return;
+        }
+
+        self.fakeLoadingProgress += 2;
+        setLoadingIndicatorProgress(self.fakeLoadingProgress);
+      }, 150); // Send form
+
+      var formData = getFormData(feedbackOptions.form);
+      self.formData = formData;
+      self.excludeData = feedbackOptions.excludeData ? feedbackOptions.excludeData : {};
+      self.feedbackType = feedbackOptions.feedbackType ? feedbackOptions.feedbackType : "BUG";
+
+      if (self.widgetOnly && self.widgetCallback) {
+        self.widgetCallback("sendFeedback", {
+          type: self.feedbackType,
+          formData: self.formData,
+          screenshot: self.screenshot,
+          excludeData: self.excludeData
+        });
+      } else {
+        self.checkReplayLoaded();
+      }
+    }
+  }, {
+    key: "checkReplayLoaded",
+    value: function checkReplayLoaded() {
+      var _this2 = this;
+
+      var retries = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      if (this.replaysEnabled && !(this.replay && this.replay.result) && retries < 5) {
+        // Replay is not ready yet.
+        setTimeout(function () {
+          _this2.checkReplayLoaded(++retries);
+        }, 1000);
+      } else {
+        this.checkForScreenRecording(0);
+      }
+    }
+  }, {
+    key: "checkForScreenRecording",
+    value: function checkForScreenRecording() {
+      var _this3 = this;
+
+      var retries = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
+
+      if (this.screenRecordingUrl === "uploading" && retries < 8) {
+        // Replay is not ready yet.
+        setTimeout(function () {
+          _this3.checkForScreenRecording(++retries);
+        }, 1000);
+      } else {
+        this.takeScreenshotAndSend();
+      }
+    }
+  }, {
+    key: "takeScreenshotAndSend",
+    value: function takeScreenshotAndSend() {
+      var _this4 = this;
+
+      if (this.excludeData && this.excludeData.screenshot) {
+        // Screenshot excluded.
+        this.sendBugReportToServer();
+      } else {
+        return startScreenCapture(this.snapshotPosition, this.isLiveSite).then(function (data) {
+          _this4.sendBugReportToServer(data);
+        })["catch"](function (err) {
+          _this4.showError();
+        });
+      }
+    }
+  }, {
+    key: "reportCleanupOnClose",
+    value: function reportCleanupOnClose() {
+      try {
+        Gleap.enableReplays(this.replaysEnabled);
+      } catch (exp) {}
+
+      try {
+        this.networkIntercepter.setStopped(false);
+      } catch (exp) {}
+
+      this.actionToPerform = undefined;
+
+      if (this.widgetCallback) {
+        this.widgetCallback("closeGleap", {});
+      }
+    }
+  }, {
+    key: "closeModalUI",
+    value: function closeModalUI(cleanUp) {
+      var dialogContainer = document.querySelector(".bb-feedback-dialog-container");
+
+      if (dialogContainer) {
+        dialogContainer.remove();
+      }
+    }
+  }, {
+    key: "closeGleap",
+    value: function closeGleap() {
+      var cleanUp = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
+      if (cleanUp) {
+        this.reportCleanupOnClose();
+      }
+
+      ScrollStopper.enableScroll();
+      this.currentlySendingBug = false;
+      this.widgetOpened = false;
+      this.openedMenu = false;
+      this.appCrashDetected = false;
+      this.rageClickDetected = false;
+      this.updateFeedbackButtonState(); // Remove editor.
+
+      var editorContainer = document.querySelector(".bb-capture-editor");
+
+      if (editorContainer) {
+        editorContainer.remove();
+      }
+
+      this.notifyEvent("close");
+      this.closeModalUI(cleanUp);
+    }
+  }, {
+    key: "isLocalNetwork",
+    value: function isLocalNetwork() {
+      var hostname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.hostname;
+      return ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) || hostname.startsWith("192.168.") || hostname.startsWith("10.0.") || hostname.endsWith(".local");
+    }
+  }, {
+    key: "init",
+    value: function init() {
+      this.overwriteConsoleLog();
+      this.startCrashDetection();
+      this.registerKeyboardListener();
+      this.registerEscapeListener();
+
+      if (this.isLocalNetwork()) {
+        this.isLiveSite = false;
+      } else {
+        this.isLiveSite = true;
+      }
+    }
+  }, {
+    key: "registerKeyboardListener",
+    value: function registerKeyboardListener() {
+      var self = this;
+
+      var charForEvent = function charForEvent(event) {
+        var code;
+
+        if (event.key !== undefined) {
+          code = event.key;
+        } else if (event.keyIdentifier !== undefined) {
+          code = event.keyIdentifier;
+        } else if (event.keyCode !== undefined) {
+          code = event.keyCode;
+        }
+
+        return code;
+      };
+
+      document.onkeyup = function (e) {
+        var _char = charForEvent(e);
+
+        if (e.ctrlKey && (_char === "i" || _char === "I" || _char === 73) && self.shortcutsEnabled) {
+          Gleap.startFeedbackFlow();
+        }
+      };
+    }
+  }, {
+    key: "checkForInitType",
+    value: function checkForInitType() {
+      var _this5 = this;
+
+      if (window && window.onGleapLoaded) {
+        window.onGleapLoaded(Gleap);
+      }
+
+      setInterval(function () {
+        if (_this5.replay && _this5.replay.isFull()) {
+          Gleap.enableReplays(_this5.replaysEnabled);
+        }
+      }, 1000);
+
+      if (this.widgetOnly) {
+        // App widget
+        var self = this;
+
+        if (self.widgetStartFlow) {
+          Gleap.startFeedbackFlow(self.widgetStartFlow);
+        } else {
+          if (self.feedbackTypeActions.length > 0) {
+            Gleap.startFeedbackTypeSelection();
+          } else {
+            Gleap.startFeedbackFlow();
+          }
+        }
+      } else {
+        // Web widget
+        Session.getInstance().setOnSessionReady(function () {
+          _this5.injectFeedbackButton();
+        });
+      }
+    }
+  }, {
+    key: "injectFeedbackButton",
+    value: function injectFeedbackButton() {
+      var self = this;
+      var buttonIcon = "";
+
+      if (self.customButtonLogoUrl) {
+        buttonIcon = "<img class=\"bb-logo-logo\" src=\"".concat(self.customButtonLogoUrl, "\" alt=\"Feedback Button\" />");
+      } else {
+        buttonIcon = loadIcon("bblogo", "#fff");
+      }
+
+      var elem = document.createElement("div");
+      elem.className = "bb-feedback-button";
+
+      if (this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC || this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM || this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT) {
+        elem.innerHTML = "<div class=\"bb-feedback-button-classic ".concat(this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT ? "bb-feedback-button-classic--left" : "").concat(this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM ? "bb-feedback-button-classic--bottom" : "", "\">").concat(translateText(this.feedbackButtonText, this.overrideLanguage), "</div>");
+      } else {
+        elem.innerHTML = "<div class=\"bb-feedback-button-icon\">".concat(buttonIcon).concat(loadIcon("arrowdown", "#fff"), "</div>");
+      }
+
+      elem.onclick = function () {
+        self.feedbackButtonPressed();
+      };
+
+      Gleap.appendNode(elem);
+
+      if (this.buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
+        elem.classList.add("bb-feedback-button--disabled");
+      }
+
+      if (this.buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+        elem.classList.add("bb-feedback-button--bottomleft");
+      }
+
+      this.feedbackButton = elem;
+    }
+  }, {
+    key: "showGleap",
+    value: function showGleap() {
+      if (this.widgetOpened) {
+        return;
+      }
+
+      if (this.feedbackTypeActions.length > 0) {
+        Gleap.startFeedbackTypeSelection();
+      } else {
+        Gleap.startFeedbackFlow();
+      } // Remove shoutout.
+
+
+      var feedbackShoutout = window.document.getElementsByClassName("bb-feedback-button-shoutout");
+
+      if (feedbackShoutout && feedbackShoutout.length > 0) {
+        feedbackShoutout[0].remove();
+      } // Prevent shoutout from showing again.
+
+
+      try {
+        localStorage.setItem("bb-fto", true);
+      } catch (exp) {}
+
+      this.notifyEvent("open");
+    }
+  }, {
+    key: "feedbackButtonPressed",
+    value: function feedbackButtonPressed() {
+      if (this.widgetOpened) {
+        this.closeGleap();
+        return;
+      }
+
+      this.showGleap();
+    }
+  }, {
+    key: "updateFeedbackButtonState",
+    value: function updateFeedbackButtonState() {
+      var _this6 = this;
+
+      var retry = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+
+      if (this.feedbackButton === null) {
+        if (!retry) {
+          setTimeout(function () {
+            _this6.updateFeedbackButtonState(true);
+          }, 500);
+        }
+
+        return;
+      }
+
+      var sendingClass = "bb-feedback-button--sending";
+
+      if (this.widgetOpened) {
+        this.feedbackButton.classList.add(sendingClass);
+      } else {
+        this.feedbackButton.classList.remove(sendingClass);
+      }
+
+      var crashedClass = "bb-feedback-button--crashed";
+
+      if (this.appCrashDetected || this.rageClickDetected) {
+        this.feedbackButton.classList.add(crashedClass);
+      } else {
+        this.feedbackButton.classList.remove(crashedClass);
+      }
+
+      var dialogContainer = document.querySelector(".bb-feedback-dialog-container");
+      var containerFocusClass = "bb-feedback-dialog-container--focused";
+
+      if (dialogContainer) {
+        if (this.appCrashDetected || this.rageClickDetected) {
+          dialogContainer.classList.add(containerFocusClass);
+        } else {
+          dialogContainer.classList.remove(containerFocusClass);
+        }
+      }
+    }
+  }, {
+    key: "registerEscapeListener",
+    value: function registerEscapeListener() {
+      var self = this;
+      document.addEventListener("keydown", function (evt) {
+        evt = evt || window.event;
+        var isEscape = false;
+
+        if ("key" in evt) {
+          isEscape = evt.key === "Escape" || evt.key === "Esc";
+        } else {
+          isEscape = evt.keyCode === 27;
+        }
+
+        if (isEscape) {
+          self.closeGleap();
+        }
+      });
+    }
+  }, {
+    key: "showSuccessMessage",
+    value: function showSuccessMessage() {
+      var success = document.querySelector(".bb-feedback-dialog-success");
+      var form = document.querySelector(".bb-feedback-form");
+      var loader = document.querySelector(".bb-feedback-dialog-loading");
+      form.style.display = "none";
+      loader.style.display = "none";
+      success.style.display = "flex";
+    }
+  }, {
+    key: "performAction",
+    value: function performAction(action) {
+      if (action && action.outbound && action.actionType) {
+        this.actionToPerform = action;
+        Gleap.startFeedbackFlow(action.actionType);
+      }
+    }
+  }, {
+    key: "sendBugReportToServer",
+    value: function sendBugReportToServer(screenshotData) {
+      var self = this;
+      var http = new XMLHttpRequest();
+      http.open("POST", Session.getInstance().apiUrl + "/bugs");
+      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      Session.getInstance().injectSession(http);
+
+      http.onerror = function (error) {
+        if (self.silentBugReport) {
+          self.closeGleap();
+          return;
+        }
+
+        self.showError();
+      };
+
+      http.upload.onprogress = function (e) {
+        if (self.silentBugReport) {
+          self.closeGleap();
+          return;
+        }
+
+        if (e.lengthComputable) {
+          var percentComplete = parseInt(e.loaded / e.total * 100);
+
+          if (percentComplete > 25 && percentComplete > self.fakeLoadingProgress) {
+            if (self.fakeLoading) {
+              self.resetLoading(false);
+            }
+
+            setLoadingIndicatorProgress(percentComplete);
+          }
+        }
+      };
+
+      http.onreadystatechange = function (e) {
+        if (self.silentBugReport) {
+          self.closeGleap();
+          return;
+        }
+
+        if (http.readyState === XMLHttpRequest.DONE) {
+          if (http.status === 200 || http.status === 201) {
+            self.notifyEvent("feedback-sent");
+            self.showSuccessAndClose();
+          } else {
+            self.showError();
+          }
+        }
+      };
+
+      var bugReportData = {
+        priority: this.severity,
+        customData: this.customData,
+        metaData: this.getMetaData(),
+        consoleLog: this.logArray,
+        networkLogs: this.networkIntercepter.getRequests(),
+        customEventLog: StreamedEvent.getInstance().eventArray,
+        type: this.feedbackType,
+        formData: this.formData,
+        isSilent: this.silentBugReport
+      };
+
+      if (this.actionToPerform && this.actionToPerform.outbound) {
+        bugReportData["outbound"] = this.actionToPerform.outbound;
+      }
+
+      if (screenshotData && screenshotData.fileUrl) {
+        bugReportData["screenshotUrl"] = screenshotData.fileUrl;
+      }
+
+      if (screenshotData && screenshotData.html) {
+        bugReportData["screenshotData"] = screenshotData;
+      }
+
+      if (this.replay && this.replay.result) {
+        bugReportData["webReplay"] = this.replay.result;
+      }
+
+      if (this.screenRecordingUrl && this.screenRecordingUrl != "uploading") {
+        bugReportData["screenRecordingUrl"] = this.screenRecordingUrl;
+      } // Exclude data logic.
+
+
+      var keysToExclude = Object.keys(this.excludeData);
+
+      for (var _i = 0; _i < keysToExclude.length; _i++) {
+        var keyToExclude = keysToExclude[_i];
+
+        if (this.excludeData[keyToExclude] === true) {
+          delete bugReportData[keyToExclude];
+
+          if (keyToExclude === "screenshot") {
+            delete bugReportData.screenshotData;
+            delete bugReportData.screenshotUrl;
+          }
+
+          if (keyToExclude === "replays") {
+            delete bugReportData.webReplay;
+          }
+        }
+      }
+
+      http.send(JSON.stringify(bugReportData));
+    }
+  }, {
+    key: "jsonSize",
+    value: function jsonSize(obj) {
+      var size = new TextEncoder().encode(JSON.stringify(obj)).length;
+      var kiloBytes = size / 1024;
+      var megaBytes = kiloBytes / 1024;
+    }
+  }, {
+    key: "showSuccessAndClose",
+    value: function showSuccessAndClose() {
+      var self = this;
+      self.showSuccessMessage();
+      setTimeout(function () {
+        self.closeGleap();
+      }, 2800);
+    }
+  }, {
+    key: "showError",
+    value: function showError() {
+      if (this.silentBugReport) {
+        this.closeGleap();
+        return;
+      }
+
+      this.notifyEvent("error-while-sending");
+      toggleLoading(false);
+      document.querySelector(".bb-feedback-dialog-error").style.display = "flex";
+    }
+  }, {
+    key: "getMetaData",
+    value: function getMetaData() {
+      var nAgt = navigator.userAgent;
+      var browserName = navigator.appName;
+      var fullVersion = "" + parseFloat(navigator.appVersion);
+      var majorVersion = parseInt(navigator.appVersion, 10);
+      var nameOffset, verOffset, ix; // In Opera, the true version is after "Opera" or after "Version"
+
+      if ((verOffset = nAgt.indexOf("Opera")) !== -1) {
+        browserName = "Opera";
+        fullVersion = nAgt.substring(verOffset + 6);
+        if ((verOffset = nAgt.indexOf("Version")) !== -1) fullVersion = nAgt.substring(verOffset + 8);
+      } // In MSIE, the true version is after "MSIE" in userAgent
+      else if ((verOffset = nAgt.indexOf("MSIE")) !== -1) {
+          browserName = "Microsoft Internet Explorer";
+          fullVersion = nAgt.substring(verOffset + 5);
+        } // In Chrome, the true version is after "Chrome"
+        else if ((verOffset = nAgt.indexOf("Chrome")) !== -1) {
+            browserName = "Chrome";
+            fullVersion = nAgt.substring(verOffset + 7);
+          } // In Safari, the true version is after "Safari" or after "Version"
+          else if ((verOffset = nAgt.indexOf("Safari")) !== -1) {
+              browserName = "Safari";
+              fullVersion = nAgt.substring(verOffset + 7);
+              if ((verOffset = nAgt.indexOf("Version")) !== -1) fullVersion = nAgt.substring(verOffset + 8);
+            } // In Firefox, the true version is after "Firefox"
+            else if ((verOffset = nAgt.indexOf("Firefox")) !== -1) {
+                browserName = "Firefox";
+                fullVersion = nAgt.substring(verOffset + 8);
+              } // In most other browsers, "name/version" is at the end of userAgent
+              else if ((nameOffset = nAgt.lastIndexOf(" ") + 1) < (verOffset = nAgt.lastIndexOf("/"))) {
+                  browserName = nAgt.substring(nameOffset, verOffset);
+                  fullVersion = nAgt.substring(verOffset + 1);
+
+                  if (browserName.toLowerCase() === browserName.toUpperCase()) {
+                    browserName = navigator.appName;
+                  }
+                } // trim the fullVersion string at semicolon/space if present
+
+
+      if ((ix = fullVersion.indexOf(";")) !== -1) fullVersion = fullVersion.substring(0, ix);
+      if ((ix = fullVersion.indexOf(" ")) !== -1) fullVersion = fullVersion.substring(0, ix);
+      majorVersion = parseInt("" + fullVersion, 10);
+
+      if (isNaN(majorVersion)) {
+        fullVersion = "" + parseFloat(navigator.appVersion);
+        majorVersion = parseInt(navigator.appVersion, 10);
+      }
+
+      var OSName = "Unknown OS";
+      if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
+      if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
+      if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
+      if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
+      if (navigator.appVersion.indexOf("iPad") !== -1) OSName = "iPad";
+      if (navigator.appVersion.indexOf("iPhone") !== -1) OSName = "iPhone";
+      if (navigator.appVersion.indexOf("Android") !== -1) OSName = "Android";
+      var now = new Date();
+      var sessionDuration = (now.getTime() - this.sessionStart.getTime()) / 1000;
+      return {
+        browserName: browserName + "(" + fullVersion + ")",
+        userAgent: nAgt,
+        browser: navigator.appName,
+        systemName: OSName,
+        buildVersionNumber: this.appBuildNumber,
+        releaseVersionNumber: this.appVersionCode,
+        sessionDuration: sessionDuration,
+        devicePixelRatio: window.devicePixelRatio,
+        screenWidth: window.screen.width,
+        screenHeight: window.screen.height,
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        currentUrl: window.location.href,
+        language: navigator.language || navigator.userLanguage,
+        mobile: isMobile(),
+        sdkVersion: "6.6.2",
+        sdkType: "javascript"
+      };
+    }
+  }, {
+    key: "showBugReportEditor",
+    value: function showBugReportEditor(feedbackOptions) {
+      var self = this; // Stop here if we don't want to show the native screenshot tools.
+
+      if (feedbackOptions.disableUserScreenshot) {
+        this.createFeedbackFormDialog(feedbackOptions);
+        return;
+      } // Predefined screenshot set, show the editor.
+
+
+      if (this.screenshot) {
+        this.showMobileScreenshotEditor(feedbackOptions);
+        return;
+      } // Fetch screenshot from native SDK.
+
+
+      if (this.widgetOnly && this.widgetCallback) {
+        if (this.widgetOnly && this.widgetCallback) {
+          this.screenshotFeedbackOptions = feedbackOptions;
+          this.widgetCallback("requestScreenshot", {});
+        }
+
+        return;
+      }
+
+      this.showScreenshotEditor(feedbackOptions);
+    }
+  }, {
+    key: "showScreenshotEditor",
+    value: function showScreenshotEditor(feedbackOptions) {
+      var self = this; // Manage feedback button
+
+      var feedbackButton = document.querySelector(".bb-feedback-button");
+      var feedbackButtonStyle = "";
+
+      if (feedbackButton) {
+        feedbackButtonStyle = feedbackButton.style.display;
+        feedbackButton.style.display = "none";
+      } // Disable scroll
+
+
+      ScrollStopper.disableScroll(); // Add HTML for drawing and recording
+
+      var bugReportingEditor = document.createElement("div");
+      bugReportingEditor.className = "bb-capture-editor";
+      bugReportingEditor.innerHTML = "\n      <div class=\"bb-capture-editor-borderlayer\"></div>\n      <svg class=\"bb-capture-svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" xml:space=\"preserve\">\n      <div class=\"bb-capture-mousetool\"></div>\n      <div class='bb-capture-editor-drag-info'>".concat(loadIcon("pen"), "</div>\n      <div class=\"bb-capture-toolbar\">\n        <div class=\"bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active\" data-type=\"pen\" data-active=\"true\">\n          ").concat(loadIcon("pen"), "\n        </div>\n        <div class=\"bb-capture-toolbar-item bb-capture-toolbar-item-tool\" data-type=\"rect\" data-active=\"false\">\n          ").concat(loadIcon("rect"), "\n        </div>\n        <div class=\"bb-capture-toolbar-item\" data-type=\"colorpicker\">\n          <div class=\"bb-capture-toolbar-item-selectedcolor\"></div>\n        </div>\n        <div class=\"bb-capture-toolbar-spacer\"></div>\n        <div class=\"bb-capture-toolbar-item bb-capture-item-rec\" data-type=\"mic\" data-active=\"false\">\n          ").concat(loadIcon("mic"), "\n          <span class=\"bb-tooltip bb-tooltip-audio-recording\"></span>\n        </div> \n        <div class=\"bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording\" data-type=\"recording\" data-active=\"false\">\n          ").concat(loadIcon("recorderon"), "\n          ").concat(loadIcon("recorderoff"), "\n          <span class=\"bb-tooltip bb-tooltip-screen-recording\"></span>\n        </div>\n        <div class=\"bb-capture-toolbar-spacer bb-capture-item-rec\"></div>\n        <div class=\"bb-capture-toolbar-item-timer bb-capture-item-rec\">3:00</div>\n        <div class=\"bb-feedback-send-button\">").concat(translateText("Next", self.overrideLanguage), "</div>\n      </div>\n      <div class=\"bb-capture-toolbar-item-colorpicker\">\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#DB4035\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#FAD000\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#7ECC49\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#158FAD\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#4073FF\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#AF38EB\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#CCCCCC\"></div>\n      </div>\n      <div class=\"bb-capture-preview\">\n        <div class=\"bb-capture-preview-inner\">\n          <video controls muted autoplay></video>\n          <div class=\"bb-capture-preview-buttons\">\n            <div class=\"bb-capture-preview-retrybutton\">").concat(translateText("Retry", self.overrideLanguage), "</div>\n            <div class=\"bb-capture-preview-sendbutton\">").concat(translateText("Next", self.overrideLanguage), "</div>\n          </div>\n        </div>\n      </div>\n    ");
+      Gleap.appendNode(bugReportingEditor); // Hook up the drawing.
+
+      var screenDrawer = new ScreenDrawer(); // Dialog element
+
+      var dialog = document.querySelector(".bb-capture-toolbar");
+      var videoPreviewContainer = document.querySelector(".bb-capture-preview"); // Mouse logic
+
+      var dragInfo = document.querySelector(".bb-capture-editor-drag-info");
+
+      function setMouseMove(x, y) {
+        if (!dragInfo) {
+          return;
+        }
+
+        dragInfo.style.left = "".concat(x + 6, "px");
+        dragInfo.style.top = "".concat(y - 26, "px");
+        dragInfo.style.right = null;
+      }
+
+      var captureSVG = document.querySelector(".bb-capture-svg");
+      captureSVG.addEventListener("mouseenter", function (e) {
+        dragInfo.style.opacity = 1;
+      });
+      captureSVG.addEventListener("mouseleave", function (e) {
+        dragInfo.style.opacity = 0;
+      });
+
+      function mouseMoveEventHandler(e) {
+        var x = e.pageX - document.documentElement.scrollLeft;
+        var y = e.pageY - document.documentElement.scrollTop;
+        setMouseMove(x, y);
+      }
+
+      function touchMoveEventHandler(e) {
+        var x = e.touches[0].pageX - document.documentElement.scrollLeft;
+        var y = e.touches[0].pageY - document.documentElement.scrollTop;
+        setMouseMove(x, y);
+      }
+
+      var showNextStep = function showNextStep() {
+        screenRecorder.stopScreenRecording();
+        self.screenRecordingUrl = "uploading";
+        screenRecorder.uploadScreenRecording().then(function (screenRecordingUrl) {
+          self.screenRecordingUrl = screenRecordingUrl;
+        })["catch"](function (err) {
+          self.screenRecordingUrl = null;
+        });
+        ScrollStopper.disableScroll(); // Remove mouse listener.
+
+        document.documentElement.removeEventListener("mousemove", mouseMoveEventHandler);
+        document.documentElement.removeEventListener("touchmove", touchMoveEventHandler); // Cleanup UI.
+
+        if (dragInfo) {
+          dragInfo.remove();
+        }
+
+        if (dialog) {
+          dialog.remove();
+        }
+
+        if (videoPreviewContainer) {
+          videoPreviewContainer.remove();
+        } // Restore feedback button style.
+
+
+        if (feedbackButton) {
+          feedbackButton.style.display = feedbackButtonStyle;
+        } // Show form dialog.
+
+
+        self.createFeedbackFormDialog(feedbackOptions);
+      }; // Hook up send button
+
+
+      var nextButton = document.querySelector(".bb-feedback-send-button");
+      var nextButtonPreview = document.querySelector(".bb-capture-preview-sendbutton");
+      nextButton.onclick = showNextStep;
+      nextButtonPreview.onclick = showNextStep;
+      var retryButton = document.querySelector(".bb-capture-preview-retrybutton");
+
+      retryButton.onclick = function () {
+        videoPreviewContainer.style.display = "none";
+        document.querySelector(".bb-capture-preview video").src = null;
+      }; // Hookup buttons
+
+
+      var recRenderer = function recRenderer() {
+        var spacerItem = document.querySelector(".bb-capture-toolbar-spacer.bb-capture-item-rec");
+        var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
+        var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+        var screenRecordingTooltip = document.querySelector(".bb-tooltip-screen-recording");
+        var audioRecordingTooltip = document.querySelector(".bb-tooltip-audio-recording"); // Update screen container.
+
+        videoPreviewContainer.style.display = screenRecorder.file ? "flex" : "none";
+        dialog.style.display = !screenRecorder.file ? "flex" : "none";
+
+        for (var i = 0; i < toolbarItems.length; i++) {
+          var toolbarItem = toolbarItems[i];
+          var type = toolbarItem.getAttribute("data-type");
+
+          switch (type) {
+            case "mic":
+              if (screenRecorder.audioAvailable && screenRecorder.available) {
+                toolbarItem.style.opacity = 1;
+
+                if (!screenRecorder.audioMuted) {
+                  toolbarItem.classList.remove("bb-capture-toolbar-item--inactivecross");
+                  audioRecordingTooltip.innerHTML = translateText("Mute", self.overrideLanguage);
+                } else {
+                  toolbarItem.style.opacity = 1;
+                  toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
+                  audioRecordingTooltip.innerHTML = translateText("Unmute", self.overrideLanguage);
+                }
+              } else {
+                toolbarItem.style.opacity = 0.3;
+                toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
+                audioRecordingTooltip.innerHTML = translateText("Browser not supported", self.overrideLanguage);
+              }
+
+              break;
+
+            case "recording":
+              if (screenRecorder.available) {
+                toolbarItem.style.opacity = 1;
+
+                if (screenRecorder.isRecording) {
+                  toolbarItem.setAttribute("data-active", "true");
+                  screenRecordingTooltip.innerHTML = translateText("Stop screen recording", self.overrideLanguage);
+                  nextButton.style.display = "none";
+                  spacerItem.style.display = "none";
+                  timerLabel.style.display = "block";
+                  ScrollStopper.enableScroll();
+                } else {
+                  toolbarItem.setAttribute("data-active", "false");
+                  screenRecordingTooltip.innerHTML = translateText("Start screen recording", self.overrideLanguage);
+                  nextButton.style.display = "block";
+                  spacerItem.style.display = "block";
+                  timerLabel.style.display = "none";
+                  ScrollStopper.disableScroll();
+                }
+              } else {
+                // Recording is not available.
+                toolbarItem.style.opacity = 0.3;
+                screenRecordingTooltip.innerHTML = translateText("Browser not supported", self.overrideLanguage);
+              }
+
+              break;
+
+            default:
+              break;
+          }
+        }
+      };
+
+      var screenRecorder = new ScreenRecorder(recRenderer);
+      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+      var selectedColor = document.querySelector(".bb-capture-toolbar-item-selectedcolor");
+      var colorItems = document.querySelectorAll(".bb-capture-toolbar-item-color");
+
+      var _loop = function _loop() {
+        var colorItem = colorItems[i];
+        var hexColor = colorItem.getAttribute("data-color");
+        colorItem.style.backgroundColor = hexColor;
+
+        colorItem.onclick = function () {
+          if (colorItem) {
+            screenDrawer.setColor(hexColor);
+            selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
+            var penTips = document.querySelectorAll(".bb-pen-tip");
+
+            for (var j = 0; j < penTips.length; j++) {
+              penTips[j].style.fill = hexColor;
+            }
+          }
+        };
+      };
+
+      for (var i = 0; i < colorItems.length; i++) {
+        _loop();
+      }
+
+      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+
+      var _loop2 = function _loop2() {
+        var toolbarItem = toolbarItems[i];
+
+        toolbarItem.onclick = function () {
+          var type = toolbarItem.getAttribute("data-type");
+
+          if (colorpicker) {
+            colorpicker.style.display = "none";
+          }
+
+          var active = false;
+
+          if (type !== "recording") {
+            if (toolbarItem.getAttribute("data-active") === "true") {
+              toolbarItem.setAttribute("data-active", "false");
+              active = false;
+            } else {
+              toolbarItem.setAttribute("data-active", "true");
+              active = true;
+            }
+          }
+
+          if (type === "pen" || type === "rect") {
+            var toolbarTools = document.querySelectorAll(".bb-capture-toolbar-item-tool");
+
+            for (var j = 0; j < toolbarTools.length; j++) {
+              toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
+            }
+
+            toolbarItem.classList.add("bb-capture-toolbar-item--active");
+            screenDrawer.setTool(type);
+
+            try {
+              var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+
+              if (svgClone && dragInfo) {
+                dragInfo.innerHTML = "";
+                dragInfo.appendChild(svgClone);
+              }
+            } catch (exp) {
+              console.log(exp);
+            }
+          }
+
+          if (type === "colorpicker") {
+            if (colorpicker.style.display === "flex") {
+              colorpicker.style.display = "none";
+            } else {
+              colorpicker.style.display = "flex";
+            }
+          }
+
+          if (type === "mic") {
+            screenRecorder.toggleAudio();
+          }
+
+          if (type === "recording") {
+            if (screenRecorder.isRecording) {
+              screenRecorder.stopScreenRecording();
+            } else {
+              screenRecorder.startScreenRecording();
+            }
+          }
+        };
+      };
+
+      for (var i = 0; i < toolbarItems.length; i++) {
+        _loop2();
+      }
+
+      document.documentElement.addEventListener("mousemove", mouseMoveEventHandler);
+      document.documentElement.addEventListener("touchmove", touchMoveEventHandler);
+    }
+  }, {
+    key: "goBackToMainMenu",
+    value: function goBackToMainMenu() {
+      if (this.feedbackTypeActions.length > 0) {
+        // Go back to menu
+        this.closeGleap(false);
+        Gleap.startFeedbackTypeSelection(true);
+      } else {
+        // Close
+        this.closeGleap();
+      }
+    }
+  }, {
+    key: "showMobileScreenshotEditor",
+    value: function showMobileScreenshotEditor(feedbackOptions) {
+      var self = this;
+      createScreenshotEditor(this.screenshot, function (screenshot) {
+        // Update screenshot.
+        self.screenshot = screenshot;
+        self.closeModalUI();
+        self.createFeedbackFormDialog(feedbackOptions);
+      }, function () {
+        self.goBackToMainMenu();
+      }, this.overrideLanguage, this.feedbackTypeActions.length > 0);
+    }
+  }], [{
+    key: "getInstance",
+    value: // Feedback button types
+    // Bug priorities
+    // Gleap singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new Gleap();
+        return this.instance;
+      } else {
+        return this.instance;
+      }
+    }
+  }, {
+    key: "setUIContainer",
+    value: function setUIContainer(container) {
+      var instance = this.getInstance();
+      instance.uiContainer = container;
+    }
+    /**
+     * Attaches external network logs that get merged with the internal network logs.
+     * @param {*} externalConsoleLogs
+     */
+
+  }, {
+    key: "attachNetworkLogs",
+    value: function attachNetworkLogs(externalConsoleLogs) {
+      this.getInstance().networkIntercepter.externalConsoleLogs = externalConsoleLogs;
+    }
+    /**
+     * Set if you running on a live site or local environment.
+     * @param {*} isLiveSite
+     */
+
+  }, {
+    key: "setLiveSite",
+    value: function setLiveSite(isLiveSite) {
+      var instance = this.getInstance();
+      instance.isLiveSite = isLiveSite;
+    }
+    /**
+     * Initializes the SDK
+     * @param {*} sdkKey
+     */
+
+  }, {
+    key: "initialize",
+    value: function initialize(sdkKey, gleapId, gleapHash) {
+      var instance = this.getInstance();
+
+      if (instance.initialized) {
+        console.warn("Gleap already initialized.");
+        return;
+      }
+
+      instance.initialized = true; // Set default session (i.e. from the app SDK).
+
+      if (gleapId && gleapHash) {
+        try {
+          localStorage.setItem("gleap-id", gleapId);
+          localStorage.getItem("gleap-hash", gleapHash);
+        } catch (exp) {}
+      }
+
+      var sessionInstance = Session.getInstance();
+      sessionInstance.sdkKey = sdkKey;
+      sessionInstance.startSession();
+      sessionInstance.setOnSessionReady(function () {
+        if (instance.widgetCallback) {
+          // Directly run post init as we don't need to run the auto config on app.
+          instance.postInit();
+        } else {
+          // Run auto configuration.
+          AutoConfig.run().then(function () {
+            instance.postInit();
+          });
+        }
+      });
+    }
+  }, {
+    key: "identify",
+    value: function identify(userId, userData) {
+      Session.getInstance().identifySession(userId, gleapDataParser(userData));
+    }
+    /**
+     * Clears the current user session
+     */
+
+  }, {
+    key: "clearIdentity",
+    value: function clearIdentity() {
+      Session.getInstance().clearSession();
+    }
+    /**
+     * Widget opened status
+     * @returns {boolean} isOpened
+     */
+
+  }, {
+    key: "isOpened",
+    value: function isOpened() {
+      return this.getInstance().openedMenu;
+    }
+    /**
+     * Hides any open Gleap dialogs.
+     */
+
+  }, {
+    key: "hide",
+    value: function hide() {
+      var instance = this.getInstance();
+      instance.closeGleap();
+    }
+    /**
+     * Starts the Gleap flow.
+     */
+
+  }, {
+    key: "open",
+    value: function open() {
+      var instance = this.getInstance();
+      instance.showGleap();
+    }
+    /**
+     * Sets a custom translation
+     * @param {*} customTranslation
+     */
+
+  }, {
+    key: "setCustomTranslation",
+    value: function setCustomTranslation(customTranslation) {
+      var instance = this.getInstance();
+      instance.customTranslation = customTranslation;
+    }
+    /**
+     * Sets a custom screenshot
+     * @param {*} screenshot
+     */
+
+  }, {
+    key: "setScreenshot",
+    value: function setScreenshot(screenshot) {
+      var instance = this.getInstance();
+      instance.screenshot = screenshot; // Open screenshot
+
+      if (instance.screenshotFeedbackOptions) {
+        instance.showMobileScreenshotEditor(instance.screenshotFeedbackOptions);
+        instance.screenshotFeedbackOptions = null;
+      }
+    }
+    /**
+     * Sets the feedback button text
+     * @param {string} feedbackButtonText
+     */
+
+  }, {
+    key: "setFeedbackButtonText",
+    value: function setFeedbackButtonText(feedbackButtonText) {
+      var instance = this.getInstance();
+      instance.feedbackButtonText = feedbackButtonText;
+    }
+    /**
+     * Enable replays
+     * @param {*} enabled
+     */
+
+  }, {
+    key: "enableReplays",
+    value: function enableReplays(enabled) {
+      var instance = this.getInstance();
+      instance.replaysEnabled = enabled;
+
+      if (enabled) {
+        if (instance.replay) {
+          instance.replay.stop();
+          instance.replay = null;
+        }
+
+        instance.replay = new ReplayRecorder();
+      } else {
+        if (instance.replay) {
+          instance.replay.stop();
+          instance.replay = null;
+        }
+      }
+    }
+    /**
+     * Logs a custom event
+     * @param {string} name
+     * @param {any} data
+     */
+
+  }, {
+    key: "logEvent",
+    value: function logEvent(name, data) {
+      StreamedEvent.getInstance().logEvent(name, data);
+    }
+    /**
+     * Show info popup
+     * @param {boolean} showInfoPopup
+     */
+
+  }, {
+    key: "showInfoPopup",
+    value: function showInfoPopup(_showInfoPopup) {
+      this.getInstance().showInfoPopup = _showInfoPopup;
+    }
+    /**
+     * Set widget only
+     * @param {boolean} widgetOnly
+     */
+
+  }, {
+    key: "isWidgetOnly",
+    value: function isWidgetOnly(widgetOnly) {
+      this.getInstance().widgetOnly = widgetOnly;
+    }
+    /**
+     * Set widget only start feedback flow
+     * @param {boolean} widgetStartFlow
+     */
+
+  }, {
+    key: "setWidgetStartFlow",
+    value: function setWidgetStartFlow(widgetStartFlow) {
+      this.getInstance().widgetStartFlow = widgetStartFlow;
+    }
+    /**
+     * Set welcome icon
+     * @param {string} welcomeIcon
+     */
+
+  }, {
+    key: "setWelcomeIcon",
+    value: function setWelcomeIcon(welcomeIcon) {
+      this.getInstance().welcomeIcon = welcomeIcon;
+    }
+    /**
+     * Show or hide the user name within the widget header
+     * @param {boolean} showUserName
+     */
+
+  }, {
+    key: "setShowUserName",
+    value: function setShowUserName(showUserName) {
+      this.getInstance().showUserName = showUserName;
+    }
+    /**
+     * Sets the button type.
+     * @param {string} buttonType
+     */
+
+  }, {
+    key: "setButtonType",
+    value: function setButtonType(buttonType) {
+      this.getInstance().buttonType = buttonType;
+    }
+    /**
+     * Register events for Gleap.
+     * @param {*} eventName
+     * @param {*} callback
+     */
+
+  }, {
+    key: "on",
+    value: function on(eventName, callback) {
+      var instance = this.getInstance();
+
+      if (!instance.eventListeners[eventName]) {
+        instance.eventListeners[eventName] = [];
+      }
+
+      instance.eventListeners[eventName].push(callback);
+    }
+  }, {
+    key: "appendNode",
+    value: function appendNode(node) {
+      var instance = this.getInstance();
+
+      if (instance.uiContainer) {
+        instance.uiContainer.appendChild(node);
+      } else {
+        document.body.appendChild(node);
+      }
+    }
+    /**
+     * Sets the native widget callback
+     * @param {*} widgetCallback
+     */
+
+  }, {
+    key: "widgetCallback",
+    value: function widgetCallback(_widgetCallback) {
+      this.getInstance().widgetCallback = _widgetCallback;
+    }
+    /**
+     * Enable or disable shortcuts
+     * @param {boolean} enabled
+     */
+
+  }, {
+    key: "enableShortcuts",
+    value: function enableShortcuts(enabled) {
+      this.getInstance().shortcutsEnabled = enabled;
+    }
+    /**
+     * Enable Intercom compatibility mode
+     */
+
+  }, {
+    key: "enableIntercomCompatibilityMode",
+    value: function enableIntercomCompatibilityMode() {}
+    /**
+     * Show or hide the feedback button
+     * @param {*} show
+     * @returns
+     */
+
+  }, {
+    key: "showFeedbackButton",
+    value: function showFeedbackButton(show) {
+      var feedbackButton = this.getInstance().feedbackButton;
+
+      if (!feedbackButton) {
+        return;
+      }
+
+      if (show) {
+        feedbackButton.style.display = "flex";
+      } else {
+        feedbackButton.style.display = "none";
+      }
+    }
+    /**
+     * Hides the powered by Gleap logo.
+     * @param {boolean} hide
+     */
+
+  }, {
+    key: "enablePoweredBy",
+    value: function enablePoweredBy(enabled) {
+      this.getInstance().poweredByHidden = !enabled;
+    }
+    /**
+     * Enables the network logger.
+     */
+
+  }, {
+    key: "enableNetworkLogger",
+    value: function enableNetworkLogger() {
+      this.getInstance().networkIntercepter.start();
+    }
+    /**
+     * Enables the network logger.
+     */
+
+  }, {
+    key: "setNetworkLogFilters",
+    value: function setNetworkLogFilters(filters) {
+      this.getInstance().networkIntercepter.setFilters(filters);
+    }
+    /**
+     * Sets the logo url.
+     * @param {string} logoUrl
+     */
+
+  }, {
+    key: "setLogoUrl",
+    value: function setLogoUrl(logoUrl) {
+      this.getInstance().customLogoUrl = logoUrl;
+    }
+    /**
+     * Sets the button logo url.
+     * @param {string} logoUrl
+     */
+
+  }, {
+    key: "setButtonLogoUrl",
+    value: function setButtonLogoUrl(logoUrl) {
+      this.getInstance().customButtonLogoUrl = logoUrl;
+    }
+    /**
+     * Enables the privacy policy.
+     * @param {boolean} enabled
+     */
+
+  }, {
+    key: "enablePrivacyPolicy",
+    value: function enablePrivacyPolicy(enabled) {}
+    /**
+     * Sets the privacy policy url.
+     * @param {string} privacyPolicyUrl
+     */
+
+  }, {
+    key: "setPrivacyPolicyUrl",
+    value: function setPrivacyPolicyUrl(privacyPolicyUrl) {}
+    /**
+     * Sets the widget info texts.
+     * @param {string} widgetInfo
+     */
+
+  }, {
+    key: "setWidgetInfo",
+    value: function setWidgetInfo(widgetInfo) {
+      if (!widgetInfo) {
+        return;
+      }
+
+      this.getInstance().widgetInfo = Object.assign(this.getInstance().widgetInfo, widgetInfo);
+    }
+    /**
+     * Sets the app version code.
+     * @param {string} appVersionCode
+     */
+
+  }, {
+    key: "setAppVersionCode",
+    value: function setAppVersionCode(appVersionCode) {
+      this.getInstance().appVersionCode = appVersionCode;
+    }
+    /**
+     * Sets the app version code.
+     * @param {string} appVersionCode
+     */
+
+  }, {
+    key: "setAppBuildNumber",
+    value: function setAppBuildNumber(appBuildNumber) {
+      this.getInstance().appBuildNumber = appBuildNumber;
+    }
+    /**
+     * Set a custom api url.
+     * @param {string} apiUrl
+     */
+
+  }, {
+    key: "setApiUrl",
+    value: function setApiUrl(apiUrl) {
+      Session.getInstance().apiUrl = apiUrl;
+    }
+    /**
+     * Set a custom widget api url.
+     * @param {string} widgetUrl
+     */
+
+  }, {
+    key: "setWidgetUrl",
+    value: function setWidgetUrl(widgetUrl) {
+      Session.getInstance().widgetUrl = widgetUrl;
+    }
+    /**
+     * Set custom data that will be attached to the bug-report.
+     * @param {*} data
+     */
+
+  }, {
+    key: "attachCustomData",
+    value: function attachCustomData(data) {
+      var instance = this.getInstance();
+      instance.customData = Object.assign(instance.customData, gleapDataParser(data));
+    }
+    /**
+     * Add one key value pair to the custom data object
+     * @param {*} key The key of the custom data entry you want to add.
+     * @param {*} value The custom data you want to add.
+     */
+
+  }, {
+    key: "setCustomData",
+    value: function setCustomData(key, value) {
+      this.getInstance().customData[key] = value;
+    }
+    /**
+     * Remove one key value pair of the custom data object
+     * @param {*} key The key of the custom data entry you want to remove.
+     */
+
+  }, {
+    key: "removeCustomData",
+    value: function removeCustomData(key) {
+      delete this.getInstance().customData[key];
+    }
+    /**
+     * Clear the custom data
+     */
+
+  }, {
+    key: "clearCustomData",
+    value: function clearCustomData() {
+      this.getInstance().customData = {};
+    }
+    /**
+     * Override the browser language. Currently supported languages:
+     * - en
+     * - de
+     * - fr
+     * - it
+     * - es
+     * @param {string} language country code with two letters
+     */
+
+  }, {
+    key: "setLanguage",
+    value: function setLanguage(language) {
+      this.getInstance().overrideLanguage = language;
+    }
+    /**
+     * Enables crash detection.
+     * @param {*} enabled
+     * @param {*} silent
+     */
+
+  }, {
+    key: "enableCrashDetector",
+    value: function enableCrashDetector(enabled) {
+      var silent = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var instance = this.getInstance();
+      instance.enabledCrashDetector = enabled;
+      instance.enabledCrashDetectorSilent = silent;
+    }
+    /**
+     * Enables rage click detection.
+     * @param {*} silent
+     */
+
+  }, {
+    key: "enableRageClickDetector",
+    value: function enableRageClickDetector() {
+      var silent = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var instance = this.getInstance();
+
+      if (instance.enabledRageClickDetector) {
+        return;
+      }
+
+      instance.enabledRageClickDetector = true;
+      instance.enabledRageClickDetectorSilent = silent;
+      startRageClickDetector(function (target) {
+        instance.rageClickDetected = true;
+
+        if (instance.enabledRageClickDetectorSilent) {
+          Gleap.sendSilentReport({
+            description: "Rage click detected."
+          });
+        } else {
+          Gleap.startFeedbackFlow("crash");
+        }
+      });
+    }
+    /**
+     * Sets a custom color scheme.
+     * @param {string} primaryColor
+     */
+
+  }, {
+    key: "setColors",
+    value: function setColors(primaryColor, headerColor, buttonColor) {
+      this.setStyles({
+        headerColor: headerColor,
+        primaryColor: primaryColor,
+        buttonColor: buttonColor,
+        backgroundColor: backgroundColor
+      });
+    }
+    /**
+     * Sets a custom color scheme.
+     * @param {any} styles
+     */
+
+  }, {
+    key: "setStyles",
+    value: function setStyles(styles) {
+      this.getInstance().mainColor = styles.primaryColor;
+      var headerColor = styles.headerColor ? styles.headerColor : styles.primaryColor;
+      var buttonColor = styles.buttonColor ? styles.buttonColor : styles.primaryColor;
+      var borderRadius = styles.borderRadius != null ? styles.borderRadius : 20;
+      var backgroundColor = styles.backgroundColor != null ? styles.backgroundColor : "#fff";
+
+      if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius, backgroundColor);
+      } else {
+        document.addEventListener("DOMContentLoaded", function (event) {
+          injectStyledCSS(styles.primaryColor, headerColor, buttonColor, borderRadius, backgroundColor);
+        });
+      }
+    }
+    /**
+     * Sends a silent feedback report
+     * @param {*} formData
+     * @param {*} priority
+     * @param {*} feedbackType
+     */
+
+  }, {
+    key: "sendSilentReport",
+    value: function sendSilentReport(formData) {
+      var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Gleap.PRIORITY_MEDIUM;
+      var feedbackType = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "BUG";
+      var excludeData = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+      var instance = this.getInstance();
+      var sessionInstance = Session.getInstance();
+
+      if (!sessionInstance.ready) {
+        return;
+      }
+
+      instance.excludeData = excludeData ? excludeData : {};
+      instance.severity = priority;
+      instance.feedbackType = feedbackType;
+      instance.formData = formData ? formData : {};
+
+      if (sessionInstance.session.email) {
+        instance.formData.reportedBy = sessionInstance.session.email;
+      }
+
+      this.startFeedbackFlow(null, true);
+    }
+    /**
+     * Reports a bug silently
+     * @param {*} description
+     * @deprecated Please use sendSilentReport instead.
+     */
+
+  }, {
+    key: "sendSilentBugReport",
+    value: function sendSilentBugReport(description) {
+      var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Gleap.PRIORITY_MEDIUM;
+      return Gleap.sendSilentReport({
+        description: description
+      }, priority, "BUG");
+    }
+    /**
+     * Starts the feedback type selection flow.
+     */
+
+  }, {
+    key: "startFeedbackTypeSelection",
+    value: function startFeedbackTypeSelection() {
+      var fromBack = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+      var sessionInstance = Session.getInstance();
+      var instance = this.getInstance();
+      instance.stopBugReportingAnalytics();
+      instance.widgetOpened = true;
+      instance.openedMenu = true;
+      instance.updateFeedbackButtonState(); // Start feedback type dialog
+
+      createFeedbackTypeDialog(instance.feedbackTypeActions, instance.overrideLanguage, instance.customLogoUrl, instance.poweredByHidden, function () {}, "".concat(translateText("Hi", instance.overrideLanguage), " <span id=\"bb-user-name\">").concat(instance.showUserName && sessionInstance.session.name ? sessionInstance.session.name : "", "</span> ").concat(instance.welcomeIcon), translateText(instance.widgetInfo.dialogSubtitle, instance.overrideLanguage), fromBack);
+    }
+    /**
+     * Register custom action
+     */
+
+  }, {
+    key: "registerCustomAction",
+    value: function registerCustomAction(customAction) {
+      var instance = this.getInstance();
+
+      if (instance.customActionCallbacks) {
+        instance.customActionCallbacks.push(customAction);
+      }
+    }
+    /**
+     * Triggers a custom action
+     */
+
+  }, {
+    key: "triggerCustomAction",
+    value: function triggerCustomAction(name) {
+      var instance = this.getInstance();
+
+      if (instance.widgetCallback) {
+        instance.widgetCallback("customActionCalled", {
+          name: name
+        });
+      }
+
+      if (instance.customActionCallbacks) {
+        for (var i = 0; i < instance.customActionCallbacks.length; i++) {
+          var callback = instance.customActionCallbacks[i];
+
+          if (callback) {
+            callback({
+              name: name
+            });
+          }
+        }
+      }
+    }
+    /**
+     * Sets the feedback flow options.
+     */
+
+  }, {
+    key: "setFeedbackActions",
+    value: function setFeedbackActions(feedbackActions) {
+      this.getInstance().feedbackActions = feedbackActions;
+    }
+    /**
+     * Sets the menu options.
+     */
+
+  }, {
+    key: "setMenuOptions",
+    value: function setMenuOptions(options) {
+      this.getInstance().feedbackTypeActions = options;
+    }
+  }, {
+    key: "startFeedbackFlow",
+    value: function startFeedbackFlow(feedbackFlow) {
+      var silentBugReport = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+      var sessionInstance = Session.getInstance();
+      var instance = this.getInstance();
+
+      if (instance.currentlySendingBug) {
+        return;
+      }
+
+      if (!sessionInstance.ready) {
+        return;
+      } // Get feedback options
+
+
+      var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
+
+      if (!feedbackOptions) {
+        return;
+      }
+
+      instance.notifyEvent("flow-started", feedbackOptions);
+      instance.closeModalUI();
+      instance.currentlySendingBug = true;
+      instance.silentBugReport = silentBugReport;
+
+      if (!silentBugReport) {
+        instance.widgetOpened = true;
+      }
+
+      if (feedbackOptions.form && feedbackOptions.form.length > 0) {
+        // Cleanup form from unsupported items.
+        var newFormArray = [];
+
+        for (var i = 0; i < feedbackOptions.form.length; i++) {
+          var feedbackOption = feedbackOptions.form[i];
+
+          if (feedbackOption && feedbackOption.type !== "privacypolicy" && feedbackOption.type !== "spacer" && feedbackOption.type !== "submit" && feedbackOption.name !== "reportedBy") {
+            newFormArray.push(feedbackOption);
+          }
+        }
+
+        var emailFormItem = feedbackOptions.collectEmail === true || feedbackOptions.collectEmail === undefined ? {
+          title: "Email",
+          placeholder: "Your e-mail",
+          type: "text",
+          inputtype: "email",
+          name: "reportedBy",
+          required: true,
+          remember: true
+        } : null; // Collect email when user needs to enter it.
+
+        if (emailFormItem && !(sessionInstance.session && sessionInstance.session.email)) {
+          emailFormItem.hideOnDefaultSet = false;
+          newFormArray.push(emailFormItem);
+        } // Update form.
+
+
+        feedbackOptions.form = newFormArray;
+        feedbackOptions.pages = feedbackOptions.singlePageForm === true ? 1 : newFormArray.length; // Add page id's
+
+        for (var i = 0; i < feedbackOptions.form.length; i++) {
+          var feedbackOption = feedbackOptions.form[i];
+
+          if (feedbackOptions.singlePageForm === true) {
+            feedbackOption.page = 0;
+          } else {
+            feedbackOption.page = i;
+          }
+        } // Add email as hidden default option.
+
+
+        if (emailFormItem && sessionInstance.session && sessionInstance.session.email) {
+          emailFormItem.hideOnDefaultSet = true;
+          emailFormItem.defaultValue = sessionInstance.session.email;
+          emailFormItem.page = feedbackOptions.form[feedbackOptions.form.length - 1].page;
+          newFormArray.push(emailFormItem);
+        } // Inject privacy policy.
+
+
+        if (feedbackOptions.privacyPolicyEnabled) {
+          var policyItem = {
+            name: "privacypolicy",
+            type: "privacypolicy",
+            required: true,
+            url: feedbackOptions.privacyPolicyUrl,
+            page: feedbackOptions.form[feedbackOptions.form.length - 1].page
+          };
+          feedbackOptions.form.push(policyItem);
+        }
+      }
+
+      instance.stopBugReportingAnalytics(); // Set snapshot position
+
+      instance.snapshotPosition = {
+        x: window.scrollX,
+        y: window.scrollY
+      };
+
+      if (instance.silentBugReport) {
+        // Move on
+        instance.checkReplayLoaded();
+      } else {
+        // Show editor
+        instance.showBugReportEditor(feedbackOptions);
+      }
+
+      instance.updateFeedbackButtonState();
+    }
+  }, {
+    key: "disableConsoleLogOverwrite",
+    value: function disableConsoleLogOverwrite() {
+      window.console = this.getInstance().originalConsoleLog;
+    }
+  }]);
+
+  return Gleap;
+}(); // Check for unperformed Gleap actions.
+
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_BOTTOM_RIGHT", "BOTTOM_RIGHT");
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_BOTTOM_LEFT", "BOTTOM_LEFT");
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_CLASSIC", "BUTTON_CLASSIC");
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_CLASSIC_LEFT", "BUTTON_CLASSIC_LEFT");
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_CLASSIC_BOTTOM", "BUTTON_CLASSIC_BOTTOM");
+
+Gleap_defineProperty(Gleap_Gleap, "FEEDBACK_BUTTON_NONE", "BUTTON_NONE");
+
+Gleap_defineProperty(Gleap_Gleap, "PRIORITY_LOW", "LOW");
+
+Gleap_defineProperty(Gleap_Gleap, "PRIORITY_MEDIUM", "MEDIUM");
+
+Gleap_defineProperty(Gleap_Gleap, "PRIORITY_HIGH", "HIGH");
+
+Gleap_defineProperty(Gleap_Gleap, "instance", void 0);
+
+if (typeof window !== "undefined") {
+  var GleapActions = window.GleapActions;
+
+  if (GleapActions && GleapActions.length > 0) {
+    for (var i = 0; i < GleapActions.length; i++) {
+      var GLAction = GleapActions[i];
+
+      if (GLAction && GLAction.e && Gleap_Gleap[GLAction.e]) {
+        Gleap_Gleap[GLAction.e].apply(Gleap_Gleap, GLAction.a);
+      }
+    }
+  }
+}
+
+/* harmony default export */ const src_Gleap = (Gleap_Gleap);
+;// CONCATENATED MODULE: ./src/index.js
+
+/* harmony default export */ const src = (src_Gleap);
+__webpack_exports__ = __webpack_exports__.default;
+/******/ 	return __webpack_exports__;
+/******/ })()
+;
+});
