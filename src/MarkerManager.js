@@ -186,9 +186,6 @@ export default class MarkerManager {
                 <div class="bb-capture-toolbar-item-spacer"></div>`
                 : ""
             }
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
-              ${loadIcon("undo")}
-            </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
               ${loadIcon("pen")}
             </div>
@@ -197,6 +194,9 @@ export default class MarkerManager {
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
+            </div>
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
+              ${loadIcon("undo")}
             </div>
             ${
               this.type !== "capture"

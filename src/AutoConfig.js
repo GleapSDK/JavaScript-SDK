@@ -19,6 +19,7 @@ export default class AutoConfig {
         if (http.readyState === XMLHttpRequest.DONE) {
           if (http.status === 200 || http.status === 201) {
             try {
+              const instance = Gleap.getInstance();
               const config = JSON.parse(http.responseText);
               const flowConfig = config.flowConfig;
               const projectActions = config.projectActions;
@@ -149,12 +150,21 @@ export default class AutoConfig {
 
                   if (menuItem.actionType === "OPEN_INTERCOM") {
                     action = function () {
+                      if (instance.widgetCallback) {
+                        return;
+                      }
                       Intercom("showNewMessage");
                     };
                   } else if (menuItem.actionType === "REDIRECT_URL") {
                     if (menuItem.actionOpenInNewTab) {
                       action = function () {
-                        window.open(menuItem.actionBody, "_blank").focus();
+                        if (instance.widgetCallback) {
+                          instance.widgetCallback("openExternalURL", {
+                            url: menuItem.actionBody,
+                          });
+                        } else {
+                          window.open(menuItem.actionBody, "_blank").focus();
+                        }
                       };
                     } else {
                       action = function () {
@@ -163,6 +173,7 @@ export default class AutoConfig {
                     }
                   } else if (menuItem.actionType === "CUSTOM_ACTION") {
                     action = function () {
+                      console.log(menuItem.actionBody);
                       Gleap.triggerCustomAction(menuItem.actionBody);
                     };
                   } else {
