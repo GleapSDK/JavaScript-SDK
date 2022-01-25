@@ -323,7 +323,7 @@ export default class MarkerManager {
             colorpicker.style.display = "none";
           }
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
-          setPenColor(hexColor);
+          MarkerManager.setPenColor(hexColor);
         }
       };
     }
