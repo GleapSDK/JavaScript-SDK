@@ -113,7 +113,6 @@
 .bb-feedback-capture-item-selected-button {
   display: flex;
   font-family: "Inter", sans-serif;
-  background-color: #f3f3f3;
   border-radius: 21px;
   box-sizing: border-box;
   padding: 5px;
@@ -1640,7 +1639,7 @@ textarea.bb-feedback-required {
   line-height: 36px;
   padding: 0px 12px;
   font-size: 15px;
-  margin-left: auto;
+  margin-left: 12px;
 }
 
 .bb-capture-toolbar-item-spacer {
@@ -2028,6 +2027,10 @@ textarea.bb-feedback-required {
     display: flex;
     flex-direction: column;
   }
+  
+  .bb-capture-button-next {
+    margin-left: auto;
+  }
 
   .bb-capture-dismiss {
     display: none;
@@ -2070,12 +2073,6 @@ textarea.bb-feedback-required {
 
   .bb-capture-editor-borderlayer {
     border-width: 4px;
-  }
-
-  .bb-anim-fadein {
-    animation-duration: 0s;
-    animation-fill-mode: both;
-    animation-name: none;
   }
 
   .bb-feedback-inputgroup textarea {

@@ -118,8 +118,8 @@ var isBlacklisted = function isBlacklisted(url) {
 ;// CONCATENATED MODULE: ./src/ScreenCapture.js
 
 
-var startScreenCapture = function startScreenCapture(snapshotPosition, isLiveSite) {
-  return prepareScreenshotData(snapshotPosition, isLiveSite);
+var startScreenCapture = function startScreenCapture(isLiveSite) {
+  return prepareScreenshotData(isLiveSite);
 };
 
 var documentToHTML = function documentToHTML(clone) {
@@ -506,7 +506,7 @@ var deepClone = function deepClone(host) {
   return fragment;
 };
 
-var prepareScreenshotData = function prepareScreenshotData(snapshotPosition, remote) {
+var prepareScreenshotData = function prepareScreenshotData(remote) {
   return new Promise(function (resolve, reject) {
     var styleTags = window.document.querySelectorAll("style, link");
 
@@ -573,8 +573,6 @@ var prepareScreenshotData = function prepareScreenshotData(snapshotPosition, rem
       resolve({
         html: html,
         baseUrl: baseUrl,
-        x: snapshotPosition.x,
-        y: snapshotPosition.y,
         width: window.innerWidth,
         height: window.innerHeight,
         isMobile: isMobile()
@@ -659,7 +657,7 @@ var calculateContrast = function calculateContrast(hex) {
       g = parseInt(hex.substr(3, 2), 16),
       b = parseInt(hex.substr(5, 2), 16),
       yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 165 ? "#000000" : "#ffffff";
+  return yiq >= 160 ? "#000000" : "#ffffff";
 };
 
 var injectStyledCSS = function injectStyledCSS(primaryColor, headerColor, buttonColor, borderRadius, backgroundColor) {
@@ -669,7 +667,8 @@ var injectStyledCSS = function injectStyledCSS(primaryColor, headerColor, button
   var contrastBackgroundColor = calculateContrast(backgroundColor);
   var isDarkMode = contrastBackgroundColor === "#ffffff";
   var subTextColor = isDarkMode ? calculateShadeColor(backgroundColor, 100) : calculateShadeColor(backgroundColor, -100);
-  var backgroundColorHover = isDarkMode ? calculateShadeColor(backgroundColor, 30) : calculateShadeColor(backgroundColor, -15);
+  var backgroundColorHover = isDarkMode ? calculateShadeColor(backgroundColor, 30) : calculateShadeColor(backgroundColor, -12);
+  var hoverHoverColor = isDarkMode ? calculateShadeColor(backgroundColor, 80) : calculateShadeColor(backgroundColor, -30);
   var borderColor = isDarkMode ? calculateShadeColor(backgroundColor, 70) : calculateShadeColor(backgroundColor, -70);
   var borderRadius = parseInt(borderRadius, 10);
 
@@ -681,7 +680,7 @@ var injectStyledCSS = function injectStyledCSS(primaryColor, headerColor, button
   var buttonBorderRadius = Math.round(borderRadius * 1.05);
   var formItemBorderRadius = Math.round(borderRadius * 0.4);
   var formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
-  var colorStyleSheet = "\n    .bb-feedback-onetofive-button {\n      border-radius: ".concat(formItemSmallBorderRadius, "px;\n    }\n    .bb-feedback-button-classic {\n      border-top-left-radius: ").concat(formItemBorderRadius, "px;\n      border-top-right-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-logo-logo--default path {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-feedback-dialog-header-back:hover {\n      background-color: ").concat(contrastHeaderColor, ";\n      border-radius: ").concat(containerBorderRadius, "px;\n    }\n    .bb-feedback-type {\n      border-radius: ").concat(containerBorderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-feedback-type-description,\n    .bb-feedback-poweredbycontainer span,\n    .bb-feedback-onetofive-description span {\n      color: ").concat(subTextColor, ";\n    }\n    .bb-feedback-poweredbycontainer svg g {\n      fill: ").concat(subTextColor, ";\n    }\n    .bb-feedback-type:hover {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-feedback-type-title,\n    .bb-feedback-form-description,\n    .bb-feedback-elementtitle,\n    .bb-feedback-multiplechoice-container,\n    .bb-feedback-dialog-info-text\n    {\n      color: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-feedback-dialog {\n      border-radius: ").concat(borderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-logo-arrowdown {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-back svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-back:hover svg {\n      fill: ").concat(headerColor, ";\n    }\n    .bb-feedback-dialog-header-close svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title,\n    .bb-feedback-dialog-header-title span {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title-small {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-description {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-onetofive-button-active,\n    .bb-feedback-onetofive-button:hover {\n      background-color: ").concat(primaryColor, ";\n      color: ").concat(contrastColor, ";\n    }    \n    .bb-feedback-button-icon {\n        background-color: ").concat(buttonColor, ";\n    }\n    .bb-feedback-multiplechoice-container:hover\n      input\n      ~ .bb-feedback-multiplechoice-checkmark {\n      border: 2px solid ").concat(primaryColor, ";\n    }    \n    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {\n      background-color: ").concat(primaryColor, ";\n      border: 2px solid ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button {\n        color: ").concat(primaryColor, ";\n    }\n    .bb-drawing-tool-item--active {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-capture-editor-borderlayer {\n        border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-button-classic {\n      background-color: ").concat(buttonColor, ";\n      color: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header {\n      background-color: ").concat(headerColor, ";\n      border-top-left-radius: ").concat(borderRadius, "px;\n      border-top-right-radius: ").concat(borderRadius, "px;\n    }\n    .bb-form-progress-inner {\n      background-color: ").concat(headerColor, "66;\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      background-color: ").concat(backgroundColor, ";\n      color: ").concat(contrastBackgroundColor, ";\n      border-color: ").concat(borderColor, ";\n    }\n    .bb-feedback-inputgroup textarea:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-send-button {\n      color: ").concat(contrastColor, ";\n      background-color: ").concat(primaryColor, ";\n      border-radius: ").concat(buttonBorderRadius, "px;\n    }\n    .bb-double-bounce1,\n    .bb-double-bounce2 {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button-cancel {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-type-icon {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:not(:checked)\n    + label:after,\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:checked\n    + label:after {\n    color: ").concat(primaryColor, ";\n    }\n    ");
+  var colorStyleSheet = "\n    .bb-capture-preview-retrybutton {\n      color: ".concat(contrastBackgroundColor, ";\n      border-radius: ").concat(buttonBorderRadius, "px;\n    }\n    .bb-capture-preview-retrybutton:hover {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-capture-dismiss {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-capture-dismiss svg path {\n      fill: ").concat(contrastColor, ";\n    }\n    .bb-capture-toolbar-item-spacer {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-tooltip {\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    @keyframes bbRecIconFade {\n      0% {\n        fill: transparent;\n      }\n      50% {\n        fill: ").concat(hoverHoverColor, ";\n      }\n      100% {\n        fill: transparent;\n      }\n    }\n    .bb-capture-preview-sendbutton {\n      color: ").concat(contrastColor, ";\n      background-color: ").concat(primaryColor, ";\n      border-radius: ").concat(buttonBorderRadius, "px;\n    }\n    .bb-capture-button-next {\n      color: ").concat(contrastColor, ";\n      background-color: ").concat(primaryColor, ";\n      border-radius: ").concat(formItemSmallBorderRadius, "px;\n    }\n    .bb-feedback-capture-item {\n      border-radius: ").concat(buttonBorderRadius, "px;\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-capture-preview-inner {\n      background-color: ").concat(backgroundColor, ";\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-feedback-capture-item .bb-item-title {\n      color: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-capture-toolbar-item-timer {\n      color: ").concat(subTextColor, ";\n    }\n    .bb-feedback-capture-item-selected-icon path,\n    .bb-feedback-capture-item-selected-action path,\n    .bb-feedback-capture-item path {\n      fill: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-svg-path {\n      fill: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-feedback-capture-item-selected-button {\n      border-radius: ").concat(buttonBorderRadius, "px;\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-feedback-capture-item-selected-label {\n      color: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-feedback-capture-item-selected-action:hover {\n      background-color: ").concat(hoverHoverColor, ";\n    }\n    .bb-capture-toolbar-item {\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-capture-toolbar {\n      background-color: ").concat(backgroundColor, ";\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-capture-toolbar-item-colorpicker {\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-capture-toolbar-item--active {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-feedback-capture-item:hover {\n      background-color: ").concat(hoverHoverColor, ";\n    }\n    .bb-feedback-onetofive-button {\n      border-radius: ").concat(formItemSmallBorderRadius, "px;\n    }\n    .bb-feedback-button-classic {\n      border-top-left-radius: ").concat(formItemBorderRadius, "px;\n      border-top-right-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-logo-logo--default path {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      border-radius: ").concat(formItemBorderRadius, "px;\n    }\n    .bb-feedback-dialog-header-back:hover {\n      background-color: ").concat(contrastHeaderColor, ";\n      border-radius: ").concat(containerBorderRadius, "px;\n    }\n    .bb-feedback-type {\n      border-radius: ").concat(containerBorderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-feedback-type-description,\n    .bb-feedback-poweredbycontainer span,\n    .bb-feedback-onetofive-description span {\n      color: ").concat(subTextColor, ";\n    }\n    .bb-feedback-poweredbycontainer svg g {\n      fill: ").concat(subTextColor, ";\n    }\n    .bb-feedback-type:hover {\n      background-color: ").concat(backgroundColorHover, ";\n    }\n    .bb-feedback-type-title,\n    .bb-feedback-form-description,\n    .bb-feedback-elementtitle,\n    .bb-feedback-multiplechoice-container,\n    .bb-feedback-dialog-info-text\n    {\n      color: ").concat(contrastBackgroundColor, ";\n    }\n    .bb-feedback-dialog {\n      border-radius: ").concat(borderRadius, "px;\n      background-color: ").concat(backgroundColor, ";\n    }\n    .bb-logo-arrowdown {\n      fill: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header-back svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-back:hover svg {\n      fill: ").concat(headerColor, ";\n    }\n    .bb-feedback-dialog-header-close svg {\n      fill: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title,\n    .bb-feedback-dialog-header-title span {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-title-small {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-dialog-header-description {\n      color: ").concat(contrastHeaderColor, ";\n    }\n    .bb-feedback-onetofive-button-active,\n    .bb-feedback-onetofive-button:hover {\n      background-color: ").concat(primaryColor, ";\n      color: ").concat(contrastColor, ";\n    }    \n    .bb-feedback-button-icon {\n        background-color: ").concat(buttonColor, ";\n    }\n    .bb-feedback-multiplechoice-container:hover\n      input\n      ~ .bb-feedback-multiplechoice-checkmark {\n      border: 2px solid ").concat(primaryColor, ";\n    }    \n    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {\n      background-color: ").concat(primaryColor, ";\n      border: 2px solid ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button {\n        color: ").concat(primaryColor, ";\n    }\n    .bb-drawing-tool-item--active {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-capture-editor-borderlayer {\n        border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-button-classic {\n      background-color: ").concat(buttonColor, ";\n      color: ").concat(contrastButtonColor, ";\n    }\n    .bb-feedback-dialog-header {\n      background-color: ").concat(headerColor, ";\n    }\n    .bb-form-progress-inner {\n      background-color: ").concat(headerColor, "66;\n    }\n    .bb-feedback-inputgroup textarea,\n    .bb-feedback-inputgroup > input,\n    .bb-feedback-inputgroup input {\n      background-color: ").concat(backgroundColor, ";\n      color: ").concat(contrastBackgroundColor, ";\n      border-color: ").concat(borderColor, ";\n    }\n    .bb-feedback-inputgroup textarea:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {\n      border-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-send-button {\n      color: ").concat(contrastColor, ";\n      background-color: ").concat(primaryColor, ";\n      border-radius: ").concat(buttonBorderRadius, "px;\n    }\n    .bb-double-bounce1,\n    .bb-double-bounce2 {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-dialog-header-button-cancel {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-type-icon {\n      background-color: ").concat(primaryColor, ";\n    }\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:not(:checked)\n    + label:after,\n    .bb-feedback-inputgroup--privacy-policy\n    [type=\"checkbox\"]:checked\n    + label:after {\n    color: ").concat(primaryColor, ";\n    }\n    ");
   var node = document.createElement("style");
   node.innerHTML = colorStyleSheet;
   src_Gleap.appendNode(node);
@@ -700,7 +699,7 @@ var createWidgetDialog = function createWidgetDialog(title, description, customL
   var appendClass = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : "";
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = "<div class='bb-feedback-dialog ".concat(appendClass, "'>\n      <div class=\"bb-feedback-dialog-header").concat(back ? " bb-feedback-dialog-header--back" : "").concat(!showBack ? " bb-feedback-dialog-header--backhidden" : "", "\">\n        ").concat(back ? "<div class=\"bb-feedback-dialog-header-back\">\n        ".concat(loadIcon("arrowleft", "#fff"), "\n        </div>") : "<div class=\"bb-feedback-dialog-header-logo\">\n          ".concat(getHeaderImage(customLogoUrl), "\n        </div>"), "\n        <div class=\"bb-feedback-dialog-header-text\">\n          <div class=\"bb-feedback-dialog-header-title\">\n            ").concat(title, "\n          </div>\n          ").concat(description === null ? "" : "<div class=\"bb-feedback-dialog-header-description\">\n          ".concat(description, "\n        </div>"), "\n        </div>\n        <div class=\"bb-feedback-dialog-header-close\">\n          ").concat(loadIcon("close", "#fff"), "\n        </div>\n      </div>\n      <div class=\"bb-feedback-dialog-body\">\n        ").concat(content, "\n        <div class=\"bb-feedback-poweredbycontainer\">\n          <span>Powered by</span>\n          <svg width=\"90px\" height=\"32px\" viewBox=\"0 0 90 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n              <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n                  <g transform=\"translate(0.653299, 0.000000)\" fill=\"#59617D\" fill-rule=\"nonzero\">\n                      <path d=\"M16.7989119,8.32577189 L22.1014291,8.32577189 C21.4265888,3.43890649 17.1242771,0 11.5448484,0 C5.02513746,0 0,4.70586291 0,12.7178969 C0,20.5368768 4.69977222,25.3876017 11.6532254,25.3876017 C17.8836188,25.3876017 22.3303551,21.4418423 22.3303551,14.9380999 L22.3303551,11.8250016 L12.0027005,11.8250016 L12.0027005,15.7586204 L17.3052177,15.7586204 C17.2328883,18.823461 15.1479759,20.7661416 11.6773352,20.7661416 C7.76078035,20.7661416 5.29034525,17.8340271 5.29034525,12.6696392 C5.29034525,7.52939191 7.85721955,4.62139446 11.6291156,4.62139446 C14.3165389,4.62139446 16.1362435,6.00903014 16.7989119,8.32577189 Z\"></path>\n                      <polygon points=\"30.2692671 0.337857389 25.1355185 0.337857389 25.1355185 25.0496341 30.2692671 25.0496341\"></polygon>\n                      <path d=\"M41.7991346,25.4117422 C46.3785919,25.4117422 49.4634758,23.1793283 50.1865357,19.7404968 L45.4385438,19.426787 C44.9203002,20.8385398 43.5947294,21.5745684 41.883636,21.5745684 C39.3167617,21.5745684 37.6897014,19.8732229 37.6897014,17.1100453 L37.6897014,17.097975 L50.2951468,17.097975 L50.2951468,15.6862222 C50.2951468,9.38760404 46.486969,6.27448232 41.5943184,6.27448232 C36.1473765,6.27448232 32.6163443,10.1477732 32.6163443,15.8672059 C32.6163443,21.7435053 36.0991569,25.4117422 41.7991346,25.4117422 Z M37.6897014,13.9124785 C37.7983125,11.8008611 39.4010289,10.1115858 41.6785856,10.1115858 C43.9081568,10.1115858 45.4507158,11.7043223 45.4626536,13.9124785 L37.6897014,13.9124785 Z\"></path>\n                      <path d=\"M57.9054165,25.3995548 C60.6410594,25.3995548 62.4125444,24.2049497 63.3163107,22.4795574 L63.4609695,22.4795574 L63.4609695,25.0496341 L68.3295103,25.0496341 L68.3295103,12.5489834 C68.3295103,8.13269445 64.593896,6.27448232 60.4722908,6.27448232 C56.0377263,6.27448232 53.121377,8.39817007 52.410255,11.7767205 L57.1582468,12.162852 C57.5077218,10.9320829 58.6043666,10.0271174 60.448181,10.0271174 C62.1955562,10.0271174 63.1957617,10.9079424 63.1957617,12.4283041 L63.1957617,12.5007023 C63.1957617,13.695284 61.9305825,13.8521272 58.7129777,14.1658604 C55.0494587,14.5037108 51.7595245,15.7344799 51.7595245,19.8732229 C51.7595245,23.5414364 54.3746184,25.3995548 57.9054165,25.3995548 Z M59.375646,21.8521143 C57.7970394,21.8521143 56.664347,21.1160622 56.664347,19.7043095 C56.664347,18.2563459 57.8571969,17.5444343 59.6649636,17.291029 C60.7857181,17.1341858 62.6173606,16.8687102 63.2320434,16.4584616 L63.2320434,18.4252828 C63.2320434,20.3679399 61.629327,21.8521143 59.375646,21.8521143 Z\"></path>\n                      <path d=\"M71.2943133,32 L76.4280619,32 L76.4280619,22.0813791 L76.5846586,22.0813791 C77.2957806,23.6258111 78.8502774,25.3512737 81.8389562,25.3512737 C86.0567665,25.3512737 89.3467007,22.0089575 89.3467007,15.806878 C89.3467007,9.43586168 85.9121077,6.27448232 81.850894,6.27448232 C78.7538382,6.27448232 77.2716708,8.12062418 76.5846586,9.62891568 L76.3557325,9.62891568 L76.3557325,6.5158174 L71.2943133,6.5158174 L71.2943133,32 Z M76.3196849,15.7827375 C76.3196849,12.4765852 77.717585,10.3649677 80.2121299,10.3649677 C82.7548944,10.3649677 84.104575,12.5731005 84.104575,15.7827375 C84.104575,19.016515 82.7307846,21.2608586 80.2121299,21.2608586 C77.7416948,21.2608586 76.3196849,19.0889132 76.3196849,15.7827375 Z\"></path>\n                  </g>\n              </g>\n          </svg>\n        </div>\n      </div>\n    </div>");
+  elem.innerHTML = "<div class=\"bb-feedback-dialog-backdrop\"></div><div class='bb-feedback-dialog ".concat(appendClass, "'>\n      <div class=\"bb-feedback-dialog-header").concat(back ? " bb-feedback-dialog-header--back" : "").concat(!showBack ? " bb-feedback-dialog-header--backhidden" : "", "\">\n        ").concat(back ? "<div class=\"bb-feedback-dialog-header-back\">\n        ".concat(loadIcon("arrowleft", "#fff"), "\n        </div>") : "<div class=\"bb-feedback-dialog-header-logo\">\n          ".concat(getHeaderImage(customLogoUrl), "\n        </div>"), "\n        <div class=\"bb-feedback-dialog-header-text\">\n          <div class=\"bb-feedback-dialog-header-title\">\n            ").concat(title, "\n          </div>\n          ").concat(description === null ? "" : "<div class=\"bb-feedback-dialog-header-description\">\n          ".concat(description, "\n        </div>"), "\n        </div>\n        <div class=\"bb-feedback-dialog-header-close\">\n          ").concat(loadIcon("close", "#fff"), "\n        </div>\n      </div>\n      <div class=\"bb-feedback-dialog-body\">\n        ").concat(content, "\n        <div class=\"bb-feedback-poweredbycontainer\">\n          <span>Powered by</span>\n          <svg width=\"90px\" height=\"32px\" viewBox=\"0 0 90 32\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n              <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n                  <g transform=\"translate(0.653299, 0.000000)\" fill=\"#59617D\" fill-rule=\"nonzero\">\n                      <path d=\"M16.7989119,8.32577189 L22.1014291,8.32577189 C21.4265888,3.43890649 17.1242771,0 11.5448484,0 C5.02513746,0 0,4.70586291 0,12.7178969 C0,20.5368768 4.69977222,25.3876017 11.6532254,25.3876017 C17.8836188,25.3876017 22.3303551,21.4418423 22.3303551,14.9380999 L22.3303551,11.8250016 L12.0027005,11.8250016 L12.0027005,15.7586204 L17.3052177,15.7586204 C17.2328883,18.823461 15.1479759,20.7661416 11.6773352,20.7661416 C7.76078035,20.7661416 5.29034525,17.8340271 5.29034525,12.6696392 C5.29034525,7.52939191 7.85721955,4.62139446 11.6291156,4.62139446 C14.3165389,4.62139446 16.1362435,6.00903014 16.7989119,8.32577189 Z\"></path>\n                      <polygon points=\"30.2692671 0.337857389 25.1355185 0.337857389 25.1355185 25.0496341 30.2692671 25.0496341\"></polygon>\n                      <path d=\"M41.7991346,25.4117422 C46.3785919,25.4117422 49.4634758,23.1793283 50.1865357,19.7404968 L45.4385438,19.426787 C44.9203002,20.8385398 43.5947294,21.5745684 41.883636,21.5745684 C39.3167617,21.5745684 37.6897014,19.8732229 37.6897014,17.1100453 L37.6897014,17.097975 L50.2951468,17.097975 L50.2951468,15.6862222 C50.2951468,9.38760404 46.486969,6.27448232 41.5943184,6.27448232 C36.1473765,6.27448232 32.6163443,10.1477732 32.6163443,15.8672059 C32.6163443,21.7435053 36.0991569,25.4117422 41.7991346,25.4117422 Z M37.6897014,13.9124785 C37.7983125,11.8008611 39.4010289,10.1115858 41.6785856,10.1115858 C43.9081568,10.1115858 45.4507158,11.7043223 45.4626536,13.9124785 L37.6897014,13.9124785 Z\"></path>\n                      <path d=\"M57.9054165,25.3995548 C60.6410594,25.3995548 62.4125444,24.2049497 63.3163107,22.4795574 L63.4609695,22.4795574 L63.4609695,25.0496341 L68.3295103,25.0496341 L68.3295103,12.5489834 C68.3295103,8.13269445 64.593896,6.27448232 60.4722908,6.27448232 C56.0377263,6.27448232 53.121377,8.39817007 52.410255,11.7767205 L57.1582468,12.162852 C57.5077218,10.9320829 58.6043666,10.0271174 60.448181,10.0271174 C62.1955562,10.0271174 63.1957617,10.9079424 63.1957617,12.4283041 L63.1957617,12.5007023 C63.1957617,13.695284 61.9305825,13.8521272 58.7129777,14.1658604 C55.0494587,14.5037108 51.7595245,15.7344799 51.7595245,19.8732229 C51.7595245,23.5414364 54.3746184,25.3995548 57.9054165,25.3995548 Z M59.375646,21.8521143 C57.7970394,21.8521143 56.664347,21.1160622 56.664347,19.7043095 C56.664347,18.2563459 57.8571969,17.5444343 59.6649636,17.291029 C60.7857181,17.1341858 62.6173606,16.8687102 63.2320434,16.4584616 L63.2320434,18.4252828 C63.2320434,20.3679399 61.629327,21.8521143 59.375646,21.8521143 Z\"></path>\n                      <path d=\"M71.2943133,32 L76.4280619,32 L76.4280619,22.0813791 L76.5846586,22.0813791 C77.2957806,23.6258111 78.8502774,25.3512737 81.8389562,25.3512737 C86.0567665,25.3512737 89.3467007,22.0089575 89.3467007,15.806878 C89.3467007,9.43586168 85.9121077,6.27448232 81.850894,6.27448232 C78.7538382,6.27448232 77.2716708,8.12062418 76.5846586,9.62891568 L76.3557325,9.62891568 L76.3557325,6.5158174 L71.2943133,6.5158174 L71.2943133,32 Z M76.3196849,15.7827375 C76.3196849,12.4765852 77.717585,10.3649677 80.2121299,10.3649677 C82.7548944,10.3649677 84.104575,12.5731005 84.104575,15.7827375 C84.104575,19.016515 82.7307846,21.2608586 80.2121299,21.2608586 C77.7416948,21.2608586 76.3196849,19.0889132 76.3196849,15.7827375 Z\"></path>\n                  </g>\n              </g>\n          </svg>\n        </div>\n      </div>\n    </div>");
   src_Gleap.appendNode(elem);
   var buttonType = src_Gleap.getInstance().buttonType;
 
@@ -817,28 +816,36 @@ var loadIcon = function loadIcon(name, color) {
     return "<svg class=\"bb-logo-logo bb-logo-logo--default\" width=\"127px\" height=\"129px\" viewBox=\"0 0 127 129\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n        <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n            <g transform=\"translate(-11.000000, -6.000000)\">\n                <g transform=\"translate(11.000000, 6.000000)\">\n                    <path d=\"M27.5507,32.306 C20.4495,41.0714 17.3437,52.8384 17.3438,64.1091 C17.3438,75.3799 20.4497,87.1469 27.5508,95.9123 C34.4039,104.372 45.6889,110.937 64.1725,110.937 C83.6599,110.937 93.3637,102.356 98.4673,94.1976 C102.058,88.4577 103.344,84.2626 103.805,81.4366 C104.114,79.5459 105.616,77.9841 107.531,77.9841 L117.938,77.9841 C119.853,77.9841 121.429,79.5376 121.265,81.4463 C120.835,86.4687 119.175,93.7981 113.171,103.396 C105.135,116.242 90.0723,128.281 64.1725,128.281 C41.0305,128.281 24.5652,119.779 14.0745,106.83 C3.83175,94.1866 -7.10542736e-15,78.2036 -7.10542736e-15,64.1092 C-7.10542736e-15,50.0147 3.83155,34.0317 14.0744,21.3884 C24.0327,9.09622 39.3744,0.811764004 60.7001,0.00243821374 C62.6145,-0.0702130963 64.1725,1.49027 64.1725,3.40601 L64.1725,13.8123 C64.1725,15.728 62.6176,17.2712 60.704,17.3608 C44.2594,18.1311 33.9643,24.3893 27.5507,32.306 Z\"></path>\n                    <path d=\"M126.609,43.2966 C126.609,50.9596 120.397,57.1716 112.734,57.1716 C105.071,57.1716 98.8594,50.9596 98.8594,43.2966 C98.8594,35.6337 105.071,29.4216 112.734,29.4216 C120.397,29.4216 126.609,35.6337 126.609,43.2966 Z\" id=\"Path\" fill-rule=\"nonzero\"></path>\n                </g>\n            </g>\n        </g>\n    </svg>";
   }
 
+  if (name === "dismiss") {
+    return "<svg width=\"1200pt\" height=\"1200pt\" version=\"1.1\" viewBox=\"0 0 1200 1200\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m1089.5 228.38-117.85-117.85-371.62 371.62-371.62-371.62-117.85 117.85 371.62 371.62-371.62 371.62 117.85 117.85 371.62-371.62 371.62 371.62 117.85-117.85-371.62-371.62z\" fill=\"#fff\"/>\n  </svg>";
+  }
+
+  if (name === "screenshot") {
+    return "<svg width=\"23px\" height=\"20px\" viewBox=\"0 0 23 20\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-1172.000000, -570.000000)\" fill=\"#333333\" fill-rule=\"nonzero\">\n            <g transform=\"translate(1155.000000, 558.000000)\">\n                <g transform=\"translate(17.000000, 12.000000)\">\n                    <path d=\"M3.40727379,8.2362507e-05 C3.18136472,8.2362507e-05 2.96469164,0.0879281104 2.80495864,0.244168699 C2.64522565,0.400409287 2.55545534,0.61238707 2.55545534,0.83340698 L2.55545534,5.00003007 C2.55226113,5.22311663 2.6405486,5.43804771 2.80062005,5.59689049 C2.96078009,5.75574217 3.17923631,5.84524345 3.40727379,5.84524345 C3.63531126,5.84524345 3.85376294,5.75574883 4.01392753,5.59689049 C4.17399898,5.43803882 4.26229507,5.22311663 4.25909223,5.00003007 L4.25909223,1.6667316 L7.66636602,1.6667316 C7.8944035,1.66985645 8.11410451,1.5834858 8.27647247,1.42688966 C8.43884951,1.27020686 8.53033708,1.05649354 8.53033708,0.83340698 C8.53033708,0.610320425 8.43885632,0.396611549 8.27647247,0.239924299 C8.11409543,0.0833281585 7.8944035,-0.00305093806 7.66636602,8.2362507e-05 L3.40727379,8.2362507e-05 Z\"></path>\n                    <path d=\"M22.1347863,14.1552677 C21.909143,14.158653 21.6941576,14.2495378 21.5369233,14.4079539 C21.3797798,14.5662856 21.2931897,14.7792167 21.2962789,14.9999699 L21.2962789,18.3332684 L17.8890051,18.3332684 C17.6609677,18.3301435 17.4412666,18.4165142 17.2788987,18.5731103 C17.1165216,18.7297931 17.0250341,18.9435065 17.0250341,19.166593 C17.0250341,19.3896796 17.1165148,19.6033885 17.2788987,19.7600757 C17.4412757,19.9166718 17.6609677,20.0030509 17.8890051,19.9999176 L22.1480974,19.9999176 C22.3740064,19.9999176 22.5906795,19.9120719 22.7504125,19.7558313 C22.9101455,19.5995907 22.9999158,19.3876129 22.9999158,19.166593 L22.9999158,14.9999699 C23.00311,14.7747056 22.9128713,14.5577968 22.7498673,14.3986651 C22.5869565,14.2395512 22.3650498,14.1517121 22.1347863,14.1552677 L22.1347863,14.1552677 Z\"></path>\n                    <path d=\"M22.1347863,7.48867071 C21.909143,7.49205601 21.6941576,7.58294083 21.5369233,7.74135696 C21.3797798,7.89968863 21.2931897,8.11261974 21.2962789,8.33337299 L21.2962789,11.6666715 C21.2930847,11.889758 21.3813722,12.1046891 21.5414436,12.2635319 C21.7016037,12.4223836 21.9200599,12.5118848 22.1480974,12.5118848 C22.3761348,12.5118848 22.5945865,12.4223902 22.7547511,12.2635319 C22.9148226,12.1046802 23.0031186,11.889758 22.9999158,11.6666715 L22.9999158,8.33337299 C23.00311,8.10810868 22.9128713,7.89119983 22.7498673,7.73206816 C22.5869565,7.57295427 22.3650498,7.48511519 22.1347863,7.48867071 L22.1347863,7.48867071 Z\"></path>\n                    <path d=\"M17.8881874,8.2362507e-05 C17.6601499,-0.0030424937 17.4404489,0.0833281585 17.2780809,0.239924299 C17.1157039,0.396607104 17.0242163,0.610320425 17.0242163,0.83340698 C17.0242163,1.05649354 17.1156971,1.27020241 17.2780809,1.42688966 C17.440458,1.5834858 17.6601499,1.6698649 17.8881874,1.6667316 L21.2954612,1.6667316 L21.2954612,5.00003007 C21.292267,5.22311663 21.3805544,5.43804771 21.5406259,5.59689049 C21.7007859,5.75574217 21.9192421,5.84524345 22.1472796,5.84524345 C22.3753171,5.84524345 22.5937688,5.75574883 22.7539334,5.59689049 C22.9140048,5.43803882 23.0023009,5.22311663 22.9990981,5.00003007 L22.9990981,0.83340698 C22.9990981,0.612402625 22.9093028,0.400433731 22.7495948,0.244168699 C22.5898868,0.0879036662 22.3732046,8.2362507e-05 22.1472796,8.2362507e-05 L17.8881874,8.2362507e-05 Z\"></path>\n                    <path d=\"M11.0736398,8.2362507e-05 C10.8456023,-0.0030424937 10.6259013,0.0833281585 10.4635334,0.239924299 C10.3011563,0.396607104 10.2096688,0.610320425 10.2096688,0.83340698 C10.2096688,1.05649354 10.3011495,1.27020241 10.4635334,1.42688966 C10.6259104,1.5834858 10.8456023,1.6698649 11.0736398,1.6667316 L14.4809136,1.6667316 C14.7089511,1.66985645 14.9286521,1.5834858 15.09102,1.42688966 C15.2533971,1.27020686 15.3448847,1.05649354 15.3448847,0.83340698 C15.3448847,0.610320425 15.2534039,0.396611549 15.09102,0.239924299 C14.928643,0.0833281585 14.7089511,-0.00305093806 14.4809136,8.2362507e-05 L11.0736398,8.2362507e-05 Z\"></path>\n                    <path d=\"M5.11091068,7.50000392 C3.70993056,7.50000392 2.55545534,8.62941433 2.55545534,9.99997778 C1.15447522,9.99997778 0,11.1293882 0,12.4999516 L0,17.4998993 C0,18.8704628 1.15447522,19.9998732 2.55545534,19.9998732 L12.7772767,19.9998732 C14.1782568,19.9998732 15.332732,18.8704628 15.332732,17.4998993 L15.332732,12.4999516 C15.332732,11.1293882 14.1782568,9.99997778 12.7772767,9.99997778 C12.7772767,8.62941433 11.6228015,7.50000392 10.2218214,7.50000392 L5.11091068,7.50000392 Z M7.66636602,11.666627 C9.06761872,11.666627 10.2218214,12.7957708 10.2218214,14.1666009 C10.2218214,15.537431 9.06761872,16.6665747 7.66636602,16.6665747 C6.26511332,16.6665747 5.11091068,15.537431 5.11091068,14.1666009 C5.11091068,12.7957708 6.26511332,11.666627 7.66636602,11.666627 Z\"></path>\n                </g>\n            </g>\n        </g>\n    </g>\n</svg>";
+  }
+
   if (name === "pen") {
-    return "<svg width=\"1072px\" height=\"1034px\" viewBox=\"0 0 1072 1034\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-907.000000, -217.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(907.268457, 217.009827)\">\n                <g transform=\"translate(132.335119, 0.000000)\" fill=\"#000\">\n                    <path d=\"M20.3764235,730.530173 L10.1884235,720.342173 C-0.791576454,709.362173 -3.16357645,692.432173 4.37592355,678.858173 L83.1809235,537.018173 C71.7589235,502.979173 82.3098335,463.998173 112.254924,440.706173 L655.334924,18.3161733 C689.951924,-8.6058267 739.197924,-5.5388267 770.214924,25.4684733 L913.774924,169.028473 C944.782924,200.040473 947.848924,249.286473 920.927224,283.908473 L498.537224,826.988473 C496.322424,829.836173 493.935624,832.543173 491.384924,835.090073 C467.271924,859.207073 432.513924,866.195073 402.232924,856.063073 L260.382924,934.868073 C246.804924,942.407173 229.874924,940.036073 218.894924,929.055573 L208.706924,918.867573 L20.3764235,730.530173 Z M866.006424,241.190173 C871.393124,234.264373 870.779824,224.417173 864.576724,218.213173 L721.016724,74.6531733 C714.813624,68.4500733 704.965724,67.8367733 698.043724,73.2234733 L154.963724,495.613473 C147.381724,501.507973 146.018424,512.433473 151.912924,520.015473 C152.358234,520.585783 152.834804,521.128773 153.346524,521.636573 L417.586524,785.886573 C424.379524,792.675673 435.391524,792.675673 442.180524,785.886573 C442.692244,785.374853 443.168804,784.831873 443.610224,784.265473 L866.006424,241.190173 Z M342.796424,809.480173 L129.746424,596.430173 L77.9264235,689.707173 L249.516424,861.297173 L342.796424,809.480173 Z\"></path>\n                </g>\n                <g transform=\"translate(-0.000000, 755.530173)\" fill=\"#D50202\">\n                    <path d=\"M124.711543,0 L313.042043,188.3374 L233.288043,268.0914 C222.003043,279.3764 204.483043,281.5324 190.800043,273.3219 L16.8900429,168.9719 C-2.51595711,157.3309 -5.80895711,130.5499 10.1908429,114.5499 L124.711543,0 Z\" class=\"bb-pen-tip\"></path>\n                </g>\n            </g>\n        </g>\n    </g>\n</svg>";
+    return "<svg width=\"1072px\" height=\"1034px\" viewBox=\"0 0 1072 1034\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-907.000000, -217.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(907.268457, 217.009827)\">\n                <g transform=\"translate(132.335119, 0.000000)\" fill=\"#000\" class=\"bb-svg-path\">\n                    <path d=\"M20.3764235,730.530173 L10.1884235,720.342173 C-0.791576454,709.362173 -3.16357645,692.432173 4.37592355,678.858173 L83.1809235,537.018173 C71.7589235,502.979173 82.3098335,463.998173 112.254924,440.706173 L655.334924,18.3161733 C689.951924,-8.6058267 739.197924,-5.5388267 770.214924,25.4684733 L913.774924,169.028473 C944.782924,200.040473 947.848924,249.286473 920.927224,283.908473 L498.537224,826.988473 C496.322424,829.836173 493.935624,832.543173 491.384924,835.090073 C467.271924,859.207073 432.513924,866.195073 402.232924,856.063073 L260.382924,934.868073 C246.804924,942.407173 229.874924,940.036073 218.894924,929.055573 L208.706924,918.867573 L20.3764235,730.530173 Z M866.006424,241.190173 C871.393124,234.264373 870.779824,224.417173 864.576724,218.213173 L721.016724,74.6531733 C714.813624,68.4500733 704.965724,67.8367733 698.043724,73.2234733 L154.963724,495.613473 C147.381724,501.507973 146.018424,512.433473 151.912924,520.015473 C152.358234,520.585783 152.834804,521.128773 153.346524,521.636573 L417.586524,785.886573 C424.379524,792.675673 435.391524,792.675673 442.180524,785.886573 C442.692244,785.374853 443.168804,784.831873 443.610224,784.265473 L866.006424,241.190173 Z M342.796424,809.480173 L129.746424,596.430173 L77.9264235,689.707173 L249.516424,861.297173 L342.796424,809.480173 Z\"></path>\n                </g>\n                <g transform=\"translate(-0.000000, 755.530173)\" fill=\"#D50202\">\n                    <path d=\"M124.711543,0 L313.042043,188.3374 L233.288043,268.0914 C222.003043,279.3764 204.483043,281.5324 190.800043,273.3219 L16.8900429,168.9719 C-2.51595711,157.3309 -5.80895711,130.5499 10.1908429,114.5499 L124.711543,0 Z\" class=\"bb-pen-tip\"></path>\n                </g>\n            </g>\n        </g>\n    </g>\n</svg>";
   }
 
   if (name === "rect") {
-    return "<svg width=\"339px\" height=\"241px\" viewBox=\"0 0 339 241\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-0.000865, 0.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(0.000865, 0.000000)\" fill=\"#000000\">\n                <path d=\"M339,0 L339,241 L0,241 L0,0 L339,0 Z M312.826351,26.168387 L26.1855674,26.168387 L26.1855674,214.41156 L312.826351,214.41156 L312.826351,26.168387 Z\"></path>\n            </g>\n            <g transform=\"translate(0.000000, 83.206095)\" fill=\"#D50202\" class=\"bb-pen-tip\">\n                <path d=\"M0,0 L26.186,26.186 L26.1864325,131.205465 L131.204,131.205 L157.792,157.793 L0.000865118243,157.793905 L0,0 Z\"></path>\n            </g>\n        </g>\n    </g>\n</svg>";
+    return "<svg width=\"339px\" height=\"241px\" viewBox=\"0 0 339 241\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g transform=\"translate(-0.000865, 0.000000)\" fill-rule=\"nonzero\">\n            <g transform=\"translate(0.000865, 0.000000)\" fill=\"#000000\" class=\"bb-svg-path\">\n                <path d=\"M339,0 L339,241 L0,241 L0,0 L339,0 Z M312.826351,26.168387 L26.1855674,26.168387 L26.1855674,214.41156 L312.826351,214.41156 L312.826351,26.168387 Z\"></path>\n            </g>\n            <g transform=\"translate(0.000000, 83.206095)\" fill=\"#D50202\" class=\"bb-pen-tip\">\n                <path d=\"M0,0 L26.186,26.186 L26.1864325,131.205465 L131.204,131.205 L157.792,157.793 L0.000865118243,157.793905 L0,0 Z\"></path>\n            </g>\n        </g>\n    </g>\n</svg>";
   }
 
   if (name === "mic") {
-    return "<svg\n    width=\"1200pt\"\n    height=\"1200pt\"\n    version=\"1.1\"\n    viewBox=\"0 0 1200 1200\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g fill=\"#000\">\n      <path\n        d=\"m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z\"\n      />\n      <path\n        d=\"m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z\"\n      />\n    </g>\n  </svg>";
+    return "<svg\n    width=\"1200pt\"\n    height=\"1200pt\"\n    version=\"1.1\"\n    viewBox=\"0 0 1200 1200\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g class=\"bb-svg-path\">\n      <path\n        d=\"m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z\"\n      />\n      <path\n        d=\"m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z\"\n      />\n    </g>\n  </svg>";
   }
 
-  if (name === "mic") {
-    return "<svg\n    width=\"1200pt\"\n    height=\"1200pt\"\n    version=\"1.1\"\n    viewBox=\"0 0 1200 1200\"\n    xmlns=\"http://www.w3.org/2000/svg\"\n  >\n    <g fill=\"#000\">\n      <path\n        d=\"m600 862.5c144.75 0 262.5-117.75 262.5-262.5v-300c0-144.75-117.75-262.5-262.5-262.5s-262.5 117.75-262.5 262.5v300c0 144.75 117.75 262.5 262.5 262.5z\"\n      />\n      <path\n        d=\"m1012.5 600c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 186.11-151.41 337.5-337.5 337.5s-337.5-151.39-337.5-337.5c0-20.707-16.793-37.5-37.5-37.5s-37.5 16.793-37.5 37.5c0 214.8 165.08 391.57 375 410.6v114.4c0 20.727 16.793 37.5 37.5 37.5s37.5-16.773 37.5-37.5v-114.4c209.92-19.031 375-195.8 375-410.6z\"\n      />\n    </g>\n  </svg>";
+  if (name === "camera") {
+    return "<svg width=\"1155px\" height=\"1004px\" viewBox=\"0 0 1155 1004\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g fill=\"#333333\" fill-rule=\"nonzero\">\n            <g transform=\"translate(128.324095, 0.000000)\">\n                <path d=\"M42.7803063,0.00413459787 C31.4357421,0.00413459787 20.5549853,4.41399115 12.5336107,12.2572687 C4.51223664,20.1005462 0.00420584816,30.741831 0.00420584816,41.8370305 L0.00420584816,251.00151 C-0.156199045,262.200455 4.27736739,272.989996 12.315738,280.963903 C20.3585574,288.938257 31.3288589,293.431222 42.7803063,293.431222 C54.2317532,293.431222 65.2018267,288.938592 73.2448746,280.963903 C81.2832452,272.989549 85.7172445,262.200455 85.5564062,251.00151 L85.5564062,83.6699265 L256.660808,83.6699265 C268.112255,83.8267939 279.145066,79.4909873 287.298762,71.6298611 C295.452913,63.7643845 300.04718,53.0359758 300.04718,41.8370305 C300.04718,30.6380854 295.453255,19.9098998 287.298762,12.0441998 C279.144611,4.18307356 268.112255,-0.153157091 256.660808,0.00413459787 L42.7803063,0.00413459787 Z\"></path>\n                <path d=\"M983.227131,710.59444 C971.895913,710.764382 961.099907,715.326799 953.20401,723.279287 C945.312674,731.227538 940.964345,741.91668 941.119476,752.99849 L941.119476,920.330075 L770.015075,920.330075 C758.563631,920.173205 747.530815,924.509015 739.377123,932.370139 C731.222968,940.235615 726.628705,950.964028 726.628705,962.16297 C726.628705,973.361918 731.222627,984.090105 739.377123,991.955802 C747.531272,999.816926 758.563631,1004.15316 770.015075,1003.99587 L983.895579,1003.99587 C995.24014,1003.99587 1006.1209,999.586011 1014.14227,991.742733 C1022.16365,983.899455 1026.67168,973.258169 1026.67168,962.16297 L1026.67168,752.99849 C1026.83208,741.690223 1022.30053,730.801401 1014.11489,722.812989 C1005.93394,714.825472 994.790363,710.415949 983.227131,710.59444 L983.227131,710.59444 Z\"></path>\n                <path d=\"M983.227131,375.93127 C971.895913,376.101212 961.099907,380.66363 953.20401,388.61612 C945.312674,396.56437 940.964345,407.253512 941.119476,418.335325 L941.119476,585.66691 C940.959072,596.865853 945.39264,607.655394 953.431008,615.629303 C961.47383,623.603658 972.444131,628.096618 983.895579,628.096618 C995.347023,628.096618 1006.3171,623.603989 1014.36015,615.629303 C1022.39852,607.654947 1026.83251,596.865853 1026.67168,585.66691 L1026.67168,418.335325 C1026.83208,407.027056 1022.30053,396.138232 1014.11489,388.149822 C1005.93394,380.162305 994.790363,375.752783 983.227131,375.93127 L983.227131,375.93127 Z\"></path>\n                <path d=\"M769.974012,0.00413459787 C758.522563,-0.152733184 747.489752,4.18307356 739.336055,12.0441998 C731.181906,19.9096767 726.587637,30.6380854 726.587637,41.8370305 C726.587637,53.0359758 731.181564,63.7641611 739.336055,71.6298611 C747.490209,79.4909873 758.522563,83.8272181 769.974012,83.6699265 L941.078414,83.6699265 L941.078414,251.00151 C940.918009,262.200455 945.351572,272.989996 953.389945,280.963903 C961.432763,288.938257 972.403063,293.431222 983.854512,293.431222 C995.30596,293.431222 1006.27603,288.938592 1014.31908,280.963903 C1022.35745,272.989549 1026.79145,262.200455 1026.63061,251.00151 L1026.63061,41.8370305 C1026.63061,30.7426118 1022.12133,20.1017733 1014.10121,12.2572687 C1006.08109,4.41276405 995.199876,0.00413459787 983.854512,0.00413459787 L769.974012,0.00413459787 Z\"></path>\n                <path d=\"M427.765208,0.00413459787 C416.31376,-0.152733184 405.280949,4.18307356 397.127256,12.0441998 C388.973102,19.9096767 384.378838,30.6380854 384.378838,41.8370305 C384.378838,53.0359758 388.972761,63.7641611 397.127256,71.6298611 C405.281406,79.4909873 416.31376,83.8272181 427.765208,83.6699265 L598.86961,83.6699265 C610.321058,83.8267939 621.35387,79.4909873 629.507562,71.6298611 C637.661716,63.7643845 642.255985,53.0359758 642.255985,41.8370305 C642.255985,30.6380854 637.662058,19.9098998 629.507562,12.0441998 C621.353413,4.18307356 610.321058,-0.153157091 598.86961,0.00413459787 L427.765208,0.00413459787 Z\"></path>\n            </g>\n            <g transform=\"translate(0.000000, 427.000000)\">\n                <path d=\"M768.516184,22.1826583 C752.659627,13.73125 732.573775,13.73125 717.773442,24.29375 L562.379192,124.6375 L562.379192,31.6875 C562.379192,13.7330104 548.635081,0 530.666079,0 L31.7131123,0 C13.7441105,0 0,13.7330104 0,31.6875 L0,475.3125 C0,493.26699 13.7441105,507 31.7131123,507 L530.666079,507 C548.635081,507 562.379192,493.26699 562.379192,475.3125 L562.379192,382.3625 L717.773442,482.70625 C726.231681,487.9875 735.742444,491.157658 745.257258,491.157658 C753.715498,491.157658 761.113815,489.046567 769.572406,484.820862 C786.485185,475.313732 796,458.414612 796,439.400352 L796,68.6566021 C794.943601,48.5869719 785.428963,31.6878521 768.516184,22.1807219 L768.516184,22.1826583 Z\"></path>\n            </g>\n        </g>\n    </g>\n</svg>";
   }
 
   if (name === "recorderon") {
-    return "<svg width=\"1160px\" height=\"1160px\" viewBox=\"0 0 1160 1160\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n      <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n          <g  transform=\"translate(0.000000, -0.000000)\" fill-rule=\"nonzero\">\n              <path d=\"M579.91,0 C258.38,0 0,261.24 0,579.91 C0,898.57 258.38,1159.82 579.91,1159.82 C901.44,1159.82 1159.82,901.44 1159.82,579.91 C1159.82,258.38 898.57,0 579.91,0 Z M579.91,1045 C324.41,1045 114.84,835.43 114.84,579.93 C114.84,324.43 321.54,114.86 579.91,114.86 C838.29,114.86 1042.11,324.43 1042.11,579.93 C1042.11,835.43 835.41,1045 579.91,1045 Z\" fill=\"#000\"></path>\n              <path d=\"M815.32,579.905 C815.32,709.915 709.93,815.315 579.91,815.315 C449.89,815.315 344.5,709.925 344.5,579.905 C344.5,449.895 449.89,344.495 579.91,344.495 C709.93,344.495 815.32,449.885 815.32,579.905\" fill=\"#D50202\"></path>\n          </g>\n      </g>\n  </svg>";
+    return "<svg width=\"1251px\" height=\"1251px\" viewBox=\"0 0 1251 1251\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n    <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n        <g>\n            <circle fill=\"#E31810\" cx=\"625.5\" cy=\"625.5\" r=\"625.5\"></circle>\n            <circle fill=\"#F71008\" cx=\"625\" cy=\"625\" r=\"507\"></circle>\n            <g transform=\"translate(175.000000, 449.000000)\" fill=\"#FFFFFF\" fill-rule=\"nonzero\">\n                <path d=\"M0,347.097493 L0,4.90250696 L135.528311,4.90250696 C161.471024,4.90250696 183.639743,9.49741034 202.034469,18.6872171 C220.429194,27.8770239 234.46286,40.8541449 244.135466,57.6185803 C253.808072,74.3830156 258.644376,94.0714804 258.644376,116.683975 C258.644376,139.40786 253.724206,158.929238 243.883867,175.248107 C234.043527,191.566976 219.814173,204.070682 201.195803,212.759227 C182.577434,221.447772 160.073248,225.792044 133.683247,225.792044 L42.9396629,225.792044 L42.9396629,167.64563 L121.941933,167.64563 C135.807866,167.64563 147.325536,165.751973 156.494943,161.964659 C165.66435,158.177344 172.51345,152.496373 177.042243,144.921744 C181.571035,137.347116 183.835432,127.934526 183.835432,116.683975 C183.835432,105.322032 181.571035,95.7423543 177.042243,87.9449425 C172.51345,80.1475308 165.636395,74.2159282 156.411077,70.1501349 C147.185759,66.0843416 135.584222,64.051445 121.606467,64.051445 L72.6284142,64.051445 L72.6284142,347.097493 L0,347.097493 Z M185.512762,191.37204 L270.888889,347.097493 L190.712487,347.097493 L107.181424,191.37204 L185.512762,191.37204 Z\"></path>\n                <polygon points=\"309.166667 347.097493 309.166667 4.90250696 540.126846 4.90250696 540.126846 64.5527072 381.634607 64.5527072 381.634607 146.091356 528.244113 146.091356 528.244113 205.741556 381.634607 205.741556 381.634607 287.447293 540.796296 287.447293 540.796296 347.097493\"></polygon>\n                <path d=\"M901,124.638783 L827.757943,124.638783 C826.420189,115.158428 823.68894,106.709759 819.564197,99.2927757 C815.439454,91.8757921 810.144176,85.5462611 803.678363,80.3041825 C797.212549,75.0621039 789.77129,71.0468948 781.354585,68.2585551 C772.93788,65.4702155 763.824427,64.0760456 754.014228,64.0760456 C736.288981,64.0760456 720.849065,68.4537389 707.69448,77.2091255 C694.539894,85.964512 684.339516,98.6793409 677.093346,115.353612 C669.847176,132.027883 666.224091,152.243346 666.224091,176 C666.224091,200.425856 669.875046,220.948035 677.176956,237.56654 C684.478866,254.185044 694.707113,266.732573 707.861699,275.209125 C721.016285,283.685678 736.233242,287.923954 753.51257,287.923954 C763.21129,287.923954 772.213263,286.641318 780.518488,284.076046 C788.823714,281.510773 796.209233,277.746515 802.675047,272.78327 C809.14086,267.820025 814.519748,261.769328 818.81171,254.631179 C823.103672,247.493029 826.08575,239.351077 827.757943,230.205323 L901,230.539924 C899.104848,246.26616 894.394837,261.406844 886.869968,275.961977 C879.3451,290.51711 869.256201,303.510773 856.603274,314.942966 C843.950346,326.375158 828.900608,335.409379 811.45406,342.045627 C794.007513,348.681876 774.303504,352 752.342035,352 C721.796641,352 694.512024,345.084918 670.488184,331.254753 C646.464343,317.424588 627.512821,297.404309 613.633619,271.193916 C599.754416,244.983523 592.814815,213.252218 592.814815,176 C592.814815,138.636248 599.838026,106.849176 613.884448,80.6387833 C627.93087,54.4283904 646.993871,34.4359949 671.073451,20.661597 C695.153031,6.88719899 722.242559,0 752.342035,0 C772.185393,0 790.607387,2.78833967 807.608016,8.36501901 C824.608646,13.9416984 839.686254,22.0557668 852.840839,32.7072243 C865.995425,43.3586819 876.72533,56.3802281 885.030556,71.7718631 C893.335782,87.1634981 898.65893,104.785805 901,124.638783 Z\"></path>\n            </g>\n        </g>\n    </g>\n</svg>";
   }
 
   if (name === "recorderoff") {
-    return "<svg width=\"1200pt\" height=\"1200pt\" version=\"1.1\" viewBox=\"0 0 1200 1200\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"m600 60c-298.8 0-540 241.2-540 540s241.2 540 540 540 540-241.2 540-540-241.2-540-540-540zm237.6 741.6c0 20.398-15.602 36-36 36h-403.2c-20.398 0-36-15.602-36-36v-403.2c0-20.398 15.602-36 36-36h403.2c20.398 0 36 15.602 36 36z\" fill=\"#d50202\"/>\n  </svg>";
+    return "<svg width=\"1251px\" height=\"1251px\" viewBox=\"0 0 1251 1251\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">\n      <g stroke=\"none\" stroke-width=\"1\" fill=\"none\" fill-rule=\"evenodd\">\n          <g class=\"bb-rec-on-circle\" fill=\"#EEEEEE\" fill-rule=\"nonzero\">\n              <path d=\"M625.5,0 C970.954111,0 1251,280.045889 1251,625.5 C1251,970.954111 970.954111,1251 625.5,1251 C280.045889,1251 0,970.954111 0,625.5 C0,280.045889 280.045889,0 625.5,0 Z M626,124 C348.753056,124 124,348.753056 124,626 C124,903.246944 348.753056,1128 626,1128 C903.246944,1128 1128,903.246944 1128,626 C1128,348.753056 903.246944,124 626,124 Z\"></path>\n          </g>\n          <g class=\"bb-rec-on-cont\" fill=\"#E31810\" transform=\"translate(86.000000, 86.000000)\" fill-rule=\"nonzero\">\n              <path d=\"M540,0 C241.2,0 0,241.2 0,540 C0,838.8 241.2,1080 540,1080 C838.8,1080 1080,838.8 1080,540 C1080,241.2 838.8,0 540,0 Z M777.6,741.6 C777.6,761.998 761.998,777.6 741.6,777.6 L338.4,777.6 C318.002,777.6 302.4,761.998 302.4,741.6 L302.4,338.4 C302.4,318.002 318.002,302.4 338.4,302.4 L741.6,302.4 C761.998,302.4 777.6,318.002 777.6,338.4 L777.6,741.6 Z\"></path>\n          </g>\n      </g>\n  </svg>";
   }
 
   if (name === "arrowdown") {
@@ -2238,6 +2245,411 @@ var ReplayRecorder = /*#__PURE__*/function () {
 }();
 
 
+;// CONCATENATED MODULE: ./src/ScreenDrawer.js
+function ScreenDrawer_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScreenDrawer_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScreenDrawer_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenDrawer_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenDrawer_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScreenDrawer_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ScreenDrawer = /*#__PURE__*/function () {
+  function ScreenDrawer() {
+    ScreenDrawer_classCallCheck(this, ScreenDrawer);
+
+    ScreenDrawer_defineProperty(this, "svgElement", null);
+
+    ScreenDrawer_defineProperty(this, "path", null);
+
+    ScreenDrawer_defineProperty(this, "strPath", void 0);
+
+    ScreenDrawer_defineProperty(this, "strokeWidth", 12);
+
+    ScreenDrawer_defineProperty(this, "strokeWidthRect", 6);
+
+    ScreenDrawer_defineProperty(this, "bufferSize", 4);
+
+    ScreenDrawer_defineProperty(this, "buffer", []);
+
+    ScreenDrawer_defineProperty(this, "startPoint", null);
+
+    ScreenDrawer_defineProperty(this, "tool", "pen");
+
+    ScreenDrawer_defineProperty(this, "color", "#DB4035");
+
+    ScreenDrawer_defineProperty(this, "mouseDown", null);
+
+    ScreenDrawer_defineProperty(this, "mouseMove", null);
+
+    ScreenDrawer_defineProperty(this, "mouseUp", null);
+
+    ScreenDrawer_defineProperty(this, "resizeListener", null);
+
+    var self = this;
+    this.svgElement = document.querySelector(".bb-capture-svg");
+    this.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px"); // Window resize listener.
+
+    this.resizeListener = function (e) {
+      self.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px");
+    };
+
+    window.addEventListener("resize", this.resizeListener, true);
+
+    this.mouseDown = function (e) {
+      e.preventDefault();
+      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+
+      if (colorpicker) {
+        colorpicker.style.display = "none";
+      }
+
+      self.fadeOutToolbar();
+
+      if (self.tool === "pen") {
+        self.mouseDownPen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseDownRect(e);
+      }
+    };
+
+    this.mouseMove = function (e) {
+      e.preventDefault();
+
+      if (self.tool === "pen") {
+        self.mouseMovePen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseMoveRect(e);
+      }
+    };
+
+    this.mouseUp = function (e) {
+      e.preventDefault();
+      self.fadeInToolbar();
+
+      if (self.tool === "pen") {
+        self.mouseUpPen(e);
+      }
+
+      if (self.tool === "rect") {
+        self.mouseUpRect(e);
+      }
+    };
+
+    this.svgElement.addEventListener("mousedown", this.mouseDown);
+    this.svgElement.addEventListener("mousemove", this.mouseMove);
+    this.svgElement.addEventListener("mouseup", this.mouseUp);
+    this.svgElement.addEventListener("touchstart", this.mouseDown, false);
+    this.svgElement.addEventListener("touchmove", this.mouseMove, false);
+    this.svgElement.addEventListener("touchend", this.mouseUp, false);
+  }
+
+  ScreenDrawer_createClass(ScreenDrawer, [{
+    key: "clear",
+    value: function clear() {
+      if (this.svgElement) {
+        while (this.svgElement.firstChild) {
+          this.svgElement.firstChild.remove();
+        }
+      }
+    }
+  }, {
+    key: "destroy",
+    value: function destroy() {
+      this.svgElement.removeEventListener("mousedown", this.mouseDown);
+      this.svgElement.removeEventListener("mousemove", this.mouseMove);
+      this.svgElement.removeEventListener("mouseup", this.mouseUp);
+      window.removeEventListener("resize", this.resizeListener);
+    }
+  }, {
+    key: "mouseUpPen",
+    value: function mouseUpPen() {
+      if (this.path) {
+        this.path = null;
+      }
+    }
+  }, {
+    key: "mouseUpRect",
+    value: function mouseUpRect() {
+      if (this.path) {
+        this.path = null;
+      }
+    }
+  }, {
+    key: "mouseMovePen",
+    value: function mouseMovePen(e) {
+      if (this.path) {
+        this.appendToBuffer(this.getMousePosition(e));
+        this.updateSvgPath();
+      }
+    }
+  }, {
+    key: "mouseMoveRect",
+    value: function mouseMoveRect(e) {
+      if (this.path) {
+        var p = this.getMousePosition(e);
+        var w = Math.abs(p.x - this.startPoint.x);
+        var h = Math.abs(p.y - this.startPoint.y);
+        var x = p.x;
+        var y = p.y;
+
+        if (p.x > this.startPoint.x) {
+          x = this.startPoint.x;
+        }
+
+        if (p.y > this.startPoint.y) {
+          y = this.startPoint.y;
+        }
+
+        this.path.setAttributeNS(null, "x", x);
+        this.path.setAttributeNS(null, "y", y);
+        this.path.setAttributeNS(null, "width", w);
+        this.path.setAttributeNS(null, "height", h);
+        this.svgElement.appendChild(this.path);
+      }
+    }
+  }, {
+    key: "mouseDownRect",
+    value: function mouseDownRect(e) {
+      this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      this.path.setAttribute("fill", "none");
+      this.path.setAttribute("stroke", this.color);
+      this.path.setAttribute("stroke-linecap", "round");
+      this.path.setAttribute("stroke-width", this.strokeWidthRect);
+      this.startPoint = this.getMousePosition(e);
+    }
+  }, {
+    key: "mouseDownPen",
+    value: function mouseDownPen(e) {
+      this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      this.path.setAttribute("fill", "none");
+      this.path.setAttribute("stroke", this.color + "AA");
+      this.path.setAttribute("stroke-linecap", "round");
+      this.path.setAttribute("stroke-width", this.strokeWidth);
+      this.buffer = [];
+      var pt = this.getMousePosition(e);
+      this.appendToBuffer(pt);
+      this.strPath = "M" + pt.x + " " + pt.y;
+      this.path.setAttribute("d", this.strPath);
+      this.svgElement.appendChild(this.path);
+    }
+  }, {
+    key: "setTool",
+    value: function setTool(tool) {
+      this.tool = tool;
+    }
+  }, {
+    key: "setColor",
+    value: function setColor(color) {
+      this.color = color;
+    }
+  }, {
+    key: "getMousePosition",
+    value: function getMousePosition(e) {
+      if (e.touches && e.touches.length > 0) {
+        return {
+          x: e.touches[0].pageX,
+          y: e.touches[0].pageY
+        };
+      }
+
+      return {
+        x: e.pageX,
+        y: e.pageY
+      };
+    } // Calculate the average point, starting at offset in the buffer
+
+  }, {
+    key: "getAveragePoint",
+    value: function getAveragePoint(offset) {
+      var len = this.buffer.length;
+
+      if (len % 2 === 1 || len >= this.bufferSize) {
+        var totalX = 0;
+        var totalY = 0;
+        var pt, i;
+        var count = 0;
+
+        for (i = offset; i < len; i++) {
+          count++;
+          pt = this.buffer[i];
+          totalX += pt.x;
+          totalY += pt.y;
+        }
+
+        return {
+          x: totalX / count,
+          y: totalY / count
+        };
+      }
+
+      return null;
+    }
+  }, {
+    key: "updateSvgPath",
+    value: function updateSvgPath() {
+      var pt = this.getAveragePoint(0);
+
+      if (pt) {
+        // Get the smoothed part of the path that will not change
+        this.strPath += " L" + pt.x + " " + pt.y; // Get the last part of the path (close to the current mouse position)
+        // This part will change if the mouse moves again
+
+        var tmpPath = "";
+
+        for (var offset = 2; offset < this.buffer.length; offset += 2) {
+          pt = this.getAveragePoint(offset);
+          tmpPath += " L" + pt.x + " " + pt.y;
+        } // Set the complete current path coordinates
+
+
+        this.path.setAttribute("d", this.strPath + tmpPath);
+      }
+    }
+  }, {
+    key: "appendToBuffer",
+    value: function appendToBuffer(pt) {
+      this.buffer.push(pt);
+
+      while (this.buffer.length > this.bufferSize) {
+        this.buffer.shift();
+      }
+    }
+  }, {
+    key: "fadeOutToolbar",
+    value: function fadeOutToolbar() {
+      var fadeTarget = document.querySelector(".bb-capture-toolbar");
+
+      if (fadeTarget) {
+        fadeTarget.style.opacity = 0;
+        fadeTarget.style.pointerEvents = "none";
+      }
+    }
+  }, {
+    key: "fadeInToolbar",
+    value: function fadeInToolbar() {
+      var fadeTarget = document.querySelector(".bb-capture-toolbar");
+
+      if (fadeTarget) {
+        fadeTarget.style.opacity = 1;
+        fadeTarget.style.pointerEvents = "auto";
+      }
+    }
+  }]);
+
+  return ScreenDrawer;
+}();
+;// CONCATENATED MODULE: ./src/ScrollStopper.js
+function ScrollStopper_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScrollStopper_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScrollStopper_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScrollStopper_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScrollStopper_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScrollStopper_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ScrollStopper = /*#__PURE__*/function () {
+  function ScrollStopper() {
+    ScrollStopper_classCallCheck(this, ScrollStopper);
+
+    ScrollStopper_defineProperty(this, "keys", {
+      37: 1,
+      38: 1,
+      39: 1,
+      40: 1
+    });
+
+    ScrollStopper_defineProperty(this, "supportsPassive", false);
+
+    ScrollStopper_defineProperty(this, "wheelOpt", this.supportsPassive ? {
+      passive: false
+    } : false);
+
+    ScrollStopper_defineProperty(this, "wheelEvent", "onwheel" in document.createElement("div") ? "wheel" : "mousewheel");
+
+    ScrollStopper_defineProperty(this, "scrollDisabled", false);
+
+    var self = this;
+
+    try {
+      window.addEventListener("test", null, Object.defineProperty({}, "passive", {
+        get: function get() {
+          self.supportsPassive = true;
+          self.wheelOpt = self.supportsPassive ? {
+            passive: false
+          } : false;
+        }
+      }));
+    } catch (e) {}
+  }
+
+  ScrollStopper_createClass(ScrollStopper, [{
+    key: "preventDefault",
+    value: function preventDefault(e) {
+      e.preventDefault();
+    }
+  }, {
+    key: "preventDefaultForScrollKeys",
+    value: function preventDefaultForScrollKeys(e) {
+      if (this.keys && this.keys[e.keyCode]) {
+        this.preventDefault(e);
+        return false;
+      }
+    }
+  }], [{
+    key: "getInstance",
+    value: // ScrollStopper singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new ScrollStopper();
+        return this.instance;
+      } else {
+        return this.instance;
+      }
+    }
+  }, {
+    key: "disableScroll",
+    value: function disableScroll() {
+      var instance = this.getInstance();
+
+      if (instance.scrollDisabled) {
+        return;
+      }
+
+      instance.scrollDisabled = true;
+      window.addEventListener("DOMMouseScroll", instance.preventDefault, false); // older FF
+
+      window.addEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt); // modern desktop
+
+      window.addEventListener("touchmove", instance.preventDefault, instance.wheelOpt); // mobile
+
+      window.addEventListener("keydown", instance.preventDefaultForScrollKeys, false);
+    }
+  }, {
+    key: "enableScroll",
+    value: function enableScroll() {
+      var instance = this.getInstance();
+
+      if (!instance.scrollDisabled) {
+        return;
+      }
+
+      instance.scrollDisabled = false;
+      window.removeEventListener("DOMMouseScroll", instance.preventDefault, false);
+      window.removeEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt);
+      window.removeEventListener("touchmove", instance.preventDefault, instance.wheelOpt);
+      window.removeEventListener("keydown", instance.preventDefaultForScrollKeys, false);
+    }
+  }]);
+
+  return ScrollStopper;
+}();
+
+ScrollStopper_defineProperty(ScrollStopper, "instance", void 0);
 ;// CONCATENATED MODULE: ./src/Session.js
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -2450,7 +2862,738 @@ var Session = /*#__PURE__*/function () {
 Session_defineProperty(Session, "instance", void 0);
 
 
+;// CONCATENATED MODULE: ./src/ScreenRecorder.js
+function ScreenRecorder_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function ScreenRecorder_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function ScreenRecorder_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenRecorder_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenRecorder_defineProperties(Constructor, staticProps); return Constructor; }
+
+function ScreenRecorder_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+var ScreenRecorder = /*#__PURE__*/function () {
+  function ScreenRecorder(rerender) {
+    var _this = this;
+
+    ScreenRecorder_classCallCheck(this, ScreenRecorder);
+
+    ScreenRecorder_defineProperty(this, "rerender", void 0);
+
+    ScreenRecorder_defineProperty(this, "stream", void 0);
+
+    ScreenRecorder_defineProperty(this, "mediaRecorder", void 0);
+
+    ScreenRecorder_defineProperty(this, "audioMuted", false);
+
+    ScreenRecorder_defineProperty(this, "audioAvailable", true);
+
+    ScreenRecorder_defineProperty(this, "available", true);
+
+    ScreenRecorder_defineProperty(this, "isRecording", false);
+
+    ScreenRecorder_defineProperty(this, "file", null);
+
+    ScreenRecorder_defineProperty(this, "maxRecordTime", 180);
+
+    ScreenRecorder_defineProperty(this, "recordTime", 0);
+
+    ScreenRecorder_defineProperty(this, "recordingTimer", null);
+
+    ScreenRecorder_defineProperty(this, "startScreenRecording", function () {
+      var self = this;
+
+      if (!navigator.mediaDevices || this.isRecording) {
+        this.available = false;
+        this.rerender();
+        return;
+      }
+
+      navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true
+      }).then(function (displayStream) {
+        self.stream = displayStream;
+
+        if (!self.audioMuted) {
+          self.startAudioRecording();
+        } else {
+          self.audioAvailable = false;
+          self.handleRecord({
+            stream: displayStream
+          });
+        }
+
+        self.rerender();
+      })["catch"](function (displayErr) {
+        self.rerender();
+      });
+    });
+
+    ScreenRecorder_defineProperty(this, "stopScreenRecording", function () {
+      if (!this.mediaRecorder || !this.stream || !this.isRecording) {
+        return;
+      }
+
+      if (this.recordingTimer) {
+        clearInterval(this.recordingTimer);
+        this.recordingTimer = null;
+      }
+
+      this.mediaRecorder.stop();
+      this.stream.getTracks().forEach(function (track) {
+        track.stop();
+      });
+      this.rerender();
+    });
+
+    ScreenRecorder_defineProperty(this, "startAudioRecording", function () {
+      var self = this;
+
+      if (!this.stream) {
+        return;
+      }
+
+      navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: false
+      }).then(function (voiceStream) {
+        for (var i = 0; i < voiceStream.getAudioTracks().length; i++) {
+          self.stream.addTrack(voiceStream.getAudioTracks()[i]);
+        }
+
+        self.audioMuted = false;
+        self.audioAvailable = true;
+        self.handleRecord({
+          stream: self.stream
+        });
+        self.rerender();
+      })["catch"](function (audioErr) {
+        self.rerender();
+      });
+    });
+
+    ScreenRecorder_defineProperty(this, "toggleAudio", function () {
+      this.audioMuted = !this.audioMuted;
+      this.rerender();
+
+      if (!this.stream) {
+        return;
+      }
+
+      var audioTracks = this.stream.getAudioTracks();
+
+      for (var i = 0; i < audioTracks.length; i++) {
+        var audioTrack = audioTracks[i];
+        audioTrack.enabled = !this.audioMuted;
+      }
+    });
+
+    ScreenRecorder_defineProperty(this, "clearPreview", function () {
+      document.querySelector(".bb-capture-preview video").src = null;
+      this.file = null;
+      this.rerender();
+    });
+
+    ScreenRecorder_defineProperty(this, "handleRecord", function (_ref) {
+      var stream = _ref.stream,
+          _ref$mimeType = _ref.mimeType,
+          mimeType = _ref$mimeType === void 0 ? "video/mp4" : _ref$mimeType;
+      var self = this;
+      var recordedChunks = [];
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.isRecording = true;
+      this.recordTime = 0; // Set timer.
+
+      var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
+      this.recordingTimer = setInterval(function () {
+        self.recordTime++;
+        var remainingTime = self.maxRecordTime - self.recordTime;
+
+        if (remainingTime > 0) {
+          timerLabel.innerHTML = self.formatTime(remainingTime);
+        } else {
+          timerLabel.innerHTML = "3:00";
+          self.stopScreenRecording();
+        }
+      }, 1000);
+
+      this.mediaRecorder.ondataavailable = function (e) {
+        if (e.data.size > 0) {
+          recordedChunks.push(e.data);
+        }
+      };
+
+      stream.getVideoTracks()[0].onended = function () {
+        self.prepareRecording(recordedChunks, mimeType);
+      };
+
+      this.mediaRecorder.onstop = function () {
+        self.prepareRecording(recordedChunks, mimeType);
+      };
+
+      this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
+
+      self.rerender();
+    });
+
+    ScreenRecorder_defineProperty(this, "prepareRecording", function (recordedChunks, mimeType) {
+      var completeBlob = new Blob(recordedChunks, {
+        type: mimeType
+      });
+      this.file = new File([completeBlob], "screen-recording.mp4", {
+        type: "video/mp4"
+      });
+      document.querySelector(".bb-capture-preview video").src = URL.createObjectURL(completeBlob);
+      this.audioAvailable = true;
+      this.isRecording = false;
+      this.rerender();
+    });
+
+    this.rerender = rerender;
+
+    if (!navigator.mediaDevices) {
+      this.available = false;
+    }
+
+    setTimeout(function () {
+      _this.rerender();
+    }, 100);
+  }
+
+  ScreenRecorder_createClass(ScreenRecorder, [{
+    key: "formatTime",
+    value: function formatTime(s) {
+      return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
+    }
+  }]);
+
+  return ScreenRecorder;
+}();
+
+ScreenRecorder_defineProperty(ScreenRecorder, "uploadScreenRecording", function (screenRecordingData) {
+  return new Promise(function (resolve, reject) {
+    if (screenRecordingData == null) {
+      resolve(null);
+    }
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
+    Session.getInstance().injectSession(xhr);
+    var formdata = new FormData();
+    formdata.append("file", screenRecordingData);
+    xhr.send(formdata);
+
+    xhr.onerror = function () {
+      reject();
+    };
+
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState == 4) {
+        if (xhr.status == 200) {
+          resolve(JSON.parse(xhr.response).fileUrl);
+        } else {
+          reject();
+        }
+      }
+    };
+  });
+});
+;// CONCATENATED MODULE: ./src/MarkerManager.js
+function MarkerManager_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function MarkerManager_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function MarkerManager_createClass(Constructor, protoProps, staticProps) { if (protoProps) MarkerManager_defineProperties(Constructor.prototype, protoProps); if (staticProps) MarkerManager_defineProperties(Constructor, staticProps); return Constructor; }
+
+function MarkerManager_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+
+
+
+
+var MarkerManager = /*#__PURE__*/function () {
+  function MarkerManager(type) {
+    MarkerManager_classCallCheck(this, MarkerManager);
+
+    MarkerManager_defineProperty(this, "type", "screenshot");
+
+    MarkerManager_defineProperty(this, "dragCursor", null);
+
+    MarkerManager_defineProperty(this, "screenRecorder", null);
+
+    MarkerManager_defineProperty(this, "callback", null);
+
+    MarkerManager_defineProperty(this, "screenDrawer", null);
+
+    MarkerManager_defineProperty(this, "escListener", null);
+
+    MarkerManager_defineProperty(this, "overrideLanguage", src_Gleap.getInstance().overrideLanguage);
+
+    MarkerManager_defineProperty(this, "showNextStep", function () {
+      // Adapt the UI
+      this.showWidgetUI();
+
+      if (this.callback) {
+        this.callback(true);
+      }
+    });
+
+    this.type = type;
+  }
+
+  MarkerManager_createClass(MarkerManager, [{
+    key: "hideWidgetUI",
+    value: function hideWidgetUI() {
+      var feedbackButton = document.querySelector(".bb-feedback-button");
+
+      if (feedbackButton) {
+        feedbackButton.style.display = "none";
+      }
+
+      var dialogUI = document.querySelector(".bb-feedback-dialog-container");
+
+      if (dialogUI) {
+        dialogUI.style.display = "none";
+      }
+    }
+  }, {
+    key: "showWidgetUI",
+    value: function showWidgetUI() {
+      if (this.type === "screenshot") {
+        ScrollStopper.enableScroll();
+      } // Unregister ESC listener
+
+
+      if (this.escListener) {
+        document.removeEventListener("keydown", this.escListener);
+      } // Cleanup mouse pointer
+
+
+      this.cleanupMousePointer(); // Remove the toolbar UI
+
+      var dialog = document.querySelector(".bb-capture-toolbar");
+
+      if (dialog) {
+        dialog.remove();
+      } // Remove the preview UI
+
+
+      var videoPreviewContainer = document.querySelector(".bb-capture-preview");
+
+      if (videoPreviewContainer) {
+        videoPreviewContainer.remove();
+      } // Feedback button
+
+
+      var feedbackButton = document.querySelector(".bb-feedback-button");
+
+      if (feedbackButton) {
+        feedbackButton.style.display = "flex";
+      } // Feedback dialog container
+
+
+      var dialogUI = document.querySelector(".bb-feedback-dialog-container");
+
+      if (dialogUI) {
+        dialogUI.style.display = "block";
+      } // Dismiss button
+
+
+      var dismissUI = document.querySelector(".bb-capture-dismiss");
+
+      if (dismissUI) {
+        dismissUI.style.display = "none";
+      } // Hide the color picker
+
+
+      var colorPicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+
+      if (colorPicker) {
+        colorPicker.style.display = "none";
+      } // Border layer
+
+
+      var borderLayer = document.querySelector(".bb-capture-editor-borderlayer");
+
+      if (borderLayer) {
+        borderLayer.style.display = "none";
+      }
+    }
+  }, {
+    key: "clear",
+    value: function clear() {
+      var captureEditor = document.querySelector(".bb-capture-editor");
+
+      if (captureEditor) {
+        captureEditor.remove();
+      }
+    }
+  }, {
+    key: "setMouseMove",
+    value: function setMouseMove(x, y) {
+      if (!this.dragCursor) {
+        return;
+      }
+
+      this.dragCursor.style.left = "".concat(x + 6, "px");
+      this.dragCursor.style.top = "".concat(y - 26, "px");
+      this.dragCursor.style.right = null;
+    }
+  }, {
+    key: "mouseMoveEventHandler",
+    value: function mouseMoveEventHandler(e) {
+      var x = e.pageX - document.documentElement.scrollLeft;
+      var y = e.pageY - document.documentElement.scrollTop;
+      this.setMouseMove(x, y);
+    }
+  }, {
+    key: "touchMoveEventHandler",
+    value: function touchMoveEventHandler(e) {
+      var x = e.touches[0].pageX - document.documentElement.scrollLeft;
+      var y = e.touches[0].pageY - document.documentElement.scrollTop;
+      this.setMouseMove(x, y);
+    }
+  }, {
+    key: "setupMousePointer",
+    value: function setupMousePointer() {
+      var self = this;
+      this.dragCursor = document.querySelector(".bb-capture-editor-drag-info");
+      var captureSVG = document.querySelector(".bb-capture-svg");
+      captureSVG.addEventListener("mouseenter", function (e) {
+        self.dragCursor.style.opacity = 1;
+      });
+      captureSVG.addEventListener("mouseleave", function (e) {
+        self.dragCursor.style.opacity = 0;
+      });
+      document.documentElement.addEventListener("mousemove", this.mouseMoveEventHandler.bind(this));
+      document.documentElement.addEventListener("touchmove", this.touchMoveEventHandler.bind(this));
+    }
+  }, {
+    key: "cleanupMousePointer",
+    value: function cleanupMousePointer() {
+      document.documentElement.removeEventListener("mousemove", this.mouseMoveEventHandler);
+      document.documentElement.removeEventListener("touchmove", this.touchMoveEventHandler);
+
+      if (this.dragCursor) {
+        this.dragCursor.remove();
+      }
+    }
+  }, {
+    key: "createEditorUI",
+    value: function createEditorUI() {
+      // Add HTML for drawing and recording
+      var bugReportingEditor = document.createElement("div");
+      bugReportingEditor.className = "bb-capture-editor";
+      bugReportingEditor.innerHTML = "\n          <div class=\"bb-capture-editor-borderlayer\"></div>\n          <svg class=\"bb-capture-svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" xml:space=\"preserve\"></svg>\n          <div class=\"bb-capture-mousetool\"></div>\n          <div class=\"bb-capture-dismiss\">".concat(loadIcon("dismiss"), "</div>\n          <div class='bb-capture-editor-drag-info'>").concat(loadIcon("pen"), "</div>\n          <div class=\"bb-capture-toolbar\">\n            ").concat(this.type === "capture" ? "<div class=\"bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording\" data-type=\"recording\" data-active=\"false\">\n                  ".concat(loadIcon("recorderon"), "\n                  ").concat(loadIcon("recorderoff"), "\n                  <span class=\"bb-tooltip bb-tooltip-screen-recording\"></span>\n                </div>\n                <div class=\"bb-capture-toolbar-item bb-capture-item-rec\" data-type=\"mic\" data-active=\"false\">\n                  ").concat(loadIcon("mic"), "\n                  <span class=\"bb-tooltip bb-tooltip-audio-recording\"></span>\n                </div>\n                <div class=\"bb-capture-toolbar-item-timer bb-capture-item-rec\">3:00</div>\n                <div class=\"bb-capture-toolbar-item-spacer\"></div>") : "", "\n            <div class=\"bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active\" data-type=\"pen\" data-active=\"true\">\n              ").concat(loadIcon("pen"), "\n            </div>\n            <div class=\"bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool\" data-type=\"rect\" data-active=\"false\">\n              ").concat(loadIcon("rect"), "\n            </div>\n            <div class=\"bb-capture-toolbar-item bb-capture-toolbar-drawingitem\" data-type=\"colorpicker\">\n              <div class=\"bb-capture-toolbar-item-selectedcolor\"></div>\n            </div>\n            ").concat(this.type !== "capture" ? "<div class=\"bb-capture-button-next\">".concat(translateText("Next", this.overrideLanguage), "</div>") : "", "\n          </div>\n          <div class=\"bb-capture-toolbar-item-colorpicker\">\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#DB4035\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#FAD000\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#7ECC49\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#158FAD\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#4073FF\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#AF38EB\"></div>\n            <div class=\"bb-capture-toolbar-item-color\" data-color=\"#CCCCCC\"></div>\n          </div>\n          <div class=\"bb-capture-preview\">\n            <div class=\"bb-capture-preview-inner\">\n              <video controls muted autoplay></video>\n              <div class=\"bb-capture-preview-buttons\">\n                <div class=\"bb-capture-preview-retrybutton\">").concat(translateText("Retry", this.overrideLanguage), "</div>\n                <div class=\"bb-capture-preview-sendbutton\">").concat(translateText("Next", this.overrideLanguage), "</div>\n              </div>\n            </div>\n          </div>\n        ");
+      src_Gleap.appendNode(bugReportingEditor);
+    }
+  }, {
+    key: "registerEscapeListener",
+    value: function registerEscapeListener() {
+      var self = this;
+
+      this.escListener = function (evt) {
+        evt = evt || window.event;
+        var isEscape = false;
+
+        if ("key" in evt) {
+          isEscape = evt.key === "Escape" || evt.key === "Esc";
+        } else {
+          isEscape = evt.keyCode === 27;
+        }
+
+        if (isEscape) {
+          self.dismiss();
+        }
+      };
+
+      document.addEventListener("keydown", this.escListener);
+    }
+  }, {
+    key: "show",
+    value: function show(callback) {
+      this.callback = callback;
+      var self = this;
+      this.registerEscapeListener(); // Hide widget UI
+
+      this.hideWidgetUI(); // Create the editor UI
+
+      this.createEditorUI(); // Setup the mouse pointer
+
+      this.setupMousePointer(); // Setup screenshot data
+
+      if (this.type === "screenshot") {
+        // Overwrite snapshot position
+        src_Gleap.getInstance().snapshotPosition = {
+          x: window.scrollX,
+          y: window.scrollY
+        }; // Disable scroll
+
+        ScrollStopper.disableScroll();
+      } else {
+        // Setup screen recording
+        this.setupScreenRecording();
+      } // Hook up the drawing.
+
+
+      this.screenDrawer = new ScreenDrawer();
+      this.setupColorPicker();
+      this.setupToolbar();
+    }
+  }, {
+    key: "setupColorPicker",
+    value: function setupColorPicker() {
+      var self = this;
+      var selectedColor = document.querySelector(".bb-capture-toolbar-item-selectedcolor");
+      var colorItems = document.querySelectorAll(".bb-capture-toolbar-item-color");
+      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
+
+      var _loop = function _loop() {
+        var colorItem = colorItems[i];
+        var hexColor = colorItem.getAttribute("data-color");
+        colorItem.style.backgroundColor = hexColor;
+
+        colorItem.onclick = function () {
+          if (colorItem) {
+            self.screenDrawer.setColor(hexColor);
+
+            if (colorpicker) {
+              colorpicker.style.display = "none";
+            }
+
+            selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
+            var penTips = document.querySelectorAll(".bb-pen-tip");
+
+            for (var j = 0; j < penTips.length; j++) {
+              penTips[j].style.fill = hexColor;
+            }
+          }
+        };
+      };
+
+      for (var i = 0; i < colorItems.length; i++) {
+        _loop();
+      }
+    }
+  }, {
+    key: "dismiss",
+    value: function dismiss() {
+      this.showWidgetUI();
+
+      if (this.callback) {
+        this.callback(false);
+      }
+    }
+  }, {
+    key: "setupToolbar",
+    value: function setupToolbar() {
+      var self = this; // Hook up dismiss button
+
+      var dismissButton = document.querySelector(".bb-capture-dismiss");
+
+      dismissButton.onclick = function () {
+        self.dismiss();
+      }; // Hook up send button
+
+
+      var nextButton = document.querySelector(".bb-capture-button-next");
+
+      if (nextButton) {
+        nextButton.onclick = this.showNextStep.bind(this);
+      }
+
+      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker"); // Setup toolbar items
+
+      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+
+      var _loop2 = function _loop2() {
+        var toolbarItem = toolbarItems[i];
+
+        toolbarItem.onclick = function () {
+          var type = toolbarItem.getAttribute("data-type");
+
+          if (colorpicker && type !== "colorpicker") {
+            colorpicker.style.display = "none";
+          }
+
+          var active = false;
+
+          if (type !== "recording") {
+            if (toolbarItem.getAttribute("data-active") === "true") {
+              toolbarItem.setAttribute("data-active", "false");
+              active = false;
+            } else {
+              toolbarItem.setAttribute("data-active", "true");
+              active = true;
+            }
+          }
+
+          if (type === "pen" || type === "rect") {
+            var toolbarTools = document.querySelectorAll(".bb-capture-toolbar-item-tool");
+
+            for (var j = 0; j < toolbarTools.length; j++) {
+              toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
+            }
+
+            toolbarItem.classList.add("bb-capture-toolbar-item--active");
+            self.screenDrawer.setTool(type);
+
+            try {
+              var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+
+              if (svgClone && self.dragCursor) {
+                self.dragCursor.innerHTML = "";
+                self.dragCursor.appendChild(svgClone);
+              }
+            } catch (exp) {
+              console.log(exp);
+            }
+          }
+
+          if (type === "colorpicker") {
+            if (colorpicker.style.display === "flex") {
+              colorpicker.style.display = "none";
+            } else {
+              colorpicker.style.display = "flex";
+            }
+          }
+
+          if (type === "mic") {
+            self.screenRecorder.toggleAudio();
+          }
+
+          if (type === "recording") {
+            if (self.screenRecorder.isRecording) {
+              self.screenRecorder.stopScreenRecording();
+            } else {
+              self.screenRecorder.startScreenRecording();
+            }
+          }
+        };
+      };
+
+      for (var i = 0; i < toolbarItems.length; i++) {
+        _loop2();
+      }
+    }
+  }, {
+    key: "captureRenderer",
+    value: function captureRenderer() {
+      if (!this.screenRecorder) {
+        return;
+      }
+
+      if (this.screenRecorder.file) {
+        src_Gleap.getInstance().screenRecordingData = this.screenRecorder.file;
+      }
+
+      var nextButton = document.querySelector(".bb-capture-button-next");
+      var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
+      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+      var screenRecordingTooltip = document.querySelector(".bb-tooltip-screen-recording");
+      var audioRecordingTooltip = document.querySelector(".bb-tooltip-audio-recording");
+      var captureEditor = document.querySelector(".bb-capture-editor");
+      var recordingClass = "bb-capture-editor-recording";
+      var notRecordingClass = "bb-capture-editor-notrecording";
+
+      if (this.screenRecorder.isRecording) {
+        captureEditor.classList.add(recordingClass);
+        captureEditor.classList.remove(notRecordingClass);
+      } else {
+        captureEditor.classList.add(notRecordingClass);
+        captureEditor.classList.remove(recordingClass);
+      } // Update UI.
+
+
+      var dialog = document.querySelector(".bb-capture-toolbar");
+      var videoPreviewContainer = document.querySelector(".bb-capture-preview");
+      videoPreviewContainer.style.display = this.screenRecorder.file ? "flex" : "none";
+      dialog.style.display = !this.screenRecorder.file ? "flex" : "none";
+
+      for (var i = 0; i < toolbarItems.length; i++) {
+        var toolbarItem = toolbarItems[i];
+        var type = toolbarItem.getAttribute("data-type");
+
+        switch (type) {
+          case "mic":
+            if (this.screenRecorder.audioAvailable && this.screenRecorder.available) {
+              toolbarItem.style.opacity = 1;
+
+              if (!this.screenRecorder.audioMuted) {
+                toolbarItem.classList.remove("bb-capture-toolbar-item--inactivecross");
+                audioRecordingTooltip.innerHTML = translateText("Mute", this.overrideLanguage);
+              } else {
+                toolbarItem.style.opacity = 1;
+                toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
+                audioRecordingTooltip.innerHTML = translateText("Unmute", this.overrideLanguage);
+              }
+            } else {
+              toolbarItem.style.opacity = 0.3;
+              toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
+              audioRecordingTooltip.innerHTML = translateText("Browser not supported", this.overrideLanguage);
+            }
+
+            break;
+
+          case "recording":
+            if (this.screenRecorder.available) {
+              toolbarItem.style.opacity = 1;
+
+              if (this.screenRecorder.isRecording) {
+                toolbarItem.setAttribute("data-active", "true");
+                screenRecordingTooltip.innerHTML = translateText("Stop screen recording", this.overrideLanguage);
+                timerLabel.style.display = "block";
+              } else {
+                toolbarItem.setAttribute("data-active", "false");
+                screenRecordingTooltip.innerHTML = translateText("Start screen recording", this.overrideLanguage);
+                timerLabel.style.display = "none";
+              }
+            } else {
+              // Recording is not available.
+              toolbarItem.style.opacity = 0.3;
+              screenRecordingTooltip.innerHTML = translateText("Browser not supported", this.overrideLanguage);
+            }
+
+            break;
+
+          default:
+            break;
+        }
+      }
+    }
+  }, {
+    key: "setupScreenRecording",
+    value: function setupScreenRecording() {
+      var self = this; // Hook preview next button
+
+      var nextButtonPreview = document.querySelector(".bb-capture-preview-sendbutton");
+      nextButtonPreview.onclick = this.showNextStep.bind(this); // Hook retry button
+
+      var retryButton = document.querySelector(".bb-capture-preview-retrybutton");
+
+      retryButton.onclick = function () {
+        self.screenRecorder.clearPreview();
+
+        if (self.screenDrawer) {
+          self.screenDrawer.clear();
+        }
+      }; // Setup screen recorder
+
+
+      this.screenRecorder = new ScreenRecorder(this.captureRenderer.bind(this));
+    }
+  }]);
+
+  return MarkerManager;
+}();
+
+
 ;// CONCATENATED MODULE: ./src/FeedbackForm.js
+
 
 
 
@@ -2510,6 +3653,10 @@ var buildForm = function buildForm(feedbackOptions, overrideLanguage) {
 
     if (formItem.type === "text") {
       formHTML += "<div class=\"bb-feedback-inputgroup ".concat(getFormPageClass(currentPage), "\">\n      ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n      ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n          <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"").concat(formItem.inputtype, "\" placeholder=\"").concat(translateText(formItem.placeholder, overrideLanguage), "\" />\n      </div>");
+    }
+
+    if (formItem.type === "capture") {
+      formHTML += "<div class=\"bb-feedback-inputgroup ".concat(getFormPageClass(currentPage), "\">\n        ").concat(getDescriptionHTML(formItem.description, overrideLanguage), "\n        ").concat(getTitleHTML(formItem.title, overrideLanguage, formItem.required), "\n        <input class=\"bb-feedback-formdata bb-feedback-").concat(formItem.name, "\" ").concat(formItemData, " type=\"hidden\" />\n        <div class=\"bb-feedback-capture-items\">\n        ").concat(formItem.enableScreenshot ? "<div class=\"bb-feedback-capture-item\" data-type=\"screenshot\">\n        ".concat(loadIcon("screenshot"), "\n        <span class=\"bb-item-title\">").concat(translateText(formItem.screenshotTitle, overrideLanguage), "</span>\n        <span class=\"bb-tooltip\">").concat(translateText(formItem.screenshotTooltip, overrideLanguage), "</span>\n      </div>") : "", "\n        ").concat(formItem.enableCapture && typeof navigator !== "undefined" && navigator.mediaDevices ? "<div class=\"bb-feedback-capture-item\" data-type=\"capture\">\n        ".concat(loadIcon("camera"), "\n        <span class=\"bb-item-title\">").concat(translateText(formItem.captureTitle, overrideLanguage), "</span>\n        <span class=\"bb-tooltip\">").concat(translateText(formItem.captureTooltip, overrideLanguage), "</span>\n      </div>") : "", "\n        </div>\n        <div class=\"bb-feedback-capture-item-selected\">\n          <div class=\"bb-feedback-capture-item-selected-button\">\n            <div class=\"bb-feedback-capture-item-selected-icon\"></div>\n            <div class=\"bb-feedback-capture-item-selected-label\"></div>\n            <div class=\"bb-feedback-capture-item-selected-action\">").concat(loadIcon("dismiss"), "</div>\n          </div>\n        </div>\n      </div>");
     }
 
     if (formItem.type === "upload") {
@@ -2726,7 +3873,7 @@ var addDirtyFlagToFormElement = function addDirtyFlagToFormElement(formElement) 
   formElement.setAttribute("bb-dirty", "true");
 };
 
-var hookForm = function hookForm(formOptions, submitForm) {
+var hookForm = function hookForm(formOptions, submitForm, overrideLanguage) {
   var form = formOptions.form;
   var singlePageForm = formOptions.singlePageForm; // Hook up submit buttons
 
@@ -2799,6 +3946,54 @@ var hookForm = function hookForm(formOptions, submitForm) {
         addDirtyFlagToFormElement(formInput);
         validateFormPage(currentPage);
       };
+    }
+
+    if (formItem.type === "capture") {
+      (function () {
+        var captureItemsContainer = document.querySelector(".bb-feedback-capture-items");
+        var captureItems = document.querySelectorAll(".bb-feedback-capture-item");
+        var selectedItem = document.querySelector(".bb-feedback-capture-item-selected");
+        var selectedItemLabel = document.querySelector(".bb-feedback-capture-item-selected-label");
+        var selectedItemIcon = document.querySelector(".bb-feedback-capture-item-selected-icon");
+        var selectedItemAction = document.querySelector(".bb-feedback-capture-item-selected-action");
+
+        var _loop3 = function _loop3() {
+          var captureItem = captureItems[j];
+          var type = captureItem.getAttribute("data-type");
+
+          captureItem.onclick = function () {
+            var manager = new MarkerManager(type);
+            manager.show(function (success) {
+              if (!success) {
+                manager.clear();
+              } else {
+                var actionLabel = "";
+
+                if (type === "screenshot") {
+                  actionLabel = translateText("Marked screenshot added", overrideLanguage);
+                } else {
+                  actionLabel = translateText("Screen recording added", overrideLanguage);
+                }
+
+                selectedItemLabel.innerHTML = actionLabel;
+                selectedItemIcon.innerHTML = type === "screenshot" ? loadIcon("screenshot") : loadIcon("camera");
+                captureItemsContainer.style.display = "none";
+                selectedItem.style.display = "flex";
+
+                selectedItemAction.onclick = function () {
+                  manager.clear();
+                  captureItemsContainer.style.display = "flex";
+                  selectedItem.style.display = "none"; // asdf
+                };
+              }
+            });
+          };
+        };
+
+        for (j = 0; j < captureItems.length; j++) {
+          _loop3();
+        }
+      })();
     }
 
     if (formItem.type === "upload") {
@@ -2898,7 +4093,7 @@ var hookForm = function hookForm(formOptions, submitForm) {
     if (formItem.type === "rating") {
       var ratingItems = document.querySelectorAll(".bb-feedback-rating-".concat(formItem.name, " .bb-feedback-emojigroup li"));
 
-      var _loop3 = function _loop3() {
+      var _loop4 = function _loop4() {
         var ratingItem = ratingItems[j];
         ratingItem.addEventListener("click", function (e) {
           if (!ratingItem) {
@@ -2923,14 +4118,14 @@ var hookForm = function hookForm(formOptions, submitForm) {
       };
 
       for (j = 0; j < ratingItems.length; j++) {
-        _loop3();
+        _loop4();
       }
     }
 
     if (formItem.type === "onetofive") {
       var onetofiveItems = document.querySelectorAll(".bb-feedback-onetofive-".concat(formItem.name, " .bb-feedback-onetofive-button"));
 
-      var _loop4 = function _loop4() {
+      var _loop5 = function _loop5() {
         var onetofiveItem = onetofiveItems[j];
         onetofiveItem.addEventListener("click", function (e) {
           if (!onetofiveItem) {
@@ -2955,14 +4150,14 @@ var hookForm = function hookForm(formOptions, submitForm) {
       };
 
       for (j = 0; j < onetofiveItems.length; j++) {
-        _loop4();
+        _loop5();
       }
     }
 
     if (formItem.type === "multiplechoice") {
       var multiplechoiceItems = document.querySelectorAll(".bb-feedback-multiplechoice-".concat(formItem.name, " .bb-feedback-multiplechoice-container"));
 
-      var _loop5 = function _loop5() {
+      var _loop6 = function _loop6() {
         var multiplechoiceItem = multiplechoiceItems[j];
         multiplechoiceItem.addEventListener("click", function (e) {
           if (!multiplechoiceItem) {
@@ -2975,7 +4170,7 @@ var hookForm = function hookForm(formOptions, submitForm) {
       };
 
       for (j = 0; j < multiplechoiceItems.length; j++) {
-        _loop5();
+        _loop6();
       }
     } // Validate form item initially.
 
@@ -2984,6 +4179,7 @@ var hookForm = function hookForm(formOptions, submitForm) {
   };
 
   for (var i = 0; i < form.length; i++) {
+    var j;
     var j;
     var j;
     var j;
@@ -3337,230 +4533,6 @@ var createScreenshotEditor = function createScreenshotEditor(screenshot, onDone,
   canvas.addEventListener("mousemove", drawmove, false);
   canvas.addEventListener("mouseup", drawend, false);
 };
-;// CONCATENATED MODULE: ./src/ScreenRecorder.js
-function ScreenRecorder_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function ScreenRecorder_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function ScreenRecorder_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenRecorder_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenRecorder_defineProperties(Constructor, staticProps); return Constructor; }
-
-function ScreenRecorder_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-
-var ScreenRecorder = /*#__PURE__*/function () {
-  function ScreenRecorder(rerender) {
-    var _this = this;
-
-    ScreenRecorder_classCallCheck(this, ScreenRecorder);
-
-    ScreenRecorder_defineProperty(this, "rerender", void 0);
-
-    ScreenRecorder_defineProperty(this, "stream", void 0);
-
-    ScreenRecorder_defineProperty(this, "mediaRecorder", void 0);
-
-    ScreenRecorder_defineProperty(this, "audioMuted", false);
-
-    ScreenRecorder_defineProperty(this, "audioAvailable", true);
-
-    ScreenRecorder_defineProperty(this, "available", true);
-
-    ScreenRecorder_defineProperty(this, "isRecording", false);
-
-    ScreenRecorder_defineProperty(this, "file", null);
-
-    ScreenRecorder_defineProperty(this, "maxRecordTime", 180);
-
-    ScreenRecorder_defineProperty(this, "recordTime", 0);
-
-    ScreenRecorder_defineProperty(this, "recordingTimer", null);
-
-    ScreenRecorder_defineProperty(this, "startScreenRecording", function () {
-      var self = this;
-
-      if (!navigator.mediaDevices || this.isRecording) {
-        this.available = false;
-        this.rerender();
-        return;
-      }
-
-      navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true
-      }).then(function (displayStream) {
-        self.stream = displayStream;
-
-        if (!self.audioMuted) {
-          self.startAudioRecording();
-        } else {
-          self.audioAvailable = false;
-          self.handleRecord({
-            stream: displayStream
-          });
-        }
-
-        self.rerender();
-      })["catch"](function (displayErr) {
-        self.rerender();
-      });
-    });
-
-    ScreenRecorder_defineProperty(this, "stopScreenRecording", function () {
-      if (!this.mediaRecorder || !this.stream || !this.isRecording) {
-        return;
-      }
-
-      if (this.recordingTimer) {
-        clearInterval(this.recordingTimer);
-        this.recordingTimer = null;
-      }
-
-      this.mediaRecorder.stop();
-      this.stream.getTracks().forEach(function (track) {
-        track.stop();
-      });
-      this.rerender();
-    });
-
-    ScreenRecorder_defineProperty(this, "startAudioRecording", function () {
-      var self = this;
-
-      if (!this.stream) {
-        return;
-      }
-
-      navigator.mediaDevices.getUserMedia({
-        audio: true,
-        video: false
-      }).then(function (voiceStream) {
-        for (var i = 0; i < voiceStream.getAudioTracks().length; i++) {
-          self.stream.addTrack(voiceStream.getAudioTracks()[i]);
-        }
-
-        self.audioMuted = false;
-        self.audioAvailable = true;
-        self.handleRecord({
-          stream: self.stream
-        });
-        self.rerender();
-      })["catch"](function (audioErr) {
-        self.rerender();
-      });
-    });
-
-    ScreenRecorder_defineProperty(this, "toggleAudio", function () {
-      this.audioMuted = !this.audioMuted;
-      this.rerender();
-
-      if (!this.stream) {
-        return;
-      }
-
-      var audioTracks = this.stream.getAudioTracks();
-
-      for (var i = 0; i < audioTracks.length; i++) {
-        var audioTrack = audioTracks[i];
-        audioTrack.enabled = !this.audioMuted;
-      }
-    });
-
-    ScreenRecorder_defineProperty(this, "uploadScreenRecording", function () {
-      var self = this;
-      return new Promise(function (resolve, reject) {
-        if (self.file == null) {
-          resolve(null);
-        }
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
-        Session.getInstance().injectSession(xhr);
-        var formdata = new FormData();
-        formdata.append("file", self.file);
-        xhr.send(formdata);
-
-        xhr.onerror = function () {
-          reject();
-        };
-
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-              resolve(JSON.parse(xhr.response).fileUrl);
-            } else {
-              reject();
-            }
-          }
-        };
-      });
-    });
-
-    ScreenRecorder_defineProperty(this, "handleRecord", function (_ref) {
-      var stream = _ref.stream,
-          _ref$mimeType = _ref.mimeType,
-          mimeType = _ref$mimeType === void 0 ? "video/mp4" : _ref$mimeType;
-      var self = this;
-      var recordedChunks = [];
-      this.mediaRecorder = new MediaRecorder(stream);
-      this.isRecording = true;
-      this.recordTime = 0; // Set timer.
-
-      var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
-      this.recordingTimer = setInterval(function () {
-        self.recordTime++;
-        var remainingTime = self.maxRecordTime - self.recordTime;
-
-        if (remainingTime > 0) {
-          timerLabel.innerHTML = self.formatTime(remainingTime);
-        } else {
-          timerLabel.innerHTML = "3:00";
-          self.stopScreenRecording();
-        }
-      }, 1000);
-
-      this.mediaRecorder.ondataavailable = function (e) {
-        if (e.data.size > 0) {
-          recordedChunks.push(e.data);
-        }
-      };
-
-      this.mediaRecorder.onstop = function () {
-        var completeBlob = new Blob(recordedChunks, {
-          type: mimeType
-        });
-        self.file = new File([completeBlob], "screen-recording.mp4", {
-          type: "video/mp4"
-        });
-        document.querySelector(".bb-capture-preview video").src = URL.createObjectURL(completeBlob);
-        self.audioAvailable = true;
-        self.isRecording = false;
-        self.rerender();
-      };
-
-      this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
-
-      self.rerender();
-    });
-
-    this.rerender = rerender;
-
-    if (!navigator.mediaDevices) {
-      this.available = false;
-    }
-
-    setTimeout(function () {
-      _this.rerender();
-    }, 100);
-  }
-
-  ScreenRecorder_createClass(ScreenRecorder, [{
-    key: "formatTime",
-    value: function formatTime(s) {
-      return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
-    }
-  }]);
-
-  return ScreenRecorder;
-}();
 ;// CONCATENATED MODULE: ./src/StreamedEvent.js
 function StreamedEvent_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -3887,396 +4859,11 @@ AutoConfig_defineProperty(AutoConfig, "run", function () {
 });
 
 
-;// CONCATENATED MODULE: ./src/ScreenDrawer.js
-function ScreenDrawer_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function ScreenDrawer_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function ScreenDrawer_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScreenDrawer_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScreenDrawer_defineProperties(Constructor, staticProps); return Constructor; }
-
-function ScreenDrawer_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var ScreenDrawer = /*#__PURE__*/function () {
-  function ScreenDrawer() {
-    ScreenDrawer_classCallCheck(this, ScreenDrawer);
-
-    ScreenDrawer_defineProperty(this, "svgElement", null);
-
-    ScreenDrawer_defineProperty(this, "path", null);
-
-    ScreenDrawer_defineProperty(this, "strPath", void 0);
-
-    ScreenDrawer_defineProperty(this, "strokeWidth", 12);
-
-    ScreenDrawer_defineProperty(this, "strokeWidthRect", 6);
-
-    ScreenDrawer_defineProperty(this, "bufferSize", 4);
-
-    ScreenDrawer_defineProperty(this, "buffer", []);
-
-    ScreenDrawer_defineProperty(this, "startPoint", null);
-
-    ScreenDrawer_defineProperty(this, "tool", "pen");
-
-    ScreenDrawer_defineProperty(this, "color", "#DB4035");
-
-    ScreenDrawer_defineProperty(this, "mouseDown", null);
-
-    ScreenDrawer_defineProperty(this, "mouseMove", null);
-
-    ScreenDrawer_defineProperty(this, "mouseUp", null);
-
-    ScreenDrawer_defineProperty(this, "resizeListener", null);
-
-    var self = this;
-    this.svgElement = document.querySelector(".bb-capture-svg");
-    this.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px"); // Window resize listener.
-
-    this.resizeListener = function (e) {
-      self.svgElement.style.minHeight = "".concat(document.documentElement.scrollHeight, "px");
-    };
-
-    window.addEventListener("resize", this.resizeListener, true);
-
-    this.mouseDown = function (e) {
-      e.preventDefault();
-      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
-
-      if (colorpicker) {
-        colorpicker.style.display = "none";
-      }
-
-      self.fadeOutToolbar();
-
-      if (self.tool === "pen") {
-        self.mouseDownPen(e);
-      }
-
-      if (self.tool === "rect") {
-        self.mouseDownRect(e);
-      }
-    };
-
-    this.mouseMove = function (e) {
-      e.preventDefault();
-
-      if (self.tool === "pen") {
-        self.mouseMovePen(e);
-      }
-
-      if (self.tool === "rect") {
-        self.mouseMoveRect(e);
-      }
-    };
-
-    this.mouseUp = function (e) {
-      e.preventDefault();
-      self.fadeInToolbar();
-
-      if (self.tool === "pen") {
-        self.mouseUpPen(e);
-      }
-
-      if (self.tool === "rect") {
-        self.mouseUpRect(e);
-      }
-    };
-
-    this.svgElement.addEventListener("mousedown", this.mouseDown);
-    this.svgElement.addEventListener("mousemove", this.mouseMove);
-    this.svgElement.addEventListener("mouseup", this.mouseUp);
-    this.svgElement.addEventListener("touchstart", this.mouseDown, false);
-    this.svgElement.addEventListener("touchmove", this.mouseMove, false);
-    this.svgElement.addEventListener("touchend", this.mouseUp, false);
-  }
-
-  ScreenDrawer_createClass(ScreenDrawer, [{
-    key: "destroy",
-    value: function destroy() {
-      this.svgElement.removeEventListener("mousedown", this.mouseDown);
-      this.svgElement.removeEventListener("mousemove", this.mouseMove);
-      this.svgElement.removeEventListener("mouseup", this.mouseUp);
-      window.removeEventListener("resize", this.resizeListener);
-    }
-  }, {
-    key: "mouseUpPen",
-    value: function mouseUpPen() {
-      if (this.path) {
-        this.path = null;
-      }
-    }
-  }, {
-    key: "mouseUpRect",
-    value: function mouseUpRect() {
-      if (this.path) {
-        this.path = null;
-      }
-    }
-  }, {
-    key: "mouseMovePen",
-    value: function mouseMovePen(e) {
-      if (this.path) {
-        this.appendToBuffer(this.getMousePosition(e));
-        this.updateSvgPath();
-      }
-    }
-  }, {
-    key: "mouseMoveRect",
-    value: function mouseMoveRect(e) {
-      if (this.path) {
-        var p = this.getMousePosition(e);
-        var w = Math.abs(p.x - this.startPoint.x);
-        var h = Math.abs(p.y - this.startPoint.y);
-        var x = p.x;
-        var y = p.y;
-
-        if (p.x > this.startPoint.x) {
-          x = this.startPoint.x;
-        }
-
-        if (p.y > this.startPoint.y) {
-          y = this.startPoint.y;
-        }
-
-        this.path.setAttributeNS(null, "x", x);
-        this.path.setAttributeNS(null, "y", y);
-        this.path.setAttributeNS(null, "width", w);
-        this.path.setAttributeNS(null, "height", h);
-        this.svgElement.appendChild(this.path);
-      }
-    }
-  }, {
-    key: "mouseDownRect",
-    value: function mouseDownRect(e) {
-      this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-      this.path.setAttribute("fill", "none");
-      this.path.setAttribute("stroke", this.color);
-      this.path.setAttribute("stroke-linecap", "round");
-      this.path.setAttribute("stroke-width", this.strokeWidthRect);
-      this.startPoint = this.getMousePosition(e);
-    }
-  }, {
-    key: "mouseDownPen",
-    value: function mouseDownPen(e) {
-      this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      this.path.setAttribute("fill", "none");
-      this.path.setAttribute("stroke", this.color + "AA");
-      this.path.setAttribute("stroke-linecap", "round");
-      this.path.setAttribute("stroke-width", this.strokeWidth);
-      this.buffer = [];
-      var pt = this.getMousePosition(e);
-      this.appendToBuffer(pt);
-      this.strPath = "M" + pt.x + " " + pt.y;
-      this.path.setAttribute("d", this.strPath);
-      this.svgElement.appendChild(this.path);
-    }
-  }, {
-    key: "setTool",
-    value: function setTool(tool) {
-      this.tool = tool;
-    }
-  }, {
-    key: "setColor",
-    value: function setColor(color) {
-      this.color = color;
-    }
-  }, {
-    key: "getMousePosition",
-    value: function getMousePosition(e) {
-      if (e.touches && e.touches.length > 0) {
-        return {
-          x: e.touches[0].pageX,
-          y: e.touches[0].pageY
-        };
-      }
-
-      return {
-        x: e.pageX,
-        y: e.pageY
-      };
-    } // Calculate the average point, starting at offset in the buffer
-
-  }, {
-    key: "getAveragePoint",
-    value: function getAveragePoint(offset) {
-      var len = this.buffer.length;
-
-      if (len % 2 === 1 || len >= this.bufferSize) {
-        var totalX = 0;
-        var totalY = 0;
-        var pt, i;
-        var count = 0;
-
-        for (i = offset; i < len; i++) {
-          count++;
-          pt = this.buffer[i];
-          totalX += pt.x;
-          totalY += pt.y;
-        }
-
-        return {
-          x: totalX / count,
-          y: totalY / count
-        };
-      }
-
-      return null;
-    }
-  }, {
-    key: "updateSvgPath",
-    value: function updateSvgPath() {
-      var pt = this.getAveragePoint(0);
-
-      if (pt) {
-        // Get the smoothed part of the path that will not change
-        this.strPath += " L" + pt.x + " " + pt.y; // Get the last part of the path (close to the current mouse position)
-        // This part will change if the mouse moves again
-
-        var tmpPath = "";
-
-        for (var offset = 2; offset < this.buffer.length; offset += 2) {
-          pt = this.getAveragePoint(offset);
-          tmpPath += " L" + pt.x + " " + pt.y;
-        } // Set the complete current path coordinates
-
-
-        this.path.setAttribute("d", this.strPath + tmpPath);
-      }
-    }
-  }, {
-    key: "appendToBuffer",
-    value: function appendToBuffer(pt) {
-      this.buffer.push(pt);
-
-      while (this.buffer.length > this.bufferSize) {
-        this.buffer.shift();
-      }
-    }
-  }, {
-    key: "fadeOutToolbar",
-    value: function fadeOutToolbar() {
-      var fadeTarget = document.querySelector(".bb-capture-toolbar");
-      fadeTarget.style.opacity = 0;
-      fadeTarget.style.pointerEvents = "none";
-    }
-  }, {
-    key: "fadeInToolbar",
-    value: function fadeInToolbar() {
-      var fadeTarget = document.querySelector(".bb-capture-toolbar");
-      fadeTarget.style.opacity = 1;
-      fadeTarget.style.pointerEvents = "auto";
-    }
-  }]);
-
-  return ScreenDrawer;
-}();
-;// CONCATENATED MODULE: ./src/ScrollStopper.js
-function ScrollStopper_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function ScrollStopper_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function ScrollStopper_createClass(Constructor, protoProps, staticProps) { if (protoProps) ScrollStopper_defineProperties(Constructor.prototype, protoProps); if (staticProps) ScrollStopper_defineProperties(Constructor, staticProps); return Constructor; }
-
-function ScrollStopper_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var ScrollStopper = /*#__PURE__*/function () {
-  function ScrollStopper() {
-    ScrollStopper_classCallCheck(this, ScrollStopper);
-
-    ScrollStopper_defineProperty(this, "keys", {
-      37: 1,
-      38: 1,
-      39: 1,
-      40: 1
-    });
-
-    ScrollStopper_defineProperty(this, "supportsPassive", false);
-
-    ScrollStopper_defineProperty(this, "wheelOpt", this.supportsPassive ? {
-      passive: false
-    } : false);
-
-    ScrollStopper_defineProperty(this, "wheelEvent", "onwheel" in document.createElement("div") ? "wheel" : "mousewheel");
-
-    ScrollStopper_defineProperty(this, "scrollDisabled", false);
-
-    var self = this;
-
-    try {
-      window.addEventListener("test", null, Object.defineProperty({}, "passive", {
-        get: function get() {
-          self.supportsPassive = true;
-          self.wheelOpt = self.supportsPassive ? {
-            passive: false
-          } : false;
-        }
-      }));
-    } catch (e) {}
-  }
-
-  ScrollStopper_createClass(ScrollStopper, [{
-    key: "preventDefault",
-    value: function preventDefault(e) {
-      e.preventDefault();
-    }
-  }, {
-    key: "preventDefaultForScrollKeys",
-    value: function preventDefaultForScrollKeys(e) {
-      if (this.keys && this.keys[e.keyCode]) {
-        this.preventDefault(e);
-        return false;
-      }
-    }
-  }], [{
-    key: "getInstance",
-    value: // ScrollStopper singleton
-    function getInstance() {
-      if (!this.instance) {
-        this.instance = new ScrollStopper();
-        return this.instance;
-      } else {
-        return this.instance;
-      }
-    }
-  }, {
-    key: "disableScroll",
-    value: function disableScroll() {
-      var instance = this.getInstance();
-
-      if (instance.scrollDisabled) {
-        return;
-      }
-
-      instance.scrollDisabled = true;
-      window.addEventListener("DOMMouseScroll", instance.preventDefault, false); // older FF
-
-      window.addEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt); // modern desktop
-
-      window.addEventListener("touchmove", instance.preventDefault, instance.wheelOpt); // mobile
-
-      window.addEventListener("keydown", instance.preventDefaultForScrollKeys, false);
-    }
-  }, {
-    key: "enableScroll",
-    value: function enableScroll() {
-      var instance = this.getInstance();
-
-      if (!instance.scrollDisabled) {
-        return;
-      }
-
-      instance.scrollDisabled = false;
-      window.removeEventListener("DOMMouseScroll", instance.preventDefault, false);
-      window.removeEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt);
-      window.removeEventListener("touchmove", instance.preventDefault, instance.wheelOpt);
-      window.removeEventListener("keydown", instance.preventDefaultForScrollKeys, false);
-    }
-  }]);
-
-  return ScrollStopper;
-}();
-
-ScrollStopper_defineProperty(ScrollStopper, "instance", void 0);
+;// CONCATENATED MODULE: ./src/NetworkUtils.js
+var isLocalNetwork = function isLocalNetwork() {
+  var hostname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.hostname;
+  return ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) || hostname.startsWith("192.168.") || hostname.startsWith("10.0.") || hostname.endsWith(".local");
+};
 ;// CONCATENATED MODULE: ./src/Gleap.js
 function Gleap_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -4453,6 +5040,8 @@ var Gleap_Gleap = /*#__PURE__*/function () {
     Gleap_defineProperty(this, "feedbackActions", {});
 
     Gleap_defineProperty(this, "actionToPerform", undefined);
+
+    Gleap_defineProperty(this, "screenRecordingData", null);
 
     Gleap_defineProperty(this, "screenRecordingUrl", null);
 
@@ -4683,15 +5272,15 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       validatePoweredBy(this.poweredByHidden);
       hookForm(feedbackOptions, function () {
         self.formSubmitAction(feedbackOptions);
-      });
+      }, this.overrideLanguage);
     }
   }, {
     key: "formSubmitAction",
     value: function formSubmitAction(feedbackOptions) {
       var self = this; // Remember form items
 
-      rememberForm(feedbackOptions.form);
-      window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+      rememberForm(feedbackOptions.form); // Show loading spinner
+
       toggleLoading(true); // Start fake loading
 
       self.fakeLoading = setInterval(function () {
@@ -4733,21 +5322,21 @@ var Gleap_Gleap = /*#__PURE__*/function () {
           _this2.checkReplayLoaded(++retries);
         }, 1000);
       } else {
-        this.checkForScreenRecording(0);
+        this.checkForScreenRecording();
       }
     }
   }, {
     key: "checkForScreenRecording",
     value: function checkForScreenRecording() {
-      var _this3 = this;
+      var self = this;
 
-      var retries = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-
-      if (this.screenRecordingUrl === "uploading" && retries < 8) {
-        // Replay is not ready yet.
-        setTimeout(function () {
-          _this3.checkForScreenRecording(++retries);
-        }, 1000);
+      if (this.screenRecordingData != null) {
+        ScreenRecorder.uploadScreenRecording(this.screenRecordingData).then(function (recordingUrl) {
+          self.screenRecordingUrl = recordingUrl;
+          self.takeScreenshotAndSend();
+        })["catch"](function (err) {
+          self.takeScreenshotAndSend();
+        });
       } else {
         this.takeScreenshotAndSend();
       }
@@ -4755,16 +5344,24 @@ var Gleap_Gleap = /*#__PURE__*/function () {
   }, {
     key: "takeScreenshotAndSend",
     value: function takeScreenshotAndSend() {
-      var _this4 = this;
+      var _this3 = this;
+
+      var self = this;
 
       if (this.excludeData && this.excludeData.screenshot) {
         // Screenshot excluded.
         this.sendBugReportToServer();
       } else {
-        return startScreenCapture(this.snapshotPosition, this.isLiveSite).then(function (data) {
-          _this4.sendBugReportToServer(data);
+        return startScreenCapture(this.isLiveSite).then(function (data) {
+          // Set scroll position
+          if (data) {
+            data["x"] = self.snapshotPosition.x;
+            data["y"] = self.snapshotPosition.y;
+          }
+
+          _this3.sendBugReportToServer(data);
         })["catch"](function (err) {
-          _this4.showError();
+          _this3.showError();
         });
       }
     }
@@ -4821,20 +5418,13 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       this.closeModalUI(cleanUp);
     }
   }, {
-    key: "isLocalNetwork",
-    value: function isLocalNetwork() {
-      var hostname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.hostname;
-      return ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) || hostname.startsWith("192.168.") || hostname.startsWith("10.0.") || hostname.endsWith(".local");
-    }
-  }, {
     key: "init",
     value: function init() {
       this.overwriteConsoleLog();
       this.startCrashDetection();
-      this.registerKeyboardListener();
-      this.registerEscapeListener();
+      this.registerKeyboardListener(); // Initially check network
 
-      if (this.isLocalNetwork()) {
+      if (isLocalNetwork()) {
         this.isLiveSite = false;
       } else {
         this.isLiveSite = true;
@@ -4870,15 +5460,15 @@ var Gleap_Gleap = /*#__PURE__*/function () {
   }, {
     key: "checkForInitType",
     value: function checkForInitType() {
-      var _this5 = this;
+      var _this4 = this;
 
       if (window && window.onGleapLoaded) {
         window.onGleapLoaded(Gleap);
       }
 
       setInterval(function () {
-        if (_this5.replay && _this5.replay.isFull()) {
-          Gleap.enableReplays(_this5.replaysEnabled);
+        if (_this4.replay && _this4.replay.isFull()) {
+          Gleap.enableReplays(_this4.replaysEnabled);
         }
       }, 1000);
 
@@ -4898,7 +5488,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       } else {
         // Web widget
         Session.getInstance().setOnSessionReady(function () {
-          _this5.injectFeedbackButton();
+          _this4.injectFeedbackButton();
         });
       }
     }
@@ -4979,14 +5569,14 @@ var Gleap_Gleap = /*#__PURE__*/function () {
   }, {
     key: "updateFeedbackButtonState",
     value: function updateFeedbackButtonState() {
-      var _this6 = this;
+      var _this5 = this;
 
       var retry = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
       if (this.feedbackButton === null) {
         if (!retry) {
           setTimeout(function () {
-            _this6.updateFeedbackButtonState(true);
+            _this5.updateFeedbackButtonState(true);
           }, 500);
         }
 
@@ -5019,25 +5609,6 @@ var Gleap_Gleap = /*#__PURE__*/function () {
           dialogContainer.classList.remove(containerFocusClass);
         }
       }
-    }
-  }, {
-    key: "registerEscapeListener",
-    value: function registerEscapeListener() {
-      var self = this;
-      document.addEventListener("keydown", function (evt) {
-        evt = evt || window.event;
-        var isEscape = false;
-
-        if ("key" in evt) {
-          isEscape = evt.key === "Escape" || evt.key === "Esc";
-        } else {
-          isEscape = evt.keyCode === 27;
-        }
-
-        if (isEscape) {
-          self.closeGleap();
-        }
-      });
     }
   }, {
     key: "showSuccessMessage",
@@ -5268,312 +5839,29 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.6.2",
+        sdkVersion: "6.7.0",
         sdkType: "javascript"
       };
     }
   }, {
     key: "showBugReportEditor",
     value: function showBugReportEditor(feedbackOptions) {
-      var self = this; // Stop here if we don't want to show the native screenshot tools.
-
-      if (feedbackOptions.disableUserScreenshot) {
-        this.createFeedbackFormDialog(feedbackOptions);
-        return;
-      } // Predefined screenshot set, show the editor.
-
-
-      if (this.screenshot) {
-        this.showMobileScreenshotEditor(feedbackOptions);
-        return;
-      } // Fetch screenshot from native SDK.
+      // Native screenshot SDK.
+      if (!feedbackOptions.disableUserScreenshot) {
+        if (this.screenshot) {
+          this.showMobileScreenshotEditor(feedbackOptions);
+          return;
+        } // Fetch screenshot from native SDK.
 
 
-      if (this.widgetOnly && this.widgetCallback) {
         if (this.widgetOnly && this.widgetCallback) {
           this.screenshotFeedbackOptions = feedbackOptions;
           this.widgetCallback("requestScreenshot", {});
-        }
-
-        return;
-      }
-
-      this.showScreenshotEditor(feedbackOptions);
-    }
-  }, {
-    key: "showScreenshotEditor",
-    value: function showScreenshotEditor(feedbackOptions) {
-      var self = this; // Manage feedback button
-
-      var feedbackButton = document.querySelector(".bb-feedback-button");
-      var feedbackButtonStyle = "";
-
-      if (feedbackButton) {
-        feedbackButtonStyle = feedbackButton.style.display;
-        feedbackButton.style.display = "none";
-      } // Disable scroll
-
-
-      ScrollStopper.disableScroll(); // Add HTML for drawing and recording
-
-      var bugReportingEditor = document.createElement("div");
-      bugReportingEditor.className = "bb-capture-editor";
-      bugReportingEditor.innerHTML = "\n      <div class=\"bb-capture-editor-borderlayer\"></div>\n      <svg class=\"bb-capture-svg\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" version=\"1.1\" xml:space=\"preserve\">\n      <div class=\"bb-capture-mousetool\"></div>\n      <div class='bb-capture-editor-drag-info'>".concat(loadIcon("pen"), "</div>\n      <div class=\"bb-capture-toolbar\">\n        <div class=\"bb-capture-toolbar-item bb-capture-toolbar-item-tool bb-capture-toolbar-item--active\" data-type=\"pen\" data-active=\"true\">\n          ").concat(loadIcon("pen"), "\n        </div>\n        <div class=\"bb-capture-toolbar-item bb-capture-toolbar-item-tool\" data-type=\"rect\" data-active=\"false\">\n          ").concat(loadIcon("rect"), "\n        </div>\n        <div class=\"bb-capture-toolbar-item\" data-type=\"colorpicker\">\n          <div class=\"bb-capture-toolbar-item-selectedcolor\"></div>\n        </div>\n        <div class=\"bb-capture-toolbar-spacer\"></div>\n        <div class=\"bb-capture-toolbar-item bb-capture-item-rec\" data-type=\"mic\" data-active=\"false\">\n          ").concat(loadIcon("mic"), "\n          <span class=\"bb-tooltip bb-tooltip-audio-recording\"></span>\n        </div> \n        <div class=\"bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording\" data-type=\"recording\" data-active=\"false\">\n          ").concat(loadIcon("recorderon"), "\n          ").concat(loadIcon("recorderoff"), "\n          <span class=\"bb-tooltip bb-tooltip-screen-recording\"></span>\n        </div>\n        <div class=\"bb-capture-toolbar-spacer bb-capture-item-rec\"></div>\n        <div class=\"bb-capture-toolbar-item-timer bb-capture-item-rec\">3:00</div>\n        <div class=\"bb-feedback-send-button\">").concat(translateText("Next", self.overrideLanguage), "</div>\n      </div>\n      <div class=\"bb-capture-toolbar-item-colorpicker\">\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#DB4035\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#FAD000\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#7ECC49\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#158FAD\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#4073FF\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#AF38EB\"></div>\n        <div class=\"bb-capture-toolbar-item-color\" data-color=\"#CCCCCC\"></div>\n      </div>\n      <div class=\"bb-capture-preview\">\n        <div class=\"bb-capture-preview-inner\">\n          <video controls muted autoplay></video>\n          <div class=\"bb-capture-preview-buttons\">\n            <div class=\"bb-capture-preview-retrybutton\">").concat(translateText("Retry", self.overrideLanguage), "</div>\n            <div class=\"bb-capture-preview-sendbutton\">").concat(translateText("Next", self.overrideLanguage), "</div>\n          </div>\n        </div>\n      </div>\n    ");
-      Gleap.appendNode(bugReportingEditor); // Hook up the drawing.
-
-      var screenDrawer = new ScreenDrawer(); // Dialog element
-
-      var dialog = document.querySelector(".bb-capture-toolbar");
-      var videoPreviewContainer = document.querySelector(".bb-capture-preview"); // Mouse logic
-
-      var dragInfo = document.querySelector(".bb-capture-editor-drag-info");
-
-      function setMouseMove(x, y) {
-        if (!dragInfo) {
           return;
         }
-
-        dragInfo.style.left = "".concat(x + 6, "px");
-        dragInfo.style.top = "".concat(y - 26, "px");
-        dragInfo.style.right = null;
       }
 
-      var captureSVG = document.querySelector(".bb-capture-svg");
-      captureSVG.addEventListener("mouseenter", function (e) {
-        dragInfo.style.opacity = 1;
-      });
-      captureSVG.addEventListener("mouseleave", function (e) {
-        dragInfo.style.opacity = 0;
-      });
-
-      function mouseMoveEventHandler(e) {
-        var x = e.pageX - document.documentElement.scrollLeft;
-        var y = e.pageY - document.documentElement.scrollTop;
-        setMouseMove(x, y);
-      }
-
-      function touchMoveEventHandler(e) {
-        var x = e.touches[0].pageX - document.documentElement.scrollLeft;
-        var y = e.touches[0].pageY - document.documentElement.scrollTop;
-        setMouseMove(x, y);
-      }
-
-      var showNextStep = function showNextStep() {
-        screenRecorder.stopScreenRecording();
-        self.screenRecordingUrl = "uploading";
-        screenRecorder.uploadScreenRecording().then(function (screenRecordingUrl) {
-          self.screenRecordingUrl = screenRecordingUrl;
-        })["catch"](function (err) {
-          self.screenRecordingUrl = null;
-        });
-        ScrollStopper.disableScroll(); // Remove mouse listener.
-
-        document.documentElement.removeEventListener("mousemove", mouseMoveEventHandler);
-        document.documentElement.removeEventListener("touchmove", touchMoveEventHandler); // Cleanup UI.
-
-        if (dragInfo) {
-          dragInfo.remove();
-        }
-
-        if (dialog) {
-          dialog.remove();
-        }
-
-        if (videoPreviewContainer) {
-          videoPreviewContainer.remove();
-        } // Restore feedback button style.
-
-
-        if (feedbackButton) {
-          feedbackButton.style.display = feedbackButtonStyle;
-        } // Show form dialog.
-
-
-        self.createFeedbackFormDialog(feedbackOptions);
-      }; // Hook up send button
-
-
-      var nextButton = document.querySelector(".bb-feedback-send-button");
-      var nextButtonPreview = document.querySelector(".bb-capture-preview-sendbutton");
-      nextButton.onclick = showNextStep;
-      nextButtonPreview.onclick = showNextStep;
-      var retryButton = document.querySelector(".bb-capture-preview-retrybutton");
-
-      retryButton.onclick = function () {
-        videoPreviewContainer.style.display = "none";
-        document.querySelector(".bb-capture-preview video").src = null;
-      }; // Hookup buttons
-
-
-      var recRenderer = function recRenderer() {
-        var spacerItem = document.querySelector(".bb-capture-toolbar-spacer.bb-capture-item-rec");
-        var timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
-        var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
-        var screenRecordingTooltip = document.querySelector(".bb-tooltip-screen-recording");
-        var audioRecordingTooltip = document.querySelector(".bb-tooltip-audio-recording"); // Update screen container.
-
-        videoPreviewContainer.style.display = screenRecorder.file ? "flex" : "none";
-        dialog.style.display = !screenRecorder.file ? "flex" : "none";
-
-        for (var i = 0; i < toolbarItems.length; i++) {
-          var toolbarItem = toolbarItems[i];
-          var type = toolbarItem.getAttribute("data-type");
-
-          switch (type) {
-            case "mic":
-              if (screenRecorder.audioAvailable && screenRecorder.available) {
-                toolbarItem.style.opacity = 1;
-
-                if (!screenRecorder.audioMuted) {
-                  toolbarItem.classList.remove("bb-capture-toolbar-item--inactivecross");
-                  audioRecordingTooltip.innerHTML = translateText("Mute", self.overrideLanguage);
-                } else {
-                  toolbarItem.style.opacity = 1;
-                  toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
-                  audioRecordingTooltip.innerHTML = translateText("Unmute", self.overrideLanguage);
-                }
-              } else {
-                toolbarItem.style.opacity = 0.3;
-                toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
-                audioRecordingTooltip.innerHTML = translateText("Browser not supported", self.overrideLanguage);
-              }
-
-              break;
-
-            case "recording":
-              if (screenRecorder.available) {
-                toolbarItem.style.opacity = 1;
-
-                if (screenRecorder.isRecording) {
-                  toolbarItem.setAttribute("data-active", "true");
-                  screenRecordingTooltip.innerHTML = translateText("Stop screen recording", self.overrideLanguage);
-                  nextButton.style.display = "none";
-                  spacerItem.style.display = "none";
-                  timerLabel.style.display = "block";
-                  ScrollStopper.enableScroll();
-                } else {
-                  toolbarItem.setAttribute("data-active", "false");
-                  screenRecordingTooltip.innerHTML = translateText("Start screen recording", self.overrideLanguage);
-                  nextButton.style.display = "block";
-                  spacerItem.style.display = "block";
-                  timerLabel.style.display = "none";
-                  ScrollStopper.disableScroll();
-                }
-              } else {
-                // Recording is not available.
-                toolbarItem.style.opacity = 0.3;
-                screenRecordingTooltip.innerHTML = translateText("Browser not supported", self.overrideLanguage);
-              }
-
-              break;
-
-            default:
-              break;
-          }
-        }
-      };
-
-      var screenRecorder = new ScreenRecorder(recRenderer);
-      var colorpicker = document.querySelector(".bb-capture-toolbar-item-colorpicker");
-      var selectedColor = document.querySelector(".bb-capture-toolbar-item-selectedcolor");
-      var colorItems = document.querySelectorAll(".bb-capture-toolbar-item-color");
-
-      var _loop = function _loop() {
-        var colorItem = colorItems[i];
-        var hexColor = colorItem.getAttribute("data-color");
-        colorItem.style.backgroundColor = hexColor;
-
-        colorItem.onclick = function () {
-          if (colorItem) {
-            screenDrawer.setColor(hexColor);
-            selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
-            var penTips = document.querySelectorAll(".bb-pen-tip");
-
-            for (var j = 0; j < penTips.length; j++) {
-              penTips[j].style.fill = hexColor;
-            }
-          }
-        };
-      };
-
-      for (var i = 0; i < colorItems.length; i++) {
-        _loop();
-      }
-
-      var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
-
-      var _loop2 = function _loop2() {
-        var toolbarItem = toolbarItems[i];
-
-        toolbarItem.onclick = function () {
-          var type = toolbarItem.getAttribute("data-type");
-
-          if (colorpicker) {
-            colorpicker.style.display = "none";
-          }
-
-          var active = false;
-
-          if (type !== "recording") {
-            if (toolbarItem.getAttribute("data-active") === "true") {
-              toolbarItem.setAttribute("data-active", "false");
-              active = false;
-            } else {
-              toolbarItem.setAttribute("data-active", "true");
-              active = true;
-            }
-          }
-
-          if (type === "pen" || type === "rect") {
-            var toolbarTools = document.querySelectorAll(".bb-capture-toolbar-item-tool");
-
-            for (var j = 0; j < toolbarTools.length; j++) {
-              toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
-            }
-
-            toolbarItem.classList.add("bb-capture-toolbar-item--active");
-            screenDrawer.setTool(type);
-
-            try {
-              var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
-
-              if (svgClone && dragInfo) {
-                dragInfo.innerHTML = "";
-                dragInfo.appendChild(svgClone);
-              }
-            } catch (exp) {
-              console.log(exp);
-            }
-          }
-
-          if (type === "colorpicker") {
-            if (colorpicker.style.display === "flex") {
-              colorpicker.style.display = "none";
-            } else {
-              colorpicker.style.display = "flex";
-            }
-          }
-
-          if (type === "mic") {
-            screenRecorder.toggleAudio();
-          }
-
-          if (type === "recording") {
-            if (screenRecorder.isRecording) {
-              screenRecorder.stopScreenRecording();
-            } else {
-              screenRecorder.startScreenRecording();
-            }
-          }
-        };
-      };
-
-      for (var i = 0; i < toolbarItems.length; i++) {
-        _loop2();
-      }
-
-      document.documentElement.addEventListener("mousemove", mouseMoveEventHandler);
-      document.documentElement.addEventListener("touchmove", touchMoveEventHandler);
+      this.createFeedbackFormDialog(feedbackOptions);
     }
   }, {
     key: "goBackToMainMenu",
@@ -6320,8 +6608,13 @@ var Gleap_Gleap = /*#__PURE__*/function () {
 
       if (!sessionInstance.ready) {
         return;
-      } // Get feedback options
+      } // Initially set scroll position
 
+
+      instance.snapshotPosition = {
+        x: window.scrollX,
+        y: window.scrollY
+      }; // Get feedback options
 
       var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
 
@@ -6388,6 +6681,22 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         } // Inject privacy policy.
 
 
+        if (!feedbackOptions.disableUserScreenshot && !instance.widgetCallback) {
+          var captureItem = {
+            name: "capture",
+            type: "capture",
+            enableScreenshot: true,
+            enableCapture: feedbackOptions.enableUserScreenRecording ? true : false,
+            captureTitle: "Record screen",
+            captureTooltip: "Record a screen recording",
+            screenshotTitle: "Mark the bug",
+            screenshotTooltip: "Draw on the screenshot",
+            page: feedbackOptions.form[feedbackOptions.form.length - 1].page
+          };
+          feedbackOptions.form.push(captureItem);
+        } // Inject privacy policy.
+
+
         if (feedbackOptions.privacyPolicyEnabled) {
           var policyItem = {
             name: "privacypolicy",
@@ -6400,12 +6709,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         }
       }
 
-      instance.stopBugReportingAnalytics(); // Set snapshot position
-
-      instance.snapshotPosition = {
-        x: window.scrollX,
-        y: window.scrollY
-      };
+      instance.stopBugReportingAnalytics();
 
       if (instance.silentBugReport) {
         // Move on

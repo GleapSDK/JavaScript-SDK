@@ -198,3 +198,9 @@
     width: 100%;
   }
 }
+
+.bb-anim-fadein {
+  animation-duration: 0s !important;
+  animation-fill-mode: both !important;
+  animation-name: none !important;
+}

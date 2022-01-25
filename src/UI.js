@@ -131,7 +131,7 @@ export const injectStyledCSS = (
       fill: ${contrastBackgroundColor};
     }
     .bb-feedback-capture-item-selected-button {
-      border-radius: ${buttonBorderRadius}px;
+      border-radius: ${formItemBorderRadius}px;
       background-color: ${backgroundColorHover};
     }
     .bb-feedback-capture-item-selected-label {
