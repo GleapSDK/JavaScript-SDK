@@ -173,12 +173,12 @@ export default class MarkerManager {
           <div class="bb-capture-toolbar">
             ${
               this.type === "capture"
-                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording" data-active="false">
+                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
                   ${loadIcon("recorderon")}
                   ${loadIcon("recorderoff")}
                   <span class="bb-tooltip bb-tooltip-screen-recording"></span>
                 </div>
-                <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic" data-active="false">
+                <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic">
                   ${loadIcon("mic")}
                   <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
@@ -186,17 +186,25 @@ export default class MarkerManager {
                 <div class="bb-capture-toolbar-item-spacer"></div>`
                 : ""
             }
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen" data-active="true">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen">
               ${loadIcon("pen")}
             </div>
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="rect" data-active="false">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="rect">
               ${loadIcon("rect")}
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
+              <span class="bb-tooltip">${translateText(
+                `Pick a color`,
+                this.overrideLanguage
+              )}</span>
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
               ${loadIcon("undo")}
+              <span class="bb-tooltip">${translateText(
+                `Undo`,
+                this.overrideLanguage
+              )}</span>
             </div>
             ${
               this.type !== "capture"
@@ -373,17 +381,23 @@ export default class MarkerManager {
           colorpicker.style.display = "none";
         }
 
-        var active = false;
-        if (type !== "recording") {
-          if (toolbarItem.getAttribute("data-active") === "true") {
-            toolbarItem.setAttribute("data-active", "false");
-            active = false;
+        // Mic & recording buttons
+        if (type === "mic") {
+          self.screenRecorder.toggleAudio();
+        }
+        if (type === "recording") {
+          if (self.screenRecorder.isRecording) {
+            self.screenRecorder.stopScreenRecording();
           } else {
-            toolbarItem.setAttribute("data-active", "true");
-            active = true;
+            self.screenRecorder.startScreenRecording();
           }
         }
 
+        // Marker buttons
+        if (self.type === "capture" && !self.screenRecorder.isRecording) {
+          // Inactivate buttons.
+          return;
+        }
         if (type === "pen" || type === "rect") {
           const toolbarTools = document.querySelectorAll(
             ".bb-capture-toolbar-item-tool"
@@ -411,16 +425,6 @@ export default class MarkerManager {
             colorpicker.style.display = "flex";
           }
         }
-        if (type === "mic") {
-          self.screenRecorder.toggleAudio();
-        }
-        if (type === "recording") {
-          if (self.screenRecorder.isRecording) {
-            self.screenRecorder.stopScreenRecording();
-          } else {
-            self.screenRecorder.startScreenRecording();
-          }
-        }
         if (type === "undo") {
           self.screenDrawer.removeLastAddedPathFromSvg();
         }
@@ -433,6 +437,7 @@ export default class MarkerManager {
       return;
     }
 
+    const itemInactiveClass = "bb-capture-editor-item-inactive";
     const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
@@ -443,9 +448,9 @@ export default class MarkerManager {
             this.screenDrawer.pathBuffer != null &&
             this.screenDrawer.pathBuffer.length > 0
           ) {
-            toolbarItem.style.opacity = 1;
+            toolbarItem.classList.remove(itemInactiveClass);
           } else {
-            toolbarItem.style.opacity = 0.3;
+            toolbarItem.classList.add(itemInactiveClass);
           }
           break;
         default:
@@ -463,7 +468,7 @@ export default class MarkerManager {
       Gleap.getInstance().screenRecordingData = this.screenRecorder.file;
     }
 
-    const nextButton = document.querySelector(".bb-capture-button-next");
+    const itemInactiveClass = "bb-capture-editor-item-inactive";
     const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
     const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     const screenRecordingTooltip = document.querySelector(
@@ -500,7 +505,7 @@ export default class MarkerManager {
             this.screenRecorder.audioAvailable &&
             this.screenRecorder.available
           ) {
-            toolbarItem.style.opacity = 1;
+            toolbarItem.classList.remove(itemInactiveClass);
             if (!this.screenRecorder.audioMuted) {
               toolbarItem.classList.remove(
                 "bb-capture-toolbar-item--inactivecross"
@@ -510,7 +515,6 @@ export default class MarkerManager {
                 this.overrideLanguage
               );
             } else {
-              toolbarItem.style.opacity = 1;
               toolbarItem.classList.add(
                 "bb-capture-toolbar-item--inactivecross"
               );
@@ -520,7 +524,7 @@ export default class MarkerManager {
               );
             }
           } else {
-            toolbarItem.style.opacity = 0.3;
+            toolbarItem.classList.add(itemInactiveClass);
             toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
             audioRecordingTooltip.innerHTML = translateText(
               "Browser not supported",
@@ -531,25 +535,25 @@ export default class MarkerManager {
 
         case "recording":
           if (this.screenRecorder.available) {
-            toolbarItem.style.opacity = 1;
+            toolbarItem.classList.remove(itemInactiveClass);
             if (this.screenRecorder.isRecording) {
               toolbarItem.setAttribute("data-active", "true");
               screenRecordingTooltip.innerHTML = translateText(
-                "Stop screen recording",
+                "Stop recording",
                 this.overrideLanguage
               );
               timerLabel.style.display = "block";
             } else {
               toolbarItem.setAttribute("data-active", "false");
               screenRecordingTooltip.innerHTML = translateText(
-                "Start screen recording",
+                "Start recording",
                 this.overrideLanguage
               );
               timerLabel.style.display = "none";
             }
           } else {
             // Recording is not available.
-            toolbarItem.style.opacity = 0.3;
+            toolbarItem.classList.add(itemInactiveClass);
             screenRecordingTooltip.innerHTML = translateText(
               "Browser not supported",
               this.overrideLanguage

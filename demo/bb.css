@@ -117,8 +117,8 @@
   box-sizing: border-box;
   padding: 5px;
   width: auto;
-  margin-top: 4px;
-  margin-bottom: 0px;
+  margin-top: 5px;
+  margin-bottom: 1px;
   margin-right: auto;
   justify-content: flex-start;
   align-items: center;
@@ -1304,7 +1304,6 @@ textarea.bb-feedback-required {
   display: inline;
   text-decoration: underline;
   font-family: "Inter", sans-serif;
-  color: #000000;
   font-size: 14px;
   font-weight: normal;
 }
@@ -1323,7 +1322,6 @@ textarea.bb-feedback-required {
   padding-left: 2em;
   font-size: 14px;
   font-weight: normal;
-  color: #000000;
   line-height: 1.7;
   cursor: pointer;
 }
@@ -1573,9 +1571,14 @@ textarea.bb-feedback-required {
   background-color: rgba(0, 0, 0, 0.6);
 }
 
+.bb-capture-editor-item-inactive {
+  opacity: 0.3;
+  cursor: not-allowed !important;
+}
+
 .bb-capture-editor-notrecording .bb-capture-toolbar-drawingitem {
   opacity: 0.3;
-  pointer-events: none;
+  cursor: not-allowed !important;
 }
 
 .bb-capture-editor-notrecording .bb-capture-editor-drag-info {
@@ -1598,7 +1601,7 @@ textarea.bb-feedback-required {
   transform: translateX(-50%);
   z-index: 916777268;
   background-color: #fff;
-  padding: 7px;
+  padding: 5px;
   display: flex;
   align-items: center;
   border-radius: 8px;
@@ -1851,17 +1854,19 @@ textarea.bb-feedback-required {
   background-color: #555;
   color: #fff;
   visibility: hidden;
-  font-size: 14px;
+  font-size: 13px;
   text-align: center;
   padding: 8px 10px;
   position: absolute;
   z-index: 1;
-  top: -38px;
+  top: initial;
+  bottom: 40px;
   left: 50%;
   transform: translateX(calc(-50% + 2.5px));
   opacity: 0;
   transition: opacity 0.3s;
-  white-space: nowrap;
+  max-width: 200px;
+  width: 120%;
 }
 
 .bb-feedback-capture-item .bb-tooltip::after {
@@ -2029,6 +2034,10 @@ textarea.bb-feedback-required {
     right: 10px;
     display: flex;
     flex-direction: column;
+  }
+
+  .bb-tooltip {
+    display: none !important;
   }
 
   .bb-capture-toolbar-item-colorpicker {

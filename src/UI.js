@@ -99,6 +99,11 @@ export const injectStyledCSS = (
         fill: transparent;
       }
     }
+    .bb-feedback-inputgroup--privacy-policy a,
+    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
+    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
+      color: ${contrastBackgroundColor};
+    }
     .bb-capture-preview-sendbutton {
       color: ${contrastColor};
       background-color: ${primaryColor};

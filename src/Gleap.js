@@ -963,10 +963,22 @@ class Gleap {
           enableCapture: feedbackOptions.enableUserScreenRecording
             ? true
             : false,
-          captureTitle: "Record screen",
-          captureTooltip: "Record a screen recording",
-          screenshotTitle: "Mark the bug",
-          screenshotTooltip: "Draw on the screenshot",
+          captureTitle: translateText(
+            "Record screen",
+            instance.overrideLanguage
+          ),
+          captureTooltip: translateText(
+            "Record your screen to showcase the bug",
+            instance.overrideLanguage
+          ),
+          screenshotTitle: translateText(
+            "Mark the bug",
+            instance.overrideLanguage
+          ),
+          screenshotTooltip: translateText(
+            "Draw on the screen to mark the bug",
+            instance.overrideLanguage
+          ),
           page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
         };
         feedbackOptions.form.push(captureItem);
