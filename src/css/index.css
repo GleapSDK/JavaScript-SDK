@@ -1546,6 +1546,7 @@ textarea.bb-feedback-required {
   .bb-feedback-dialog-header-close {
     display: flex;
   }
+
   .bb-feedback-dialog-backdrop {
     position: fixed;
     top: 0px;

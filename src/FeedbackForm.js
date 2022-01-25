@@ -626,12 +626,12 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
               var actionLabel = "";
               if (type === "screenshot") {
                 actionLabel = translateText(
-                  "Marked screenshot added",
+                  "Screenshot",
                   overrideLanguage
                 );
               } else {
                 actionLabel = translateText(
-                  "Screen recording added",
+                  "Screen recording",
                   overrideLanguage
                 );
               }
