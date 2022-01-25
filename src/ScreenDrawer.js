@@ -137,8 +137,6 @@ export class ScreenDrawer {
       this.path.setAttributeNS(null, "y", y);
       this.path.setAttributeNS(null, "width", w);
       this.path.setAttributeNS(null, "height", h);
-
-      this.appendPathToSvg(this.path);
     }
   }
 
@@ -150,6 +148,7 @@ export class ScreenDrawer {
     this.path.setAttribute("stroke-width", this.strokeWidthRect);
 
     this.startPoint = this.getMousePosition(e);
+    this.appendPathToSvg(this.path);
   }
 
   mouseDownPen(e) {
@@ -244,7 +243,7 @@ export class ScreenDrawer {
   }
 
   removeLastAddedPathFromSvg() {
-    if (this.pathBuffer.length <= 0) {
+    if (this.pathBuffer.length <= 0 || !this.svgElement) {
       return;
     }
 
