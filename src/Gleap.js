@@ -197,11 +197,11 @@ class Gleap {
         // Directly run post init as we don't need to run the auto config on app.
         instance.postInit();
       } else {
-        // Run auto configuration.
-        AutoConfig.run().then(function () {
-          instance.postInit();
-        });
       }
+      // Run auto configuration.
+      AutoConfig.run().then(function () {
+        instance.postInit();
+      });
     });
   }
 
