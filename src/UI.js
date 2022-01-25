@@ -214,10 +214,6 @@ export const injectStyledCSS = (
     {
       color: ${contrastBackgroundColor};
     }
-    .bb-drawing-tool-back svg,
-    .bb-drawing-tool-back svg g {
-      fill: ${contrastBackgroundColor};
-    }
     .bb-drawing-tool-spacer {
       background-color: ${backgroundColorHover};
     }
@@ -709,7 +705,7 @@ export const loadIcon = function (name, color) {
   if (name === "undo") {
     return `<svg width="62px" height="60px" viewBox="0 0 62 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-      <g transform="translate(-0.000500, 0.001926)" fill="#000000" fill-rule="nonzero">
+      <g class="bb-svg-path" transform="translate(-0.000500, 0.001926)" fill-rule="nonzero">
         <path d="M28.0005,51.6270739 C24.9653,51.0684839 22.0825,49.8731739 19.5396,48.1192739 L13.8208,53.8380739 C17.9536,57.0060739 22.8403,59.0333739 28.0008,59.7286739 L28.0005,51.6270739 Z" id="Path"></path>
         <path d="M2.2705,33.9980739 C2.96581,39.1582739 4.9932,44.0450739 8.1611,48.1780739 L13.8799,42.4592739 C12.126,39.9162739 10.9307,37.0334739 10.3721,33.9983739 L2.2705,33.9980739 Z" id="Path"></path>
         <path d="M61.7305,33.9980739 L53.6289,33.9980739 C53.07031,37.0332739 51.875,39.9160739 50.1211,42.4589739 L55.8399,48.1777739 C59.0079,44.0449739 61.0352,39.1582739 61.7305,33.9977739 L61.7305,33.9980739 Z" id="Path"></path>
