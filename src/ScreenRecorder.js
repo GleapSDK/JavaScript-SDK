@@ -99,6 +99,8 @@ export class ScreenRecorder {
         self.rerender();
       })
       .catch(function (audioErr) {
+        self.audioAvailable = false;
+        self.handleRecord({ stream: self.stream });
         self.rerender();
       });
   };
