@@ -956,7 +956,9 @@ class Gleap {
           name: "capture",
           type: "capture",
           enableScreenshot: true,
-          enableCapture: true,
+          enableCapture: feedbackOptions.enableUserScreenRecording
+            ? true
+            : false,
           captureTitle: "Record screen",
           captureTooltip: "Record a screen recording",
           screenshotTitle: "Mark the bug",
