@@ -257,11 +257,14 @@ export const injectStyledCSS = (
     .bb-feedback-button-icon {
         background-color: ${buttonColor};
     }
+    .bb-feedback-multiplechoice-checkmark {
+      border: 2px solid ${hoverHoverColor};
+    }
     .bb-feedback-multiplechoice-container:hover
       input
       ~ .bb-feedback-multiplechoice-checkmark {
       border: 2px solid ${primaryColor};
-    }    
+    }
     .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {
       background-color: ${primaryColor};
       border: 2px solid ${primaryColor};
