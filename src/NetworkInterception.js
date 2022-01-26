@@ -192,16 +192,17 @@ class GleapNetworkIntercepter {
         req
           .text()
           .then((responseText) => {
-            this.requests[bbRequestId]["success"] = true;
-            this.requests[bbRequestId]["response"] = {
-              status: req.status,
-              statusText: req.statusText,
-              responseText:
-                self.calculateTextSize(responseText) > 0.5
-                  ? "<response_too_large>"
-                  : responseText,
-            };
-
+            if (this.requests[bbRequestId]) {
+              this.requests[bbRequestId]["success"] = true;
+              this.requests[bbRequestId]["response"] = {
+                status: req.status,
+                statusText: req.statusText,
+                responseText:
+                  self.calculateTextSize(responseText) > 0.5
+                    ? "<response_too_large>"
+                    : responseText,
+              };
+            }
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
           })
@@ -271,8 +272,7 @@ class GleapNetworkIntercepter {
           request.currentTarget.bbRequestId &&
           this.requests[request.currentTarget.bbRequestId]
         ) {
-          var target = request.currentTarget;
-          this.requests[target.bbRequestId]["success"] = false;
+          this.requests[request.currentTarget.bbRequestId]["success"] = false;
           this.calcRequestTime(request.bbRequestId);
         }
 
