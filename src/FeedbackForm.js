@@ -136,7 +136,9 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         </div>
         <div class="bb-feedback-capture-item-selected">
           <div class="bb-feedback-capture-item-selected-button">
-            <div class="bb-feedback-capture-item-selected-icon"></div>
+            <div class="bb-feedback-capture-item-selected-icon">${loadIcon(
+              "clip"
+            )}</div>
             <div class="bb-feedback-capture-item-selected-label"></div>
             <div class="bb-feedback-capture-item-selected-action">${loadIcon(
               "dismiss"
@@ -607,9 +609,6 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
       const selectedItemLabel = document.querySelector(
         ".bb-feedback-capture-item-selected-label"
       );
-      const selectedItemIcon = document.querySelector(
-        ".bb-feedback-capture-item-selected-icon"
-      );
       const selectedItemAction = document.querySelector(
         ".bb-feedback-capture-item-selected-action"
       );
@@ -625,10 +624,7 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
             } else {
               var actionLabel = "";
               if (type === "screenshot") {
-                actionLabel = translateText(
-                  "Screenshot",
-                  overrideLanguage
-                );
+                actionLabel = translateText("Screenshot", overrideLanguage);
               } else {
                 actionLabel = translateText(
                   "Screen recording",
@@ -636,10 +632,6 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
                 );
               }
               selectedItemLabel.innerHTML = actionLabel;
-              selectedItemIcon.innerHTML =
-                type === "screenshot"
-                  ? loadIcon("screenshot")
-                  : loadIcon("camera");
               captureItemsContainer.style.display = "none";
               selectedItem.style.display = "flex";
               selectedItemAction.onclick = function () {

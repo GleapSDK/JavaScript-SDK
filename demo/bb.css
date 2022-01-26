@@ -115,13 +115,14 @@
   font-family: "Inter", sans-serif;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 5px;
+  padding: 5px 8px;
   width: auto;
   margin-top: 5px;
-  margin-bottom: 1px;
+  margin-bottom: 0px;
   margin-right: auto;
   justify-content: flex-start;
   align-items: center;
+  height: 39px;
 }
 
 .bb-feedback-capture-item-selected-label {
@@ -136,7 +137,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: 5px;
 }
 
 .bb-feedback-capture-item-selected-icon svg {
@@ -151,7 +151,7 @@
   align-items: center;
   cursor: pointer;
   padding: 5px;
-  margin-left: 5px;
+  margin-left: 8px;
 }
 
 .bb-feedback-capture-item-selected-action svg {
@@ -168,18 +168,23 @@
 
 .bb-feedback-capture-item {
   font-family: "Inter", sans-serif;
-  background-color: #f3f3f3;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 8px 12px;
+  padding: 8px 15px;
   width: auto;
   margin-top: 5px;
-  margin-right: 5px;
+  margin-right: 8px;
   margin-bottom: 0px;
   cursor: pointer;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
   position: relative;
+  height: 39px;
+}
+
+.bb-feedback-capture-item:last-of-type {
+  margin-right: 0px;
 }
 
 .bb-feedback-capture-item:hover {
@@ -550,7 +555,7 @@
 
 .bb-feedback-type-title {
   font-family: "Inter", sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   line-height: 18px;
   margin-bottom: 3px;
@@ -592,8 +597,8 @@
   left: 0;
   height: 25px;
   width: 25px;
-  border: 2px solid #eceaf3;
   border-radius: 50%;
+  box-sizing: border-box;
 }
 
 .bb-feedback-multiplechoice-container:hover
@@ -689,23 +694,23 @@
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 19px;
   text-align: left;
   margin-bottom: 5px;
   margin-top: 4px;
-  font-weight: 600;
+  font-weight: 500;
   color: #000000;
 }
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 19px;
   text-align: left;
   margin-bottom: 12px;
   margin-top: 0px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ed4337;
   margin-left: 3px;
 }
@@ -1860,13 +1865,18 @@ textarea.bb-feedback-required {
   position: absolute;
   z-index: 1;
   top: initial;
-  bottom: 40px;
+  bottom: 42px;
   left: 50%;
-  transform: translateX(calc(-50% + 2.5px));
   opacity: 0;
   transition: opacity 0.3s;
-  max-width: 200px;
-  width: 120%;
+  transform: translateX(-50%);
+  width: 190px;
+}
+
+.bb-feedback-capture-item:nth-of-type(2) .bb-tooltip {
+  left: auto;
+  right: 0px;
+  transform: none;
 }
 
 .bb-feedback-capture-item .bb-tooltip::after {
@@ -1879,6 +1889,11 @@ textarea.bb-feedback-required {
   border-style: solid;
   transform: rotate(0deg);
   border-color: #555 transparent transparent transparent;
+}
+
+.bb-feedback-capture-item:nth-of-type(2) .bb-tooltip::after {
+  left: auto;
+  right: 25%;
 }
 
 .bb-feedback-capture-item:hover .bb-tooltip {
@@ -2023,7 +2038,7 @@ textarea.bb-feedback-required {
   display: flex;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 450px) {
   .bb-feedback-dialog {
     width: calc(100% - 20px);
     box-sizing: border-box;
