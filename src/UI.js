@@ -72,6 +72,18 @@ export const injectStyledCSS = (
       color: ${contrastBackgroundColor};
       border-radius: ${buttonBorderRadius}px;
     }
+    .bb-feedback-dialog-success svg {
+      box-shadow: inset 0px 0px 0px ${primaryColor};
+    }
+
+    @keyframes bb-suc-fill {
+      100% {
+        box-shadow: inset 0px 0px 0px 30px ${primaryColor};
+      }
+    }
+    .bb-feedback-dialog-success svg circle {
+      stroke: ${primaryColor};
+    }
     .bb-capture-preview-retrybutton:hover {
       background-color: ${backgroundColorHover};
     }
@@ -586,6 +598,13 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
+  }
+
+  if (name === "success") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+    <circle cx="26" cy="26" r="25" fill="none"/>
+    <path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+  </svg>`;
   }
 
   if (name === "blur") {

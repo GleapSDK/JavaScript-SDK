@@ -735,9 +735,47 @@
 }
 
 .bb-feedback-dialog-success svg {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  animation: bb-suc-fill 0.4s ease-in-out 0.4s forwards,
+    bb-suc-scale 0.3s ease-in-out 0.9s both;
+}
+
+.bb-feedback-dialog-success svg path {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: bb-suc-stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+.bb-feedback-dialog-success svg circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  fill: none;
+  animation: bb-suc-stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+@keyframes bb-suc-stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bb-suc-scale {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
 }
 
 .bb-feedback-dialog-body {
