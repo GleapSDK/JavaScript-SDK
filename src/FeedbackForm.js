@@ -335,6 +335,11 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
       };
 
       var optionHTML = "";
+
+      if (formItem.randomizeChoices) {
+        formItem.choices = shuffle(formItem.choices);
+      }
+
       for (var j = 0; j < formItem.choices.length; j++) {
         optionHTML += getOptionHTML(formItem, formItem.choices[j]);
       }
@@ -366,6 +371,23 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
 
   return formHTML;
 };
+
+function shuffle(array) {
+  let currentIndex = array.length,
+    randomIndex;
+
+  while (currentIndex != 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex],
+      array[currentIndex],
+    ];
+  }
+
+  return array;
+}
 
 export const getFormData = function (form) {
   var formData = {};
