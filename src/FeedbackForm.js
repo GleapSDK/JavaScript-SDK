@@ -1,6 +1,7 @@
+import MarkerManager from "./MarkerManager";
 import Session from "./Session";
 import { translateText } from "./Translation";
-import { setLoadingIndicatorProgress } from "./UI";
+import { loadIcon, setLoadingIndicatorProgress } from "./UI";
 
 const formPageClass = "bb-feedback-formpage";
 
@@ -87,6 +88,63 @@ export const buildForm = function (feedbackOptions, overrideLanguage) {
         formItem.placeholder,
         overrideLanguage
       )}" />
+      </div>`;
+    }
+    if (formItem.type === "capture") {
+      formHTML += `<div class="bb-feedback-inputgroup ${getFormPageClass(
+        currentPage
+      )}">
+        ${getDescriptionHTML(formItem.description, overrideLanguage)}
+        ${getTitleHTML(formItem.title, overrideLanguage, formItem.required)}
+        <input class="bb-feedback-formdata bb-feedback-${
+          formItem.name
+        }" ${formItemData} type="hidden" />
+        <div class="bb-feedback-capture-items">
+        ${
+          formItem.enableScreenshot
+            ? `<div class="bb-feedback-capture-item" data-type="screenshot">
+        ${loadIcon("screenshot")}
+        <span class="bb-item-title">${translateText(
+          formItem.screenshotTitle,
+          overrideLanguage
+        )}</span>
+        <span class="bb-tooltip">${translateText(
+          formItem.screenshotTooltip,
+          overrideLanguage
+        )}</span>
+      </div>`
+            : ""
+        }
+        ${
+          formItem.enableCapture &&
+          typeof navigator !== "undefined" &&
+          navigator.mediaDevices &&
+          navigator.mediaDevices.getDisplayMedia
+            ? `<div class="bb-feedback-capture-item" data-type="capture">
+        ${loadIcon("camera")}
+        <span class="bb-item-title">${translateText(
+          formItem.captureTitle,
+          overrideLanguage
+        )}</span>
+        <span class="bb-tooltip">${translateText(
+          formItem.captureTooltip,
+          overrideLanguage
+        )}</span>
+      </div>`
+            : ""
+        }
+        </div>
+        <div class="bb-feedback-capture-item-selected">
+          <div class="bb-feedback-capture-item-selected-button">
+            <div class="bb-feedback-capture-item-selected-icon">${loadIcon(
+              "clip"
+            )}</div>
+            <div class="bb-feedback-capture-item-selected-label"></div>
+            <div class="bb-feedback-capture-item-selected-action">${loadIcon(
+              "dismiss"
+            )}</div>
+          </div>
+        </div>
       </div>`;
     }
     if (formItem.type === "upload") {
@@ -496,7 +554,7 @@ const addDirtyFlagToFormElement = function (formElement) {
   formElement.setAttribute("bb-dirty", "true");
 };
 
-export const hookForm = function (formOptions, submitForm) {
+export const hookForm = function (formOptions, submitForm, overrideLanguage) {
   const form = formOptions.form;
   const singlePageForm = formOptions.singlePageForm;
 
@@ -535,6 +593,7 @@ export const hookForm = function (formOptions, submitForm) {
           );
           if (rememberedValue) {
             formInput.value = rememberedValue;
+            formItem.defaultValue = rememberedValue;
           }
         } catch (exp) {}
       }
@@ -559,6 +618,64 @@ export const hookForm = function (formOptions, submitForm) {
         addDirtyFlagToFormElement(formInput);
         validateFormPage(currentPage);
       };
+    }
+    if (formItem.type === "capture") {
+      const captureItemsContainer = document.querySelector(
+        `.bb-feedback-capture-items`
+      );
+      const captureItems = document.querySelectorAll(
+        `.bb-feedback-capture-item`
+      );
+      const selectedItem = document.querySelector(
+        ".bb-feedback-capture-item-selected"
+      );
+      const selectedItemLabel = document.querySelector(
+        ".bb-feedback-capture-item-selected-label"
+      );
+      const selectedItemAction = document.querySelector(
+        ".bb-feedback-capture-item-selected-action"
+      );
+
+      for (var j = 0; j < captureItems.length; j++) {
+        const captureItem = captureItems[j];
+        const type = captureItem.getAttribute("data-type");
+        captureItem.onclick = function () {
+          const manager = new MarkerManager(type);
+          manager.show(function (success) {
+            if (!success) {
+              manager.clear();
+            } else {
+              var actionLabel = "";
+              if (type === "screenshot") {
+                actionLabel = translateText("Screenshot", overrideLanguage);
+              } else {
+                actionLabel = translateText(
+                  "Screen recording",
+                  overrideLanguage
+                );
+              }
+              selectedItemLabel.innerHTML = actionLabel;
+              captureItemsContainer.style.display = "none";
+              selectedItem.style.display = "flex";
+              selectedItemAction.onclick = function () {
+                manager.clear();
+                captureItemsContainer.style.display = "flex";
+                selectedItem.style.display = "none";
+              };
+            }
+          });
+        };
+      }
+
+      // Wire autostart.
+      if (formItem.autostartDrawing) {
+        const captureButton = document.querySelector(
+          '.bb-feedback-capture-item[data-type="screenshot"]'
+        );
+        if (captureButton) {
+          captureButton.click();
+        }
+      }
     }
     if (formItem.type === "upload") {
       const formFileUploadInput = document.querySelector(

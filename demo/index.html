@@ -92,7 +92,7 @@
       }
 
       a {
-        color: rgb(57, 140, 254);
+        color: #485bff;
         text-decoration: none;
         display: block;
         margin-top: 10px;
@@ -106,7 +106,7 @@
         font-size: 16px;
         font-weight: 600;
         color: rgb(255, 255, 255);
-        background-color: rgb(57, 140, 254);
+        background-color: #485bff;
         border-style: solid;
         border-width: 0px;
         border-radius: 56px;
@@ -132,6 +132,11 @@
           padding: 40px;
         }
       }
+      video {
+        border: 1px solid lightgray;
+        width: 100%;
+        background-color: #eee;
+      }
     </style>
   </head>
 
@@ -139,12 +144,12 @@
     <img class="logo" src="https://i.ibb.co/wMGvWqh/Gleap-Logo.png" />
     <div class="header">
       <div class="header-container">
-        <h1>Gleap Demo</h1>
-        <h2>Gleap SDK for the Web</h2>
+        <h1>UI/UX Tests</h1>
+        <h2>Good morning.</h2>
       </div>
     </div>
     <div class="header-container-image">
-      <img class="head-image" src="./pexels-christina-morillo-1181467.jpg" />
+      <img class="head-image" src="pexels-jaymantri-4827.jpg" />
     </div>
     <div class="content" id="haha">
       <span
@@ -160,12 +165,14 @@
         better: You can add custom data to your bug details.</span
       >
       <br /><br />
-      <input type="input" placeholder="Test" />
-      <input type="input" placeholder="Test" gleap-ignore="value" />
+      <div class="buttonlink" onclick="window.open('appwidget.html')">Get started
+      </div>
+      <br /><br />
       <span
         >In less than a minute you can add our Gleap SDK to your App or WebApp.
         Install our SDK, build and run. A piece of cake.</span
-      >
+      ><br />
+      <a href="appwidget.html">GO to it!</a>.
     </div>
     <!-- index.js as found in build/index.js -->
     <script src="index.js"></script>

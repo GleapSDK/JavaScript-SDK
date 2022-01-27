@@ -18,6 +18,9 @@ import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
+import { ScrollStopper } from "./ScrollStopper";
+import { isLocalNetwork } from "./NetworkUtils";
+import { ScreenRecorder } from "./ScreenRecorder";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -48,6 +51,7 @@ class Gleap {
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
+  autostartDrawing = false;
   actionLog = [];
   logArray = [];
   customData = {};
@@ -104,6 +108,8 @@ class Gleap {
   eventListeners = {};
   feedbackActions = {};
   actionToPerform = undefined;
+  screenRecordingData = null;
+  screenRecordingUrl = null;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -192,11 +198,11 @@ class Gleap {
         // Directly run post init as we don't need to run the auto config on app.
         instance.postInit();
       } else {
-        // Run auto configuration.
-        AutoConfig.run().then(function () {
-          instance.postInit();
-        });
       }
+      // Run auto configuration.
+      AutoConfig.run().then(function () {
+        instance.postInit();
+      });
     });
   }
 
@@ -713,7 +719,6 @@ class Gleap {
   ) {
     const instance = this.getInstance();
     const sessionInstance = Session.getInstance();
-
     if (!sessionInstance.ready) {
       return;
     }
@@ -863,6 +868,12 @@ class Gleap {
       return;
     }
 
+    // Initially set scroll position
+    instance.snapshotPosition = {
+      x: window.scrollX,
+      y: window.scrollY,
+    };
+
     // Get feedback options
     var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
     if (!feedbackOptions) {
@@ -904,6 +915,7 @@ class Gleap {
               name: "reportedBy",
               required: true,
               remember: true,
+              hideOnDefaultSet: true,
             }
           : null;
 
@@ -912,7 +924,6 @@ class Gleap {
         emailFormItem &&
         !(sessionInstance.session && sessionInstance.session.email)
       ) {
-        emailFormItem.hideOnDefaultSet = false;
         newFormArray.push(emailFormItem);
       }
 
@@ -937,11 +948,41 @@ class Gleap {
         sessionInstance.session &&
         sessionInstance.session.email
       ) {
-        emailFormItem.hideOnDefaultSet = true;
         emailFormItem.defaultValue = sessionInstance.session.email;
         emailFormItem.page =
           feedbackOptions.form[feedbackOptions.form.length - 1].page;
         newFormArray.push(emailFormItem);
+      }
+
+      // Inject privacy policy.
+      if (!feedbackOptions.disableUserScreenshot && !instance.widgetCallback) {
+        var captureItem = {
+          name: "capture",
+          type: "capture",
+          enableScreenshot: true,
+          autostartDrawing: instance.autostartDrawing,
+          enableCapture: feedbackOptions.enableUserScreenRecording
+            ? true
+            : false,
+          captureTitle: translateText(
+            "Record screen",
+            instance.overrideLanguage
+          ),
+          captureTooltip: translateText(
+            "Record your screen to showcase the bug",
+            instance.overrideLanguage
+          ),
+          screenshotTitle: translateText(
+            "Mark the bug",
+            instance.overrideLanguage
+          ),
+          screenshotTooltip: translateText(
+            "Draw on the screen to mark the bug",
+            instance.overrideLanguage
+          ),
+          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
+        };
+        feedbackOptions.form.push(captureItem);
       }
 
       // Inject privacy policy.
@@ -957,13 +998,11 @@ class Gleap {
       }
     }
 
-    instance.stopBugReportingAnalytics();
+    // Disable autostart drawing for the next call.
+    instance.autostartDrawing = false;
 
-    // Set snapshot position
-    instance.snapshotPosition = {
-      x: window.scrollX,
-      y: window.scrollY,
-    };
+    // Stop bug analytics.
+    instance.stopBugReportingAnalytics();
 
     if (instance.silentBugReport) {
       // Move on
@@ -1100,7 +1139,14 @@ class Gleap {
     }
   }
 
-  createBugReportingDialog(feedbackOptions) {
+  getWidgetDialogClass = () => {
+    if (this.appCrashDetected || this.rageClickDetected) {
+      return "bb-feedback-dialog--crashed";
+    }
+    return "";
+  };
+
+  createFeedbackFormDialog(feedbackOptions) {
     const self = this;
 
     const formData = buildForm(feedbackOptions, this.overrideLanguage);
@@ -1124,13 +1170,7 @@ class Gleap {
     </svg>
   </div>
   <div class="bb-feedback-dialog-success">
-    <svg width="120px" height="92px" viewBox="0 0 120 92" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-            <g fill="${this.mainColor}" fill-rule="nonzero">
-                <path d="M107.553103,1.03448276 L101.669379,6.85344828 C81.2141379,27.3490345 62.5845517,47.5706897 42.7038621,67.7596552 L17.5535172,47.6517931 L11.088,42.4793793 L0.743172414,55.4104138 L38.2431724,85.4104138 L44.0621379,90.0010345 L49.2991034,84.764069 C71.5404828,62.4751034 91.5349655,40.4985517 113.437034,18.5571724 L119.256,12.6734483 L107.553103,1.03448276 Z" id="Path"></path>
-            </g>
-        </g>
-    </svg>
+    ${loadIcon("success", this.mainColor)}
     <div class="bb-feedback-dialog-info-text">${translateText(
       feedbackOptions.thanksMessage
         ? feedbackOptions.thanksMessage
@@ -1142,39 +1182,28 @@ class Gleap {
     ${formData}
   </div>`;
 
-    const getWidgetDialogClass = () => {
-      if (this.appCrashDetected || this.rageClickDetected) {
-        return "bb-feedback-dialog--crashed";
-      }
-      return "";
-    };
-
     createWidgetDialog(
       title,
       null,
       this.customLogoUrl,
       htmlContent,
       function () {
-        if (self.feedbackTypeActions.length > 0) {
-          // Only go back to feedback menu options
-
-          self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection(true);
-        } else {
-          // Close
-          self.closeGleap();
-        }
+        self.goBackToMainMenu();
       },
       this.openedMenu,
-      `bb-anim-fadeinright ${getWidgetDialogClass()} bb-feedback-dialog-form`
+      `bb-anim-fadeinright ${this.getWidgetDialogClass()} bb-feedback-dialog-form`
     );
 
     this.openedMenu = true;
     this.resetLoading(true);
     validatePoweredBy(this.poweredByHidden);
-    hookForm(feedbackOptions, function () {
-      self.formSubmitAction(feedbackOptions);
-    });
+    hookForm(
+      feedbackOptions,
+      function () {
+        self.formSubmitAction(feedbackOptions);
+      },
+      this.overrideLanguage
+    );
   }
 
   formSubmitAction(feedbackOptions) {
@@ -1183,7 +1212,7 @@ class Gleap {
     // Remember form items
     rememberForm(feedbackOptions.form);
 
-    window.scrollTo(self.snapshotPosition.x, self.snapshotPosition.y);
+    // Show loading spinner
     toggleLoading(true);
 
     // Start fake loading
@@ -1229,17 +1258,39 @@ class Gleap {
         this.checkReplayLoaded(++retries);
       }, 1000);
     } else {
+      this.checkForScreenRecording();
+    }
+  }
+
+  checkForScreenRecording() {
+    const self = this;
+    if (this.screenRecordingData != null) {
+      ScreenRecorder.uploadScreenRecording(this.screenRecordingData)
+        .then(function (recordingUrl) {
+          self.screenRecordingUrl = recordingUrl;
+          self.takeScreenshotAndSend();
+        })
+        .catch(function (err) {
+          self.takeScreenshotAndSend();
+        });
+    } else {
       this.takeScreenshotAndSend();
     }
   }
 
   takeScreenshotAndSend() {
+    const self = this;
     if (this.excludeData && this.excludeData.screenshot) {
       // Screenshot excluded.
       this.sendBugReportToServer();
     } else {
-      return startScreenCapture(this.snapshotPosition, this.isLiveSite)
+      return startScreenCapture(this.isLiveSite)
         .then((data) => {
+          // Set scroll position
+          if (data) {
+            data["x"] = self.snapshotPosition.x;
+            data["y"] = self.snapshotPosition.y;
+          }
           this.sendBugReportToServer(data);
         })
         .catch((err) => {
@@ -1277,6 +1328,7 @@ class Gleap {
       this.reportCleanupOnClose();
     }
 
+    ScrollStopper.enableScroll();
     this.currentlySendingBug = false;
     this.widgetOpened = false;
     this.openedMenu = false;
@@ -1285,7 +1337,7 @@ class Gleap {
     this.updateFeedbackButtonState();
 
     // Remove editor.
-    const editorContainer = document.querySelector(".bb-screenshot-editor");
+    const editorContainer = document.querySelector(".bb-capture-editor");
     if (editorContainer) {
       editorContainer.remove();
     }
@@ -1294,22 +1346,13 @@ class Gleap {
     this.closeModalUI(cleanUp);
   }
 
-  isLocalNetwork(hostname = window.location.hostname) {
-    return (
-      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.0.") ||
-      hostname.endsWith(".local")
-    );
-  }
-
   init() {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
-    this.registerEscapeListener();
 
-    if (this.isLocalNetwork()) {
+    // Initially check network
+    if (isLocalNetwork()) {
       this.isLiveSite = false;
     } else {
       this.isLiveSite = true;
@@ -1339,6 +1382,7 @@ class Gleap {
         (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
+        self.autostartDrawing = true;
         Gleap.startFeedbackFlow();
       }
     };
@@ -1501,22 +1545,6 @@ class Gleap {
     }
   }
 
-  registerEscapeListener() {
-    const self = this;
-    document.addEventListener("keydown", (evt) => {
-      evt = evt || window.event;
-      var isEscape = false;
-      if ("key" in evt) {
-        isEscape = evt.key === "Escape" || evt.key === "Esc";
-      } else {
-        isEscape = evt.keyCode === 27;
-      }
-      if (isEscape) {
-        self.closeGleap();
-      }
-    });
-  }
-
   showSuccessMessage() {
     const success = document.querySelector(".bb-feedback-dialog-success");
     const form = document.querySelector(".bb-feedback-form");
@@ -1609,6 +1637,10 @@ class Gleap {
 
     if (this.replay && this.replay.result) {
       bugReportData["webReplay"] = this.replay.result;
+    }
+
+    if (this.screenRecordingUrl && this.screenRecordingUrl != "uploading") {
+      bugReportData["screenRecordingUrl"] = this.screenRecordingUrl;
     }
 
     // Exclude data logic.
@@ -1751,183 +1783,33 @@ class Gleap {
   }
 
   showBugReportEditor(feedbackOptions) {
-    const self = this;
+    // Native screenshot SDK.
+    if (!feedbackOptions.disableUserScreenshot) {
+      if (this.screenshot) {
+        this.showMobileScreenshotEditor(feedbackOptions);
+        return;
+      }
 
-    // Stop here if we don't want to show the native screenshot tools.
-    if (feedbackOptions.disableUserScreenshot) {
-      this.createBugReportingDialog(feedbackOptions);
-      return;
-    }
-
-    // Predefined screenshot set, show the editor.
-    if (this.screenshot) {
-      this.showMobileScreenshotEditor(feedbackOptions);
-      return;
-    }
-
-    // Fetch screenshot from native SDK.
-    if (this.widgetOnly && this.widgetCallback) {
+      // Fetch screenshot from native SDK.
       if (this.widgetOnly && this.widgetCallback) {
         this.screenshotFeedbackOptions = feedbackOptions;
         this.widgetCallback("requestScreenshot", {});
+        return;
       }
-      return;
     }
 
-    this.showScreenshotEditor(feedbackOptions);
+    this.createFeedbackFormDialog(feedbackOptions);
   }
 
-  showScreenshotEditor(feedbackOptions) {
-    const self = this;
-    var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bb-screenshot-editor";
-    bugReportingEditor.innerHTML = `
-      <div class="bb-screenshot-editor-container">
-        <div class='bb-screenshot-editor-container-inner'>
-          <div class='bb-screenshot-editor-borderlayer'></div>
-          <div class='bb-screenshot-editor-dot'></div>
-          <div class='bb-screenshot-editor-rectangle'></div>
-          <div class='bb-screenshot-editor-drag-info'>${translateText(
-            "Click and drag to mark the bug",
-            self.overrideLanguage
-          )}</div>
-        </div>
-      </div>
-    `;
-    Gleap.appendNode(bugReportingEditor);
-
-    const editorBorderLayer = document.querySelector(
-      ".bb-screenshot-editor-borderlayer"
-    );
-    const editorDot = window.document.querySelector(
-      ".bb-screenshot-editor-dot"
-    );
-    const editorRectangle = window.document.querySelector(
-      ".bb-screenshot-editor-rectangle"
-    );
-
-    editorBorderLayer.style.height = `${window.innerHeight}px`;
-    var addedMarker = false;
-    var clickStartX = -1;
-    var clickStartY = -1;
-
-    function setStartPoint(x, y) {
-      if (addedMarker) {
-        return;
-      }
-
-      editorDot.style.left = x + 3 - editorDot.offsetWidth / 2 + "px";
-      editorDot.style.top = y + 3 - editorDot.offsetHeight / 2 + "px";
+  goBackToMainMenu() {
+    if (this.feedbackTypeActions.length > 0) {
+      // Go back to menu
+      this.closeGleap(false);
+      Gleap.startFeedbackTypeSelection(true);
+    } else {
+      // Close
+      this.closeGleap();
     }
-
-    function setMouseMove(x, y) {
-      const dragInfo = document.querySelector(
-        ".bb-screenshot-editor-drag-info"
-      );
-      dragInfo.style.left = `${x + 20}px`;
-      dragInfo.style.top = `${y - dragInfo.offsetHeight / 2}px`;
-      dragInfo.style.right = null;
-      dragInfo.classList.add("bb-screenshot-editor-drag-info--dragged");
-
-      if (addedMarker || clickStartX < 0) {
-        return;
-      }
-
-      const width = x - clickStartX;
-      const height = y - clickStartY;
-
-      var left = width < 0 ? clickStartX + width : clickStartX;
-      var top = height < 0 ? clickStartY + height : clickStartY;
-      var heightAbs = height < 0 ? height * -1 : height;
-      var widthAbs = width < 0 ? width * -1 : width;
-
-      editorRectangle.style.left = `${left}px`;
-      editorRectangle.style.top = `${top}px`;
-      editorRectangle.style.width = `${widthAbs}px`;
-      editorRectangle.style.height = `${heightAbs}px`;
-    }
-
-    function mouseDownEventHandler(e) {
-      clickStartX = e.pageX - document.documentElement.scrollLeft;
-      clickStartY = e.pageY - document.documentElement.scrollTop;
-      setStartPoint(clickStartX, clickStartY);
-    }
-
-    function touchstartEventHandler(e) {
-      clickStartX = e.touches[0].pageX - document.documentElement.scrollLeft;
-      clickStartY = e.touches[0].pageY - document.documentElement.scrollTop;
-      setStartPoint(clickStartX, clickStartY);
-    }
-
-    function mouseMoveEventHandler(e) {
-      const x = e.pageX - document.documentElement.scrollLeft;
-      const y = e.pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-    }
-
-    function touchMoveEventHandler(e) {
-      const x = e.touches[0].pageX - document.documentElement.scrollLeft;
-      const y = e.touches[0].pageY - document.documentElement.scrollTop;
-      setMouseMove(x, y);
-      e.preventDefault();
-    }
-
-    function mouseUpEventHandler(e) {
-      const dragInfo = document.querySelector(
-        ".bb-screenshot-editor-drag-info"
-      );
-      dragInfo.style.display = "none";
-
-      editorRectangle.style.top = `${
-        editorRectangle.offsetTop + document.documentElement.scrollTop
-      }px`;
-      editorRectangle.style.left = `${
-        editorRectangle.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-      editorDot.style.top = `${
-        editorDot.offsetTop + document.documentElement.scrollTop
-      }px`;
-      editorDot.style.left = `${
-        editorDot.offsetLeft + document.documentElement.scrollLeft
-      }px`;
-
-      editorDot.parentNode.removeChild(editorDot);
-      editorRectangle.parentNode.removeChild(editorRectangle);
-
-      bugReportingEditor.appendChild(editorDot);
-      bugReportingEditor.appendChild(editorRectangle);
-
-      bugReportingEditor.classList.add("bb-screenshot-editor--marked");
-      addedMarker = true;
-
-      bugReportingEditor.removeEventListener("mouseup", mouseUpEventHandler);
-      bugReportingEditor.removeEventListener(
-        "mousemove",
-        mouseMoveEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "mousedown",
-        mouseDownEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "touchstart",
-        touchstartEventHandler
-      );
-      bugReportingEditor.removeEventListener(
-        "touchmove",
-        touchMoveEventHandler
-      );
-      bugReportingEditor.removeEventListener("touchend", mouseUpEventHandler);
-
-      self.createBugReportingDialog(feedbackOptions);
-    }
-
-    bugReportingEditor.addEventListener("mouseup", mouseUpEventHandler);
-    bugReportingEditor.addEventListener("mousemove", mouseMoveEventHandler);
-    bugReportingEditor.addEventListener("mousedown", mouseDownEventHandler);
-    bugReportingEditor.addEventListener("touchstart", touchstartEventHandler);
-    bugReportingEditor.addEventListener("touchmove", touchMoveEventHandler);
-    bugReportingEditor.addEventListener("touchend", mouseUpEventHandler);
   }
 
   showMobileScreenshotEditor(feedbackOptions) {
@@ -1938,17 +1820,10 @@ class Gleap {
         // Update screenshot.
         self.screenshot = screenshot;
         self.closeModalUI();
-        self.createBugReportingDialog(feedbackOptions);
+        self.createFeedbackFormDialog(feedbackOptions);
       },
       function () {
-        if (self.feedbackTypeActions.length > 0) {
-          // Go back to menu
-          self.closeGleap(false);
-          Gleap.startFeedbackTypeSelection(true);
-        } else {
-          // Close
-          self.closeGleap();
-        }
+        self.goBackToMainMenu();
       },
       this.overrideLanguage,
       this.feedbackTypeActions.length > 0
