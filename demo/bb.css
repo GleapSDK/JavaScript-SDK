@@ -1556,13 +1556,13 @@ textarea.bb-feedback-required {
 
 @keyframes bbRecIconContFade {
   0% {
-    fill: #d1160f;
+    fill: #b10802;
   }
   50% {
     fill: #ff0000;
   }
   100% {
-    fill: #d1160f;
+    fill: #b10802;
   }
 }
 
@@ -2032,6 +2032,7 @@ textarea.bb-feedback-required {
   align-items: center;
   cursor: pointer;
 }
+
 .bb-feedback-dialog-header-close svg {
   width: 24px;
   height: 24px;

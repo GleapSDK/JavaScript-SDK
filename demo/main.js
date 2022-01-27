@@ -1,3 +1,3 @@
 const Gleap = window.Gleap;
 
-Gleap.initialize("Y0ASDsS3Se1PJG1aYNIblrFMMX4zGgig");
+Gleap.initialize("UkzcTBCsX5nmsu2cV5hEcENkNuAT838O");

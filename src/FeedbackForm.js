@@ -593,6 +593,7 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
           );
           if (rememberedValue) {
             formInput.value = rememberedValue;
+            formItem.defaultValue = rememberedValue;
           }
         } catch (exp) {}
       }

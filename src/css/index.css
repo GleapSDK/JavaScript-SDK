@@ -115,13 +115,14 @@
   font-family: "Inter", sans-serif;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 5px;
+  padding: 5px 8px;
   width: auto;
   margin-top: 5px;
-  margin-bottom: 1px;
+  margin-bottom: 0px;
   margin-right: auto;
   justify-content: flex-start;
   align-items: center;
+  height: 39px;
 }
 
 .bb-feedback-capture-item-selected-label {
@@ -136,7 +137,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-left: 5px;
 }
 
 .bb-feedback-capture-item-selected-icon svg {
@@ -151,7 +151,7 @@
   align-items: center;
   cursor: pointer;
   padding: 5px;
-  margin-left: 5px;
+  margin-left: 8px;
 }
 
 .bb-feedback-capture-item-selected-action svg {
@@ -168,18 +168,23 @@
 
 .bb-feedback-capture-item {
   font-family: "Inter", sans-serif;
-  background-color: #f3f3f3;
   border-radius: 21px;
   box-sizing: border-box;
   padding: 8px 12px;
   width: auto;
   margin-top: 5px;
-  margin-right: 5px;
+  margin-right: 8px;
   margin-bottom: 0px;
   cursor: pointer;
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
+  align-items: center;
   position: relative;
+  height: 39px;
+}
+
+.bb-feedback-capture-item:last-of-type {
+  margin-right: 0px;
 }
 
 .bb-feedback-capture-item:hover {
@@ -187,7 +192,7 @@
 }
 
 .bb-feedback-capture-item .bb-item-title {
-  font-size: 13px;
+  font-size: 14px;
   line-height: 19px;
   font-weight: 600;
   color: #333;
@@ -550,7 +555,7 @@
 
 .bb-feedback-type-title {
   font-family: "Inter", sans-serif;
-  font-weight: 600;
+  font-weight: 500;
   font-size: 16px;
   line-height: 18px;
   margin-bottom: 3px;
@@ -689,23 +694,23 @@
 
 .bb-feedback-elementtitle {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 19px;
   text-align: left;
   margin-bottom: 5px;
   margin-top: 4px;
-  font-weight: 600;
+  font-weight: 500;
   color: #000000;
 }
 
 .bb-feedback-elementtitle span {
   font-family: "Inter", sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 19px;
   text-align: left;
   margin-bottom: 12px;
   margin-top: 0px;
-  font-weight: 600;
+  font-weight: 500;
   color: #ed4337;
   margin-left: 3px;
 }
@@ -730,9 +735,47 @@
 }
 
 .bb-feedback-dialog-success svg {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: block;
+  stroke-width: 2;
+  stroke: #fff;
+  stroke-miterlimit: 10;
+  animation: bb-suc-fill 0.4s ease-in-out 0.4s forwards,
+    bb-suc-scale 0.3s ease-in-out 0.9s both;
+}
+
+.bb-feedback-dialog-success svg path {
+  transform-origin: 50% 50%;
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  animation: bb-suc-stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+.bb-feedback-dialog-success svg circle {
+  stroke-dasharray: 166;
+  stroke-dashoffset: 166;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  fill: none;
+  animation: bb-suc-stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+@keyframes bb-suc-stroke {
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bb-suc-scale {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: scale3d(1.1, 1.1, 1);
+  }
 }
 
 .bb-feedback-dialog-body {
@@ -1513,13 +1556,13 @@ textarea.bb-feedback-required {
 
 @keyframes bbRecIconContFade {
   0% {
-    fill: #d1160f;
+    fill: #b10802;
   }
   50% {
     fill: #ff0000;
   }
   100% {
-    fill: #d1160f;
+    fill: #b10802;
   }
 }
 
@@ -1568,7 +1611,11 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.bb-capture-editor-recording .bb-capture-dismiss {
+  display: none;
 }
 
 .bb-capture-editor-item-inactive {
@@ -1586,7 +1633,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-editor-notrecording .bb-capture-svg {
-  pointer-events: none;
+  pointer-events: none !important;
 }
 
 .bb-screenshot-editor--marked .bb-screenshot-editor-canvas,
@@ -1719,7 +1766,7 @@ textarea.bb-feedback-required {
 .bb-capture-preview-buttons {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px;
 }
 
 .bb-capture-preview-retrybutton {
@@ -1755,9 +1802,13 @@ textarea.bb-feedback-required {
   opacity: 0.9;
 }
 
+.bb-capture-toolbar-item-recording {
+  margin-right: 0px;
+}
+
 .bb-capture-toolbar-item-recording svg {
-  width: 26px;
-  height: 26px;
+  width: 33px;
+  height: 33px;
 }
 
 .bb-capture-toolbar-item-colorpicker {
@@ -1860,13 +1911,18 @@ textarea.bb-feedback-required {
   position: absolute;
   z-index: 1;
   top: initial;
-  bottom: 40px;
+  bottom: 42px;
   left: 50%;
-  transform: translateX(calc(-50% + 2.5px));
   opacity: 0;
   transition: opacity 0.3s;
-  max-width: 200px;
-  width: 120%;
+  transform: translateX(-50%);
+  width: 190px;
+}
+
+.bb-feedback-capture-item:nth-of-type(2) .bb-tooltip {
+  left: auto;
+  right: 0px;
+  transform: none;
 }
 
 .bb-feedback-capture-item .bb-tooltip::after {
@@ -1879,6 +1935,11 @@ textarea.bb-feedback-required {
   border-style: solid;
   transform: rotate(0deg);
   border-color: #555 transparent transparent transparent;
+}
+
+.bb-feedback-capture-item:nth-of-type(2) .bb-tooltip::after {
+  left: auto;
+  right: 25%;
 }
 
 .bb-feedback-capture-item:hover .bb-tooltip {
@@ -1971,6 +2032,7 @@ textarea.bb-feedback-required {
   align-items: center;
   cursor: pointer;
 }
+
 .bb-feedback-dialog-header-close svg {
   width: 24px;
   height: 24px;
@@ -2023,7 +2085,7 @@ textarea.bb-feedback-required {
   display: flex;
 }
 
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 450px) {
   .bb-feedback-dialog {
     width: calc(100% - 20px);
     box-sizing: border-box;
