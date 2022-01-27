@@ -36,6 +36,11 @@ export default class MarkerManager {
       ScrollStopper.enableScroll();
     }
 
+    // Stop screenrecording.
+    if (this.screenRecorder) {
+      this.screenRecorder.stopScreenRecording();
+    }
+
     // Unregister ESC listener
     this.unregisterListeners();
 

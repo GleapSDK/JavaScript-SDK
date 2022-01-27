@@ -660,12 +660,20 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
                 manager.clear();
                 captureItemsContainer.style.display = "flex";
                 selectedItem.style.display = "none";
-
-                // asdf
               };
             }
           });
         };
+      }
+
+      // Wire autostart.
+      if (formItem.autostartDrawing) {
+        const captureButton = document.querySelector(
+          '.bb-feedback-capture-item[data-type="screenshot"]'
+        );
+        if (captureButton) {
+          captureButton.click();
+        }
       }
     }
     if (formItem.type === "upload") {

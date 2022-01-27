@@ -51,6 +51,7 @@ class Gleap {
   widgetCallback = null;
   overrideLanguage = "";
   screenshot = null;
+  autostartDrawing = false;
   actionLog = [];
   logArray = [];
   customData = {};
@@ -959,6 +960,7 @@ class Gleap {
           name: "capture",
           type: "capture",
           enableScreenshot: true,
+          autostartDrawing: instance.autostartDrawing,
           enableCapture: feedbackOptions.enableUserScreenRecording
             ? true
             : false,
@@ -996,6 +998,10 @@ class Gleap {
       }
     }
 
+    // Disable autostart drawing for the next call.
+    instance.autostartDrawing = false;
+
+    // Stop bug analytics.
     instance.stopBugReportingAnalytics();
 
     if (instance.silentBugReport) {
@@ -1376,6 +1382,7 @@ class Gleap {
         (char === "i" || char === "I" || char === 73) &&
         self.shortcutsEnabled
       ) {
+        self.autostartDrawing = true;
         Gleap.startFeedbackFlow();
       }
     };

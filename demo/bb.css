@@ -170,7 +170,7 @@
   font-family: "Inter", sans-serif;
   border-radius: 21px;
   box-sizing: border-box;
-  padding: 8px 15px;
+  padding: 8px 12px;
   width: auto;
   margin-top: 5px;
   margin-right: 8px;
@@ -1614,6 +1614,10 @@ textarea.bb-feedback-required {
   background-color: rgba(0, 0, 0, 0.5);
 }
 
+.bb-capture-editor-recording .bb-capture-dismiss {
+  display: none;
+}
+
 .bb-capture-editor-item-inactive {
   opacity: 0.3;
   cursor: not-allowed !important;
@@ -1762,7 +1766,7 @@ textarea.bb-feedback-required {
 .bb-capture-preview-buttons {
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding: 14px;
 }
 
 .bb-capture-preview-retrybutton {

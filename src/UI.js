@@ -71,6 +71,10 @@ export const injectStyledCSS = (
     .bb-capture-preview-retrybutton {
       color: ${contrastBackgroundColor};
       border-radius: ${buttonBorderRadius}px;
+      background-color: ${backgroundColorHover};
+    }
+    .bb-capture-preview-retrybutton:hover {
+      background-color: ${hoverHoverColor};
     }
     .bb-feedback-dialog-success svg {
       box-shadow: inset 0px 0px 0px ${primaryColor};
@@ -83,9 +87,6 @@ export const injectStyledCSS = (
     }
     .bb-feedback-dialog-success svg circle {
       stroke: ${primaryColor};
-    }
-    .bb-capture-preview-retrybutton:hover {
-      background-color: ${backgroundColorHover};
     }
     .bb-capture-dismiss {
       background-color: ${primaryColor};

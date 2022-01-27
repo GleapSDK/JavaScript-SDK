@@ -203,11 +203,14 @@ export class ScreenRecorder {
       type: "video/mp4",
     });
 
-    document.querySelector(".bb-capture-preview video").src =
-      URL.createObjectURL(completeBlob);
-
-    this.audioAvailable = true;
-    this.isRecording = false;
-    this.rerender();
+    const previewVideoElement = document.querySelector(
+      ".bb-capture-preview video"
+    );
+    if (previewVideoElement) {
+      previewVideoElement.src = URL.createObjectURL(completeBlob);
+      this.audioAvailable = true;
+      this.isRecording = false;
+      this.rerender();
+    }
   };
 }
