@@ -12,6 +12,7 @@ export default class MarkerManager {
   callback = null;
   screenDrawer = null;
   escListener = null;
+  pageLeaveListener = null;
   overrideLanguage = Gleap.getInstance().overrideLanguage;
 
   constructor(type) {
@@ -36,9 +37,7 @@ export default class MarkerManager {
     }
 
     // Unregister ESC listener
-    if (this.escListener) {
-      document.removeEventListener("keydown", this.escListener);
-    }
+    this.unregisterListeners();
 
     // Cleanup mouse pointer
     this.cleanupMousePointer();
@@ -183,7 +182,10 @@ export default class MarkerManager {
                   <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
                 <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">3:00</div>
-                <div class="bb-capture-toolbar-item-spacer"></div>`
+                <div class="bb-capture-toolbar-item-spacer"></div>
+                <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="pointer">
+                  ${loadIcon("pointer")}
+                </div>`
                 : ""
             }
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen">
@@ -252,8 +254,20 @@ export default class MarkerManager {
     }
   };
 
-  registerEscapeListener() {
+  unregisterListeners() {
+    if (this.escListener) {
+      document.removeEventListener("keydown", this.escListener);
+    }
+
+    if (this.pageLeaveListener) {
+      window.removeEventListener("beforeunload", this.pageLeaveListener);
+    }
+  }
+
+  registerListeners() {
     const self = this;
+
+    // Esc listener
     this.escListener = function (evt) {
       evt = evt || window.event;
       var isEscape = false;
@@ -267,13 +281,20 @@ export default class MarkerManager {
       }
     };
     document.addEventListener("keydown", this.escListener);
+
+    // Page leave listener
+    this.pageLeaveListener = function (event) {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", this.pageLeaveListener);
   }
 
   show(callback) {
     this.callback = callback;
     const self = this;
 
-    this.registerEscapeListener();
+    this.registerListeners();
 
     // Hide widget UI
     this.hideWidgetUI();
@@ -377,6 +398,9 @@ export default class MarkerManager {
       ".bb-capture-toolbar-item-colorpicker"
     );
 
+    // Capture SVG ref
+    const captureSVG = document.querySelector(".bb-capture-svg");
+
     // Setup toolbar items
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
@@ -404,7 +428,7 @@ export default class MarkerManager {
           // Inactivate buttons.
           return;
         }
-        if (type === "pen" || type === "rect") {
+        if (type === "pen" || type === "rect" || type === "pointer") {
           const toolbarTools = document.querySelectorAll(
             ".bb-capture-toolbar-item-tool"
           );
@@ -414,14 +438,19 @@ export default class MarkerManager {
           toolbarItem.classList.add("bb-capture-toolbar-item--active");
           self.screenDrawer.setTool(type);
 
-          try {
-            var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
-            if (svgClone && self.dragCursor) {
-              self.dragCursor.innerHTML = "";
-              self.dragCursor.appendChild(svgClone);
+          if (type === "pointer") {
+            self.dragCursor.innerHTML = "";
+            captureSVG.style.pointerEvents = "none";
+          } else {
+            captureSVG.style.pointerEvents = "auto";
+            try {
+              var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+              if (svgClone && self.dragCursor) {
+                self.dragCursor.appendChild(svgClone);
+              }
+            } catch (exp) {
+              console.log(exp);
             }
-          } catch (exp) {
-            console.log(exp);
           }
         }
         if (type === "colorpicker") {

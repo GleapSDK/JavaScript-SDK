@@ -914,6 +914,7 @@ class Gleap {
               name: "reportedBy",
               required: true,
               remember: true,
+              hideOnDefaultSet: true,
             }
           : null;
 
@@ -922,7 +923,6 @@ class Gleap {
         emailFormItem &&
         !(sessionInstance.session && sessionInstance.session.email)
       ) {
-        emailFormItem.hideOnDefaultSet = false;
         newFormArray.push(emailFormItem);
       }
 
@@ -947,7 +947,6 @@ class Gleap {
         sessionInstance.session &&
         sessionInstance.session.email
       ) {
-        emailFormItem.hideOnDefaultSet = true;
         emailFormItem.defaultValue = sessionInstance.session.email;
         emailFormItem.page =
           feedbackOptions.form[feedbackOptions.form.length - 1].page;
