@@ -13,6 +13,7 @@
   right: 20px;
   border-radius: 30px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   background-color: transparent;
   color: #000000;
   z-index: 2147483100;
@@ -150,6 +151,7 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   padding: 5px;
   margin-left: 8px;
 }
@@ -176,6 +178,7 @@
   margin-right: 8px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -218,6 +221,7 @@
 
 .bb-feedback-button-classic {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   top: 50%;
   right: 0px;
   position: fixed;
@@ -452,6 +456,7 @@
   background-color: #fff;
   border-radius: 11px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-dialog-header--back {
@@ -519,6 +524,7 @@
   padding: 9px;
   margin: 12px 25px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   border: 1px solid transparent;
   border-radius: 12px;
   background-color: #fff;
@@ -574,6 +580,7 @@
   position: relative;
   margin-bottom: 12px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   user-select: none;
   padding-left: 35px;
   font-size: 15px;
@@ -589,6 +596,7 @@
   position: absolute;
   opacity: 0;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-multiplechoice-checkmark {
@@ -666,6 +674,7 @@
 .bb-feedback-onetofive-button {
   font-family: "Inter", sans-serif;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   padding: 0px;
   background-color: #eceaf3;
   color: #59617d;
@@ -863,6 +872,7 @@
   margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-send-button--disabled {
@@ -884,6 +894,7 @@
   line-height: 19px;
   text-decoration: underline;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   margin-right: 30px;
 }
 
@@ -1226,6 +1237,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-emojigroup li:not(.active) {
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-emojigroup li:not(.active):active {
@@ -1367,6 +1379,7 @@ textarea.bb-feedback-required {
   font-weight: normal;
   line-height: 1.7;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-inputgroup--privacy-policy
@@ -1454,6 +1467,7 @@ textarea.bb-feedback-required {
   margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   margin: 0px;
   padding: 25px 25px;
   padding-top: 0px;
@@ -1484,6 +1498,7 @@ textarea.bb-feedback-required {
   border-radius: 50%;
   background-color: rgba(0, 0, 0, 0.45);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1662,6 +1677,7 @@ textarea.bb-feedback-required {
   right: 0px;
   z-index: 916777268;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   width: 36px;
   height: 36px;
   display: flex;
@@ -1682,6 +1698,7 @@ textarea.bb-feedback-required {
   text-align: center;
   width: auto;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   margin: 0px;
   line-height: 36px;
   padding: 0px 12px;
@@ -1704,6 +1721,7 @@ textarea.bb-feedback-required {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   position: relative;
   margin-right: 5px;
 }
@@ -1781,6 +1799,7 @@ textarea.bb-feedback-required {
   margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-capture-preview-sendbutton {
@@ -1795,6 +1814,7 @@ textarea.bb-feedback-required {
   margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-capture-preview-retrybutton:hover,
@@ -1831,6 +1851,7 @@ textarea.bb-feedback-required {
   margin-right: 12px;
   box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.15);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-capture-toolbar-item-color:hover {
@@ -2031,6 +2052,7 @@ textarea.bb-feedback-required {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-dialog-header-close svg {
@@ -2070,6 +2092,7 @@ textarea.bb-feedback-required {
   margin-top: 0px;
   margin-bottom: 0px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-select-capture-option--active {

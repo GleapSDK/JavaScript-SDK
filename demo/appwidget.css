@@ -32,6 +32,7 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-feedback-dialog-header-close svg {
@@ -73,6 +74,7 @@
 .bb-feedback-dialog-header-next:hover {
   background-color: rgba(255, 255, 255, 0.75);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-screenshot-editor-canv {
@@ -111,6 +113,7 @@
   align-items: center;
   padding: 11px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   border-radius: 16px;
 }
 
@@ -126,6 +129,7 @@
   align-items: center;
   padding: 11px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-drawing-tool-action svg {
@@ -157,6 +161,7 @@
   border-radius: 100%;
   margin: 0px 4px;
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bb-drawing-coloritem--active {
@@ -169,6 +174,7 @@
   border-radius: 100%;
   box-shadow: 0px 0px 10px 0px rgb(0 0 0 / 15%);
   cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   margin: 9px 5px;
 }
 
