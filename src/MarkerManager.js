@@ -306,6 +306,12 @@ export default class MarkerManager {
 
     this.setupColorPicker();
     this.setupToolbar();
+
+    if (this.type === "capture") {
+      setTimeout(function () {
+        self.screenRecorder.startScreenRecording();
+      }, 500);
+    }
   }
 
   setupColorPicker() {
