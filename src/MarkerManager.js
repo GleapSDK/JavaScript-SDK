@@ -171,7 +171,6 @@ export default class MarkerManager {
     bugReportingEditor.innerHTML = `
           <div class="bb-capture-editor-borderlayer"></div>
           <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
-          <div class="bb-capture-mousetool"></div>
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
           <div class="bb-capture-toolbar">
@@ -443,8 +442,8 @@ export default class MarkerManager {
           toolbarItem.classList.add("bb-capture-toolbar-item--active");
           self.screenDrawer.setTool(type);
 
+          self.dragCursor.innerHTML = "";
           if (type === "pointer") {
-            self.dragCursor.innerHTML = "";
             captureSVG.style.pointerEvents = "none";
           } else {
             captureSVG.style.pointerEvents = "auto";
