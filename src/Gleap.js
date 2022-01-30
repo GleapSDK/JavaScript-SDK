@@ -915,7 +915,6 @@ class Gleap {
               name: "reportedBy",
               required: true,
               remember: true,
-              hideOnDefaultSet: true,
             }
           : null;
 
