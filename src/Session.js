@@ -80,6 +80,7 @@ export default class Session {
         http.setRequestHeader("Gleap-Id", gleapId);
         http.setRequestHeader("Gleap-Hash", gleapHash);
       }
+      http.setRequestHeader("App-Widget", Gleap.getInstance().widgetOnly);
     } catch (exp) {}
 
     http.onerror = (error) => {
