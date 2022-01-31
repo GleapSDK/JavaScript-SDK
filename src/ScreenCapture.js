@@ -346,20 +346,10 @@ const deepClone = (host) => {
         tagName == "IMG" ||
         tagName == "SVG"
       ) {
-        var height = 0;
-        if (node.style.boxSizing === "border-box") {
-          height =
-            node.height +
-            node.marginTop +
-            node.marginBottom +
-            node.bordorTop +
-            node.borderBottom;
-        } else {
-          height = node.height;
-        }
-
+        const boundingRect = node.getBoundingClientRect();
         clone.setAttribute("bb-element", true);
-        clone.setAttribute("bb-height", height);
+        clone.setAttribute("bb-height", boundingRect.height);
+        clone.setAttribute("bb-width", boundingRect.width);
       }
 
       if (tagName == "DIV" && (node.scrollTop > 0 || node.scrollLeft > 0)) {
@@ -463,7 +453,7 @@ const prepareScreenshotData = (remote) => {
     const bbElems = clone.querySelectorAll("[bb-element=true]");
     for (var i = 0; i < bbElems.length; ++i) {
       if (bbElems[i]) {
-        bbElems[i].style.height = bbElems[i].getAttribute("bb-height");
+        bbElems[i].style.height = bbElems[i].getAttribute("bb-height") + "px";
       }
     }
 

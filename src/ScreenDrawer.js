@@ -5,7 +5,7 @@ export class ScreenDrawer {
   strPath;
   strokeWidth = 12;
   strokeWidthRect = 6;
-  bufferSize = 8;
+  bufferSize = 4;
   buffer = [];
   startPoint = null;
   tool = "pen";
