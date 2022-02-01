@@ -198,6 +198,9 @@ export default class MarkerManager {
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="rect">
               ${loadIcon("rect")}
             </div>
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="blur">
+              ${loadIcon("blur")}
+            </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
               <span class="bb-tooltip">${translateText(
@@ -266,6 +269,9 @@ export default class MarkerManager {
     if (this.pageLeaveListener) {
       window.removeEventListener("beforeunload", this.pageLeaveListener);
     }
+
+    // Register Gleap listener.
+    Gleap.getInstance().registerEscListener();
   }
 
   registerListeners() {
@@ -292,6 +298,9 @@ export default class MarkerManager {
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", this.pageLeaveListener);
+
+    // Unregister Gleap listener.
+    Gleap.getInstance().unregisterEscListener();
   }
 
   show(callback) {
@@ -432,7 +441,7 @@ export default class MarkerManager {
           // Inactivate buttons.
           return;
         }
-        if (type === "pen" || type === "rect" || type === "pointer") {
+        if (type === "pen" || type === "blur" || type === "rect" || type === "pointer") {
           const toolbarTools = document.querySelectorAll(
             ".bb-capture-toolbar-item-tool"
           );

@@ -41,7 +41,7 @@ export class ScreenDrawer {
       }
 
       self.fadeOutToolbar();
-      if (self.tool === "pen") {
+      if (self.tool === "pen" || self.tool === "blur") {
         self.mouseDownPen(e);
       }
       if (self.tool === "rect") {
@@ -51,7 +51,7 @@ export class ScreenDrawer {
 
     this.mouseMove = function (e) {
       e.preventDefault();
-      if (self.tool === "pen") {
+      if (self.tool === "pen" || self.tool === "blur") {
         self.mouseMovePen(e);
       }
       if (self.tool === "rect") {
@@ -62,7 +62,7 @@ export class ScreenDrawer {
     this.mouseUp = function (e) {
       e.preventDefault();
       self.fadeInToolbar();
-      if (self.tool === "pen") {
+      if (self.tool === "pen" || self.tool === "blur") {
         self.mouseUpPen(e);
       }
       if (self.tool === "rect") {
@@ -152,11 +152,19 @@ export class ScreenDrawer {
   }
 
   mouseDownPen(e) {
+    var color = this.color + "AA";
+    var strokeWidth = this.strokeWidth;
+
+    if (this.tool === "blur") {
+      color = "#000000";
+      strokeWidth = 40;
+    }
+
     this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     this.path.setAttribute("fill", "none");
-    this.path.setAttribute("stroke", this.color + "AA");
+    this.path.setAttribute("stroke", color);
     this.path.setAttribute("stroke-linecap", "round");
-    this.path.setAttribute("stroke-width", this.strokeWidth);
+    this.path.setAttribute("stroke-width", strokeWidth);
     this.buffer = [];
     var pt = this.getMousePosition(e);
     this.appendToBuffer(pt);

@@ -95,6 +95,7 @@ class Gleap {
   customTranslation = {};
   networkIntercepter = new GleapNetworkIntercepter();
   replay = null;
+  escListener = null;
   feedbackButton = null;
   fakeLoading = null;
   fakeLoadingProgress = 0;
@@ -228,6 +229,29 @@ class Gleap {
     if (this.widgetCallback) {
       self.widgetCallback("sessionReady");
     }
+  }
+
+  unregisterEscListener() {
+    if (this.escListener) {
+      document.removeEventListener("keydown", this.escListener);
+    }
+  }
+
+  registerEscListener() {
+    const self = this;
+    this.escListener = function (evt) {
+      evt = evt || window.event;
+      var isEscape = false;
+      if ("key" in evt) {
+        isEscape = evt.key === "Escape" || evt.key === "Esc";
+      } else {
+        isEscape = evt.keyCode === 27;
+      }
+      if (isEscape) {
+        self.closeGleap(true);
+      }
+    };
+    document.addEventListener("keydown", this.escListener);
   }
 
   /**
@@ -1351,6 +1375,7 @@ class Gleap {
     this.overwriteConsoleLog();
     this.startCrashDetection();
     this.registerKeyboardListener();
+    this.registerEscListener();
 
     // Initially check network
     if (isLocalNetwork()) {
@@ -1376,8 +1401,8 @@ class Gleap {
       return code;
     };
 
-    document.onkeyup = function (e) {
-      var char = charForEvent(e);
+    document.addEventListener("keyup", function (e) {
+      const char = charForEvent(e);
       if (
         e.ctrlKey &&
         (char === "i" || char === "I" || char === 73) &&
@@ -1386,7 +1411,7 @@ class Gleap {
         self.autostartDrawing = true;
         Gleap.startFeedbackFlow();
       }
-    };
+    });
   }
 
   checkForInitType() {
