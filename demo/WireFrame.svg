@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1440px" height="3751px" viewBox="0 0 1440 3751" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Homepage - Wireframe@2x</title>
+    <g id="Homepage---Wireframe" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect fill="#FFFFFF" x="0" y="0" width="1440" height="3751"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="649" y="2452" width="148" height="35" rx="10"></rect>
+        <g id="section:company_reviews" transform="translate(0.000000, 1530.000000)">
+            <rect id="Rectangle-5" fill="#FBFBFB" x="0" y="265" width="1440" height="600"></rect>
+            <rect id="Rectangle" fill="#999999" x="276" y="401" width="412" height="35" rx="10"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="276" y="658" width="116" height="18" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="119" y="1036" width="155" height="18" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="897" y="1022" width="73" height="18" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1038" y="1022" width="73" height="18" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1230" y="1022" width="73" height="18" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1230" y="1071" width="90" height="11" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1230" y="1071" width="90" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1038" y="1071" width="127" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1038" y="1103" width="90" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1038" y="1135" width="113" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="897" y="1135" width="70" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="897" y="1103" width="32" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="897" y="1071" width="40" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1048" y="1221" width="281" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1230" y="1135" width="32" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="1230" y="1103" width="28" height="11" rx="3"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="119" y="1060" width="236" height="36" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="119" y="1110" width="236" height="36" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="119" y="1215" width="23" height="23" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="149" y="1215" width="23" height="23" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="179" y="1215" width="23" height="23" rx="5"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="276" y="451" width="368" height="13" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="276" y="475" width="395" height="13" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="276" y="499" width="267" height="13" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="590" y="559" width="93" height="13" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="274" y="694" width="93" height="35" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="381" y="694" width="93" height="35" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="488" y="694" width="93" height="35" rx="4"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="517" y="0" width="97" height="13" rx="4"></rect>
+            <g id="book_btn" transform="translate(276.000000, 540.000000)" fill="#D8D8D8">
+                <rect id="Rectangle" x="0" y="0" width="232" height="50" rx="8"></rect>
+            </g>
+            <rect id="Rectangle-5-Copy" fill="#EFEFEF" x="823" y="372" width="400" height="400" rx="16"></rect>
+        </g>
+        <g id="section:popular_places" transform="translate(121.000000, 961.000000)">
+            <g id="destination_card" transform="translate(309.000000, 140.000000)">
+                <rect id="Rectangle-5-Copy-2" fill="#EFEFEF" x="0" y="0" width="270" height="270" rx="9"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="87" y="119" width="97" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="109.094017" y="138" width="53" height="13" rx="4"></rect>
+            </g>
+            <g id="destination_card" transform="translate(0.000000, 140.000000)">
+                <rect id="Rectangle-5-Copy-2" fill="#EFEFEF" x="0" y="0" width="270" height="270" rx="9"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="73" y="120" width="117" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="90" y="139" width="83" height="13" rx="4"></rect>
+            </g>
+            <g id="destination_card" transform="translate(309.000000, 450.000000)">
+                <rect id="Rectangle-5-Copy-2" fill="#EFEFEF" x="0" y="0" width="270" height="270" rx="9"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="87" y="119" width="97" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="101.094017" y="138" width="68.8119658" height="13" rx="4"></rect>
+            </g>
+            <g id="destination_card" transform="translate(0.000000, 450.000000)">
+                <rect id="Rectangle-5-Copy-2" fill="#EFEFEF" x="0" y="0" width="270" height="270" rx="9"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="87" y="119" width="97" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="71.0940171" y="137" width="128" height="13" rx="4"></rect>
+            </g>
+            <g id="destination_card" transform="translate(619.000000, 140.000000)">
+                <rect id="Rectangle-5-Copy" fill="#EFEFEF" x="0" y="0" width="580" height="580" rx="8"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="232" y="274" width="117" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="252" y="312" width="76" height="13" rx="4"></rect>
+                <rect id="Rectangle" fill="#D8D8D8" x="224" y="293" width="133" height="13" rx="4"></rect>
+            </g>
+            <text id="Popular-Places" font-family=".AppleSystemUIFont" font-size="30" font-weight="normal" letter-spacing="0.579999983" fill="#000000">
+                <tspan x="490" y="29">Popular Places</tspan>
+            </text>
+        </g>
+        <rect id="Rectangle" fill="#999999" x="424" y="605" width="548" height="35" rx="10"></rect>
+        <g id="section:header">
+            <g id="hero" fill="#F7F7F7">
+                <rect id="hero_bg" x="0" y="0" width="1440" height="451"></rect>
+            </g>
+            <g id="Group" transform="translate(446.000000, 254.000000)">
+                <g id="register_btn" transform="translate(398.000000, 16.000000)">
+                    <rect id="Rectangle" fill="#999999" x="0" y="0" width="150" height="50" rx="10"></rect>
+                    <text id="Search" font-family="Inter-Bold, Inter" font-size="16" font-weight="bold" letter-spacing="0.666666667" fill="#FFFFFF">
+                        <tspan x="40" y="31">SEARCH</tspan>
+                    </text>
+                </g>
+                <rect id="Rectangle" fill="#D8D8D8" x="0" y="0" width="380" height="49" rx="10"></rect>
+            </g>
+            <g id="register_btn" fill="#D8D8D8" transform="translate(1201.000000, 19.000000)">
+                <rect id="Rectangle" x="0" y="0" width="120" height="42" rx="8"></rect>
+            </g>
+            <rect id="Rectangle" fill="#D8D8D8" x="109" y="30" width="125" height="19" rx="6"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="249" y="30" width="80" height="19" rx="6"></rect>
+            <rect id="Rectangle" fill="#D8D8D8" x="344" y="30" width="125" height="19" rx="6"></rect>
+        </g>
+        <rect id="Rectangle" fill="#999999" x="608" y="961" width="206" height="35" rx="10"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="407" y="657" width="628" height="13" rx="4"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="441" y="681" width="558" height="13" rx="4"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="459" y="705" width="523" height="13" rx="4"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="806" y="773" width="103" height="13" rx="4"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="530" y="754" width="206" height="50" rx="10"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="1093" y="32" width="79" height="19" rx="6"></rect>
+        <rect id="Rectangle" fill="#D8D8D8" x="944" y="32" width="125" height="19" rx="6"></rect>
+    </g>
+</svg>
