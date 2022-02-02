@@ -461,9 +461,7 @@ export default class MarkerManager {
               if (svgClone && self.dragCursor) {
                 self.dragCursor.appendChild(svgClone);
               }
-            } catch (exp) {
-              console.log(exp);
-            }
+            } catch (exp) {}
           }
         }
         if (type === "colorpicker") {

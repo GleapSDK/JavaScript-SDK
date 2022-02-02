@@ -156,24 +156,25 @@ export default class AutoConfig {
                       Intercom("showNewMessage");
                     };
                   } else if (menuItem.actionType === "REDIRECT_URL") {
-                    if (menuItem.actionOpenInNewTab) {
+                    if (instance.widgetCallback) {
                       action = function () {
-                        if (instance.widgetCallback) {
-                          instance.widgetCallback("openExternalURL", {
-                            url: menuItem.actionBody,
-                          });
-                        } else {
-                          window.open(menuItem.actionBody, "_blank").focus();
-                        }
+                        instance.widgetCallback("openExternalURL", {
+                          url: menuItem.actionBody,
+                        });
                       };
                     } else {
-                      action = function () {
-                        window.location.href = menuItem.actionBody;
-                      };
+                      if (menuItem.actionOpenInNewTab) {
+                        action = function () {
+                          window.open(menuItem.actionBody, "_blank").focus();
+                        };
+                      } else {
+                        action = function () {
+                          window.location.href = menuItem.actionBody;
+                        };
+                      }
                     }
                   } else if (menuItem.actionType === "CUSTOM_ACTION") {
                     action = function () {
-                      console.log(menuItem.actionBody);
                       Gleap.triggerCustomAction(menuItem.actionBody);
                     };
                   } else {
