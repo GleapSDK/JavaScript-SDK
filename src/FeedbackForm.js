@@ -586,7 +586,7 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
     }
     const currentPage = parseInt(formInput.getAttribute("bb-form-page"));
     if (formItem.type === "text") {
-      if (formItem.remember) {
+      if (formItem.remember && !(formItem.defaultValue && formItem.defaultValue.length > 0)) {
         try {
           const rememberedValue = localStorage.getItem(
             `bb-remember-${formItem.name}`
