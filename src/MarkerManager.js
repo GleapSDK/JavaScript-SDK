@@ -172,7 +172,7 @@ export default class MarkerManager {
           <div class="bb-capture-editor-borderlayer"></div>
           <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
-          <div class='bb-capture-editor-drag-info'>${loadIcon("pen")}</div>
+          <div class='bb-capture-editor-drag-info'>${loadIcon("rect")}</div>
           <div class="bb-capture-toolbar">
             ${
               this.type === "capture"
@@ -192,11 +192,11 @@ export default class MarkerManager {
                 </div>`
                 : ""
             }
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="pen">
-              ${loadIcon("pen")}
-            </div>
-            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="rect">
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="rect">
               ${loadIcon("rect")}
+            </div>
+            <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="pen">
+              ${loadIcon("pen")}
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="blur">
               ${loadIcon("blur")}
@@ -281,13 +281,19 @@ export default class MarkerManager {
     this.escListener = function (evt) {
       evt = evt || window.event;
       var isEscape = false;
+      var isEnter = false;
       if ("key" in evt) {
         isEscape = evt.key === "Escape" || evt.key === "Esc";
+        isEnter = evt.key === "Enter";
       } else {
         isEscape = evt.keyCode === 27;
+        isEnter = evt.keyCode === 13;
       }
       if (isEscape) {
         self.dismiss();
+      }
+      if (self.type === "screenshot" && isEnter) {
+        self.showNextStep();
       }
     };
     document.addEventListener("keydown", this.escListener);
@@ -441,7 +447,12 @@ export default class MarkerManager {
           // Inactivate buttons.
           return;
         }
-        if (type === "pen" || type === "blur" || type === "rect" || type === "pointer") {
+        if (
+          type === "pen" ||
+          type === "blur" ||
+          type === "rect" ||
+          type === "pointer"
+        ) {
           const toolbarTools = document.querySelectorAll(
             ".bb-capture-toolbar-item-tool"
           );

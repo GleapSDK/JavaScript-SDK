@@ -8,7 +8,7 @@ export class ScreenDrawer {
   bufferSize = 4;
   buffer = [];
   startPoint = null;
-  tool = "pen";
+  tool = "rect";
   color = "#EB144C";
   mouseDown = null;
   mouseMove = null;
