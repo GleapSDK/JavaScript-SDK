@@ -46,6 +46,7 @@ export default class Session {
     try {
       localStorage.removeItem(`gleap-id`);
       localStorage.removeItem(`gleap-hash`);
+      localStorage.removeItem(`bb-remember-reportedBy`);
     } catch (exp) {}
 
     this.session = {

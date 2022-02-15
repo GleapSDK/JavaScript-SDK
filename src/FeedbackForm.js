@@ -586,7 +586,10 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
     }
     const currentPage = parseInt(formInput.getAttribute("bb-form-page"));
     if (formItem.type === "text") {
-      if (formItem.remember && !(formItem.defaultValue && formItem.defaultValue.length > 0)) {
+      if (
+        formItem.remember &&
+        !(formItem.defaultValue && formItem.defaultValue.length > 0)
+      ) {
         try {
           const rememberedValue = localStorage.getItem(
             `bb-remember-${formItem.name}`
@@ -600,9 +603,21 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
       if (formItem.defaultValue) {
         formInput.value = formItem.defaultValue;
       }
-      if (formItem.defaultValue && formItem.hideOnDefaultSet) {
+
+      // Check if the email is valid.
+      if (!validateEmail(formItem.defaultValue)) {
+        formItem.defaultValue = "";
+        formInput.value = "";
+      }
+
+      if (
+        formItem.defaultValue &&
+        formItem.defaultValue.length > 0 &&
+        formItem.hideOnDefaultSet
+      ) {
         formInput.parentElement.classList.add("bb-feedback-form--hidden");
       }
+
       formInput.addEventListener("focusin", function () {
         addDirtyFlagToFormElement(formInput);
       });
