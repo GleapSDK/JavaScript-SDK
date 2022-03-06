@@ -1626,7 +1626,7 @@ textarea.bb-feedback-required {
 }
 
 .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.8);
 }
 
 .bb-capture-editor-recording .bb-capture-dismiss {

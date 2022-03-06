@@ -12,9 +12,11 @@ export class ScreenRecorder {
   maxRecordTime = 180;
   recordTime = 0;
   recordingTimer = null;
+  permissionErrorText = "";
 
-  constructor(rerender) {
+  constructor(rerender, permissionErrorText) {
     this.rerender = rerender;
+    this.permissionErrorText = permissionErrorText;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
       this.available = false;
     }
@@ -54,7 +56,8 @@ export class ScreenRecorder {
 
         self.rerender();
       })
-      .catch(function (displayErr) {
+      .catch(function (err) {
+        window.alert(self.permissionErrorText);
         self.rerender();
       });
   };
@@ -95,7 +98,6 @@ export class ScreenRecorder {
         self.audioMuted = false;
         self.audioAvailable = true;
         self.handleRecord({ stream: self.stream });
-
         self.rerender();
       })
       .catch(function (audioErr) {

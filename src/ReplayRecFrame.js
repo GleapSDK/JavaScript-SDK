@@ -136,7 +136,17 @@ export default class ReplayRecFrame {
       this.initialState = serializedNode;
       this.initialActions = initialActions;
 
-      this.observer = new MutationObserver(rec.observerCallback);
+      // Fix for patched mutation observer.
+      var GleapMutationObserver = MutationObserver;
+      if (
+        window &&
+        window.Zone &&
+        window[window.Zone.__symbol__("MutationObserver")]
+      ) {
+        GleapMutationObserver =
+          window[window.Zone.__symbol__("MutationObserver")];
+      }
+      this.observer = new GleapMutationObserver(rec.observerCallback);
       this.observer.observe(node, {
         attributes: true,
         characterData: true,

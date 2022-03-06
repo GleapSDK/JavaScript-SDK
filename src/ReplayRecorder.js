@@ -1,5 +1,6 @@
 import ReplayRecFrame from "./ReplayRecFrame";
 import {
+  gleapRoughSizeOfObject,
   REPLAYREC_ADD,
   REPLAYREC_ATTR,
   REPLAYREC_CANVAS_DATA,
@@ -29,7 +30,7 @@ export default class ReplayRecorder {
   }
 
   isFull() {
-    if (this.actions && this.actions.length > 7000) {
+    if (this.actions && gleapRoughSizeOfObject(this.actions) > 10) {
       return true;
     }
     return false;
@@ -150,7 +151,6 @@ export default class ReplayRecorder {
 
   fetchItemResource = (src) => {
     const self = this;
-
     return new Promise((resolve, reject) => {
       if (src) {
         var xhr = new XMLHttpRequest();

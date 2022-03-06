@@ -346,12 +346,6 @@ export default class MarkerManager {
 
     this.setupColorPicker();
     this.setupToolbar();
-
-    if (this.type === "capture") {
-      setTimeout(function () {
-        self.screenRecorder.startScreenRecording();
-      }, 500);
-    }
   }
 
   setupColorPicker() {
@@ -645,6 +639,12 @@ export default class MarkerManager {
     };
 
     // Setup screen recorder
-    this.screenRecorder = new ScreenRecorder(this.captureRenderer.bind(this));
+    this.screenRecorder = new ScreenRecorder(
+      this.captureRenderer.bind(this),
+      translateText(
+        "You denied access to screen sharing. Please turn it on in your browser settings.",
+        this.overrideLanguage
+      )
+    );
   }
 }
