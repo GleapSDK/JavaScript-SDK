@@ -1,7 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.setApiUrl("http://localhost:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+// Gleap.setApiUrl("http://localhost:9000");
+Gleap.initialize("6aDbcY8I6uo5qc0CnJbfAI8mCXInmsvP");
 Gleap.identify(123, {
   email: "lukas@gle.cooooooa",
   name: "Lukas",

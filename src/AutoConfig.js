@@ -74,7 +74,7 @@ export default class AutoConfig {
                 flowConfig.enableRageClickDetector
               ) {
                 Gleap.enableRageClickDetector(
-                  flowConfig.enableRageClickDetector
+                  flowConfig.rageClickDetectorIsSilent
                 );
               }
 
