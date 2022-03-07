@@ -20,6 +20,7 @@ export default class ReplayRecorder {
     this.node = document.documentElement;
     this.nextID = 1;
     this.actions = [];
+    this.actionsSize = 0;
     this.lastActionTime = Date.now();
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
@@ -30,7 +31,7 @@ export default class ReplayRecorder {
   }
 
   isFull() {
-    if (this.actions && gleapRoughSizeOfObject(this.actions) > 10) {
+    if (this.actions && this.actionsSize > 10) {
       return true;
     }
     return false;
@@ -464,6 +465,14 @@ export default class ReplayRecorder {
     }
   }
 
+  appendAction(action) {
+    this.actions.push(action);
+    const self = this;
+    setTimeout(function () {
+      self.actionsSize += gleapRoughSizeOfObject(action);
+    }, 0);
+  }
+
   callback(
     records,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -473,7 +482,7 @@ export default class ReplayRecorder {
     if (now > this.lastActionTime) {
       const a = {};
       a[REPLAYREC_DELAY] = now - this.lastActionTime;
-      this.actions.push(a);
+      this.appendAction(a);
     }
     this.lastActionTime = Date.now();
 
@@ -487,7 +496,7 @@ export default class ReplayRecorder {
             }
             const a = {};
             a[REPLAYREC_REMOVE] = childID;
-            this.actions.push(a);
+            this.appendAction(a);
             this.deleteAllReplayRecIDs(child);
           }
         }
@@ -519,7 +528,7 @@ export default class ReplayRecorder {
                 );
               }
 
-              this.actions.push(a);
+              this.appendAction(a);
             }
             break;
           }
@@ -528,7 +537,7 @@ export default class ReplayRecorder {
             if (target.nodeType === Node.TEXT_NODE) {
               a[REPLAYREC_TEXT] = [id, target.data];
             }
-            this.actions.push(a);
+            this.appendAction(a);
             break;
           }
           case "childList": {
@@ -558,7 +567,7 @@ export default class ReplayRecorder {
             serializedNode,
             actions,
           ];
-          this.actions.push(a);
+          this.appendAction(a);
         }
       }
     } catch (ex) {
