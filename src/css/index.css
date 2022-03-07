@@ -1506,7 +1506,7 @@ textarea.bb-feedback-required {
 
 .bb-feedback-dialog-error {
   background-color: #da0e0710;
-  padding: 16px;
+  padding: 16px 25px;
   margin: 0px;
   font-size: 14px;
   font-weight: normal;

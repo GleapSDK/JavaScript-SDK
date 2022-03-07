@@ -1235,6 +1235,12 @@ class Gleap {
     // Show loading spinner
     toggleLoading(true);
 
+    // Hide error message
+    const errorForm = document.querySelector(".bb-feedback-dialog-error");
+    if (errorForm) {
+      errorForm.style.display = "none";
+    }
+
     // Start fake loading
     self.fakeLoading = setInterval(function () {
       if (self.fakeLoadingProgress > 75) {
@@ -1627,7 +1633,7 @@ class Gleap {
           self.notifyEvent("feedback-sent");
           self.showSuccessAndClose();
         } else {
-          self.showError();
+          self.showError(http.status);
         }
       }
     };
@@ -1699,15 +1705,28 @@ class Gleap {
     }, 2800);
   }
 
-  showError() {
+  showError(error) {
     if (this.silentBugReport) {
       this.closeGleap();
       return;
     }
 
+    var errorText = translateText(
+      "Something went wrong, please try again.",
+      self.overrideLanguage
+    );
+    if (error === 429) {
+      errorText = translateText(
+        "Too many requests, please try again later.",
+        self.overrideLanguage
+      );
+    }
+
     this.notifyEvent("error-while-sending");
     toggleLoading(false);
+    document.querySelector(".bb-feedback-dialog-error").innerHTML = errorText;
     document.querySelector(".bb-feedback-dialog-error").style.display = "flex";
+    document.querySelector(".bb-form-progress").style.display = "none";
   }
 
   getMetaData() {
