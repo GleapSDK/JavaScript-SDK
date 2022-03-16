@@ -32,6 +32,7 @@ export namespace Gleap {
   function setCustomData(key: string, value: string): void;
   function removeCustomData(key: string): void;
   function clearCustomData(): void;
+  function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;
   function setWidgetUrl(widgetUrl: string): void;
   function registerCustomAction(
