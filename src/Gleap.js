@@ -11,7 +11,7 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { isMobile } from "./ImageHelper";
+import { isMobile } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
@@ -186,20 +186,26 @@ class Gleap {
     // Set default session (i.e. from the app SDK).
     if (gleapId && gleapHash) {
       try {
-        localStorage.setItem(`gleap-id`, gleapId);
-        localStorage.getItem(`gleap-hash`, gleapHash);
+        var oldSession = loadFromGleapCache(`session-${this.sdkKey}`);
+        if (!oldSession) {
+          oldSession = {};
+        }
+        oldSession.gleapId = gleapId;
+        oldSession.gleapHash = gleapHash;
+
+        saveToGleapCache(`session-${this.sdkKey}`, oldSession);
       } catch (exp) {}
     }
 
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
-    sessionInstance.startSession();
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
       AutoConfig.run().then(function () {
         instance.postInit();
       });
     });
+    sessionInstance.startSession();
   }
 
   postInit() {
@@ -255,7 +261,10 @@ class Gleap {
    * @param {*} userData
    */
   static identify(userId, userData) {
-    Session.getInstance().identifySession(userId, gleapDataParser(userData));
+    return Session.getInstance().identifySession(
+      userId,
+      gleapDataParser(userData)
+    );
   }
 
   /**
@@ -1249,7 +1258,7 @@ class Gleap {
       }
       self.fakeLoadingProgress += 2;
       setLoadingIndicatorProgress(self.fakeLoadingProgress);
-    }, 150);
+    }, 75);
 
     // Send form
     const formData = getFormData(feedbackOptions.form);

@@ -1,4 +1,4 @@
-import { isMobile, resizeImage } from "./ImageHelper";
+import { isMobile, resizeImage } from "./GleapHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
 
 export const startScreenCapture = (isLiveSite) => {

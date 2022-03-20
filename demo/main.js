@@ -1,10 +1,10 @@
 const Gleap = window.Gleap;
 
-// Gleap.setApiUrl("http://localhost:9000");
+Gleap.setApiUrl("http://localhost:9000");
 Gleap.initialize("6aDbcY8I6uo5qc0CnJbfAI8mCXInmsvP");
-Gleap.identify(123, {
-  email: "lukas@gle.cooooooa",
-  name: "Lukas",
+Gleap.identify(333, {
+  email: "lukas@gle.aaa",
+  name: "Susi",
 });
 
 /*function makeid(length) {

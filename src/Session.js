@@ -1,4 +1,5 @@
 import Gleap from "./Gleap";
+import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class Session {
   apiUrl = "https://api.gleap.io";
@@ -9,6 +10,7 @@ export default class Session {
     gleapHash: null,
     name: "",
     email: "",
+    userId: "",
   };
   ready = false;
   onSessionReadyListener = [];
@@ -44,9 +46,8 @@ export default class Session {
 
   clearSession = (renewSession = true) => {
     try {
-      localStorage.removeItem(`gleap-id`);
-      localStorage.removeItem(`gleap-hash`);
       localStorage.removeItem(`bb-remember-reportedBy`);
+      saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) {}
 
     this.session = {
@@ -64,26 +65,43 @@ export default class Session {
   };
 
   validateSession = (session) => {
+    if (!session) {
+      return;
+    }
+
+    saveToGleapCache(`session-${this.sdkKey}`, session);
+
     this.session = session;
     this.ready = true;
+
+    // Optionally update UI.
+    const userNameInfo = document.querySelector("#bb-user-name");
+    if (userNameInfo) {
+      userNameInfo.textContent = session.name ? session.name : "";
+    }
+
+    this.notifySessionReady();
   };
 
   startSession = () => {
+    // Check if session is already ready.
+    const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
+    if (cachedSession) {
+      this.validateSession(cachedSession);
+    }
+
     const self = this;
     const http = new XMLHttpRequest();
     http.open("POST", self.apiUrl + "/sessions");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     http.setRequestHeader("Api-Token", self.sdkKey);
     try {
-      const gleapId = localStorage.getItem(`gleap-id`);
-      const gleapHash = localStorage.getItem(`gleap-hash`);
-      if (gleapId && gleapHash) {
-        http.setRequestHeader("Gleap-Id", gleapId);
-        http.setRequestHeader("Gleap-Hash", gleapHash);
+      if (this.session && this.session.gleapId && this.session.gleapHash) {
+        http.setRequestHeader("Gleap-Id", this.session.gleapId);
+        http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
       }
       http.setRequestHeader("App-Widget", Gleap.getInstance().widgetOnly);
     } catch (exp) {}
-
     http.onerror = (error) => {
       self.clearSession(false);
     };
@@ -92,21 +110,7 @@ export default class Session {
         if (http.status === 200 || http.status === 201) {
           try {
             const sessionData = JSON.parse(http.responseText);
-
-            try {
-              localStorage.setItem(`gleap-id`, sessionData.gleapId);
-              localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
-            } catch (exp) {}
-
             self.validateSession(sessionData);
-
-            // Session is ready. Notify all subscribers.
-            if (self.onSessionReadyListener.length > 0) {
-              for (var i = 0; i < self.onSessionReadyListener.length; i++) {
-                self.onSessionReadyListener[i]();
-              }
-            }
-            self.onSessionReadyListener = [];
           } catch (exp) {}
         } else {
           self.clearSession(false);
@@ -116,22 +120,57 @@ export default class Session {
     http.send(JSON.stringify({}));
   };
 
+  notifySessionReady() {
+    if (this.onSessionReadyListener.length > 0) {
+      for (var i = 0; i < this.onSessionReadyListener.length; i++) {
+        this.onSessionReadyListener[i]();
+      }
+    }
+    this.onSessionReadyListener = [];
+  }
+
+  checkIfSessionNeedsUpdate = (userId, userData) => {
+    if (!this.session) {
+      return true;
+    }
+
+    if (this.session.userId.toString() !== userId.toString()) {
+      return true;
+    }
+
+    if (userData) {
+      var userDataKeys = Object.keys(userData);
+      for (var i = 0; i < userDataKeys.length; i++) {
+        var userDataKey = userDataKeys[i];
+        if (this.session[userDataKey] !== userData[userDataKey]) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  };
+
   identifySession = (userId, userData) => {
+    if (!this.checkIfSessionNeedsUpdate(userId, userData)) {
+      return;
+    }
+
     const self = this;
     return new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
+        if (!self.session.gleapId || !self.session.gleapHash) {
+          return reject();
+        }
+
         const http = new XMLHttpRequest();
         http.open("POST", self.apiUrl + "/sessions/identify");
         http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         http.setRequestHeader("Api-Token", self.sdkKey);
         try {
-          const gleapId = localStorage.getItem(`gleap-id`);
-          const gleapHash = localStorage.getItem(`gleap-hash`);
-          if (gleapId && gleapHash) {
-            http.setRequestHeader("Gleap-Id", gleapId);
-            http.setRequestHeader("Gleap-Hash", gleapHash);
-          }
+          http.setRequestHeader("Gleap-Id", self.session.gleapId);
+          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -142,26 +181,14 @@ export default class Session {
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
-
-                try {
-                  localStorage.setItem(`gleap-id`, sessionData.gleapId);
-                  localStorage.setItem(`gleap-hash`, sessionData.gleapHash);
-                } catch (exp) {}
-
                 self.validateSession(sessionData);
-
-                // Optionally update UI.
-                const userNameInfo = document.querySelector("#bb-user-name");
-                if (userNameInfo && sessionData.name) {
-                  userNameInfo.textContent = sessionData.name;
-                }
 
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
               }
             } else {
-              self.clearSession(false);
+              self.clearSession(true);
               reject();
             }
           }

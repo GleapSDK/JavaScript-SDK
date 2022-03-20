@@ -10,7 +10,7 @@ import {
   REPLAYREC_SCROLL,
   REPLAYREC_TEXT,
 } from "./ReplayConstants";
-import { isMobile, resizeImage } from "./ImageHelper";
+import { isMobile, resizeImage } from "./GleapHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
 
 export default class ReplayRecorder {

@@ -60,3 +60,25 @@ export const isMobile = () => {
   }
   return false;
 };
+
+export const loadFromGleapCache = (key) => {
+  try {
+    const cachedData = localStorage.getItem(`gleap-widget-${key}`);
+    if (cachedData) {
+      const config = JSON.parse(cachedData);
+      return config;
+    }
+  } catch (exp) {}
+  return null;
+};
+
+export const saveToGleapCache = (key, data) => {
+  const k = `gleap-widget-${key}`;
+  if (data) {
+    try {
+      localStorage.setItem(k, JSON.stringify(data));
+    } catch (exp) {}
+  } else {
+    localStorage.removeItem(k);
+  }
+};

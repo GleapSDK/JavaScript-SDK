@@ -339,8 +339,13 @@ export const injectStyledCSS = (
     }
     `;
 
+  const oldNode = document.querySelector(".gleap-styles");
+  if (oldNode) {
+    oldNode.remove();
+  }
   const node = document.createElement("style");
   node.innerHTML = colorStyleSheet;
+  node.className = "gleap-styles";
   Gleap.appendNode(node);
 };
 
