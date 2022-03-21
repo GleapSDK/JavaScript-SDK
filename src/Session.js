@@ -130,12 +130,16 @@ export default class Session {
   }
 
   checkIfSessionNeedsUpdate = (userId, userData) => {
-    if (!this.session) {
+    if (!this.session || !this.session.userId || !userId) {
       return true;
     }
 
-    if (this.session.userId.toString() !== userId.toString()) {
-      return true;
+    try {
+      if (this.session.userId.toString() !== userId.toString()) {
+        return true;
+      }
+    } catch (exp) {
+      console.log("Gleap: warn");
     }
 
     if (userData) {

@@ -6,15 +6,15 @@ export default class AutoConfig {
   static run = () => {
     const cachedConfig = loadFromGleapCache("config");
     if (cachedConfig) {
-      AutoConfig.applyConfig(cachedConfig, false);
-      AutoConfig.loadConfigFromServer(true);
+      AutoConfig.applyConfig(cachedConfig);
+      AutoConfig.loadConfigFromServer(false);
       return Promise.resolve();
     }
 
-    return AutoConfig.loadConfigFromServer();
+    return AutoConfig.loadConfigFromServer(true);
   };
 
-  static loadConfigFromServer = (updateCacheOnly = false) => {
+  static loadConfigFromServer = (updateConfig = false) => {
     return new Promise(function (resolve) {
       const session = Session.getInstance();
       const http = new XMLHttpRequest();
@@ -32,7 +32,12 @@ export default class AutoConfig {
           if (http.status === 200 || http.status === 201) {
             try {
               const config = JSON.parse(http.responseText);
-              AutoConfig.applyConfig(config, updateCacheOnly);
+              try {
+                saveToGleapCache("config", config);
+              } catch (exp) {}
+              if (updateConfig) {
+                AutoConfig.applyConfig(config);
+              }
             } catch (e) {}
           }
           resolve();
@@ -42,11 +47,7 @@ export default class AutoConfig {
     });
   };
 
-  static applyConfig(config, updateCacheOnly = false) {
-    try {
-      saveToGleapCache("config", config);
-    } catch (exp) {}
-
+  static applyConfig(config) {
     try {
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
@@ -70,10 +71,6 @@ export default class AutoConfig {
 
       if (flowConfig.hideBranding) {
         Gleap.enablePoweredBy();
-      }
-
-      if (updateCacheOnly) {
-        return;
       }
 
       if (flowConfig.networkLogPropsToIgnore) {
