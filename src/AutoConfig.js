@@ -6,11 +6,14 @@ export default class AutoConfig {
   static run = () => {
     const cachedConfig = loadFromGleapCache("config");
     if (cachedConfig) {
+      console.log(cachedConfig);
       AutoConfig.applyConfig(cachedConfig);
+      console.log("Loaded config from cache.");
       AutoConfig.loadConfigFromServer(false);
       return Promise.resolve();
     }
 
+    console.log("Loaded config from server.");
     return AutoConfig.loadConfigFromServer(true);
   };
 
@@ -48,6 +51,7 @@ export default class AutoConfig {
   };
 
   static applyConfig(config) {
+    console.log("Loaded" + config);
     try {
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
