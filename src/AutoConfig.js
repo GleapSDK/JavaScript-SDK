@@ -4,14 +4,13 @@ import Session from "./Session";
 
 export default class AutoConfig {
   static run = () => {
-    const cachedConfig = loadFromGleapCache("config");
+    /*const cachedConfig = loadFromGleapCache("config");
     if (cachedConfig) {
       AutoConfig.applyConfig(cachedConfig);
       AutoConfig.loadConfigFromServer(false);
       return Promise.resolve();
-    }
+    }*/
 
-    console.log("Loaded config from server.");
     return AutoConfig.loadConfigFromServer(true);
   };
 
@@ -50,7 +49,6 @@ export default class AutoConfig {
 
   static applyConfig(config) {
     try {
-      console.log(config);
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
 
