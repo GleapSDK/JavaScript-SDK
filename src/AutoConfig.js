@@ -6,9 +6,7 @@ export default class AutoConfig {
   static run = () => {
     const cachedConfig = loadFromGleapCache("config");
     if (cachedConfig) {
-      console.log(cachedConfig);
       AutoConfig.applyConfig(cachedConfig);
-      console.log("Loaded config from cache.");
       AutoConfig.loadConfigFromServer(false);
       return Promise.resolve();
     }
@@ -51,8 +49,8 @@ export default class AutoConfig {
   };
 
   static applyConfig(config) {
-    console.log("Loaded" + config);
     try {
+      console.log(config);
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
 
@@ -229,6 +227,8 @@ export default class AutoConfig {
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
