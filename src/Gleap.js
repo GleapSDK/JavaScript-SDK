@@ -58,7 +58,7 @@ class Gleap {
   formData = {};
   excludeData = {};
   logMaxLength = 500;
-  buttonType = Gleap.FEEDBACK_BUTTON_BOTTOM_RIGHT;
+  buttonType = Gleap.FEEDBACK_BUTTON_NONE;
   feedbackType = "BUG";
   sessionStart = new Date();
   customActionCallbacks = [];
@@ -201,11 +201,199 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
-      AutoConfig.run().then(function () {
-        instance.postInit();
-      });
+      AutoConfig.run()
+        .then(function (config) {
+          Gleap.applyConfig(config);
+          instance.postInit();
+        })
+        .catch(function (err) {});
     });
     sessionInstance.startSession();
+  }
+
+  /**
+   * Applies the Gleap config.
+   * @param {*} config
+   */
+  static applyConfig(config) {
+    try {
+      const flowConfig = config.flowConfig;
+      const projectActions = config.projectActions;
+
+      const instance = this.getInstance();
+      if (flowConfig.logo && flowConfig.logo.length > 0) {
+        this.setLogoUrl(flowConfig.logo);
+      }
+
+      if (flowConfig.color) {
+        this.setStyles({
+          primaryColor: flowConfig.color,
+          headerColor: flowConfig.headerColor,
+          buttonColor: flowConfig.buttonColor,
+          borderRadius: flowConfig.borderRadius,
+          backgroundColor: flowConfig.backgroundColor
+            ? flowConfig.backgroundColor
+            : "#FFFFFF",
+        });
+      }
+
+      if (flowConfig.hideBranding) {
+        this.enablePoweredBy();
+      }
+
+      if (flowConfig.networkLogPropsToIgnore) {
+        this.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
+      }
+
+      if (!flowConfig.enableConsoleLogs) {
+        this.disableConsoleLogOverwrite();
+      }
+
+      if (
+        typeof flowConfig.enableCrashDetector !== "undefined" &&
+        flowConfig.enableCrashDetector
+      ) {
+        this.enableCrashDetector(true, flowConfig.enableCrashDetector);
+      }
+
+      if (
+        typeof flowConfig.enableRageClickDetector !== "undefined" &&
+        flowConfig.enableRageClickDetector
+      ) {
+        this.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
+      }
+
+      if (flowConfig.customTranslations) {
+        this.setCustomTranslation(flowConfig.customTranslations);
+      }
+
+      if (
+        typeof flowConfig.feedbackButtonPosition !== "undefined" &&
+        flowConfig.feedbackButtonPosition.length > 0
+      ) {
+        this.setButtonType(flowConfig.feedbackButtonPosition);
+      }
+
+      if (
+        typeof flowConfig.widgetButtonText !== "undefined" &&
+        flowConfig.widgetButtonText.length > 0
+      ) {
+        this.setFeedbackButtonText(flowConfig.widgetButtonText);
+      }
+
+      if (
+        typeof flowConfig.hideWavingHandAfterName !== "undefined" &&
+        flowConfig.hideWavingHandAfterName
+      ) {
+        this.setWelcomeIcon("");
+      }
+
+      if (
+        typeof flowConfig.hideUsersName !== "undefined" &&
+        flowConfig.hideUsersName
+      ) {
+        this.setShowUserName(false);
+      }
+
+      if (flowConfig.widgetInfoTitle && flowConfig.widgetInfoTitle.length > 0) {
+        this.setWidgetInfo({
+          title: flowConfig.widgetInfoTitle,
+        });
+      }
+
+      if (
+        flowConfig.widgetInfoSubtitle &&
+        flowConfig.widgetInfoSubtitle.length > 0
+      ) {
+        this.setWidgetInfo({
+          subtitle: flowConfig.widgetInfoSubtitle,
+        });
+      }
+
+      if (
+        flowConfig.widgetInfoDialogSubtitle &&
+        flowConfig.widgetInfoDialogSubtitle.length > 0
+      ) {
+        this.setWidgetInfo({
+          dialogSubtitle: flowConfig.widgetInfoDialogSubtitle,
+        });
+      }
+
+      if (
+        flowConfig.enableMenu &&
+        flowConfig.menuItems &&
+        flowConfig.menuItems.length > 0
+      ) {
+        var menuItems = [];
+        for (let i = 0; i < flowConfig.menuItems.length; i++) {
+          var menuItem = flowConfig.menuItems[i];
+          var actionFlow = null;
+          var action = null;
+
+          if (menuItem.actionType === "OPEN_INTERCOM") {
+            action = function () {
+              if (instance.widgetCallback) {
+                return;
+              }
+              if (typeof Intercom !== "undefined") {
+                Intercom("showNewMessage");
+              }
+            };
+          } else if (menuItem.actionType === "REDIRECT_URL") {
+            if (instance.widgetCallback) {
+              action = function () {
+                instance.widgetCallback("openExternalURL", {
+                  url: menuItem.actionBody,
+                });
+              };
+            } else {
+              if (menuItem.actionOpenInNewTab) {
+                action = function () {
+                  window.open(menuItem.actionBody, "_blank").focus();
+                };
+              } else {
+                action = function () {
+                  window.location.href = menuItem.actionBody;
+                };
+              }
+            }
+          } else if (menuItem.actionType === "CUSTOM_ACTION") {
+            action = function () {
+              this.triggerCustomAction(menuItem.actionBody);
+            };
+          } else {
+            actionFlow = menuItem.actionType;
+          }
+
+          // Action flow
+          if (actionFlow != null || action != null) {
+            var item = {
+              title: menuItem.title,
+              description: menuItem.description,
+              icon: menuItem.icon,
+              color: menuItem.color,
+            };
+            if (actionFlow) {
+              item["actionFlow"] = actionFlow;
+            }
+            if (action) {
+              item["action"] = action;
+            }
+            menuItems.push(item);
+          }
+        }
+
+        this.setMenuOptions(menuItems);
+      }
+
+      if (projectActions) {
+        this.setFeedbackActions(projectActions);
+      }
+
+      if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
+        this.setButtonLogoUrl(flowConfig.buttonLogo);
+      }
+    } catch (e) {}
   }
 
   postInit() {
