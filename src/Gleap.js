@@ -224,7 +224,7 @@ class Gleap {
       const projectActions = config.projectActions;
 
       if (flowConfig.color) {
-        this.setStyles({
+        Gleap.setStyles({
           primaryColor: flowConfig.color,
           headerColor: flowConfig.headerColor,
           buttonColor: flowConfig.buttonColor,
@@ -241,69 +241,79 @@ class Gleap {
       }
 
       if (flowConfig.logo && flowConfig.logo.length > 0) {
-        this.setLogoUrl(flowConfig.logo);
+        Gleap.setLogoUrl(flowConfig.logo);
       }
 
       if (flowConfig.hideBranding) {
-        this.enablePoweredBy();
+        Gleap.enablePoweredBy();
+      }
+
+      if (flowConfig.enableReplays) {
+        Gleap.enableReplays(flowConfig.enableReplays);
+      }
+
+      Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
+
+      if (flowConfig.enableNetworkLogs) {
+        Gleap.enableNetworkLogger();
       }
 
       if (flowConfig.networkLogPropsToIgnore) {
-        this.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
+        Gleap.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
       }
 
       if (!flowConfig.enableConsoleLogs) {
-        this.disableConsoleLogOverwrite();
+        Gleap.disableConsoleLogOverwrite();
       }
 
       if (
         typeof flowConfig.enableCrashDetector !== "undefined" &&
         flowConfig.enableCrashDetector
       ) {
-        this.enableCrashDetector(true, flowConfig.enableCrashDetector);
+        Gleap.enableCrashDetector(true, flowConfig.enableCrashDetector);
       }
 
       if (
         typeof flowConfig.enableRageClickDetector !== "undefined" &&
         flowConfig.enableRageClickDetector
       ) {
-        this.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
+        Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
       }
 
       if (flowConfig.customTranslations) {
-        this.setCustomTranslation(flowConfig.customTranslations);
+        Gleap.setCustomTranslation(flowConfig.customTranslations);
       }
 
       if (
         typeof flowConfig.feedbackButtonPosition !== "undefined" &&
         flowConfig.feedbackButtonPosition.length > 0
       ) {
-        this.setButtonType(flowConfig.feedbackButtonPosition);
+        Gleap.setButtonType(flowConfig.feedbackButtonPosition);
       }
 
       if (
         typeof flowConfig.widgetButtonText !== "undefined" &&
         flowConfig.widgetButtonText.length > 0
       ) {
-        this.setFeedbackButtonText(flowConfig.widgetButtonText);
+        Gleap.setFeedbackButtonText(flowConfig.widgetButtonText);
       }
 
       if (
         typeof flowConfig.hideWavingHandAfterName !== "undefined" &&
         flowConfig.hideWavingHandAfterName
       ) {
-        this.setWelcomeIcon("");
+        Gleap.setWelcomeIcon("");
       }
 
       if (
         typeof flowConfig.hideUsersName !== "undefined" &&
         flowConfig.hideUsersName
       ) {
-        this.setShowUserName(false);
+        Gleap.setShowUserName(false);
       }
 
       if (flowConfig.widgetInfoTitle && flowConfig.widgetInfoTitle.length > 0) {
-        this.setWidgetInfo({
+        Gleap.setWidgetInfo({
           title: flowConfig.widgetInfoTitle,
         });
       }
@@ -312,7 +322,7 @@ class Gleap {
         flowConfig.widgetInfoSubtitle &&
         flowConfig.widgetInfoSubtitle.length > 0
       ) {
-        this.setWidgetInfo({
+        Gleap.setWidgetInfo({
           subtitle: flowConfig.widgetInfoSubtitle,
         });
       }
@@ -321,22 +331,21 @@ class Gleap {
         flowConfig.widgetInfoDialogSubtitle &&
         flowConfig.widgetInfoDialogSubtitle.length > 0
       ) {
-        this.setWidgetInfo({
+        Gleap.setWidgetInfo({
           dialogSubtitle: flowConfig.widgetInfoDialogSubtitle,
         });
       }
 
-      const instance = this.getInstance();
       if (
         flowConfig.enableMenu &&
         flowConfig.menuItems &&
         flowConfig.menuItems.length > 0
       ) {
-        var menuItems = [];
+        let menuItems = [];
         for (let i = 0; i < flowConfig.menuItems.length; i++) {
-          var menuItem = flowConfig.menuItems[i];
-          var actionFlow = null;
-          var action = null;
+          let menuItem = flowConfig.menuItems[i];
+          let actionFlow = null;
+          let action = null;
 
           if (menuItem.actionType === "OPEN_INTERCOM") {
             action = function () {
@@ -367,7 +376,7 @@ class Gleap {
             }
           } else if (menuItem.actionType === "CUSTOM_ACTION") {
             action = function () {
-              this.triggerCustomAction(menuItem.actionBody);
+              Gleap.triggerCustomAction(menuItem.actionBody);
             };
           } else {
             actionFlow = menuItem.actionType;
@@ -391,15 +400,15 @@ class Gleap {
           }
         }
 
-        this.setMenuOptions(menuItems);
+        Gleap.setMenuOptions(menuItems);
       }
 
       if (projectActions) {
-        this.setFeedbackActions(projectActions);
+        Gleap.setFeedbackActions(projectActions);
       }
 
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
-        this.setButtonLogoUrl(flowConfig.buttonLogo);
+        Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }
     } catch (e) {
       console.log(e);
