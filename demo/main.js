@@ -1,7 +1,7 @@
 const Gleap = window.Gleap;
 
 // Gleap.setApiUrl("http://localhost:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV", '8fd4b016-b909-49e4-bd66-9a835cdd5a1c', '22327b39e9028307dd88cf1de22fff94092f72500a2a93ddb49e96a2b95476a4');
+Gleap.initialize("6aDbcY8I6uo5qc0CnJbfAI8mCXInmsvP");
 
 /*function makeid(length) {
   var result           = '';
