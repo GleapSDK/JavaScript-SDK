@@ -199,15 +199,17 @@ class Gleap {
 
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
-    sessionInstance.setOnSessionReady(() => {
+    sessionInstance.setOnSessionReady(function () {
       // Run auto configuration.
-      AutoConfig.run(function (config, soft) {
-        Gleap.applyConfig(config, soft);
-      })
-        .then(function () {
-          instance.postInit();
+      setTimeout(function () {
+        AutoConfig.run(function (config, soft) {
+          Gleap.applyConfig(config, soft);
         })
-        .catch(function (err) {});
+          .then(function () {
+            instance.postInit();
+          })
+          .catch(function (err) {});
+      }, 0);
     });
     sessionInstance.startSession();
   }
@@ -399,7 +401,9 @@ class Gleap {
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         this.setButtonLogoUrl(flowConfig.buttonLogo);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   postInit() {
