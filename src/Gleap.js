@@ -11,7 +11,7 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { isMobile } from "./GleapHelper";
+import { isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
@@ -186,14 +186,14 @@ class Gleap {
     // Set default session (i.e. from the app SDK).
     if (gleapId && gleapHash) {
       try {
-        var oldSession = loadFromGleapCache(`session-${this.sdkKey}`);
+        var oldSession = loadFromGleapCache(`session-${sdkKey}`);
         if (!oldSession) {
           oldSession = {};
         }
         oldSession.gleapId = gleapId;
         oldSession.gleapHash = gleapHash;
 
-        saveToGleapCache(`session-${this.sdkKey}`, oldSession);
+        saveToGleapCache(`session-${sdkKey}`, oldSession);
       } catch (exp) {}
     }
 
@@ -201,9 +201,10 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
-      AutoConfig.run()
-        .then(function (config) {
-          Gleap.applyConfig(config);
+      AutoConfig.run(function (config, soft) {
+        Gleap.applyConfig(config, soft);
+      })
+        .then(function () {
           instance.postInit();
         })
         .catch(function (err) {});
@@ -215,15 +216,10 @@ class Gleap {
    * Applies the Gleap config.
    * @param {*} config
    */
-  static applyConfig(config) {
+  static applyConfig(config, soft) {
     try {
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
-
-      const instance = this.getInstance();
-      if (flowConfig.logo && flowConfig.logo.length > 0) {
-        this.setLogoUrl(flowConfig.logo);
-      }
 
       if (flowConfig.color) {
         this.setStyles({
@@ -235,6 +231,15 @@ class Gleap {
             ? flowConfig.backgroundColor
             : "#FFFFFF",
         });
+      }
+
+      // If it's only a soft update, return here.
+      if (soft) {
+        return;
+      }
+
+      if (flowConfig.logo && flowConfig.logo.length > 0) {
+        this.setLogoUrl(flowConfig.logo);
       }
 
       if (flowConfig.hideBranding) {
@@ -319,6 +324,7 @@ class Gleap {
         });
       }
 
+      const instance = this.getInstance();
       if (
         flowConfig.enableMenu &&
         flowConfig.menuItems &&

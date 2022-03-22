@@ -2,17 +2,18 @@ import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import Session from "./Session";
 
 export default class AutoConfig {
-  static run = () => {
+  static run = (applyFunc) => {
     const cachedConfig = loadFromGleapCache("config");
     if (cachedConfig) {
-      AutoConfig.loadConfigFromServer();
-      return Promise.resolve(cachedConfig);
+      applyFunc(cachedConfig, false);
+      AutoConfig.loadConfigFromServer(applyFunc, true);
+      return Promise.resolve();
     }
 
-    return AutoConfig.loadConfigFromServer();
+    return AutoConfig.loadConfigFromServer(applyFunc, false);
   };
 
-  static loadConfigFromServer = () => {
+  static loadConfigFromServer = (applyFunc, soft) => {
     return new Promise(function (resolve, reject) {
       const session = Session.getInstance();
       const http = new XMLHttpRequest();
@@ -33,7 +34,8 @@ export default class AutoConfig {
               try {
                 saveToGleapCache("config", config);
               } catch (exp) {}
-              return resolve(config);
+              applyFunc(config, soft);
+              return resolve();
             } catch (e) {}
           }
           reject();
