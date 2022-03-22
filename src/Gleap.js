@@ -410,9 +410,7 @@ class Gleap {
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   }
 
   postInit() {
