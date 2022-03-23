@@ -5177,15 +5177,13 @@ var AutoConfig = /*#__PURE__*/function () {
 }();
 
 AutoConfig_defineProperty(AutoConfig, "run", function () {
-  var session = Session.getInstance();
-  var cachedConfig = loadFromGleapCache("config-".concat(session.sdkKey));
-
+  /*const session = Session.getInstance();
+  const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
   if (cachedConfig) {
     AutoConfig.applyConfig(cachedConfig, false);
-    AutoConfig.loadConfigFromServer(true)["catch"](function (e) {});
+    AutoConfig.loadConfigFromServer(true).catch(function (e) {});
     return Promise.resolve();
-  }
-
+  }*/
   return AutoConfig.loadConfigFromServer(false);
 });
 
@@ -6255,7 +6253,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.8",
+        sdkVersion: "6.8.9",
         sdkType: "javascript"
       };
     }

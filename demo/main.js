@@ -1,19 +1,42 @@
 const Gleap = window.Gleap;
 
-// Gleap.setApiUrl("http://localhost:9000");
-Gleap.initialize("6aDbcY8I6uo5qc0CnJbfAI8mCXInmsvP");
+Gleap.initialize("a5yVbBAxZ3SxYRneqPnETvEG58veOyQs");
 
-/*function makeid(length) {
-  var result           = '';
-  var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  var charactersLength = characters.length;
-  for ( var i = 0; i < length; i++ ) {
-    result += characters.charAt(Math.floor(Math.random() * 
-charactersLength));
- }
- return result;
-}
+Gleap.identify("12938", {
+  email: "lukas@gleap.io",
+  name: "Lukas",
+});
 
-setInterval(() => {
-  document.getElementById("rand").innerText = makeid(1000);
-}, 1);*/
+Gleap.attachCustomData({
+  mission: "Unicorn",
+  type: "Demo App",
+  nestedData: {
+    possible: true,
+    name: "Mission: Impossible - Ghost Protocol",
+  },
+});
+
+setTimeout(() => {
+  console.log("Loading place infos");
+
+  var xmlhttp = new XMLHttpRequest();
+  var url = "https://jsonplaceholder.typicode.com/todos/1";
+
+  xmlhttp.onreadystatechange = function () {
+    if (this.readyState == 4 && this.status == 200) {
+      var myArr = JSON.parse(this.responseText);
+      console.log(myArr);
+    }
+  };
+  xmlhttp.open("GET", url, true);
+  xmlhttp.send();
+});
+
+setTimeout(() => {
+  console.warn("Demo warning :)");
+  console.log("Data will be loaded soon.");
+}, 0);
+
+setTimeout(() => {
+  console.warn("Failed to attach button listener.");
+}, 2000);
