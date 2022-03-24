@@ -30,7 +30,7 @@ setTimeout(() => {
   };
   xmlhttp.open("GET", url, true);
   xmlhttp.send();
-});
+}, 3000);
 
 setTimeout(() => {
   console.warn("Demo warning :)");
@@ -39,4 +39,4 @@ setTimeout(() => {
 
 setTimeout(() => {
   console.warn("Failed to attach button listener.");
-}, 2000);
+}, 4000);
