@@ -4,13 +4,13 @@ import Session from "./Session";
 
 export default class AutoConfig {
   static run = () => {
-    /*const session = Session.getInstance();
+    const session = Session.getInstance();
     const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
     if (cachedConfig) {
       AutoConfig.applyConfig(cachedConfig, false);
       AutoConfig.loadConfigFromServer(true).catch(function (e) {});
       return Promise.resolve();
-    }*/
+    }
 
     return AutoConfig.loadConfigFromServer(false);
   };
