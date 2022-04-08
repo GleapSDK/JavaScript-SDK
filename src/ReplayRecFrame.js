@@ -231,6 +231,8 @@ export default class ReplayRecFrame {
   }
 
   flushObserver() {
-    this.rec.observerCallback(this.observer.takeRecords());
+    if (this.observer && typeof this.observer.takeRecords !== "undefined") {
+      this.rec.observerCallback(this.observer.takeRecords());
+    }
   }
 }

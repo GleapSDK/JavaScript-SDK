@@ -796,6 +796,15 @@ class Gleap {
     instance.openedMenu = true;
     instance.updateFeedbackButtonState();
 
+    var displayUserName = "";
+    if (
+      instance.showUserName &&
+      sessionInstance.session &&
+      sessionInstance.session.name
+    ) {
+      displayUserName = sessionInstance.session.name;
+    }
+
     // Start feedback type dialog
     createFeedbackTypeDialog(
       instance.feedbackTypeActions,
@@ -806,11 +815,9 @@ class Gleap {
       `${translateText(
         "Hi",
         instance.overrideLanguage
-      )} <span id="bb-user-name">${
-        instance.showUserName && sessionInstance.session.name
-          ? sessionInstance.session.name
-          : ""
-      }</span> ${instance.welcomeIcon}`,
+      )} <span id="bb-user-name">${displayUserName}</span> ${
+        instance.welcomeIcon
+      }`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
         instance.overrideLanguage
@@ -1061,12 +1068,16 @@ class Gleap {
   startCrashDetection() {
     const self = this;
     window.onerror = function (msg, url, lineNo, columnNo, error) {
+      var stackTrace = "";
+      if (error !== null && typeof error.stack !== "undefined") {
+        stackTrace = error.stack;
+      }
       var message = [
         "Message: " + msg,
         "URL: " + url,
         "Line: " + lineNo,
         "Column: " + columnNo,
-        "Stack: " + (error && error.stack) ? error.stack : "",
+        "Stack: " + stackTrace,
       ];
       self.addLog(message, "ERROR");
 
@@ -1083,7 +1094,7 @@ class Gleap {
               url: url,
               lineNo: lineNo,
               columnNo: columnNo,
-              stackTrace: error && error.stack ? error.stack : "",
+              stackTrace: stackTrace,
             },
             Gleap.PRIORITY_MEDIUM,
             "CRASH",

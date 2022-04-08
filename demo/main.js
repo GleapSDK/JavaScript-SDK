@@ -1,6 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.initialize("a5yVbBAxZ3SxYRneqPnETvEG58veOyQs");
+// Gleap.setApiUrl("http://localhost:9000");
+Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
 Gleap.identify("12938", {
   email: "lukas@gleap.io",
@@ -39,4 +40,5 @@ setTimeout(() => {
 
 setTimeout(() => {
   console.warn("Failed to attach button listener.");
+  x();
 }, 4000);

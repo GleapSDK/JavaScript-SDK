@@ -77,8 +77,11 @@ export default class Session {
     // Optionally update UI.
     const userNameInfo = document.querySelector("#bb-user-name");
     if (userNameInfo) {
-      userNameInfo.textContent =
-        session.name && Gleap.getInstance().showUserName ? session.name : "";
+      if (session.name && Gleap.getInstance().showUserName) {
+        userNameInfo.textContent = session.name;
+      } else {
+        userNameInfo.textContent = "";
+      }
     }
 
     this.notifySessionReady();

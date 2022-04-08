@@ -1626,7 +1626,9 @@ var ReplayRecFrame = /*#__PURE__*/function () {
   }, {
     key: "flushObserver",
     value: function flushObserver() {
-      this.rec.observerCallback(this.observer.takeRecords());
+      if (this.observer && typeof this.observer.takeRecords !== "undefined") {
+        this.rec.observerCallback(this.observer.takeRecords());
+      }
     }
   }]);
 
@@ -2869,7 +2871,11 @@ var Session = /*#__PURE__*/function () {
       var userNameInfo = document.querySelector("#bb-user-name");
 
       if (userNameInfo) {
-        userNameInfo.textContent = session.name ? session.name : "";
+        if (session.name && src_Gleap.getInstance().showUserName) {
+          userNameInfo.textContent = session.name;
+        } else {
+          userNameInfo.textContent = "";
+        }
       }
 
       _this.notifySessionReady();
@@ -2927,9 +2933,7 @@ var Session = /*#__PURE__*/function () {
         if (_this.session.userId.toString() !== userId.toString()) {
           return true;
         }
-      } catch (exp) {
-        console.log("Gleap: warn");
-      }
+      } catch (exp) {}
 
       if (userData) {
         var userDataKeys = Object.keys(userData);
@@ -5177,13 +5181,14 @@ var AutoConfig = /*#__PURE__*/function () {
 }();
 
 AutoConfig_defineProperty(AutoConfig, "run", function () {
-  /*const session = Session.getInstance();
-  const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
+  var session = Session.getInstance();
+  /*const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
   if (cachedConfig) {
     AutoConfig.applyConfig(cachedConfig, false);
     AutoConfig.loadConfigFromServer(true).catch(function (e) {});
     return Promise.resolve();
   }*/
+
   return AutoConfig.loadConfigFromServer(false);
 });
 
@@ -5552,7 +5557,13 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       var self = this;
 
       window.onerror = function (msg, url, lineNo, columnNo, error) {
-        var message = ["Message: " + msg, "URL: " + url, "Line: " + lineNo, "Column: " + columnNo, "Stack: " + (error && error.stack) ? error.stack : 0];
+        var stackTrace = "";
+
+        if (error !== null && typeof error.stack !== "undefined") {
+          stackTrace = error.stack;
+        }
+
+        var message = ["Message: " + msg, "URL: " + url, "Line: " + lineNo, "Column: " + columnNo, "Stack: " + stackTrace];
         self.addLog(message, "ERROR");
 
         if (self.enabledCrashDetector && !self.appCrashDetected && !self.currentlySendingBug) {
@@ -5564,7 +5575,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
               url: url,
               lineNo: lineNo,
               columnNo: columnNo,
-              stackTrace: error && error.stack ? error.stack : ""
+              stackTrace: stackTrace
             }, Gleap.PRIORITY_MEDIUM, "CRASH", {
               screenshot: true,
               replays: true
@@ -6253,7 +6264,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.9",
+        sdkVersion: "6.8.10",
         sdkType: "javascript"
       };
     }
@@ -6956,9 +6967,15 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       instance.stopBugReportingAnalytics();
       instance.widgetOpened = true;
       instance.openedMenu = true;
-      instance.updateFeedbackButtonState(); // Start feedback type dialog
+      instance.updateFeedbackButtonState();
+      var displayUserName = "";
 
-      createFeedbackTypeDialog(instance.feedbackTypeActions, instance.overrideLanguage, instance.customLogoUrl, instance.poweredByHidden, function () {}, "".concat(translateText("Hi", instance.overrideLanguage), " <span id=\"bb-user-name\">").concat(instance.showUserName && sessionInstance.session.name ? sessionInstance.session.name : "", "</span> ").concat(instance.welcomeIcon), translateText(instance.widgetInfo.dialogSubtitle, instance.overrideLanguage), fromBack);
+      if (instance.showUserName && sessionInstance.session && sessionInstance.session.name) {
+        displayUserName = sessionInstance.session.name;
+      } // Start feedback type dialog
+
+
+      createFeedbackTypeDialog(instance.feedbackTypeActions, instance.overrideLanguage, instance.customLogoUrl, instance.poweredByHidden, function () {}, "".concat(translateText("Hi", instance.overrideLanguage), " <span id=\"bb-user-name\">").concat(displayUserName, "</span> ").concat(instance.welcomeIcon), translateText(instance.widgetInfo.dialogSubtitle, instance.overrideLanguage), fromBack);
     }
     /**
      * Register custom action
