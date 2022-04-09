@@ -7,6 +7,27 @@ class GleapNetworkIntercepter {
   initialized = false;
   stopped = false;
 
+  isContentTypeSupported(contentType) {
+    if (typeof contentType !== "string") {
+      return false;
+    }
+
+    if (contentType === "") {
+      return true;
+    }
+
+    contentType = contentType.toLocaleLowerCase();
+
+    const supportedContentTypes = ["text/", "xml", "json"];
+    for (var i = 0; i < supportedContentTypes.length; i++) {
+      if (contentType.includes(supportedContentTypes[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   getRequests() {
     var requests = this.externalConsoleLogs.concat(
       Object.values(this.requests)
@@ -189,26 +210,47 @@ class GleapNetworkIntercepter {
           this.calcRequestTime(bbRequestId);
         } catch (exp) {}
 
-        req
-          .text()
-          .then((responseText) => {
+        try {
+          var contentType = "";
+          if (req.headers && typeof req.headers.get !== "undefined") {
+            contentType = req.headers.get("content-type");
+          }
+
+          console.log(contentType);
+          if (this.isContentTypeSupported(contentType)) {
+            req
+              .text()
+              .then((responseText) => {
+                if (this.requests[bbRequestId]) {
+                  this.requests[bbRequestId]["success"] = true;
+                  this.requests[bbRequestId]["response"] = {
+                    status: req.status,
+                    statusText: req.statusText,
+                    responseText:
+                      self.calculateTextSize(responseText) > 0.5
+                        ? "<response_too_large>"
+                        : responseText,
+                  };
+                }
+                this.calcRequestTime(bbRequestId);
+                this.cleanRequests();
+              })
+              .catch((err) => {
+                this.cleanRequests();
+              });
+          } else {
             if (this.requests[bbRequestId]) {
               this.requests[bbRequestId]["success"] = true;
               this.requests[bbRequestId]["response"] = {
                 status: req.status,
                 statusText: req.statusText,
-                responseText:
-                  self.calculateTextSize(responseText) > 0.5
-                    ? "<response_too_large>"
-                    : responseText,
+                responseText: "<content_type_not_supported>",
               };
             }
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
-          })
-          .catch((err) => {
-            this.cleanRequests();
-          });
+          }
+        } catch (exp) {}
       },
       onFetchFailed: (err, bbRequestId) => {
         if (

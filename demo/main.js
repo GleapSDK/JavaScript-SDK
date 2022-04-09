@@ -38,7 +38,26 @@ setTimeout(() => {
   console.log("Data will be loaded soon.");
 }, 0);
 
-setTimeout(() => {
-  console.warn("Failed to attach button listener.");
-  x();
-}, 4000);
+const files = [
+  "https://biblephrasesm31p70v.blob.core.windows.net/phrases-v2/CD17C8A4CF4FA179C864FA4EFA561BBC405EF06304B1E239EE1A3A781A8905A0.mpga",
+  "https://biblephrasesm31p70v.blob.core.windows.net/phrases-v2/CD17C8A4CF4FA179C864FA4EFA561BBC405EF06304B1E239EE1A3A781A8905A0.mpga",
+  "https://reqres.in/api/products/3",
+];
+
+setTimeout(async () => {
+  console.log("LOADING AUDIO:");
+  for (let i = 0; i < files.length; i++) {
+    let file = files[i];
+
+    const response = await fetch(file);
+    if (response.ok) {
+      const arrayBuffer = await response.arrayBuffer();
+      if (!arrayBuffer.byteLength) return;
+    }
+  }
+
+
+  const a = await fetch("https://reqres.in/api/products/3");
+  const j = await a.json();
+  console.log(j);
+}, 5000);

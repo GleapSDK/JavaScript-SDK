@@ -971,6 +971,28 @@ var GleapNetworkIntercepter = /*#__PURE__*/function () {
   }
 
   _createClass(GleapNetworkIntercepter, [{
+    key: "isContentTypeSupported",
+    value: function isContentTypeSupported(contentType) {
+      if (typeof contentType !== "string") {
+        return false;
+      }
+
+      if (contentType === "") {
+        return true;
+      }
+
+      contentType = contentType.toLocaleLowerCase();
+      var supportedContentTypes = ["text/", "xml", "json"];
+
+      for (var i = 0; i < supportedContentTypes.length; i++) {
+        if (contentType.includes(supportedContentTypes[i])) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+  }, {
     key: "getRequests",
     value: function getRequests() {
       var requests = this.externalConsoleLogs.concat(Object.values(this.requests));
@@ -1154,22 +1176,47 @@ var GleapNetworkIntercepter = /*#__PURE__*/function () {
             _this.calcRequestTime(bbRequestId);
           } catch (exp) {}
 
-          req.text().then(function (responseText) {
-            if (_this.requests[bbRequestId]) {
-              _this.requests[bbRequestId]["success"] = true;
-              _this.requests[bbRequestId]["response"] = {
-                status: req.status,
-                statusText: req.statusText,
-                responseText: self.calculateTextSize(responseText) > 0.5 ? "<response_too_large>" : responseText
-              };
+          try {
+            var contentType = "";
+
+            if (req.headers && typeof req.headers.get !== "undefined") {
+              contentType = req.headers.get("content-type");
             }
 
-            _this.calcRequestTime(bbRequestId);
+            console.log(contentType);
 
-            _this.cleanRequests();
-          })["catch"](function (err) {
-            _this.cleanRequests();
-          });
+            if (_this.isContentTypeSupported(contentType)) {
+              req.text().then(function (responseText) {
+                if (_this.requests[bbRequestId]) {
+                  _this.requests[bbRequestId]["success"] = true;
+                  _this.requests[bbRequestId]["response"] = {
+                    status: req.status,
+                    statusText: req.statusText,
+                    responseText: self.calculateTextSize(responseText) > 0.5 ? "<response_too_large>" : responseText
+                  };
+                }
+
+                _this.calcRequestTime(bbRequestId);
+
+                _this.cleanRequests();
+              })["catch"](function (err) {
+                _this.cleanRequests();
+              });
+            } else {
+              if (_this.requests[bbRequestId]) {
+                _this.requests[bbRequestId]["success"] = true;
+                _this.requests[bbRequestId]["response"] = {
+                  status: req.status,
+                  statusText: req.statusText,
+                  responseText: "<content_type_not_supported>"
+                };
+              }
+
+              _this.calcRequestTime(bbRequestId);
+
+              _this.cleanRequests();
+            }
+          } catch (exp) {}
         },
         onFetchFailed: function onFetchFailed(err, bbRequestId) {
           if (_this.stopped || !bbRequestId || !_this.requests || !_this.requests[bbRequestId]) {
@@ -6264,7 +6311,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.10",
+        sdkVersion: "6.8.11",
         sdkType: "javascript"
       };
     }
