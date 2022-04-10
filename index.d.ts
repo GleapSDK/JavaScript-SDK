@@ -11,6 +11,11 @@ export namespace Gleap {
     description: string,
     priority: "LOW" | "MEDIUM" | "HIGH"
   ): void;
+  function sendSilentBugReportWithType(
+    description: string,
+    priority: "LOW" | "MEDIUM" | "HIGH",
+    type: string
+  ): void;
   function sendSilentReport(
     formData: {
       [key: string]: string;

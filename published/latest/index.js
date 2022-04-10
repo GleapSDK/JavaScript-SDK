@@ -6990,6 +6990,24 @@ var Gleap_Gleap = /*#__PURE__*/function () {
     /**
      * Reports a bug silently
      * @param {*} description
+     * @param {*} priority
+     * @param {*} type
+     * @deprecated Please use sendSilentReport instead.
+     */
+
+  }, {
+    key: "sendSilentBugReportWithType",
+    value: function sendSilentBugReportWithType(description) {
+      var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Gleap.PRIORITY_MEDIUM;
+      var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "BUG";
+      return Gleap.sendSilentReport({
+        description: description
+      }, priority, type);
+    }
+    /**
+     * Reports a bug silently
+     * @param {*} description
+     * @param {*} priority
      * @deprecated Please use sendSilentReport instead.
      */
 
@@ -6997,10 +7015,9 @@ var Gleap_Gleap = /*#__PURE__*/function () {
     key: "sendSilentBugReport",
     value: function sendSilentBugReport(description) {
       var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Gleap.PRIORITY_MEDIUM;
-      var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "BUG";
       return Gleap.sendSilentReport({
         description: description
-      }, priority, type);
+      }, priority, "BUG");
     }
     /**
      * Starts the feedback type selection flow.
