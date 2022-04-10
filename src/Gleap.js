@@ -775,13 +775,17 @@ class Gleap {
    * @param {*} description
    * @deprecated Please use sendSilentReport instead.
    */
-  static sendSilentBugReport(description, priority = Gleap.PRIORITY_MEDIUM) {
+  static sendSilentBugReport(
+    description,
+    priority = Gleap.PRIORITY_MEDIUM,
+    type = "BUG"
+  ) {
     return Gleap.sendSilentReport(
       {
         description: description,
       },
       priority,
-      "BUG"
+      type
     );
   }
 

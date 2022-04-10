@@ -6311,7 +6311,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.11",
+        sdkVersion: "6.8.12",
         sdkType: "javascript"
       };
     }
@@ -6997,9 +6997,10 @@ var Gleap_Gleap = /*#__PURE__*/function () {
     key: "sendSilentBugReport",
     value: function sendSilentBugReport(description) {
       var priority = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Gleap.PRIORITY_MEDIUM;
+      var type = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : "BUG";
       return Gleap.sendSilentReport({
         description: description
-      }, priority, "BUG");
+      }, priority, type);
     }
     /**
      * Starts the feedback type selection flow.
