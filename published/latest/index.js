@@ -6311,7 +6311,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.12",
+        sdkVersion: "6.8.13",
         sdkType: "javascript"
       };
     }
