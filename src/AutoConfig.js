@@ -72,11 +72,7 @@ export default class AutoConfig {
       if (soft) {
         return;
       }
-
-      if (flowConfig.logo && flowConfig.logo.length > 0) {
-        Gleap.setLogoUrl(flowConfig.logo);
-      }
-
+      
       if (flowConfig.hideBranding) {
         Gleap.enablePoweredBy();
       }
@@ -129,44 +125,6 @@ export default class AutoConfig {
         flowConfig.widgetButtonText.length > 0
       ) {
         Gleap.setFeedbackButtonText(flowConfig.widgetButtonText);
-      }
-
-      if (
-        typeof flowConfig.hideWavingHandAfterName !== "undefined" &&
-        flowConfig.hideWavingHandAfterName
-      ) {
-        Gleap.setWelcomeIcon("");
-      }
-
-      if (
-        typeof flowConfig.hideUsersName !== "undefined" &&
-        flowConfig.hideUsersName
-      ) {
-        Gleap.setShowUserName(false);
-      }
-
-      if (flowConfig.widgetInfoTitle && flowConfig.widgetInfoTitle.length > 0) {
-        Gleap.setWidgetInfo({
-          title: flowConfig.widgetInfoTitle,
-        });
-      }
-
-      if (
-        flowConfig.widgetInfoSubtitle &&
-        flowConfig.widgetInfoSubtitle.length > 0
-      ) {
-        Gleap.setWidgetInfo({
-          subtitle: flowConfig.widgetInfoSubtitle,
-        });
-      }
-
-      if (
-        flowConfig.widgetInfoDialogSubtitle &&
-        flowConfig.widgetInfoDialogSubtitle.length > 0
-      ) {
-        Gleap.setWidgetInfo({
-          dialogSubtitle: flowConfig.widgetInfoDialogSubtitle,
-        });
       }
 
       const instance = Gleap.getInstance();

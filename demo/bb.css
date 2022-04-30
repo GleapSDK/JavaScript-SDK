@@ -1,5 +1,26 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700&display=swap");
 
+.gleap-frame-container {
+  right: 12px;
+  width: 400px !important;
+  max-width: none;
+  position: fixed;
+  z-index: 2147483647;
+  max-height: 602px !important;
+  bottom: 88px;
+  visibility: visible;
+  min-width: 320px;
+  height: calc(100% - 75px) !important;
+  opacity: 1;
+}
+
+.gleap-frame-container iframe {
+  height: 100% !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block;
+}
+
 .bb-feedback-dialog-container input {
   margin: 0;
   padding: 0;

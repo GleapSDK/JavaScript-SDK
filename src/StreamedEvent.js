@@ -1,4 +1,5 @@
-import Gleap, { gleapDataParser } from "./Gleap";
+import Gleap from "./Gleap";
+import { gleapDataParser } from "./GleapHelper";
 import Session from "./Session";
 
 export default class StreamedEvent {

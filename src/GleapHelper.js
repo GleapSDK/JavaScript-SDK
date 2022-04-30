@@ -47,6 +47,14 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
   });
 };
 
+export const truncateString = (str, num) => {
+  if (str.length > num) {
+    return str.slice(0, num) + "...";
+  } else {
+    return str;
+  }
+};
+
 export const isMobile = () => {
   if (
     /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(
@@ -81,4 +89,15 @@ export const saveToGleapCache = (key, data) => {
   } else {
     localStorage.removeItem(k);
   }
+};
+
+export const gleapDataParser = function (data) {
+  if (typeof data === "string" || data instanceof String) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return {};
+    }
+  }
+  return data;
 };

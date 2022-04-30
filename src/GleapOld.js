@@ -11,20 +11,18 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { gleapDataParser } from "./GleapHelper";
+import { isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
+import { createScreenshotEditor } from "./DrawingCanvas";
 import Session from "./Session";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
 import { ScrollStopper } from "./ScrollStopper";
 import { isLocalNetwork } from "./NetworkUtils";
 import { ScreenRecorder } from "./ScreenRecorder";
-import GleapFrameManager from "./GleapFrameManager";
-import GleapMetaDataManager from "./GleapMetaDataManager";
-import GleapConsoleLogManager from "./GleapConsoleLogManager";
-import GleapClickListener from "./GleapClickListener";
-import GleapCrashDetector from "./GleapCrashDetector";
+import { startClickListener } from "./ClickListener";
+import GleapFrameManager, { injectGleapFrame } from "./GleapFrameManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -37,17 +35,34 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   };
 }
 
+export const gleapDataParser = function (data) {
+  if (typeof data === "string" || data instanceof String) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return {};
+    }
+  }
+  return data;
+};
+
 class Gleap {
+  uiContainer = null;
   widgetOnly = false;
   widgetStartFlow = undefined;
+  widgetCallback = null;
   overrideLanguage = "";
+  screenshot = null;
   autostartDrawing = false;
   actionLog = [];
+  logArray = [];
   customData = {};
   formData = {};
   excludeData = {};
+  logMaxLength = 500;
   buttonType = Gleap.FEEDBACK_BUTTON_NONE;
   feedbackType = "BUG";
+  sessionStart = new Date();
   customActionCallbacks = [];
   poweredByHidden = false;
   enabledCrashDetector = false;
@@ -68,7 +83,15 @@ class Gleap {
   showUserName = true;
   welcomeIcon = "👋";
   feedbackButtonText = "Feedback";
+  widgetInfo = {
+    title: "Feedback",
+    subtitle: "var us know how we can do better.",
+    dialogSubtitle: "Report a bug, or share your feedback with us.",
+  };
+  originalConsoleLog;
   severity = "LOW";
+  appVersionCode = "";
+  appBuildNumber = "";
   mainColor = "#485bff";
   feedbackTypeActions = [];
   customTranslation = {};
@@ -125,6 +148,14 @@ class Gleap {
   }
 
   /**
+   * Sets a custom UI container.
+   */
+  static setUIContainer(container) {
+    const instance = this.getInstance();
+    instance.uiContainer = container;
+  }
+
+  /**
    * Attaches external network logs that get merged with the internal network logs.
    * @param {*} externalConsoleLogs
    */
@@ -146,7 +177,7 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, gleapId, gleapHash) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn("Gleap already initialized.");
@@ -154,24 +185,43 @@ class Gleap {
     }
     instance.initialized = true;
 
-    // Start session
+    // Set default session (i.e. from the app SDK).
+    if (gleapId && gleapHash) {
+      try {
+        var oldSession = loadFromGleapCache(`session-${sdkKey}`);
+        if (!oldSession) {
+          oldSession = {};
+        }
+        if (oldSession.gleapId !== gleapId) {
+          oldSession = {};
+        }
+        oldSession.gleapId = gleapId;
+        oldSession.gleapHash = gleapHash;
+
+        saveToGleapCache(`session-${sdkKey}`, oldSession);
+      } catch (exp) {}
+    }
+
     const sessionInstance = Session.getInstance();
     sessionInstance.sdkKey = sdkKey;
-    sessionInstance.setOnSessionReady(() => {
+    sessionInstance.setOnSessionReady(function () {
       // Run auto configuration.
-      AutoConfig.run()
-        .then(() => {
-          instance.postInit();
-        })
-        .catch(function (err) {
-          console.warn("Failed to initialize Gleap.");
-        });
+      setTimeout(function () {
+        AutoConfig.run()
+          .then(function () {
+            instance.postInit();
+          })
+          .catch(function (err) {});
+      }, 0);
     });
     sessionInstance.startSession();
   }
 
   postInit() {
-    StreamedEvent.getInstance().start();
+    if (!this.widgetCallback) {
+      // Start event stream only on web.
+      StreamedEvent.getInstance().start();
+    }
 
     const self = this;
     if (
@@ -184,6 +234,10 @@ class Gleap {
       document.addEventListener("DOMContentLoaded", function (event) {
         self.checkForInitType();
       });
+    }
+
+    if (this.widgetCallback) {
+      self.widgetCallback("sessionReady");
     }
   }
 
@@ -260,6 +314,21 @@ class Gleap {
   static setCustomTranslation(customTranslation) {
     const instance = this.getInstance();
     instance.customTranslation = customTranslation;
+  }
+
+  /**
+   * Sets a custom screenshot
+   * @param {*} screenshot
+   */
+  static setScreenshot(screenshot) {
+    const instance = this.getInstance();
+    instance.screenshot = screenshot;
+
+    // Open screenshot
+    if (instance.screenshotFeedbackOptions) {
+      instance.showMobileScreenshotEditor(instance.screenshotFeedbackOptions);
+      instance.screenshotFeedbackOptions = null;
+    }
   }
 
   /**
@@ -383,7 +452,20 @@ class Gleap {
    * @param {*} node
    */
   static appendNode(node) {
-    document.body.appendChild(node);
+    const instance = this.getInstance();
+    if (instance.uiContainer) {
+      instance.uiContainer.appendChild(node);
+    } else {
+      document.body.appendChild(node);
+    }
+  }
+
+  /**
+   * Sets the native widget callback
+   * @param {*} widgetCallback
+   */
+  static widgetCallback(widgetCallback) {
+    this.getInstance().widgetCallback = widgetCallback;
   }
 
   /**
@@ -393,6 +475,11 @@ class Gleap {
   static enableShortcuts(enabled) {
     this.getInstance().shortcutsEnabled = enabled;
   }
+
+  /**
+   * Enable Intercom compatibility mode
+   */
+  static enableIntercomCompatibilityMode() {}
 
   /**
    * Show or hide the feedback button
@@ -482,7 +569,7 @@ class Gleap {
    * @param {string} appVersionCode
    */
   static setAppVersionCode(appVersionCode) {
-    GleapMetaDataManager.setAppVersionCode(appVersionCode);
+    this.getInstance().appVersionCode = appVersionCode;
   }
 
   /**
@@ -490,7 +577,7 @@ class Gleap {
    * @param {string} appVersionCode
    */
   static setAppBuildNumber(appBuildNumber) {
-    GleapMetaDataManager.setAppBuildNumber(appBuildNumber);
+    this.getInstance().appBuildNumber = appBuildNumber;
   }
 
   /**
@@ -546,7 +633,12 @@ class Gleap {
   }
 
   /**
-   * Override the browser language.
+   * Override the browser language. Currently supported languages:
+   * - en
+   * - de
+   * - fr
+   * - it
+   * - es
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
@@ -718,6 +810,47 @@ class Gleap {
   }
 
   /**
+   * Starts the feedback type selection flow.
+   */
+  static startFeedbackTypeSelection(fromBack = false) {
+    const sessionInstance = Session.getInstance();
+    const instance = this.getInstance();
+    instance.stopBugReportingAnalytics();
+    instance.widgetOpened = true;
+    instance.openedMenu = true;
+    instance.updateFeedbackButtonState();
+
+    var displayUserName = "";
+    if (
+      instance.showUserName &&
+      sessionInstance.session &&
+      sessionInstance.session.name
+    ) {
+      displayUserName = sessionInstance.session.name;
+    }
+
+    // Start feedback type dialog
+    createFeedbackTypeDialog(
+      instance.feedbackTypeActions,
+      instance.overrideLanguage,
+      instance.customLogoUrl,
+      instance.poweredByHidden,
+      function () {},
+      `${translateText(
+        "Hi",
+        instance.overrideLanguage
+      )} <span id="bb-user-name">${displayUserName}</span> ${
+        instance.welcomeIcon
+      }`,
+      translateText(
+        instance.widgetInfo.dialogSubtitle,
+        instance.overrideLanguage
+      ),
+      fromBack
+    );
+  }
+
+  /**
    * Register custom action
    */
   static registerCustomAction(customAction) {
@@ -733,6 +866,12 @@ class Gleap {
    */
   static triggerCustomAction(name) {
     const instance = this.getInstance();
+
+    if (instance.widgetCallback) {
+      instance.widgetCallback("customActionCalled", {
+        name,
+      });
+    }
 
     if (instance.customActionCallbacks) {
       for (var i = 0; i < instance.customActionCallbacks.length; i++) {
@@ -883,7 +1022,7 @@ class Gleap {
       }
 
       // Inject privacy policy.
-      if (!feedbackOptions.disableUserScreenshot) {
+      if (!feedbackOptions.disableUserScreenshot && !instance.widgetCallback) {
         var captureItem = {
           name: "capture",
           type: "capture",
@@ -950,8 +1089,114 @@ class Gleap {
     }
   }
 
+  startCrashDetection() {
+    const self = this;
+    window.onerror = function (msg, url, lineNo, columnNo, error) {
+      var stackTrace = "";
+      if (error !== null && typeof error.stack !== "undefined") {
+        stackTrace = error.stack;
+      }
+      var message = [
+        "Message: " + msg,
+        "URL: " + url,
+        "Line: " + lineNo,
+        "Column: " + columnNo,
+        "Stack: " + stackTrace,
+      ];
+      self.addLog(message, "ERROR");
+
+      if (
+        self.enabledCrashDetector &&
+        !self.appCrashDetected &&
+        !self.currentlySendingBug
+      ) {
+        self.appCrashDetected = true;
+        if (self.enabledCrashDetectorSilent) {
+          return Gleap.sendSilentReport(
+            {
+              errorMessage: msg,
+              url: url,
+              lineNo: lineNo,
+              columnNo: columnNo,
+              stackTrace: stackTrace,
+            },
+            Gleap.PRIORITY_MEDIUM,
+            "CRASH",
+            {
+              screenshot: true,
+              replays: true,
+            }
+          );
+        } else {
+          Gleap.startFeedbackFlow("crash");
+        }
+      }
+
+      return false;
+    };
+  }
+
+  truncateString(str, num) {
+    if (str.length > num) {
+      return str.slice(0, num) + "...";
+    } else {
+      return str;
+    }
+  }
+
+  addLog(args, priority) {
+    if (!args || args.length <= 0) {
+      return;
+    }
+
+    var log = "";
+    for (var i = 0; i < args.length; i++) {
+      log += args[i] + " ";
+    }
+    this.logArray.push({
+      log: this.truncateString(log, 1000),
+      date: new Date(),
+      priority,
+    });
+
+    if (this.logArray.length > this.logMaxLength) {
+      this.logArray.shift();
+    }
+  }
+
   static disableConsoleLogOverwrite() {
-    GleapConsoleLogManager.getInstance().disableConsoleLogOverwrite();
+    window.console = this.getInstance().originalConsoleLog;
+  }
+
+  overwriteConsoleLog() {
+    const self = this;
+    window.console = (function (origConsole) {
+      if (!window.console || !origConsole) {
+        origConsole = {};
+      }
+
+      self.originalConsoleLog = origConsole;
+
+      return {
+        ...origConsole,
+        log: function () {
+          self.addLog(arguments, "INFO");
+          origConsole.log && origConsole.log.apply(origConsole, arguments);
+        },
+        warn: function () {
+          self.addLog(arguments, "WARNING");
+          origConsole.warn && origConsole.warn.apply(origConsole, arguments);
+        },
+        error: function () {
+          self.addLog(arguments, "ERROR");
+          origConsole.error && origConsole.error.apply(origConsole, arguments);
+        },
+        info: function (v) {
+          self.addLog(arguments, "INFO");
+          origConsole.info && origConsole.info.apply(origConsole, arguments);
+        },
+      };
+    })(window.console);
   }
 
   resetLoading(resetProgress) {
@@ -1067,7 +1312,16 @@ class Gleap {
       ? feedbackOptions.feedbackType
       : "BUG";
 
-    self.checkReplayLoaded();
+    if (self.widgetOnly && self.widgetCallback) {
+      self.widgetCallback("sendFeedback", {
+        type: self.feedbackType,
+        formData: self.formData,
+        screenshot: self.screenshot,
+        excludeData: self.excludeData,
+      });
+    } else {
+      self.checkReplayLoaded();
+    }
   }
 
   checkReplayLoaded(retries = 0) {
@@ -1131,6 +1385,10 @@ class Gleap {
     } catch (exp) {}
 
     this.actionToPerform = undefined;
+
+    if (this.widgetCallback) {
+      this.widgetCallback("closeGleap", {});
+    }
   }
 
   closeModalUI(cleanUp) {
@@ -1166,14 +1424,11 @@ class Gleap {
   }
 
   init() {
-    // Make sure all instances are ready.
-    GleapMetaDataManager.getInstance();
-    GleapConsoleLogManager.getInstance().overwriteConsoleLog();
-    GleapClickListener.getInstance().start();
-    GleapCrashDetector.getInstance().start();
-
-    // this.registerKeyboardListener();
-    // this.registerEscListener();
+    this.overwriteConsoleLog();
+    startClickListener();
+    this.startCrashDetection();
+    this.registerKeyboardListener();
+    this.registerEscListener();
 
     // Initially check network
     if (isLocalNetwork()) {
@@ -1183,7 +1438,7 @@ class Gleap {
     }
   }
 
-  /*registerKeyboardListener() {
+  registerKeyboardListener() {
     const self = this;
     const charForEvent = function (event) {
       var code;
@@ -1210,7 +1465,7 @@ class Gleap {
         Gleap.startFeedbackFlow();
       }
     });
-  }*/
+  }
 
   checkForInitType() {
     if (window && window.onGleapLoaded) {
@@ -1444,7 +1699,7 @@ class Gleap {
       priority: this.severity,
       customData: this.customData,
       metaData: this.getMetaData(),
-      consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
+      consoleLog: this.logArray,
       networkLogs: this.networkIntercepter.getRequests(),
       customEventLog: StreamedEvent.getInstance().eventArray,
       type: this.feedbackType,
@@ -1529,6 +1784,147 @@ class Gleap {
     document.querySelector(".bb-feedback-dialog-error").innerHTML = errorText;
     document.querySelector(".bb-feedback-dialog-error").style.display = "flex";
     document.querySelector(".bb-form-progress").style.display = "none";
+  }
+
+  getMetaData() {
+    var nAgt = navigator.userAgent;
+    var browserName = navigator.appName;
+    var fullVersion = "" + parseFloat(navigator.appVersion);
+    var majorVersion = parseInt(navigator.appVersion, 10);
+    var nameOffset, verOffset, ix;
+
+    // In Opera, the true version is after "Opera" or after "Version"
+    if ((verOffset = nAgt.indexOf("Opera")) !== -1) {
+      browserName = "Opera";
+      fullVersion = nAgt.substring(verOffset + 6);
+      if ((verOffset = nAgt.indexOf("Version")) !== -1)
+        fullVersion = nAgt.substring(verOffset + 8);
+    }
+    // In MSIE, the true version is after "MSIE" in userAgent
+    else if ((verOffset = nAgt.indexOf("MSIE")) !== -1) {
+      browserName = "Microsoft Internet Explorer";
+      fullVersion = nAgt.substring(verOffset + 5);
+    }
+    // In Chrome, the true version is after "Chrome"
+    else if ((verOffset = nAgt.indexOf("Chrome")) !== -1) {
+      browserName = "Chrome";
+      fullVersion = nAgt.substring(verOffset + 7);
+    }
+    // In Safari, the true version is after "Safari" or after "Version"
+    else if ((verOffset = nAgt.indexOf("Safari")) !== -1) {
+      browserName = "Safari";
+      fullVersion = nAgt.substring(verOffset + 7);
+      if ((verOffset = nAgt.indexOf("Version")) !== -1)
+        fullVersion = nAgt.substring(verOffset + 8);
+    }
+    // In Firefox, the true version is after "Firefox"
+    else if ((verOffset = nAgt.indexOf("Firefox")) !== -1) {
+      browserName = "Firefox";
+      fullVersion = nAgt.substring(verOffset + 8);
+    }
+    // In most other browsers, "name/version" is at the end of userAgent
+    else if (
+      (nameOffset = nAgt.lastIndexOf(" ") + 1) <
+      (verOffset = nAgt.lastIndexOf("/"))
+    ) {
+      browserName = nAgt.substring(nameOffset, verOffset);
+      fullVersion = nAgt.substring(verOffset + 1);
+      if (browserName.toLowerCase() === browserName.toUpperCase()) {
+        browserName = navigator.appName;
+      }
+    }
+    // trim the fullVersion string at semicolon/space if present
+    if ((ix = fullVersion.indexOf(";")) !== -1)
+      fullVersion = fullVersion.substring(0, ix);
+    if ((ix = fullVersion.indexOf(" ")) !== -1)
+      fullVersion = fullVersion.substring(0, ix);
+
+    majorVersion = parseInt("" + fullVersion, 10);
+    if (isNaN(majorVersion)) {
+      fullVersion = "" + parseFloat(navigator.appVersion);
+      majorVersion = parseInt(navigator.appVersion, 10);
+    }
+
+    var OSName = "Unknown OS";
+    if (navigator.appVersion.indexOf("Win") !== -1) OSName = "Windows";
+    if (navigator.appVersion.indexOf("Mac") !== -1) OSName = "MacOS";
+    if (navigator.appVersion.indexOf("X11") !== -1) OSName = "UNIX";
+    if (navigator.appVersion.indexOf("Linux") !== -1) OSName = "Linux";
+    if (navigator.appVersion.indexOf("iPad") !== -1) OSName = "iPad";
+    if (navigator.appVersion.indexOf("iPhone") !== -1) OSName = "iPhone";
+    if (navigator.appVersion.indexOf("Android") !== -1) OSName = "Android";
+
+    const now = new Date();
+    const sessionDuration =
+      (now.getTime() - this.sessionStart.getTime()) / 1000;
+
+    return {
+      browserName: browserName + "(" + fullVersion + ")",
+      userAgent: nAgt,
+      browser: navigator.appName,
+      systemName: OSName,
+      buildVersionNumber: this.appBuildNumber,
+      releaseVersionNumber: this.appVersionCode,
+      sessionDuration: sessionDuration,
+      devicePixelRatio: window.devicePixelRatio,
+      screenWidth: window.screen.width,
+      screenHeight: window.screen.height,
+      innerWidth: window.innerWidth,
+      innerHeight: window.innerHeight,
+      currentUrl: window.location.href,
+      language: navigator.language || navigator.userLanguage,
+      mobile: isMobile(),
+      sdkVersion: SDK_VERSION,
+      sdkType: "javascript",
+    };
+  }
+
+  showBugReportEditor(feedbackOptions) {
+    // Native screenshot SDK.
+    if (!feedbackOptions.disableUserScreenshot) {
+      if (this.screenshot) {
+        this.showMobileScreenshotEditor(feedbackOptions);
+        return;
+      }
+
+      // Fetch screenshot from native SDK.
+      if (this.widgetOnly && this.widgetCallback) {
+        this.screenshotFeedbackOptions = feedbackOptions;
+        this.widgetCallback("requestScreenshot", {});
+        return;
+      }
+    }
+
+    this.createFeedbackFormDialog(feedbackOptions);
+  }
+
+  goBackToMainMenu() {
+    if (this.feedbackTypeActions.length > 0) {
+      // Go back to menu
+      this.closeGleap(false);
+      Gleap.startFeedbackTypeSelection(true);
+    } else {
+      // Close
+      this.closeGleap();
+    }
+  }
+
+  showMobileScreenshotEditor(feedbackOptions) {
+    const self = this;
+    createScreenshotEditor(
+      this.screenshot,
+      function (screenshot) {
+        // Update screenshot.
+        self.screenshot = screenshot;
+        self.closeModalUI();
+        self.createFeedbackFormDialog(feedbackOptions);
+      },
+      function () {
+        self.goBackToMainMenu();
+      },
+      this.overrideLanguage,
+      this.feedbackTypeActions.length > 0
+    );
   }
 }
 

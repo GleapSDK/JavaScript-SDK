@@ -194,7 +194,9 @@ export default class ReplayRecFrame {
 
   stop() {
     this.flushObserver();
-    this.observer.disconnect();
+    if (this.observer) {
+      this.observer.disconnect();
+    }
     this.win.removeEventListener("input", this.inputListener, {
       capture: true,
       passive: true,
