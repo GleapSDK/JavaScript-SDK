@@ -21,6 +21,8 @@ import AutoConfig from "./AutoConfig";
 import { ScrollStopper } from "./ScrollStopper";
 import { isLocalNetwork } from "./NetworkUtils";
 import { ScreenRecorder } from "./ScreenRecorder";
+import GleapConsoleLogManager from "./GleapConsoleLogManager";
+import GleapCrashDetector from "./GleapCrashDetector";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -53,11 +55,9 @@ class Gleap {
   screenshot = null;
   autostartDrawing = false;
   actionLog = [];
-  logArray = [];
   customData = {};
   formData = {};
   excludeData = {};
-  logMaxLength = 500;
   buttonType = Gleap.FEEDBACK_BUTTON_NONE;
   feedbackType = "BUG";
   sessionStart = new Date();
@@ -197,7 +197,7 @@ class Gleap {
         oldSession.gleapHash = gleapHash;
 
         saveToGleapCache(`session-${sdkKey}`, oldSession);
-      } catch (exp) {}
+      } catch (exp) { }
     }
 
     const sessionInstance = Session.getInstance();
@@ -209,7 +209,7 @@ class Gleap {
           .then(function () {
             instance.postInit();
           })
-          .catch(function (err) {});
+          .catch(function (err) { });
       }, 0);
     });
     sessionInstance.startSession();
@@ -477,7 +477,7 @@ class Gleap {
   /**
    * Enable Intercom compatibility mode
    */
-  static enableIntercomCompatibilityMode() {}
+  static enableIntercomCompatibilityMode() { }
 
   /**
    * Show or hide the feedback button
@@ -539,13 +539,13 @@ class Gleap {
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {}
+  static enablePrivacyPolicy(enabled) { }
 
   /**
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
+  static setPrivacyPolicyUrl(privacyPolicyUrl) { }
 
   /**
    * Sets the widget info texts.
@@ -833,12 +833,11 @@ class Gleap {
       instance.overrideLanguage,
       instance.customLogoUrl,
       instance.poweredByHidden,
-      function () {},
+      function () { },
       `${translateText(
         "Hi",
         instance.overrideLanguage
-      )} <span id="bb-user-name">${displayUserName}</span> ${
-        instance.welcomeIcon
+      )} <span id="bb-user-name">${displayUserName}</span> ${instance.welcomeIcon
       }`,
       translateText(
         instance.widgetInfo.dialogSubtitle,
@@ -913,7 +912,7 @@ class Gleap {
     // Deep copy to prevent changes.
     try {
       feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
-    } catch (e) {}
+    } catch (e) { }
 
     return feedbackOptions;
   }
@@ -970,16 +969,16 @@ class Gleap {
 
       const emailFormItem =
         feedbackOptions.collectEmail === true ||
-        feedbackOptions.collectEmail === undefined
+          feedbackOptions.collectEmail === undefined
           ? {
-              title: "Email",
-              placeholder: "Your e-mail",
-              type: "text",
-              inputtype: "email",
-              name: "reportedBy",
-              required: true,
-              remember: true,
-            }
+            title: "Email",
+            placeholder: "Your e-mail",
+            type: "text",
+            inputtype: "email",
+            name: "reportedBy",
+            required: true,
+            remember: true,
+          }
           : null;
 
       // Collect email when user needs to enter it.
@@ -1087,114 +1086,8 @@ class Gleap {
     }
   }
 
-  startCrashDetection() {
-    const self = this;
-    window.onerror = function (msg, url, lineNo, columnNo, error) {
-      var stackTrace = "";
-      if (error !== null && typeof error.stack !== "undefined") {
-        stackTrace = error.stack;
-      }
-      var message = [
-        "Message: " + msg,
-        "URL: " + url,
-        "Line: " + lineNo,
-        "Column: " + columnNo,
-        "Stack: " + stackTrace,
-      ];
-      self.addLog(message, "ERROR");
-
-      if (
-        self.enabledCrashDetector &&
-        !self.appCrashDetected &&
-        !self.currentlySendingBug
-      ) {
-        self.appCrashDetected = true;
-        if (self.enabledCrashDetectorSilent) {
-          return Gleap.sendSilentReport(
-            {
-              errorMessage: msg,
-              url: url,
-              lineNo: lineNo,
-              columnNo: columnNo,
-              stackTrace: stackTrace,
-            },
-            Gleap.PRIORITY_MEDIUM,
-            "CRASH",
-            {
-              screenshot: true,
-              replays: true,
-            }
-          );
-        } else {
-          Gleap.startFeedbackFlow("crash");
-        }
-      }
-
-      return false;
-    };
-  }
-
-  truncateString(str, num) {
-    if (str.length > num) {
-      return str.slice(0, num) + "...";
-    } else {
-      return str;
-    }
-  }
-
-  addLog(args, priority) {
-    if (!args) {
-      return;
-    }
-
-    var log = "";
-    for (var i = 0; i < args.length; i++) {
-      log += args[i] + " ";
-    }
-    this.logArray.push({
-      log: this.truncateString(log, 1000),
-      date: new Date(),
-      priority,
-    });
-
-    if (this.logArray.length > this.logMaxLength) {
-      this.logArray.shift();
-    }
-  }
-
   static disableConsoleLogOverwrite() {
-    window.console = this.getInstance().originalConsoleLog;
-  }
-
-  overwriteConsoleLog() {
-    const self = this;
-    window.console = (function (origConsole) {
-      if (!window.console || !origConsole) {
-        origConsole = {};
-      }
-
-      self.originalConsoleLog = origConsole;
-
-      return {
-        ...origConsole,
-        log: function () {
-          self.addLog(arguments, "INFO");
-          origConsole.log && origConsole.log.apply(origConsole, arguments);
-        },
-        warn: function () {
-          self.addLog(arguments, "WARNING");
-          origConsole.warn && origConsole.warn.apply(origConsole, arguments);
-        },
-        error: function () {
-          self.addLog(arguments, "ERROR");
-          origConsole.error && origConsole.error.apply(origConsole, arguments);
-        },
-        info: function (v) {
-          self.addLog(arguments, "INFO");
-          origConsole.info && origConsole.info.apply(origConsole, arguments);
-        },
-      };
-    })(window.console);
+    GleapConsoleLogManager.getInstance().stop();
   }
 
   resetLoading(resetProgress) {
@@ -1377,10 +1270,10 @@ class Gleap {
   reportCleanupOnClose() {
     try {
       Gleap.enableReplays(this.replaysEnabled);
-    } catch (exp) {}
+    } catch (exp) { }
     try {
       this.networkIntercepter.setStopped(false);
-    } catch (exp) {}
+    } catch (exp) { }
 
     this.actionToPerform = undefined;
 
@@ -1422,8 +1315,9 @@ class Gleap {
   }
 
   init() {
-    this.overwriteConsoleLog();
-    this.startCrashDetection();
+    GleapConsoleLogManager.getInstance().start();
+    GleapCrashDetector.getInstance().start();
+
     this.registerKeyboardListener();
     this.registerEscListener();
 
@@ -1512,18 +1406,16 @@ class Gleap {
       this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
       this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
-      elem.innerHTML = `<div class="bb-feedback-button-classic ${
-        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
-          ? "bb-feedback-button-classic--left"
-          : ""
-      }${
-        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+      elem.innerHTML = `<div class="bb-feedback-button-classic ${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
+        ? "bb-feedback-button-classic--left"
+        : ""
+        }${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
           ? "bb-feedback-button-classic--bottom"
           : ""
-      }">${translateText(
-        this.feedbackButtonText,
-        this.overrideLanguage
-      )}</div>`;
+        }">${translateText(
+          this.feedbackButtonText,
+          this.overrideLanguage
+        )}</div>`;
     } else {
       elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
@@ -1570,7 +1462,7 @@ class Gleap {
     // Prevent shoutout from showing again.
     try {
       localStorage.setItem("bb-fto", true);
-    } catch (exp) {}
+    } catch (exp) { }
 
     this.notifyEvent("open");
   }
@@ -1691,7 +1583,7 @@ class Gleap {
       priority: this.severity,
       customData: this.customData,
       metaData: this.getMetaData(),
-      consoleLog: this.logArray,
+      consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
       networkLogs: this.networkIntercepter.getRequests(),
       customEventLog: StreamedEvent.getInstance().eventArray,
       type: this.feedbackType,

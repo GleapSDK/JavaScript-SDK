@@ -68,16 +68,24 @@ export const loadFromGleapCache = (key) => {
       const config = JSON.parse(cachedData);
       return config;
     }
-  } catch (exp) {}
+  } catch (exp) { }
   return null;
 };
+
+export const truncateString = (str, num) => {
+  if (str.length > num) {
+    return str.slice(0, num) + "...";
+  } else {
+    return str;
+  }
+}
 
 export const saveToGleapCache = (key, data) => {
   const k = `gleap-widget-${key}`;
   if (data) {
     try {
       localStorage.setItem(k, JSON.stringify(data));
-    } catch (exp) {}
+    } catch (exp) { }
   } else {
     localStorage.removeItem(k);
   }

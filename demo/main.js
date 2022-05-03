@@ -44,24 +44,6 @@ const files = [
   "https://reqres.in/api/products/3",
 ];
 
-setTimeout(async () => {
-  console.log("LOADING AUDIO:");
-  for (let i = 0; i < files.length; i++) {
-    let file = files[i];
-
-    const response = await fetch(file);
-    if (response.ok) {
-      const arrayBuffer = await response.arrayBuffer();
-      if (!arrayBuffer.byteLength) return;
-    }
-  }
-
-
-  const a = await fetch("https://reqres.in/api/products/3");
-  const j = await a.json();
-  console.log(j);
-}, 5000);
-
 setTimeout(() => {
   const sheet1 = new CSSStyleSheet();
   sheet1.replaceSync("* { color: red; }");
@@ -75,3 +57,11 @@ setTimeout(() => {
   document.body.appendChild(div);*/
   document.adoptedStyleSheets = [sheet1];
 }, 2000);
+
+window.addEventListener('error', e => {
+  console.log(e);
+});
+
+setTimeout(() => {
+  x();
+}, 3000);
