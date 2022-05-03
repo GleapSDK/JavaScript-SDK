@@ -674,7 +674,8 @@ class Gleap {
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentReport({
-          description: `Rage click on ${elementDescription} detected.`,
+          description: `Rage click detected.`,
+          element: elementDescription,
         });
       } else {
         Gleap.startFeedbackFlow("crash");
