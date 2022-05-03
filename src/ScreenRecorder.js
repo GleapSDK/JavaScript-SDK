@@ -1,4 +1,4 @@
-import Session from "./Session";
+import GleapSession from "./GleapSession";
 
 export class ScreenRecorder {
   rerender;
@@ -129,8 +129,8 @@ export class ScreenRecorder {
       }
 
       var xhr = new XMLHttpRequest();
-      xhr.open("POST", Session.getInstance().apiUrl + "/uploads/sdk");
-      Session.getInstance().injectSession(xhr);
+      xhr.open("POST", GleapSession.getInstance().apiUrl + "/uploads/sdk");
+      GleapSession.getInstance().injectSession(xhr);
 
       var formdata = new FormData();
       formdata.append("file", screenRecordingData);

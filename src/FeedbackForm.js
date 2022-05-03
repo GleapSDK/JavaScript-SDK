@@ -1,5 +1,5 @@
 import MarkerManager from "./MarkerManager";
-import Session from "./Session";
+import GleapSession from "./GleapSession";
 import { translateText } from "./Translation";
 import { loadIcon, setLoadingIndicatorProgress } from "./UI";
 
@@ -732,9 +732,9 @@ export const hookForm = function (formOptions, submitForm, overrideLanguage) {
             var xhr = new XMLHttpRequest();
             xhr.open(
               "POST",
-              Session.getInstance().apiUrl + "/uploads/attachments"
+              GleapSession.getInstance().apiUrl + "/uploads/attachments"
             );
-            Session.getInstance().injectSession(xhr);
+            GleapSession.getInstance().injectSession(xhr);
             xhr.upload.onprogress = function (e) {
               if (e.lengthComputable) {
                 const percentComplete = parseInt((e.loaded / e.total) * 100);

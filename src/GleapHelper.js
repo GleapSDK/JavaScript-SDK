@@ -61,6 +61,16 @@ export const isMobile = () => {
   return false;
 };
 
+export const gleapDataParser = function (data) {
+  if (typeof data === "string" || data instanceof String) {
+    try {
+      return JSON.parse(data);
+    } catch (e) {
+      return {};
+    }
+  }
+};
+
 export const loadFromGleapCache = (key) => {
   try {
     const cachedData = localStorage.getItem(`gleap-widget-${key}`);

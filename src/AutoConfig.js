@@ -1,23 +1,43 @@
 import Gleap from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import Session from "./Session";
+import GleapSession from "./GleapSession";
 
 export default class AutoConfig {
-  static run = () => {
-    const session = Session.getInstance();
-    /*const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
-    if (cachedConfig) {
-      AutoConfig.applyConfig(cachedConfig, false);
-      AutoConfig.loadConfigFromServer(true).catch(function (e) {});
-      return Promise.resolve();
-    }*/
+  flowConfig = null;
 
-    return AutoConfig.loadConfigFromServer(false);
+  // GleapFeedbackButtonManager singleton
+  static instance;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new GleapFeedbackButtonManager();
+    }
+    return this.instance;
+  }
+
+  /**
+   * Returns the loaded flow config.
+   * @returns 
+   */
+  getFlowConfig() {
+    return this.flowConfig;
+  }
+
+  start = () => {
+    const session = GleapSession.getInstance();
+    const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
+    if (cachedConfig) {
+      this.applyConfig(cachedConfig, false);
+      this.loadConfigFromServer(true).catch(function (e) { });
+      return Promise.resolve();
+    }
+
+    return this.loadConfigFromServer(false);
   };
 
-  static loadConfigFromServer = (soft) => {
+  loadConfigFromServer = (soft) => {
+    const self = this;
     return new Promise(function (resolve, reject) {
-      const session = Session.getInstance();
+      const session = GleapSession.getInstance();
       const http = new XMLHttpRequest();
       http.open(
         "GET",
@@ -35,10 +55,10 @@ export default class AutoConfig {
               const config = JSON.parse(http.responseText);
               try {
                 saveToGleapCache(`config-${session.sdkKey}`, config);
-              } catch (exp) {}
-              AutoConfig.applyConfig(config, soft);
+              } catch (exp) { }
+              self.applyConfig(config, soft);
               return resolve();
-            } catch (e) {}
+            } catch (e) { }
           }
           reject();
         }
@@ -51,12 +71,14 @@ export default class AutoConfig {
    * Applies the Gleap config.
    * @param {*} config
    */
-  static applyConfig(config, soft) {
+  applyConfig(config, soft) {
     try {
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
 
-      if (flowConfig.color) {
+      this.flowConfig = flowConfig;
+
+      /*if (flowConfig.color) {
         Gleap.setStyles({
           primaryColor: flowConfig.color,
           headerColor: flowConfig.headerColor,
@@ -201,7 +223,7 @@ export default class AutoConfig {
 
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
-      }
-    } catch (e) {}
+      }*/
+    } catch (e) { }
   }
 }

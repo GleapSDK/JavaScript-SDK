@@ -1,7 +1,7 @@
 import Gleap from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
-export default class Session {
+export default class GleapSession {
   apiUrl = "https://api.gleap.io";
   widgetUrl = "https://widget.gleap.io";
   sdkKey = null;
@@ -15,11 +15,11 @@ export default class Session {
   ready = false;
   onSessionReadyListener = [];
 
-  // Session singleton
+  // GleapSession singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new Session();
+      this.instance = new GleapSession();
       return this.instance;
     } else {
       return this.instance;
@@ -125,6 +125,7 @@ export default class Session {
   };
 
   notifySessionReady() {
+    console.log(this);
     if (this.onSessionReadyListener.length > 0) {
       for (var i = 0; i < this.onSessionReadyListener.length; i++) {
         this.onSessionReadyListener[i]();

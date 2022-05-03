@@ -1,6 +1,6 @@
 import Gleap from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
-import Session from "./Session";
+import GleapSession from "./GleapSession";
 
 export default class StreamedEvent {
   eventArray = [];
@@ -8,7 +8,7 @@ export default class StreamedEvent {
   eventMaxLength = 500;
   lastUrl = undefined;
 
-  // Session singleton
+  // StreamedEvent singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
@@ -67,7 +67,7 @@ export default class StreamedEvent {
     const self = this;
     let interval = 1500;
     if (
-      Session.getInstance().ready &&
+      GleapSession.getInstance().ready &&
       self.streamedEventArray &&
       self.streamedEventArray.length > 0
     ) {
@@ -81,13 +81,13 @@ export default class StreamedEvent {
   };
 
   streamEvents = () => {
-    if (Session.getInstance().ready) {
+    if (GleapSession.getInstance().ready) {
       const http = new XMLHttpRequest();
-      http.open("POST", Session.getInstance().apiUrl + "/sessions/stream");
+      http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/stream");
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      Session.getInstance().injectSession(http);
+      GleapSession.getInstance().injectSession(http);
       http.onerror = (error) => {
-        Session.getInstance().clearSession(true);
+        GleapSession.getInstance().clearSession(true);
       };
       http.onreadystatechange = function (e) {
         if (http.readyState === XMLHttpRequest.DONE) {
@@ -97,7 +97,7 @@ export default class StreamedEvent {
               Gleap.getInstance().performAction(action);
             } catch (exp) {}
           } else {
-            Session.getInstance().clearSession(true);
+            GleapSession.getInstance().clearSession(true);
           }
         }
       };
