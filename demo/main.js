@@ -44,20 +44,24 @@ const files = [
   "https://reqres.in/api/products/3",
 ];
 
-setTimeout(async () => {
-  console.log("LOADING AUDIO:");
-  for (let i = 0; i < files.length; i++) {
-    let file = files[i];
+setTimeout(() => {
+  const sheet1 = new CSSStyleSheet();
+  sheet1.replaceSync("* { color: red; }");
 
-    const response = await fetch(file);
-    if (response.ok) {
-      const arrayBuffer = await response.arrayBuffer();
-      if (!arrayBuffer.byteLength) return;
-    }
-  }
+  /*const div = document.createElement("div");
+  const shadowRoot = div.attachShadow({ mode: "open" });
+  shadowRoot.adoptedStyleSheets = [sheet1];
+  shadowRoot.innerHTML = `
+<span class="foo">Hello!<br />HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello Hello</span>
+`;
+  document.body.appendChild(div);*/
+  document.adoptedStyleSheets = [sheet1];
+}, 2000);
 
+window.addEventListener('error', e => {
+  console.log(e);
+});
 
-  const a = await fetch("https://reqres.in/api/products/3");
-  const j = await a.json();
-  console.log(j);
-}, 5000);
+setTimeout(() => {
+  // x();
+}, 3000);

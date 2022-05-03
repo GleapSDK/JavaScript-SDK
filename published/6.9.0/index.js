@@ -570,14 +570,14 @@ var deepClone = function deepClone(host) {
     parent.appendChild(clone);
 
     if (node.shadowRoot) {
-      var rootShadowNodeId = shadowNodeId;
-      shadowNodeId++;
-      walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
-      handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
+      walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
+      handleAdoptedStyleSheets(node.shadowRoot, clone, shadowNodeId);
 
       if (typeof clone.setAttribute !== "undefined") {
-        clone.setAttribute("bb-shadow-parent", rootShadowNodeId);
+        clone.setAttribute("bb-shadow-parent", shadowNodeId);
       }
+
+      ++shadowNodeId;
     }
 
     walkTree(node.firstChild, clone);
@@ -6527,7 +6527,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.9.1",
+        sdkVersion: "6.9.0",
         sdkType: "javascript"
       };
     }

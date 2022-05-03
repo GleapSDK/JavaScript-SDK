@@ -1,3 +1,4 @@
+import Gleap from "./Gleap";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 
 export default class GleapCrashDetector {
@@ -11,34 +12,36 @@ export default class GleapCrashDetector {
   }
 
   start() {
-    const self = this;
-    window.onerror = function (msg, url, lineNo, columnNo, error) {
+    window.addEventListener('error', e => {
+      const { message, filename, lineno, colno, error } = e;
+
       var stackTrace = "";
       if (error !== null && typeof error.stack !== "undefined") {
         stackTrace = error.stack;
       }
-      var message = [
-        "Message: " + msg,
-        "URL: " + url,
-        "Line: " + lineNo,
-        "Column: " + columnNo,
+      var messageObject = [
+        "Message: " + message,
+        "URL: " + filename,
+        "Line: " + lineno,
+        "Column: " + colno,
         "Stack: " + stackTrace,
       ];
-      GleapConsoleLogManager.getInstance().addLog(message, "ERROR");
+      GleapConsoleLogManager.getInstance().addLog(messageObject, "ERROR");
 
-      /*if (
-        self.enabledCrashDetector &&
-        !self.appCrashDetected &&
-        !self.currentlySendingBug
+      const gleapInstance = Gleap.getInstance();
+      if (
+        gleapInstance.enabledCrashDetector &&
+        !gleapInstance.appCrashDetected &&
+        !gleapInstance.currentlySendingBug
       ) {
-        self.appCrashDetected = true;
-        if (self.enabledCrashDetectorSilent) {
+        gleapInstance.appCrashDetected = true;
+        if (gleapInstance.enabledCrashDetectorSilent) {
           return Gleap.sendSilentReport(
             {
-              errorMessage: msg,
-              url: url,
-              lineNo: lineNo,
-              columnNo: columnNo,
+              errorMessage: message,
+              url: filename,
+              lineNo: lineno,
+              columnNo: colno,
               stackTrace: stackTrace,
             },
             Gleap.PRIORITY_MEDIUM,
@@ -51,9 +54,7 @@ export default class GleapCrashDetector {
         } else {
           Gleap.startFeedbackFlow("crash");
         }
-      }*/
-
-      return false;
-    };
+      }
+    });
   }
 }

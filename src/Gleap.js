@@ -11,7 +11,7 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { gleapDataParser } from "./GleapHelper";
+import { getDOMElementDescription, isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import Session from "./Session";
@@ -454,13 +454,13 @@ class Gleap {
    * Enables the privacy policy.
    * @param {boolean} enabled
    */
-  static enablePrivacyPolicy(enabled) {}
+  static enablePrivacyPolicy(enabled) { }
 
   /**
    * Sets the privacy policy url.
    * @param {string} privacyPolicyUrl
    */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) {}
+  static setPrivacyPolicyUrl(privacyPolicyUrl) { }
 
   /**
    * Sets the widget info texts.
@@ -579,10 +579,12 @@ class Gleap {
     instance.enabledRageClickDetectorSilent = silent;
 
     startRageClickDetector(function (target) {
+      const elementDescription = getDOMElementDescription(target, false);
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentReport({
-          description: "Rage click detected.",
+          description: `Rage click detected.`,
+          element: elementDescription,
         });
       } else {
         Gleap.startFeedbackFlow("crash");
@@ -776,7 +778,7 @@ class Gleap {
     // Deep copy to prevent changes.
     try {
       feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
-    } catch (e) {}
+    } catch (e) { }
 
     return feedbackOptions;
   }
@@ -833,16 +835,16 @@ class Gleap {
 
       const emailFormItem =
         feedbackOptions.collectEmail === true ||
-        feedbackOptions.collectEmail === undefined
+          feedbackOptions.collectEmail === undefined
           ? {
-              title: "Email",
-              placeholder: "Your e-mail",
-              type: "text",
-              inputtype: "email",
-              name: "reportedBy",
-              required: true,
-              remember: true,
-            }
+            title: "Email",
+            placeholder: "Your e-mail",
+            type: "text",
+            inputtype: "email",
+            name: "reportedBy",
+            required: true,
+            remember: true,
+          }
           : null;
 
       // Collect email when user needs to enter it.
@@ -1125,10 +1127,10 @@ class Gleap {
   reportCleanupOnClose() {
     try {
       Gleap.enableReplays(this.replaysEnabled);
-    } catch (exp) {}
+    } catch (exp) { }
     try {
       this.networkIntercepter.setStopped(false);
-    } catch (exp) {}
+    } catch (exp) { }
 
     this.actionToPerform = undefined;
   }
@@ -1265,18 +1267,16 @@ class Gleap {
       this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
       this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
-      elem.innerHTML = `<div class="bb-feedback-button-classic ${
-        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
-          ? "bb-feedback-button-classic--left"
-          : ""
-      }${
-        this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+      elem.innerHTML = `<div class="bb-feedback-button-classic ${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
+        ? "bb-feedback-button-classic--left"
+        : ""
+        }${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
           ? "bb-feedback-button-classic--bottom"
           : ""
-      }">${translateText(
-        this.feedbackButtonText,
-        this.overrideLanguage
-      )}</div>`;
+        }">${translateText(
+          this.feedbackButtonText,
+          this.overrideLanguage
+        )}</div>`;
     } else {
       elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
         "arrowdown",
@@ -1323,7 +1323,7 @@ class Gleap {
     // Prevent shoutout from showing again.
     try {
       localStorage.setItem("bb-fto", true);
-    } catch (exp) {}
+    } catch (exp) { }
 
     this.notifyEvent("open");
   }

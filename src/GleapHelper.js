@@ -47,14 +47,6 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
   });
 };
 
-export const truncateString = (str, num) => {
-  if (str.length > num) {
-    return str.slice(0, num) + "...";
-  } else {
-    return str;
-  }
-};
-
 export const isMobile = () => {
   if (
     /(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(
@@ -76,28 +68,51 @@ export const loadFromGleapCache = (key) => {
       const config = JSON.parse(cachedData);
       return config;
     }
-  } catch (exp) {}
+  } catch (exp) { }
   return null;
 };
+
+export const truncateString = (str, num) => {
+  if (str.length > num) {
+    return str.slice(0, num) + "...";
+  } else {
+    return str;
+  }
+}
 
 export const saveToGleapCache = (key, data) => {
   const k = `gleap-widget-${key}`;
   if (data) {
     try {
       localStorage.setItem(k, JSON.stringify(data));
-    } catch (exp) {}
+    } catch (exp) { }
   } else {
     localStorage.removeItem(k);
   }
 };
 
-export const gleapDataParser = function (data) {
-  if (typeof data === "string" || data instanceof String) {
-    try {
-      return JSON.parse(data);
-    } catch (e) {
-      return {};
+export const getDOMElementDescription = (element, html = true) => {
+  var innerText = truncateString(element.innerText || '', 40).replace(/(\r\n|\n|\r)/gm, "").replace(/ +(?= )/g, '');
+  var elementId = "";
+  var elementClass = "";
+  if (typeof element.getAttribute !== "undefined") {
+    const elemId = element.getAttribute("id");
+    if (elemId) {
+      elementId = ` id="${elemId}"`;
+    }
+    const elemClass = element.getAttribute("class");
+    if (elemClass) {
+      elementClass = ` class="${elemClass}"`;
     }
   }
-  return data;
-};
+  const elementTag = (element.tagName || '').toLowerCase();
+
+  var htmlPre = "<";
+  var htmlPost = ">";
+  if (!html) {
+    htmlPre = "[";
+    htmlPost = "]";
+  }
+
+  return `${htmlPre}${elementTag}${elementId}${elementClass}${htmlPost}${innerText}${htmlPre}/${elementTag}${htmlPost}`;
+}

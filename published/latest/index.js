@@ -112,6 +112,13 @@ var loadFromGleapCache = function loadFromGleapCache(key) {
 
   return null;
 };
+var truncateString = function truncateString(str, num) {
+  if (str.length > num) {
+    return str.slice(0, num) + "...";
+  } else {
+    return str;
+  }
+};
 var saveToGleapCache = function saveToGleapCache(key, data) {
   var k = "gleap-widget-".concat(key);
 
@@ -122,6 +129,37 @@ var saveToGleapCache = function saveToGleapCache(key, data) {
   } else {
     localStorage.removeItem(k);
   }
+};
+var getDOMElementDescription = function getDOMElementDescription(element) {
+  var html = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+  var innerText = truncateString(element.innerText || '', 40).replace(/(\r\n|\n|\r)/gm, "").replace(/ +(?= )/g, '');
+  var elementId = "";
+  var elementClass = "";
+
+  if (typeof element.getAttribute !== "undefined") {
+    var elemId = element.getAttribute("id");
+
+    if (elemId) {
+      elementId = " id=\"".concat(elemId, "\"");
+    }
+
+    var elemClass = element.getAttribute("class");
+
+    if (elemClass) {
+      elementClass = " class=\"".concat(elemClass, "\"");
+    }
+  }
+
+  var elementTag = (element.tagName || '').toLowerCase();
+  var htmlPre = "<";
+  var htmlPost = ">";
+
+  if (!html) {
+    htmlPre = "[";
+    htmlPost = "]";
+  }
+
+  return "".concat(htmlPre).concat(elementTag).concat(elementId).concat(elementClass).concat(htmlPost).concat(innerText).concat(htmlPre, "/").concat(elementTag).concat(htmlPost);
 };
 ;// CONCATENATED MODULE: ./src/ResourceExclusionList.js
 var blacklist = ["//fonts.googleapis.com", "//cdn.jsdelivr.net", "//cdnjs.cloudflare.com", "//ajax.googleapis.com", "//use.typekit.net", ".amazonaws.com", "//jssdk.gleap.io", ".gstatic.com"];
@@ -350,30 +388,36 @@ var replaceStyleNodes = function replaceStyleNodes(clone, styleSheet, cssTextCon
   }
 };
 
+var getTextContentFromStyleSheet = function getTextContentFromStyleSheet(styleSheet) {
+  var cssRules = null;
+
+  try {
+    if (styleSheet.cssRules) {
+      cssRules = styleSheet.cssRules;
+    } else if (styleSheet.rules) {
+      cssRules = styleSheet.rules;
+    }
+  } catch (exp) {}
+
+  var cssTextContent = "";
+
+  if (cssRules) {
+    for (var cssRuleItem in cssRules) {
+      if (cssRules[cssRuleItem].cssText) {
+        cssTextContent += cssRules[cssRuleItem].cssText;
+      }
+    }
+  }
+
+  return cssTextContent;
+};
+
 var downloadAllCSSUrlResources = function downloadAllCSSUrlResources(clone, remote) {
   var promises = [];
 
   var _loop = function _loop() {
     var styleSheet = document.styleSheets[i];
-    cssRules = null;
-
-    try {
-      if (styleSheet.cssRules) {
-        cssRules = styleSheet.cssRules;
-      } else if (styleSheet.rules) {
-        cssRules = styleSheet.rules;
-      }
-    } catch (exp) {}
-
-    cssTextContent = "";
-
-    if (cssRules) {
-      for (cssRuleItem in cssRules) {
-        if (cssRules[cssRuleItem].cssText) {
-          cssTextContent += cssRules[cssRuleItem].cssText;
-        }
-      }
-    }
+    var cssTextContent = getTextContentFromStyleSheet(styleSheet);
 
     if (styleSheet && styleSheet.ownerNode) {
       if (cssTextContent != "" && !remote) {
@@ -404,9 +448,6 @@ var downloadAllCSSUrlResources = function downloadAllCSSUrlResources(clone, remo
   };
 
   for (var i = 0; i < document.styleSheets.length; i++) {
-    var cssRules;
-    var cssTextContent;
-    var cssRuleItem;
     var basePathURL;
 
     _loop();
@@ -443,6 +484,29 @@ var prepareRemoteData = function prepareRemoteData(clone, remote) {
       });
     }
   });
+};
+
+var handleAdoptedStyleSheets = function handleAdoptedStyleSheets(doc, clone, shadowNodeId) {
+  if (typeof doc.adoptedStyleSheets !== "undefined") {
+    for (var i = 0; i < doc.adoptedStyleSheets.length; i++) {
+      var styleSheet = doc.adoptedStyleSheets[i];
+      var cssTextContent = getTextContentFromStyleSheet(styleSheet);
+      var shadowStyleNode = window.document.createElement("style");
+      shadowStyleNode.type = "text/css";
+
+      if (shadowStyleNode.styleSheet) {
+        shadowStyleNode.styleSheet.cssText = cssTextContent;
+      } else {
+        shadowStyleNode.appendChild(window.document.createTextNode(cssTextContent));
+      }
+
+      if (shadowNodeId) {
+        shadowStyleNode.setAttribute("bb-shadow-child", shadowNodeId);
+      }
+
+      clone.insertBefore(shadowStyleNode, clone.firstElementChild);
+    }
+  }
 };
 
 var deepClone = function deepClone(host) {
@@ -506,20 +570,29 @@ var deepClone = function deepClone(host) {
     parent.appendChild(clone);
 
     if (node.shadowRoot) {
-      walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
+      var rootShadowNodeId = shadowNodeId;
+      shadowNodeId++;
+      walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
+      handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
       if (typeof clone.setAttribute !== "undefined") {
-        clone.setAttribute("bb-shadow-parent", shadowNodeId);
+        clone.setAttribute("bb-shadow-parent", rootShadowNodeId);
       }
-
-      ++shadowNodeId;
     }
 
     walkTree(node.firstChild, clone);
   };
 
   var fragment = document.createDocumentFragment();
-  cloneNode(host, fragment);
+  cloneNode(host, fragment); // Work on adopted stylesheets.
+
+  var clonedHead = fragment.querySelector("head");
+
+  if (!clonedHead) {
+    clonedHead = fragment;
+  }
+
+  handleAdoptedStyleSheets(window.document, clonedHead);
   return fragment;
 };
 
@@ -4565,12 +4638,6 @@ var validateFormPage = function validateFormPage(page) {
   return formValid;
 };
 ;// CONCATENATED MODULE: ./src/UXDetectors.js
-var getSelectorFromTarget = function getSelectorFromTarget(target) {
-  var className = target.className !== "" ? "." + target.className : "";
-  var targetId = target.id !== "" ? "#" + target.id : "";
-  return [target.nodeName, className, targetId].join(" ");
-};
-
 var detectRageClicks = function detectRageClicks(subscribe, options) {
   var interval = options.interval,
       limit = options.limit;
@@ -4581,10 +4648,7 @@ var detectRageClicks = function detectRageClicks(subscribe, options) {
 
   var listener = function listener(event) {
     if (count === limit) {
-      subscribe(getSelectorFromTarget(event.target), function () {
-        clearInterval(countClear);
-        document.removeEventListener("click", listener);
-      });
+      subscribe(event.target);
     }
 
     count++;
@@ -5280,6 +5344,258 @@ var isLocalNetwork = function isLocalNetwork() {
   var hostname = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.hostname;
   return ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) || hostname.startsWith("192.168.") || hostname.startsWith("10.0.") || hostname.endsWith(".local") || !hostname.includes(".");
 };
+;// CONCATENATED MODULE: ./src/GleapConsoleLogManager.js
+function GleapConsoleLogManager_ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function GleapConsoleLogManager_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { GleapConsoleLogManager_ownKeys(Object(source), true).forEach(function (key) { GleapConsoleLogManager_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { GleapConsoleLogManager_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function GleapConsoleLogManager_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function GleapConsoleLogManager_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function GleapConsoleLogManager_createClass(Constructor, protoProps, staticProps) { if (protoProps) GleapConsoleLogManager_defineProperties(Constructor.prototype, protoProps); if (staticProps) GleapConsoleLogManager_defineProperties(Constructor, staticProps); return Constructor; }
+
+function GleapConsoleLogManager_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+var GleapConsoleLogManager = /*#__PURE__*/function () {
+  function GleapConsoleLogManager() {
+    GleapConsoleLogManager_classCallCheck(this, GleapConsoleLogManager);
+
+    GleapConsoleLogManager_defineProperty(this, "logArray", []);
+
+    GleapConsoleLogManager_defineProperty(this, "originalConsoleLog", void 0);
+
+    GleapConsoleLogManager_defineProperty(this, "logMaxLength", 500);
+  }
+
+  GleapConsoleLogManager_createClass(GleapConsoleLogManager, [{
+    key: "getLogs",
+    value:
+    /**
+     * Return the console logs
+     * @returns {any[]} logs
+     */
+    function getLogs() {
+      return this.logArray;
+    }
+    /**
+     * Revert console log overwrite.
+     */
+
+  }, {
+    key: "stop",
+    value: function stop() {
+      window.console = this.originalConsoleLog;
+    }
+    /**
+     * Add entry to logs.
+     * @param {*} args
+     * @param {*} priority
+     * @returns
+     */
+
+  }, {
+    key: "addLog",
+    value: function addLog(args, priority) {
+      if (!args || args.length <= 0) {
+        return;
+      }
+
+      var log = "";
+
+      for (var i = 0; i < args.length; i++) {
+        log += args[i] + " ";
+      }
+
+      this.logArray.push({
+        log: truncateString(log, 1000),
+        date: new Date(),
+        priority: priority
+      });
+
+      if (this.logArray.length > this.logMaxLength) {
+        this.logArray.shift();
+      }
+    }
+    /**
+     * Start console log overwrite.
+     */
+
+  }, {
+    key: "start",
+    value: function start() {
+      var self = this;
+
+      window.console = function (origConsole) {
+        if (!window.console || !origConsole) {
+          origConsole = {};
+        }
+
+        self.originalConsoleLog = origConsole;
+        return GleapConsoleLogManager_objectSpread(GleapConsoleLogManager_objectSpread({}, origConsole), {}, {
+          log: function log() {
+            self.addLog(arguments, "INFO");
+            origConsole.log && origConsole.log.apply(origConsole, arguments);
+          },
+          warn: function warn() {
+            self.addLog(arguments, "WARNING");
+            origConsole.warn && origConsole.warn.apply(origConsole, arguments);
+          },
+          error: function error() {
+            self.addLog(arguments, "ERROR");
+            origConsole.error && origConsole.error.apply(origConsole, arguments);
+          },
+          info: function info(v) {
+            self.addLog(arguments, "INFO");
+            origConsole.info && origConsole.info.apply(origConsole, arguments);
+          }
+        });
+      }(window.console);
+    }
+  }], [{
+    key: "getInstance",
+    value: function getInstance() {
+      if (!this.instance) {
+        this.instance = new GleapConsoleLogManager();
+      }
+
+      return this.instance;
+    }
+  }]);
+
+  return GleapConsoleLogManager;
+}();
+
+GleapConsoleLogManager_defineProperty(GleapConsoleLogManager, "instance", void 0);
+
+
+;// CONCATENATED MODULE: ./src/GleapCrashDetector.js
+function GleapCrashDetector_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function GleapCrashDetector_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function GleapCrashDetector_createClass(Constructor, protoProps, staticProps) { if (protoProps) GleapCrashDetector_defineProperties(Constructor.prototype, protoProps); if (staticProps) GleapCrashDetector_defineProperties(Constructor, staticProps); return Constructor; }
+
+function GleapCrashDetector_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+var GleapCrashDetector = /*#__PURE__*/function () {
+  function GleapCrashDetector() {
+    GleapCrashDetector_classCallCheck(this, GleapCrashDetector);
+  }
+
+  GleapCrashDetector_createClass(GleapCrashDetector, [{
+    key: "start",
+    value: function start() {
+      window.addEventListener('error', function (e) {
+        var message = e.message,
+            filename = e.filename,
+            lineno = e.lineno,
+            colno = e.colno,
+            error = e.error;
+        var stackTrace = "";
+
+        if (error !== null && typeof error.stack !== "undefined") {
+          stackTrace = error.stack;
+        }
+
+        var messageObject = ["Message: " + message, "URL: " + filename, "Line: " + lineno, "Column: " + colno, "Stack: " + stackTrace];
+        GleapConsoleLogManager.getInstance().addLog(messageObject, "ERROR");
+        var gleapInstance = src_Gleap.getInstance();
+
+        if (gleapInstance.enabledCrashDetector && !gleapInstance.appCrashDetected && !gleapInstance.currentlySendingBug) {
+          gleapInstance.appCrashDetected = true;
+
+          if (gleapInstance.enabledCrashDetectorSilent) {
+            return src_Gleap.sendSilentReport({
+              errorMessage: message,
+              url: filename,
+              lineNo: lineno,
+              columnNo: colno,
+              stackTrace: stackTrace
+            }, src_Gleap.PRIORITY_MEDIUM, "CRASH", {
+              screenshot: true,
+              replays: true
+            });
+          } else {
+            src_Gleap.startFeedbackFlow("crash");
+          }
+        }
+      });
+
+      window.onerror = function (msg, url, lineNo, columnNo, error) {
+        return false;
+      };
+    }
+  }], [{
+    key: "getInstance",
+    value: // GleapCrashDetector singleton
+    function getInstance() {
+      if (!this.instance) {
+        this.instance = new GleapCrashDetector();
+      }
+
+      return this.instance;
+    }
+  }]);
+
+  return GleapCrashDetector;
+}();
+
+GleapCrashDetector_defineProperty(GleapCrashDetector, "instance", void 0);
+
+
+;// CONCATENATED MODULE: ./src/GleapClickListener.js
+function GleapClickListener_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function GleapClickListener_defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function GleapClickListener_createClass(Constructor, protoProps, staticProps) { if (protoProps) GleapClickListener_defineProperties(Constructor.prototype, protoProps); if (staticProps) GleapClickListener_defineProperties(Constructor, staticProps); return Constructor; }
+
+function GleapClickListener_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
+
+var GleapClickListener = /*#__PURE__*/function () {
+  function GleapClickListener() {
+    GleapClickListener_classCallCheck(this, GleapClickListener);
+  }
+
+  GleapClickListener_createClass(GleapClickListener, [{
+    key: "start",
+    value: function start() {
+      document.addEventListener("click", function (event) {
+        if (!event.target) {
+          return;
+        }
+
+        if (!Gleap.getInstance().currentlySendingBug) {
+          GleapConsoleLogManager.getInstance().addLog([getDOMElementDescription(event.target)], "CLICK");
+        }
+      });
+    }
+  }], [{
+    key: "getInstance",
+    value: function getInstance() {
+      if (!this.instance) {
+        this.instance = new GleapClickListener();
+      }
+
+      return this.instance;
+    }
+  }]);
+
+  return GleapClickListener;
+}();
+
+GleapClickListener_defineProperty(GleapClickListener, "instance", void 0);
+
+
 ;// CONCATENATED MODULE: ./src/Gleap.js
 function Gleap_classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -5292,6 +5608,9 @@ function Gleap_ownKeys(object, enumerableOnly) { var keys = Object.keys(object);
 function Gleap_objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { Gleap_ownKeys(Object(source), true).forEach(function (key) { Gleap_defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { Gleap_ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 function Gleap_defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+
+
 
 
 
@@ -5356,15 +5675,11 @@ var Gleap_Gleap = /*#__PURE__*/function () {
 
     Gleap_defineProperty(this, "actionLog", []);
 
-    Gleap_defineProperty(this, "logArray", []);
-
     Gleap_defineProperty(this, "customData", {});
 
     Gleap_defineProperty(this, "formData", {});
 
     Gleap_defineProperty(this, "excludeData", {});
-
-    Gleap_defineProperty(this, "logMaxLength", 500);
 
     Gleap_defineProperty(this, "buttonType", Gleap.FEEDBACK_BUTTON_NONE);
 
@@ -5599,106 +5914,6 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       }
     }
   }, {
-    key: "startCrashDetection",
-    value: function startCrashDetection() {
-      var self = this;
-
-      window.onerror = function (msg, url, lineNo, columnNo, error) {
-        var stackTrace = "";
-
-        if (error !== null && typeof error.stack !== "undefined") {
-          stackTrace = error.stack;
-        }
-
-        var message = ["Message: " + msg, "URL: " + url, "Line: " + lineNo, "Column: " + columnNo, "Stack: " + stackTrace];
-        self.addLog(message, "ERROR");
-
-        if (self.enabledCrashDetector && !self.appCrashDetected && !self.currentlySendingBug) {
-          self.appCrashDetected = true;
-
-          if (self.enabledCrashDetectorSilent) {
-            return Gleap.sendSilentReport({
-              errorMessage: msg,
-              url: url,
-              lineNo: lineNo,
-              columnNo: columnNo,
-              stackTrace: stackTrace
-            }, Gleap.PRIORITY_MEDIUM, "CRASH", {
-              screenshot: true,
-              replays: true
-            });
-          } else {
-            Gleap.startFeedbackFlow("crash");
-          }
-        }
-
-        return false;
-      };
-    }
-  }, {
-    key: "truncateString",
-    value: function truncateString(str, num) {
-      if (str.length > num) {
-        return str.slice(0, num) + "...";
-      } else {
-        return str;
-      }
-    }
-  }, {
-    key: "addLog",
-    value: function addLog(args, priority) {
-      if (!args) {
-        return;
-      }
-
-      var log = "";
-
-      for (var i = 0; i < args.length; i++) {
-        log += args[i] + " ";
-      }
-
-      this.logArray.push({
-        log: this.truncateString(log, 1000),
-        date: new Date(),
-        priority: priority
-      });
-
-      if (this.logArray.length > this.logMaxLength) {
-        this.logArray.shift();
-      }
-    }
-  }, {
-    key: "overwriteConsoleLog",
-    value: function overwriteConsoleLog() {
-      var self = this;
-
-      window.console = function (origConsole) {
-        if (!window.console || !origConsole) {
-          origConsole = {};
-        }
-
-        self.originalConsoleLog = origConsole;
-        return Gleap_objectSpread(Gleap_objectSpread({}, origConsole), {}, {
-          log: function log() {
-            self.addLog(arguments, "INFO");
-            origConsole.log && origConsole.log.apply(origConsole, arguments);
-          },
-          warn: function warn() {
-            self.addLog(arguments, "WARNING");
-            origConsole.warn && origConsole.warn.apply(origConsole, arguments);
-          },
-          error: function error() {
-            self.addLog(arguments, "ERROR");
-            origConsole.error && origConsole.error.apply(origConsole, arguments);
-          },
-          info: function info(v) {
-            self.addLog(arguments, "INFO");
-            origConsole.info && origConsole.info.apply(origConsole, arguments);
-          }
-        });
-      }(window.console);
-    }
-  }, {
     key: "resetLoading",
     value: function resetLoading(resetProgress) {
       if (this.fakeLoading) {
@@ -5882,8 +6097,9 @@ var Gleap_Gleap = /*#__PURE__*/function () {
   }, {
     key: "init",
     value: function init() {
-      this.overwriteConsoleLog();
-      this.startCrashDetection();
+      GleapConsoleLogManager.getInstance().start();
+      GleapCrashDetector.getInstance().start();
+      GleapClickListener.getInstance().start();
       this.registerKeyboardListener();
       this.registerEscListener(); // Initially check network
 
@@ -6149,7 +6365,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         priority: this.severity,
         customData: this.customData,
         metaData: this.getMetaData(),
-        consoleLog: this.logArray,
+        consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
         networkLogs: this.networkIntercepter.getRequests(),
         customEventLog: StreamedEvent.getInstance().eventArray,
         type: this.feedbackType,
@@ -6311,7 +6527,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.8.14",
+        sdkVersion: "6.9.1",
         sdkType: "javascript"
       };
     }
@@ -6907,11 +7123,13 @@ var Gleap_Gleap = /*#__PURE__*/function () {
       instance.enabledRageClickDetector = true;
       instance.enabledRageClickDetectorSilent = silent;
       startRageClickDetector(function (target) {
+        var elementDescription = getDOMElementDescription(target, false);
         instance.rageClickDetected = true;
 
         if (instance.enabledRageClickDetectorSilent) {
           Gleap.sendSilentReport({
-            description: "Rage click detected."
+            description: "Rage click detected.",
+            element: elementDescription
           });
         } else {
           Gleap.startFeedbackFlow("crash");
@@ -7233,7 +7451,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
   }, {
     key: "disableConsoleLogOverwrite",
     value: function disableConsoleLogOverwrite() {
-      window.console = this.getInstance().originalConsoleLog;
+      GleapConsoleLogManager.getInstance().stop();
     }
   }]);
 

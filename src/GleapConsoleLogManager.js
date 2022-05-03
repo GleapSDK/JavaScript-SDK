@@ -25,7 +25,7 @@ export default class GleapConsoleLogManager {
   /**
    * Revert console log overwrite.
    */
-  disableConsoleLogOverwrite() {
+  stop() {
     window.console = this.originalConsoleLog;
   }
 
@@ -58,7 +58,7 @@ export default class GleapConsoleLogManager {
   /**
    * Start console log overwrite.
    */
-  overwriteConsoleLog() {
+  start() {
     const self = this;
     window.console = (function (origConsole) {
       if (!window.console || !origConsole) {

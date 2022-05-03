@@ -1,9 +1,3 @@
-const getSelectorFromTarget = function (target) {
-  var className = target.className !== "" ? "." + target.className : "";
-  var targetId = target.id !== "" ? "#" + target.id : "";
-  return [target.nodeName, className, targetId].join(" ");
-};
-
 const detectRageClicks = function (subscribe, options) {
   var interval = options.interval,
     limit = options.limit;
@@ -13,10 +7,7 @@ const detectRageClicks = function (subscribe, options) {
   }, interval);
   var listener = function (event) {
     if (count === limit) {
-      subscribe(getSelectorFromTarget(event.target), function () {
-        clearInterval(countClear);
-        document.removeEventListener("click", listener);
-      });
+      subscribe(event.target);
     }
     count++;
   };
