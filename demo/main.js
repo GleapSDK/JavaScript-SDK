@@ -61,3 +61,17 @@ setTimeout(async () => {
   const j = await a.json();
   console.log(j);
 }, 5000);
+
+setTimeout(() => {
+  const sheet1 = new CSSStyleSheet();
+  sheet1.replaceSync("* { color: red; }");
+
+  /*const div = document.createElement("div");
+  const shadowRoot = div.attachShadow({ mode: "open" });
+  shadowRoot.adoptedStyleSheets = [sheet1];
+  shadowRoot.innerHTML = `
+<span class="foo">Hello!<br />HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello Hello</span>
+`;
+  document.body.appendChild(div);*/
+  document.adoptedStyleSheets = [sheet1];
+}, 2000);

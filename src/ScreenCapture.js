@@ -207,32 +207,37 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
           cloneTargetNode.remove();
         }
       }
-    } catch (exp) {}
+    } catch (exp) { }
   }
 };
+
+const getTextContentFromStyleSheet = (styleSheet) => {
+  var cssRules = null;
+  try {
+    if (styleSheet.cssRules) {
+      cssRules = styleSheet.cssRules;
+    } else if (styleSheet.rules) {
+      cssRules = styleSheet.rules;
+    }
+  } catch (exp) { }
+
+  var cssTextContent = "";
+  if (cssRules) {
+    for (var cssRuleItem in cssRules) {
+      if (cssRules[cssRuleItem].cssText) {
+        cssTextContent += cssRules[cssRuleItem].cssText;
+      }
+    }
+  }
+
+  return cssTextContent;
+}
 
 const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
   for (var i = 0; i < document.styleSheets.length; i++) {
     const styleSheet = document.styleSheets[i];
-
-    var cssRules = null;
-    try {
-      if (styleSheet.cssRules) {
-        cssRules = styleSheet.cssRules;
-      } else if (styleSheet.rules) {
-        cssRules = styleSheet.rules;
-      }
-    } catch (exp) {}
-
-    var cssTextContent = "";
-    if (cssRules) {
-      for (var cssRuleItem in cssRules) {
-        if (cssRules[cssRuleItem].cssText) {
-          cssTextContent += cssRules[cssRuleItem].cssText;
-        }
-      }
-    }
+    const cssTextContent = getTextContentFromStyleSheet(styleSheet);
 
     if (styleSheet && styleSheet.ownerNode) {
       if (cssTextContent != "" && !remote) {
@@ -311,8 +316,34 @@ const prepareRemoteData = (clone, remote) => {
   });
 };
 
+const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
+  if (typeof doc.adoptedStyleSheets !== "undefined") {
+    for (let i = 0; i < doc.adoptedStyleSheets.length; i++) {
+      const styleSheet = doc.adoptedStyleSheets[i];
+      const cssTextContent = getTextContentFromStyleSheet(styleSheet);
+
+      var shadowStyleNode = window.document.createElement("style");
+      shadowStyleNode.type = "text/css";
+      if (shadowStyleNode.styleSheet) {
+        shadowStyleNode.styleSheet.cssText = cssTextContent;
+      } else {
+        shadowStyleNode.appendChild(
+          window.document.createTextNode(cssTextContent)
+        );
+      }
+
+      if (shadowNodeId) {
+        shadowStyleNode.setAttribute("bb-shadow-child", shadowNodeId);
+      }
+
+      clone.insertBefore(shadowStyleNode, clone.firstElementChild);
+    }
+  }
+}
+
 const deepClone = (host) => {
   let shadowNodeId = 1;
+
   const cloneNode = (node, parent, shadowRoot) => {
     const walkTree = (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
@@ -378,11 +409,15 @@ const deepClone = (host) => {
     }
 
     parent.appendChild(clone);
+
     if (node.shadowRoot) {
       walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
+      handleAdoptedStyleSheets(node.shadowRoot, clone, shadowNodeId);
+
       if (typeof clone.setAttribute !== "undefined") {
         clone.setAttribute("bb-shadow-parent", shadowNodeId);
       }
+
       ++shadowNodeId;
     }
 
@@ -391,6 +426,14 @@ const deepClone = (host) => {
 
   const fragment = document.createDocumentFragment();
   cloneNode(host, fragment);
+
+  // Work on adopted stylesheets.
+  var clonedHead = fragment.querySelector("head");
+  if (!clonedHead) {
+    clonedHead = fragment;
+  }
+  handleAdoptedStyleSheets(window.document, clonedHead);
+
   return fragment;
 };
 
