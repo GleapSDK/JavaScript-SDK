@@ -411,14 +411,14 @@ const deepClone = (host) => {
     parent.appendChild(clone);
 
     if (node.shadowRoot) {
-      walkTree(node.shadowRoot.firstChild, clone, shadowNodeId);
-      handleAdoptedStyleSheets(node.shadowRoot, clone, shadowNodeId);
+      var rootShadowNodeId = shadowNodeId;
+      shadowNodeId++;
+      walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
+      handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
       if (typeof clone.setAttribute !== "undefined") {
-        clone.setAttribute("bb-shadow-parent", shadowNodeId);
+        clone.setAttribute("bb-shadow-parent", rootShadowNodeId);
       }
-
-      ++shadowNodeId;
     }
 
     walkTree(node.firstChild, clone);
