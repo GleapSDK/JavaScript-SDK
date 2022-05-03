@@ -7128,7 +7128,8 @@ var Gleap_Gleap = /*#__PURE__*/function () {
 
         if (instance.enabledRageClickDetectorSilent) {
           Gleap.sendSilentReport({
-            description: "Rage click on ".concat(elementDescription, " detected.")
+            description: "Rage click detected.",
+            element: elementDescription
           });
         } else {
           Gleap.startFeedbackFlow("crash");
