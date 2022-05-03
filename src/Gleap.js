@@ -11,7 +11,7 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { getDOMElementDescription, isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import { getDOMElementDescription } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import Session from "./Session";
