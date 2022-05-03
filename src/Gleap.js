@@ -11,7 +11,7 @@ import {
 } from "./UI";
 import GleapNetworkIntercepter from "./NetworkInterception";
 import ReplayRecorder from "./ReplayRecorder";
-import { isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import { getDOMElementDescription, isMobile, loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import { startRageClickDetector } from "./UXDetectors";
 import { createScreenshotEditor } from "./DrawingCanvas";
@@ -23,6 +23,7 @@ import { isLocalNetwork } from "./NetworkUtils";
 import { ScreenRecorder } from "./ScreenRecorder";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import GleapCrashDetector from "./GleapCrashDetector";
+import GleapClickListener from "./GleapClickListener";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -669,10 +670,11 @@ class Gleap {
     instance.enabledRageClickDetectorSilent = silent;
 
     startRageClickDetector(function (target) {
+      const elementDescription = getDOMElementDescription(target, false);
       instance.rageClickDetected = true;
       if (instance.enabledRageClickDetectorSilent) {
         Gleap.sendSilentReport({
-          description: "Rage click detected.",
+          description: `Rage click on ${elementDescription} detected.`,
         });
       } else {
         Gleap.startFeedbackFlow("crash");
@@ -1317,6 +1319,7 @@ class Gleap {
   init() {
     GleapConsoleLogManager.getInstance().start();
     GleapCrashDetector.getInstance().start();
+    GleapClickListener.getInstance().start();
 
     this.registerKeyboardListener();
     this.registerEscListener();

@@ -90,3 +90,29 @@ export const saveToGleapCache = (key, data) => {
     localStorage.removeItem(k);
   }
 };
+
+export const getDOMElementDescription = (element, html = true) => {
+  var innerText = truncateString(element.innerText || '', 40).replace(/(\r\n|\n|\r)/gm, "").replace(/ +(?= )/g, '');
+  var elementId = "";
+  var elementClass = "";
+  if (typeof element.getAttribute !== "undefined") {
+    const elemId = element.getAttribute("id");
+    if (elemId) {
+      elementId = ` id="${elemId}"`;
+    }
+    const elemClass = element.getAttribute("class");
+    if (elemClass) {
+      elementClass = ` class="${elemClass}"`;
+    }
+  }
+  const elementTag = (element.tagName || '').toLowerCase();
+
+  var htmlPre = "<";
+  var htmlPost = ">";
+  if (!html) {
+    htmlPre = "[";
+    htmlPost = "]";
+  }
+
+  return `${htmlPre}${elementTag}${elementId}${elementClass}${htmlPost}${innerText}${htmlPre}/${elementTag}${htmlPost}`;
+}

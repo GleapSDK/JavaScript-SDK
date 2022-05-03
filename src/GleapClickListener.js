@@ -1,7 +1,7 @@
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
+import { getDOMElementDescription } from "./GleapHelper";
 
 export default class GleapClickListener {
-  // GleapClickListener singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
@@ -10,20 +10,20 @@ export default class GleapClickListener {
     return this.instance;
   }
 
-  elementToString(element) {
-    return "NOT IMPLEMENTED";
-  }
-
   start() {
     document.addEventListener("click", (event) => {
       if (!event.target) {
         return;
       }
 
-      GleapConsoleLogManager.getInstance().addLog(
-        [elementToString(event.target)],
-        "CLICK"
-      );
+      if (
+        !Gleap.getInstance().currentlySendingBug
+      ) {
+        GleapConsoleLogManager.getInstance().addLog(
+          [getDOMElementDescription(event.target)],
+          "CLICK"
+        );
+      }
     });
   }
 }

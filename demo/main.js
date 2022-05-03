@@ -63,5 +63,5 @@ window.addEventListener('error', e => {
 });
 
 setTimeout(() => {
-  x();
+  // x();
 }, 3000);
