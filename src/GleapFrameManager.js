@@ -1,5 +1,6 @@
 import AutoConfig from "./AutoConfig";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
+import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
 
 export default class GleapFrameManager {
@@ -54,9 +55,14 @@ export default class GleapFrameManager {
 
         // Answer with config.
         this.sendMessage({
-          name: "config",
+          name: "config-update",
           data: AutoConfig.getInstance().getFlowConfig()
-        })
+        });
+
+        this.sendMessage({
+          name: "session-update",
+          data: GleapSession.getInstance().getSession()
+        });
       }
     });
 

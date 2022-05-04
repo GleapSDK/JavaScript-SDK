@@ -26,6 +26,14 @@ export default class GleapSession {
     }
   }
 
+  /**
+   * Returns the Gleap session object.
+   * @returns 
+   */
+  getSession() {
+    return this.session;
+  }
+
   constructor() {}
 
   setOnSessionReady = (onSessionReady) => {
