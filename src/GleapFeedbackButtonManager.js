@@ -1,7 +1,19 @@
+import AutoConfig from "./AutoConfig";
 import Gleap from "./Gleap";
+import GleapFrameManager from "./GleapFrameManager";
+import { translateText } from "./Translation";
+import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
     feedbackButton = null;
+
+    // Feedback button types
+    static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
+    static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
+    static FEEDBACK_BUTTON_CLASSIC = "BUTTON_CLASSIC";
+    static FEEDBACK_BUTTON_CLASSIC_LEFT = "BUTTON_CLASSIC_LEFT";
+    static FEEDBACK_BUTTON_CLASSIC_BOTTOM = "BUTTON_CLASSIC_BOTTOM";
+    static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
 
     // GleapFeedbackButtonManager singleton
     static instance;
@@ -24,14 +36,20 @@ export default class GleapFeedbackButtonManager {
 
         this.feedbackButton.style.display = show ? "flex" : "none";
     }
-    
+
+    feedbackButtonPressed() {
+        GleapFrameManager.getInstance().showWidget();
+    }
+
     /**
      * Injects the feedback button into the current DOM.
      */
     injectFeedbackButton() {
+        const flowConfig = AutoConfig.getInstance().getFlowConfig();
+
         var buttonIcon = "";
-        if (this.customButtonLogoUrl) {
-            buttonIcon = `<img class="bb-logo-logo" src="${this.customButtonLogoUrl}" alt="Feedback Button" />`;
+        if (flowConfig.buttonLogo) {
+            buttonIcon = `<img class="bb-logo-logo" src="${flowConfig.buttonLogo}" alt="Feedback Button" />`;
         } else {
             buttonIcon = loadIcon("bblogo", "#fff");
         }
@@ -39,19 +57,19 @@ export default class GleapFeedbackButtonManager {
         var elem = document.createElement("div");
         elem.className = "bb-feedback-button";
         if (
-            this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC ||
-            this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-            this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
+            flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+            flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+            flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
         ) {
-            elem.innerHTML = `<div class="bb-feedback-button-classic ${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT
+            elem.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
                 ? "bb-feedback-button-classic--left"
                 : ""
-                }${this.buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+                }${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
                     ? "bb-feedback-button-classic--bottom"
                     : ""
                 }">${translateText(
-                    this.feedbackButtonText,
-                    this.overrideLanguage
+                    flowConfig.widgetButtonText,
+                    Gleap.getInstance().overrideLanguage
                 )}</div>`;
         } else {
             elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
@@ -66,19 +84,24 @@ export default class GleapFeedbackButtonManager {
 
         Gleap.appendNode(elem);
 
-        if (this.buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
+        if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
             elem.classList.add("bb-feedback-button--disabled");
         }
 
-        if (this.buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+        if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
             elem.classList.add("bb-feedback-button--bottomleft");
         }
 
         this.feedbackButton = elem;
     }
 
+    /**
+     * Updates the feedback button state
+     * @param {*} retry 
+     * @returns 
+     */
     updateFeedbackButtonState(retry = false) {
-        if (this.feedbackButton === null) {
+        /*if (this.feedbackButton === null) {
             if (!retry) {
                 setTimeout(() => {
                     this.updateFeedbackButtonState(true);
@@ -111,6 +134,6 @@ export default class GleapFeedbackButtonManager {
             } else {
                 dialogContainer.classList.remove(containerFocusClass);
             }
-        }
+        }*/
     }
 }

@@ -5,11 +5,11 @@ import GleapSession from "./GleapSession";
 export default class AutoConfig {
   flowConfig = null;
 
-  // GleapFeedbackButtonManager singleton
+  // AutoConfig singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new GleapFeedbackButtonManager();
+      this.instance = new AutoConfig();
     }
     return this.instance;
   }

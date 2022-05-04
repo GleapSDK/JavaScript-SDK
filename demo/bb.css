@@ -11,7 +11,11 @@
   visibility: visible;
   min-width: 320px;
   height: calc(100% - 75px) !important;
-  opacity: 1;
+}
+
+.gleap-frame-container--hidden {
+  opacity: 0;
+  display: none;
 }
 
 .gleap-frame-container iframe {

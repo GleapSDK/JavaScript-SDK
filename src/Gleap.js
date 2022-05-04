@@ -156,7 +156,6 @@ class Gleap {
       // Run auto configuration.
       AutoConfig.getInstance().start()
         .then(() => {
-          console.log(AutoConfig.getInstance().getFlowConfig());
           instance.postInit();
         })
         .catch(function (err) {
@@ -167,8 +166,6 @@ class Gleap {
   }
 
   postInit() {
-    StreamedEvent.getInstance().start();
-
     const self = this;
     if (
       document.readyState === "complete" ||
@@ -911,8 +908,6 @@ class Gleap {
       // Show editor
       instance.showBugReportEditor(feedbackOptions);
     }
-
-    instance.updateFeedbackButtonState();
   }
 
   stopBugReportingAnalytics() {
@@ -1121,7 +1116,6 @@ class Gleap {
     this.openedMenu = false;
     this.appCrashDetected = false;
     this.rageClickDetected = false;
-    this.updateFeedbackButtonState();
 
     // Remove editor.
     const editorContainer = document.querySelector(".bb-capture-editor");
@@ -1139,11 +1133,6 @@ class Gleap {
     GleapConsoleLogManager.getInstance().start();
     GleapClickListener.getInstance().start();
     GleapCrashDetector.getInstance().start();
-
-    GleapFrameManager.getInstance().addMessageListener((data) => {
-      console.log("GOT DATA: ");
-      console.log(data);
-    });
 
     // this.registerKeyboardListener();
     // this.registerEscListener();
@@ -1194,15 +1183,10 @@ class Gleap {
     }, 1000);
 
     // Load session.
-    GleapSession.getInstance().setOnSessionReady(() => {
-      console.log(this);
-
-      // Inject the widget buttons
-      //GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
-
-      // Inject the widget frame
-      //GleapFrameManager.getInstance().injectFrame();
-    });
+    const onGleapReady = function () {
+      GleapFrameManager.getInstance().injectFrame();
+    }
+    GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
   }
 
   showGleap() {
