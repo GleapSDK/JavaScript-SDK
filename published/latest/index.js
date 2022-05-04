@@ -5557,6 +5557,7 @@ function GleapClickListener_defineProperty(obj, key, value) { if (key in obj) { 
 
 
 
+
 var GleapClickListener = /*#__PURE__*/function () {
   function GleapClickListener() {
     GleapClickListener_classCallCheck(this, GleapClickListener);
@@ -5570,7 +5571,7 @@ var GleapClickListener = /*#__PURE__*/function () {
           return;
         }
 
-        if (!Gleap.getInstance().currentlySendingBug) {
+        if (!src_Gleap.getInstance().currentlySendingBug) {
           GleapConsoleLogManager.getInstance().addLog([getDOMElementDescription(event.target)], "CLICK");
         }
       });
@@ -6523,7 +6524,7 @@ var Gleap_Gleap = /*#__PURE__*/function () {
         currentUrl: window.location.href,
         language: navigator.language || navigator.userLanguage,
         mobile: isMobile(),
-        sdkVersion: "6.9.1",
+        sdkVersion: "6.9.2",
         sdkType: "javascript"
       };
     }

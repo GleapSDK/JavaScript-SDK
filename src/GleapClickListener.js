@@ -1,3 +1,4 @@
+import Gleap from "./Gleap";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import { getDOMElementDescription } from "./GleapHelper";
 
