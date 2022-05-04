@@ -5526,10 +5526,6 @@ var GleapCrashDetector = /*#__PURE__*/function () {
           }
         }
       });
-
-      window.onerror = function (msg, url, lineNo, columnNo, error) {
-        return false;
-      };
     }
   }], [{
     key: "getInstance",

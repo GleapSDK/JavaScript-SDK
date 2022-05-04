@@ -56,10 +56,5 @@ export default class GleapCrashDetector {
         }
       }
     });
-
-    window.onerror = function (msg, url, lineNo, columnNo, error) {
-
-      return false;
-    };
   }
 }
