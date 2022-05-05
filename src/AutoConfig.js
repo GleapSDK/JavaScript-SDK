@@ -4,6 +4,7 @@ import GleapSession from "./GleapSession";
 
 export default class AutoConfig {
   flowConfig = null;
+  projectActions = null;
 
   // AutoConfig singleton
   static instance;
@@ -20,6 +21,14 @@ export default class AutoConfig {
    */
   getFlowConfig() {
     return this.flowConfig;
+  }
+
+  /**
+   * Returns the loaded project actions.
+   * @returns 
+   */
+  getProjectActions() {
+    return this.projectActions;
   }
 
   start = () => {
@@ -77,6 +86,7 @@ export default class AutoConfig {
       const projectActions = config.projectActions;
 
       this.flowConfig = flowConfig;
+      this.projectActions = projectActions;
 
       /*if (flowConfig.color) {
         Gleap.setStyles({

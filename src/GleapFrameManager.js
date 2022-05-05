@@ -60,6 +60,11 @@ export default class GleapFrameManager {
         });
 
         this.sendMessage({
+          name: "actions-update",
+          data: AutoConfig.getInstance().getProjectActions()
+        });
+
+        this.sendMessage({
           name: "session-update",
           data: GleapSession.getInstance().getSession()
         });
