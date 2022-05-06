@@ -1,5 +1,6 @@
-import AutoConfig from "./AutoConfig";
+import GleapConfigManager from "./GleapConfigManager";
 import GleapEventManager from "./GleapEventManager";
+import GleapFeedback from "./GleapFeedback";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
 import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
@@ -74,12 +75,12 @@ export default class GleapFrameManager {
         // Answer with config.
         this.sendMessage({
           name: "config-update",
-          data: AutoConfig.getInstance().getFlowConfig()
+          data: GleapConfigManager.getInstance().getFlowConfig()
         });
 
         this.sendMessage({
           name: "actions-update",
-          data: AutoConfig.getInstance().getProjectActions()
+          data: GleapConfigManager.getInstance().getProjectActions()
         });
 
         this.sendMessage({
@@ -92,14 +93,23 @@ export default class GleapFrameManager {
         this.gleapFrameContainer.style.maxHeight = data.data + "px";
       }
 
-      if (data.name === "send-form") {
-        const formData = data.data;
+      if (data.name === "send-feedback") {
+        const formData = data.data.formData;
+        const action = data.data.action;
 
-        setTimeout(() => {
+        console.log(formData);
+        console.log(action);
+
+        const feedback = new GleapFeedback(action.feedbackType, "MEDIUM", formData, false, action.excludeData);
+        feedback.sendFeedback().then(() => {
           this.sendMessage({
-            name: "form-sent"
+            name: "feedback-sent"
           });
-        }, 2000);
+        }).catch((error) => {
+          this.sendMessage({
+            name: "feedback-sending-failed"
+          });
+        });
       }
     });
 

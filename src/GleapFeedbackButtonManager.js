@@ -1,4 +1,4 @@
-import AutoConfig from "./AutoConfig";
+import GleapConfigManager from "./GleapConfigManager";
 import Gleap from "./Gleap";
 import GleapFrameManager from "./GleapFrameManager";
 import { translateText } from "./Translation";
@@ -51,7 +51,7 @@ export default class GleapFeedbackButtonManager {
         }
         this.injectedFeedbackButton = true;
 
-        const flowConfig = AutoConfig.getInstance().getFlowConfig();
+        const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
         var buttonIcon = "";
         if (flowConfig.buttonLogo) {

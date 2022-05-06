@@ -5,7 +5,7 @@ import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
 import { gleapDataParser } from "./GleapHelper";
 import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
-import AutoConfig from "./AutoConfig";
+import GleapConfigManager from "./GleapConfigManager";
 import { ScrollStopper } from "./ScrollStopper";
 import { ScreenRecorder } from "./ScreenRecorder";
 import GleapFrameManager from "./GleapFrameManager";
@@ -14,7 +14,6 @@ import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import GleapClickListener from "./GleapClickListener";
 import GleapCrashDetector from "./GleapRageClickDetector";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
-import GleapFeedback from "./GleapFeedback";
 import GleapCustomDataManager from "./GleapCustomDataManager";
 import GleapEventManager from "./GleapEventManager";
 import GleapCustomActionManager from "./GleapCustomActionManager";
@@ -116,7 +115,7 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
-      AutoConfig.getInstance().start()
+      GleapConfigManager.getInstance().start()
         .then(() => {
           if (
             document.readyState === "complete" ||
@@ -408,18 +407,17 @@ class Gleap {
     };
 
     // Get feedback options
-    /*var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
+    var feedbackOptions = GleapConfigManager.getInstance().getFeedbackOptions(feedbackFlow);
     if (!feedbackOptions) {
       return;
-    }*/
+    }
 
     GleapEventManager.notifyEvent("flow-started", feedbackFlow);
-
-    GleapFrameManager.getInstance().showWidget();
     GleapFrameManager.getInstance().sendMessage({
       name: "start-feedbackflow",
       data: feedbackFlow
     });
+    GleapFrameManager.getInstance().showWidget();
 
     /*if (feedbackOptions.form && feedbackOptions.form.length > 0) {
       // Cleanup form from unsupported items.

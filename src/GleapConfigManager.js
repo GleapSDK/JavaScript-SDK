@@ -2,15 +2,15 @@ import Gleap from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import GleapSession from "./GleapSession";
 
-export default class AutoConfig {
+export default class GleapConfigManager {
   flowConfig = null;
   projectActions = null;
 
-  // AutoConfig singleton
+  // GleapConfigManager singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new AutoConfig();
+      this.instance = new GleapConfigManager();
     }
     return this.instance;
   }
@@ -227,5 +227,28 @@ export default class AutoConfig {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }*/
     } catch (e) { }
+  }
+
+  getFeedbackOptions(feedbackFlow) {
+    var feedbackOptions = null;
+
+    console.log(this.projectActions);
+
+    // Try to load the specific feedback flow.
+    if (feedbackFlow) {
+      feedbackOptions = this.projectActions[feedbackFlow];
+    }
+
+    // Fallback
+    if (!feedbackOptions) {
+      feedbackOptions = this.projectActions.bugreporting;
+    }
+
+    // Deep copy to prevent changes.
+    try {
+      feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
+    } catch (e) { }
+
+    return feedbackOptions;
   }
 }
