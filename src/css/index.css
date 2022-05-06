@@ -2114,9 +2114,9 @@ textarea.bb-feedback-required {
     box-sizing: border-box;
     max-width: inherit;
     position: fixed;
-    bottom: 10px;
-    left: 10px;
-    right: 10px;
+    bottom: 10px !important;
+    left: 10px !important;
+    right: 10px !important;
     display: flex;
     flex-direction: column;
   }
