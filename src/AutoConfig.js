@@ -116,7 +116,7 @@ export default class AutoConfig {
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 
       if (flowConfig.enableNetworkLogs) {
-        Gleap.enableNetworkLogger();
+        GleapNetworkIntercepter.getInstance().start();
       }
 
       if (flowConfig.networkLogPropsToIgnore) {
@@ -225,10 +225,6 @@ export default class AutoConfig {
         }
 
         Gleap.setMenuOptions(menuItems);
-      }
-
-      if (projectActions) {
-        Gleap.setFeedbackActions(projectActions);
       }
 
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {

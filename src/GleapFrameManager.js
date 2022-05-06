@@ -1,4 +1,5 @@
 import AutoConfig from "./AutoConfig";
+import GleapEventManager from "./GleapEventManager";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
 import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
@@ -7,6 +8,7 @@ export default class GleapFrameManager {
   gleapFrameContainer = null;
   gleapFrame = null;
   connected = false;
+  widgetOpened = false;
   listeners = [];
   frameURL = "http://localhost:3000";
 
@@ -23,6 +25,10 @@ export default class GleapFrameManager {
     this.startCommunication();
   }
 
+  isOpened() {
+    return this.widgetOpened;
+  }
+
   injectFrame = () => {
     var elem = document.createElement("div");
     elem.className = "gleap-frame-container gleap-frame-container--hidden";
@@ -36,6 +42,14 @@ export default class GleapFrameManager {
 
   showWidget() {
     this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+    widgetOpened = true;
+    GleapEventManager.notifyEvent("open");
+  }
+
+  hideWidget() {
+    this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
+    widgetOpened = false;
+    GleapEventManager.notifyEvent("close");
   }
 
   sendMessage(data) {
@@ -47,6 +61,8 @@ export default class GleapFrameManager {
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
+      console.log(data);
+
       if (data.name === "ping") {
         StreamedEvent.getInstance().start();
 
@@ -68,6 +84,21 @@ export default class GleapFrameManager {
           name: "session-update",
           data: GleapSession.getInstance().getSession()
         });
+      }
+
+      if (data.name === "height-update") {
+        this.gleapFrameContainer.style.maxHeight = data.data + "px";
+      }
+
+      if (data.name === "send-form") {
+        const formData = data.data;
+        console.log(formData);
+
+        setTimeout(() => {
+          this.sendMessage({
+            name: "form-sent"
+          });
+        }, 2000);
       }
     });
 

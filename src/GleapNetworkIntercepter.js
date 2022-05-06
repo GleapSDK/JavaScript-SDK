@@ -7,6 +7,15 @@ class GleapNetworkIntercepter {
   initialized = false;
   stopped = false;
 
+  // GleapNetworkIntercepter singleton
+  static instance;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new GleapNetworkIntercepter();
+    }
+    return this.instance;
+  }
+
   isContentTypeSupported(contentType) {
     if (typeof contentType !== "string") {
       return false;
@@ -53,7 +62,7 @@ class GleapNetworkIntercepter {
         var payloadObj = request.request.payload;
         try {
           payloadObj = JSON.parse(request.request.payload);
-        } catch (e) {}
+        } catch (e) { }
 
         if (payloadObj) {
           for (var j = 0; j < this.filters.length; j++) {
@@ -71,7 +80,7 @@ class GleapNetworkIntercepter {
             delete data[this.filters[j]];
           }
           request.response.responseText = JSON.stringify(data);
-        } catch (e) {}
+        } catch (e) { }
       }
     }
 
@@ -131,7 +140,7 @@ class GleapNetworkIntercepter {
         let value = new TextDecoder().decode(payload);
         return value;
       }
-    } catch (exp) {}
+    } catch (exp) { }
 
     return payload;
   }
@@ -208,7 +217,7 @@ class GleapNetworkIntercepter {
             responseText: "<request_still_open>",
           };
           this.calcRequestTime(bbRequestId);
-        } catch (exp) {}
+        } catch (exp) { }
 
         try {
           var contentType = "";
@@ -250,7 +259,7 @@ class GleapNetworkIntercepter {
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
           }
-        } catch (exp) {}
+        } catch (exp) { }
       },
       onFetchFailed: (err, bbRequestId) => {
         if (

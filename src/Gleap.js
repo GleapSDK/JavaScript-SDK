@@ -4,15 +4,12 @@ import {
   createWidgetDialog,
   loadIcon,
   injectStyledCSS,
-  setLoadingIndicatorProgress,
   toggleLoading,
-  validatePoweredBy,
 } from "./UI";
-import GleapNetworkIntercepter from "./NetworkInterception";
+import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
 import ReplayRecorder from "./ReplayRecorder";
-import { getDOMElementDescription, gleapDataParser } from "./GleapHelper";
+import { gleapDataParser } from "./GleapHelper";
 import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
-import { startRageClickDetector } from "./UXDetectors";
 import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
@@ -23,8 +20,13 @@ import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import GleapClickListener from "./GleapClickListener";
-import GleapCrashDetector from "./GleapCrashDetector";
+import GleapCrashDetector from "./GleapRageClickDetector";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
+import GleapFeedback from "./GleapFeedback";
+import GleapCustomDataManager from "./GleapCustomDataManager";
+import GleapEventManager from "./GleapEventManager";
+import GleapCustomActionManager from "./GleapCustomActionManager";
+import GleapRageClickDetector from "./GleapRageClickDetector";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -38,51 +40,24 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 }
 
 class Gleap {
-  widgetOnly = false;
-  widgetStartFlow = undefined;
+  initialized = false;
+
   overrideLanguage = "";
   autostartDrawing = false;
-  actionLog = [];
-  customData = {};
+
   formData = {};
   excludeData = {};
-  feedbackType = "BUG";
-  customActionCallbacks = [];
-  poweredByHidden = false;
-  enabledCrashDetector = false;
-  enabledCrashDetectorSilent = false;
-  enabledRageClickDetector = false;
-  enabledRageClickDetectorSilent = false;
+
+  offlineMode = false;
   appCrashDetected = false;
-  rageClickDetected = false;
-  currentlySendingBug = false;
-  isLiveSite = false;
   replaysEnabled = false;
   shortcutsEnabled = true;
-  silentBugReport = false;
-  initialized = false;
-  screenshotFeedbackOptions = null;
-  customerInfo = {};
-  showUserName = true;
-  welcomeIcon = "👋";
-  severity = "LOW";
-  mainColor = "#485bff";
-  feedbackTypeActions = [];
   customTranslation = {};
-  networkIntercepter = new GleapNetworkIntercepter();
   replay = null;
-  escListener = null;
-  fakeLoading = null;
-  fakeLoadingProgress = 0;
-  widgetOpened = false;
-  openedMenu = false;
-  showInfoPopup = false;
   snapshotPosition = {
     x: 0,
     y: 0,
   };
-  eventListeners = {};
-  feedbackActions = {};
   actionToPerform = undefined;
   screenRecordingData = null;
   screenRecordingUrl = null;
@@ -117,17 +92,17 @@ class Gleap {
    * @param {*} externalConsoleLogs
    */
   static attachNetworkLogs(externalConsoleLogs) {
-    this.getInstance().networkIntercepter.externalConsoleLogs =
+    GleapNetworkIntercepter.getInstance().externalConsoleLogs =
       externalConsoleLogs;
   }
 
   /**
-   * Set if you running on a live site or local environment.
-   * @param {*} isLiveSite
+   * Active the Gleap offline mode.
+   * @param {*} offlineMode
    */
-  static setLiveSite(isLiveSite) {
+  static setOfflineMode(offlineMode) {
     const instance = this.getInstance();
-    instance.isLiveSite = isLiveSite;
+    instance.offlineMode = offlineMode;
   }
 
   /**
@@ -180,29 +155,6 @@ class Gleap {
     }
   }
 
-  /*unregisterEscListener() {
-    if (this.escListener) {
-      document.removeEventListener("keydown", this.escListener);
-    }
-  }
-
-  registerEscListener() {
-    const self = this;
-    this.escListener = function (evt) {
-      evt = evt || window.event;
-      var isEscape = false;
-      if ("key" in evt) {
-        isEscape = evt.key === "Escape" || evt.key === "Esc";
-      } else {
-        isEscape = evt.keyCode === 27;
-      }
-      if (isEscape) {
-        self.closeGleap(true);
-      }
-    };
-    document.addEventListener("keydown", this.escListener);
-  }*/
-
   /**
    * Indentifies the user session
    * @param {string} userId
@@ -227,23 +179,21 @@ class Gleap {
    * @returns {boolean} isOpened
    */
   static isOpened() {
-    return this.getInstance().openedMenu;
+    return GleapFrameManager.getInstance().isOpened();
   }
 
   /**
    * Hides any open Gleap dialogs.
    */
   static hide() {
-    const instance = this.getInstance();
-    instance.closeGleap();
+    GleapFrameManager.getInstance().hideWidget();
   }
 
   /**
    * Starts the Gleap flow.
    */
   static open() {
-    const instance = this.getInstance();
-    instance.showGleap();
+    GleapFrameManager.getInstance().showWidget();
   }
 
   /**
@@ -295,71 +245,12 @@ class Gleap {
   }
 
   /**
-   * Show info popup
-   * @param {boolean} showInfoPopup
-   */
-  static showInfoPopup(showInfoPopup) {
-    this.getInstance().showInfoPopup = showInfoPopup;
-  }
-
-  /**
-   * Set widget only
-   * @param {boolean} widgetOnly
-   */
-  static isWidgetOnly(widgetOnly) {
-    this.getInstance().widgetOnly = widgetOnly;
-  }
-
-  /**
-   * Set widget only start feedback flow
-   * @param {boolean} widgetStartFlow
-   */
-  static setWidgetStartFlow(widgetStartFlow) {
-    this.getInstance().widgetStartFlow = widgetStartFlow;
-  }
-
-  /**
-   * Set welcome icon
-   * @param {string} welcomeIcon
-   */
-  static setWelcomeIcon(welcomeIcon) {
-    this.getInstance().welcomeIcon = welcomeIcon;
-  }
-
-  /**
-   * Show or hide the user name within the widget header
-   * @param {boolean} showUserName
-   */
-  static setShowUserName(showUserName) {
-    this.getInstance().showUserName = showUserName;
-  }
-
-  /**
    * Register events for Gleap.
    * @param {*} eventName
    * @param {*} callback
    */
   static on(eventName, callback) {
-    const instance = this.getInstance();
-    if (!instance.eventListeners[eventName]) {
-      instance.eventListeners[eventName] = [];
-    }
-    instance.eventListeners[eventName].push(callback);
-  }
-
-  /**
-   * Notify all registrants for event.
-   */
-  notifyEvent(event, data = {}) {
-    const eventListeners = this.eventListeners[event];
-    if (eventListeners) {
-      for (var i = 0; i < eventListeners.length; i++) {
-        const eventListener = eventListeners[i];
-        if (eventListener) {
-          eventListener(data);
-        }
-      }
-    }
+    GleapEventManager.on(eventName, callback);
   }
 
   /**
@@ -388,25 +279,10 @@ class Gleap {
   }
 
   /**
-   * Hides the powered by Gleap logo.
-   * @param {boolean} hide
-   */
-  static enablePoweredBy(enabled) {
-    this.getInstance().poweredByHidden = !enabled;
-  }
-
-  /**
-   * Enables the network logger.
-   */
-  static enableNetworkLogger() {
-    this.getInstance().networkIntercepter.start();
-  }
-
-  /**
    * Enables the network logger.
    */
   static setNetworkLogFilters(filters) {
-    this.getInstance().networkIntercepter.setFilters(filters);
+    GleapNetworkIntercepter.getInstance().setFilters(filters);
   }
 
   /**
@@ -415,33 +291,6 @@ class Gleap {
    */
   static setButtonLogoUrl(logoUrl) {
     GleapFeedbackButtonManager.getInstance().setCustomButtonLogoUrl(logoUrl);
-  }
-
-  /**
-   * Enables the privacy policy.
-   * @param {boolean} enabled
-   */
-  static enablePrivacyPolicy(enabled) { }
-
-  /**
-   * Sets the privacy policy url.
-   * @param {string} privacyPolicyUrl
-   */
-  static setPrivacyPolicyUrl(privacyPolicyUrl) { }
-
-  /**
-   * Sets the widget info texts.
-   * @param {string} widgetInfo
-   */
-  static setWidgetInfo(widgetInfo) {
-    if (!widgetInfo) {
-      return;
-    }
-
-    this.getInstance().widgetInfo = Object.assign(
-      this.getInstance().widgetInfo,
-      widgetInfo
-    );
   }
 
   /**
@@ -481,11 +330,7 @@ class Gleap {
    * @param {*} data
    */
   static attachCustomData(data) {
-    const instance = this.getInstance();
-    instance.customData = Object.assign(
-      instance.customData,
-      gleapDataParser(data)
-    );
+    GleapCustomDataManager.getInstance().attachCustomData(data);
   }
 
   /**
@@ -494,7 +339,7 @@ class Gleap {
    * @param {*} value The custom data you want to add.
    */
   static setCustomData(key, value) {
-    this.getInstance().customData[key] = value;
+    GleapCustomDataManager.getInstance().setCustomData(key, value);
   }
 
   /**
@@ -502,14 +347,14 @@ class Gleap {
    * @param {*} key The key of the custom data entry you want to remove.
    */
   static removeCustomData(key) {
-    delete this.getInstance().customData[key];
+    GleapCustomDataManager.getInstance().removeCustomData(key);
   }
 
   /**
    * Clear the custom data
    */
   static clearCustomData() {
-    this.getInstance().customData = {};
+    GleapCustomDataManager.getInstance().clearCustomData();
   }
 
   /**
@@ -532,34 +377,6 @@ class Gleap {
   }
 
   /**
-   * Enables rage click detection.
-   * @param {*} silent
-   */
-  static enableRageClickDetector(silent = false) {
-    const instance = this.getInstance();
-
-    if (instance.enabledRageClickDetector) {
-      return;
-    }
-
-    instance.enabledRageClickDetector = true;
-    instance.enabledRageClickDetectorSilent = silent;
-
-    startRageClickDetector(function (target) {
-      const elementDescription = getDOMElementDescription(target, false);
-      instance.rageClickDetected = true;
-      if (instance.enabledRageClickDetectorSilent) {
-        Gleap.sendSilentReport({
-          description: `Rage click detected.`,
-          element: elementDescription,
-        });
-      } else {
-        Gleap.startFeedbackFlow("crash");
-      }
-    });
-  }
-
-  /**
    * Sets a custom color scheme.
    * @param {string} primaryColor
    */
@@ -569,38 +386,13 @@ class Gleap {
     buttonColor,
     backgroundColor = "#ffffff"
   ) {
-    this.setStyles({
-      headerColor,
-      primaryColor,
-      buttonColor,
-      backgroundColor,
-    });
-  }
-
-  /**
-   * Sets a custom color scheme.
-   * @param {any} styles
-   */
-  static setStyles(styles) {
-    this.getInstance().mainColor = styles.primaryColor;
-
-    const headerColor = styles.headerColor
-      ? styles.headerColor
-      : styles.primaryColor;
-    const buttonColor = styles.buttonColor
-      ? styles.buttonColor
-      : styles.primaryColor;
-    const borderRadius = styles.borderRadius != null ? styles.borderRadius : 20;
-    const backgroundColor =
-      styles.backgroundColor != null ? styles.backgroundColor : "#fff";
-
     if (
       document.readyState === "complete" ||
       document.readyState === "loaded" ||
       document.readyState === "interactive"
     ) {
       injectStyledCSS(
-        styles.primaryColor,
+        primaryColor,
         headerColor,
         buttonColor,
         borderRadius,
@@ -609,7 +401,7 @@ class Gleap {
     } else {
       document.addEventListener("DOMContentLoaded", function (event) {
         injectStyledCSS(
-          styles.primaryColor,
+          primaryColor,
           headerColor,
           buttonColor,
           borderRadius,
@@ -638,8 +430,6 @@ class Gleap {
     }
 
     instance.excludeData = excludeData ? excludeData : {};
-    instance.severity = priority;
-    instance.feedbackType = feedbackType;
 
     instance.formData = formData ? formData : {};
     if (sessionInstance.session.email) {
@@ -647,27 +437,6 @@ class Gleap {
     }
 
     this.startFeedbackFlow(null, true);
-  }
-
-  /**
-   * Reports a bug silently
-   * @param {*} description
-   * @param {*} priority
-   * @param {*} type
-   * @deprecated Please use sendSilentReport instead.
-   */
-  static sendSilentBugReportWithType(
-    description,
-    priority = Gleap.PRIORITY_MEDIUM,
-    type = "BUG"
-  ) {
-    return Gleap.sendSilentReport(
-      {
-        description: description,
-      },
-      priority,
-      type
-    );
   }
 
   /**
@@ -688,45 +457,18 @@ class Gleap {
 
   /**
    * Register custom action
+   * @param {*} action
    */
   static registerCustomAction(customAction) {
-    const instance = this.getInstance();
-
-    if (instance.customActionCallbacks) {
-      instance.customActionCallbacks.push(customAction);
-    }
+    GleapCustomActionManager.registerCustomAction(customAction);
   }
 
   /**
    * Triggers a custom action
+   * @param {*} actionName
    */
   static triggerCustomAction(name) {
-    const instance = this.getInstance();
-
-    if (instance.customActionCallbacks) {
-      for (var i = 0; i < instance.customActionCallbacks.length; i++) {
-        var callback = instance.customActionCallbacks[i];
-        if (callback) {
-          callback({
-            name,
-          });
-        }
-      }
-    }
-  }
-
-  /**
-   * Sets the feedback flow options.
-   */
-  static setFeedbackActions(feedbackActions) {
-    this.getInstance().feedbackActions = feedbackActions;
-  }
-
-  /**
-   * Sets the menu options.
-   */
-  static setMenuOptions(options) {
-    this.getInstance().feedbackTypeActions = options;
+    GleapCustomActionManager.triggerCustomAction(name);
   }
 
   getFeedbackOptions(feedbackFlow) {
@@ -756,9 +498,6 @@ class Gleap {
   static startFeedbackFlow(feedbackFlow, silentBugReport = false) {
     const sessionInstance = GleapSession.getInstance();
     const instance = this.getInstance();
-    if (instance.currentlySendingBug) {
-      return;
-    }
 
     if (!sessionInstance.ready) {
       return;
@@ -776,13 +515,7 @@ class Gleap {
       return;
     }
 
-    instance.notifyEvent("flow-started", feedbackOptions);
-    instance.closeModalUI();
-    instance.currentlySendingBug = true;
-    instance.silentBugReport = silentBugReport;
-    if (!silentBugReport) {
-      instance.widgetOpened = true;
-    }
+    GleapEventManager.notifyEvent("flow-started", feedbackOptions);
 
     if (feedbackOptions.form && feedbackOptions.form.length > 0) {
       // Cleanup form from unsupported items.
@@ -911,29 +644,11 @@ class Gleap {
   }
 
   stopBugReportingAnalytics() {
-    this.networkIntercepter.setStopped(true);
+    /*this.networkIntercepter.setStopped(true);
     if (this.replay && !this.replay.stopped) {
-      this.replay.stop(!this.isLiveSite);
-    }
+      this.replay.stop(!this.isLiveMode());
+    }*/
   }
-
-  resetLoading(resetProgress) {
-    if (this.fakeLoading) {
-      clearInterval(this.fakeLoading);
-    }
-    this.fakeLoading = null;
-    this.fakeLoadingProgress = 0;
-    if (resetProgress) {
-      setLoadingIndicatorProgress(1);
-    }
-  }
-
-  getWidgetDialogClass = () => {
-    if (this.appCrashDetected || this.rageClickDetected) {
-      return "bb-feedback-dialog--crashed";
-    }
-    return "";
-  };
 
   createFeedbackFormDialog(feedbackOptions) {
     const self = this;
@@ -980,12 +695,9 @@ class Gleap {
         self.goBackToMainMenu();
       },
       this.openedMenu,
-      `bb-anim-fadeinright ${this.getWidgetDialogClass()} bb-feedback-dialog-form`
+      `bb-anim-fadeinright bb-feedback-dialog-form`
     );
 
-    this.openedMenu = true;
-    this.resetLoading(true);
-    validatePoweredBy(this.poweredByHidden);
     hookForm(
       feedbackOptions,
       function () {
@@ -1010,25 +722,12 @@ class Gleap {
       errorForm.style.display = "none";
     }
 
-    // Start fake loading
-    self.fakeLoading = setInterval(function () {
-      if (self.fakeLoadingProgress > 75) {
-        self.resetLoading(false);
-        return;
-      }
-      self.fakeLoadingProgress += 2;
-      setLoadingIndicatorProgress(self.fakeLoadingProgress);
-    }, 75);
-
     // Send form
     const formData = getFormData(feedbackOptions.form);
     self.formData = formData;
     self.excludeData = feedbackOptions.excludeData
       ? feedbackOptions.excludeData
       : {};
-    self.feedbackType = feedbackOptions.feedbackType
-      ? feedbackOptions.feedbackType
-      : "BUG";
 
     self.checkReplayLoaded();
   }
@@ -1070,7 +769,7 @@ class Gleap {
       // Screenshot excluded.
       this.sendBugReportToServer();
     } else {
-      return startScreenCapture(this.isLiveSite)
+      return startScreenCapture(this.isLiveMode())
         .then((data) => {
           // Set scroll position
           if (data) {
@@ -1080,7 +779,7 @@ class Gleap {
           this.sendBugReportToServer(data);
         })
         .catch((err) => {
-          this.showError();
+          //// this.showError();
         });
     }
   }
@@ -1096,83 +795,29 @@ class Gleap {
     this.actionToPerform = undefined;
   }
 
-  closeModalUI(cleanUp) {
-    const dialogContainer = document.querySelector(
-      ".bb-feedback-dialog-container"
-    );
-    if (dialogContainer) {
-      dialogContainer.remove();
-    }
-  }
-
-  closeGleap(cleanUp = true) {
-    if (cleanUp) {
-      this.reportCleanupOnClose();
-    }
-
-    ScrollStopper.enableScroll();
-    this.currentlySendingBug = false;
-    this.widgetOpened = false;
-    this.openedMenu = false;
-    this.appCrashDetected = false;
-    this.rageClickDetected = false;
-
-    // Remove editor.
-    const editorContainer = document.querySelector(".bb-capture-editor");
-    if (editorContainer) {
-      editorContainer.remove();
-    }
-
-    this.notifyEvent("close");
-    this.closeModalUI(cleanUp);
-  }
-
   init() {
     // Make sure all instances are ready.
     GleapMetaDataManager.getInstance();
     GleapConsoleLogManager.getInstance().start();
     GleapClickListener.getInstance().start();
     GleapCrashDetector.getInstance().start();
-
-    // this.registerKeyboardListener();
-    // this.registerEscListener();
-
-    // Initially check network
-    if (isLocalNetwork()) {
-      this.isLiveSite = false;
-    } else {
-      this.isLiveSite = true;
-    }
+    GleapRageClickDetector.getInstance().start();
   }
 
-  /*registerKeyboardListener() {
-    const self = this;
-    const charForEvent = function (event) {
-      var code;
+  isLiveMode() {
+    if (offlineMode === true) {
+      return false;
+    }
 
-      if (event.key !== undefined) {
-        code = event.key;
-      } else if (event.keyIdentifier !== undefined) {
-        code = event.keyIdentifier;
-      } else if (event.keyCode !== undefined) {
-        code = event.keyCode;
-      }
-
-      return code;
-    };
-
-    document.addEventListener("keyup", function (e) {
-      const char = charForEvent(e);
-      if (
-        e.ctrlKey &&
-        (char === "i" || char === "I" || char === 73) &&
-        self.shortcutsEnabled
-      ) {
-        self.autostartDrawing = true;
-        Gleap.startFeedbackFlow();
-      }
-    });
-  }*/
+    var hostname = window.location.hostname;
+    return (
+      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
+      hostname.startsWith("192.168.") ||
+      hostname.startsWith("10.0.") ||
+      hostname.endsWith(".local") ||
+      !hostname.includes(".")
+    );
+  }
 
   checkForInitType() {
     // Watch replays.
@@ -1189,42 +834,6 @@ class Gleap {
     GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
   }
 
-  showGleap() {
-    if (this.widgetOpened) {
-      return;
-    }
-
-    if (this.feedbackTypeActions.length > 0) {
-      Gleap.startFeedbackTypeSelection();
-    } else {
-      Gleap.startFeedbackFlow();
-    }
-
-    // Remove shoutout.
-    const feedbackShoutout = window.document.getElementsByClassName(
-      "bb-feedback-button-shoutout"
-    );
-    if (feedbackShoutout && feedbackShoutout.length > 0) {
-      feedbackShoutout[0].remove();
-    }
-
-    // Prevent shoutout from showing again.
-    try {
-      localStorage.setItem("bb-fto", true);
-    } catch (exp) { }
-
-    this.notifyEvent("open");
-  }
-
-  showSuccessMessage() {
-    const success = document.querySelector(".bb-feedback-dialog-success");
-    const form = document.querySelector(".bb-feedback-form");
-    const loader = document.querySelector(".bb-feedback-dialog-loading");
-    form.style.display = "none";
-    loader.style.display = "none";
-    success.style.display = "flex";
-  }
-
   performAction(action) {
     if (action && action.outbound && action.actionType) {
       this.actionToPerform = action;
@@ -1233,144 +842,24 @@ class Gleap {
   }
 
   sendBugReportToServer(screenshotData) {
-    const self = this;
-    const http = new XMLHttpRequest();
-    http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    GleapSession.getInstance().injectSession(http);
-    http.onerror = (error) => {
-      if (self.silentBugReport) {
-        self.closeGleap();
-        return;
-      }
-
-      self.showError();
-    };
-    http.upload.onprogress = function (e) {
-      if (self.silentBugReport) {
-        self.closeGleap();
-        return;
-      }
-
-      if (e.lengthComputable) {
-        const percentComplete = parseInt((e.loaded / e.total) * 100);
-
-        if (
-          percentComplete > 25 &&
-          percentComplete > self.fakeLoadingProgress
-        ) {
-          if (self.fakeLoading) {
-            self.resetLoading(false);
-          }
-          setLoadingIndicatorProgress(percentComplete);
-        }
-      }
-    };
-    http.onreadystatechange = function (e) {
-      if (self.silentBugReport) {
-        self.closeGleap();
-        return;
-      }
-
-      if (http.readyState === XMLHttpRequest.DONE) {
-        if (http.status === 200 || http.status === 201) {
-          self.notifyEvent("feedback-sent");
-          self.showSuccessAndClose();
-        } else {
-          self.showError(http.status);
-        }
-      }
-    };
-
-    const bugReportData = {
-      priority: this.severity,
-      customData: this.customData,
-      metaData: this.getMetaData(),
-      consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
-      networkLogs: this.networkIntercepter.getRequests(),
-      customEventLog: StreamedEvent.getInstance().eventArray,
-      type: this.feedbackType,
-      formData: this.formData,
-      isSilent: this.silentBugReport,
-    };
-
-    if (this.actionToPerform && this.actionToPerform.outbound) {
-      bugReportData["outbound"] = this.actionToPerform.outbound;
-    }
-
-    if (screenshotData && screenshotData.fileUrl) {
-      bugReportData["screenshotUrl"] = screenshotData.fileUrl;
-    }
-
-    if (screenshotData && screenshotData.html) {
-      bugReportData["screenshotData"] = screenshotData;
-    }
-
-    if (this.replay && this.replay.result) {
-      bugReportData["webReplay"] = this.replay.result;
-    }
-
-    if (this.screenRecordingUrl && this.screenRecordingUrl != "uploading") {
-      bugReportData["screenRecordingUrl"] = this.screenRecordingUrl;
-    }
-
-    // Exclude data logic.
-    const keysToExclude = Object.keys(this.excludeData);
-    for (let i = 0; i < keysToExclude.length; i++) {
-      const keyToExclude = keysToExclude[i];
-      if (this.excludeData[keyToExclude] === true) {
-        delete bugReportData[keyToExclude];
-
-        if (keyToExclude === "screenshot") {
-          delete bugReportData.screenshotData;
-          delete bugReportData.screenshotUrl;
-        }
-
-        if (keyToExclude === "replays") {
-          delete bugReportData.webReplay;
-        }
-      }
-    }
-
-    http.send(JSON.stringify(bugReportData));
-  }
-
-  jsonSize(obj) {
-    const size = new TextEncoder().encode(JSON.stringify(obj)).length;
-    const kiloBytes = size / 1024;
-    const megaBytes = kiloBytes / 1024;
-  }
-
-  showSuccessAndClose() {
-    const self = this;
-    self.showSuccessMessage();
-    setTimeout(function () {
-      self.closeGleap();
-    }, 2800);
-  }
-
-  showError(error) {
-    if (this.silentBugReport) {
-      this.closeGleap();
-      return;
-    }
-
-    var errorText = translateText(
-      "Something went wrong, please try again.",
-      self.overrideLanguage
+    var gleapFeedbackItem = new GleapFeedback(
+      "BUG",
+      "LOW",
+      GleapCustomDataManager.getInstance().getCustomData(),
+      GleapMetaDataManager.getInstance().getMetaData(),
+      GleapConsoleLogManager.getInstance().getLogs(),
+      this.networkIntercepter.getRequests(),
+      StreamedEvent.getInstance().eventArray,
+      this.feedbackType,
+      this.formData,
+      this.silentBugReport,
+      screenshotData,
+      this.screenRecordingUrl,
+      this.screenRecordingData,
+      this.excludeData,
     );
-    if (error === 429) {
-      errorText = translateText(
-        "Too many requests, please try again later.",
-        self.overrideLanguage
-      );
-    }
-
-    this.notifyEvent("error-while-sending");
-    toggleLoading(false);
-    document.querySelector(".bb-feedback-dialog-error").innerHTML = errorText;
-    document.querySelector(".bb-feedback-dialog-error").style.display = "flex";
-    document.querySelector(".bb-form-progress").style.display = "none";
+    console.log(gleapFeedbackItem);
+    gleapFeedbackItem.sendFeedback();
   }
 }
 
