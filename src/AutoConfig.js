@@ -1,10 +1,10 @@
 import Gleap from "./Gleap";
-import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import { saveToGleapCache } from "./GleapHelper";
 import Session from "./Session";
 
 export default class AutoConfig {
   static run = () => {
-    const session = Session.getInstance();
+    // const session = Session.getInstance();
     /*const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
     if (cachedConfig) {
       AutoConfig.applyConfig(cachedConfig, false);
@@ -35,10 +35,10 @@ export default class AutoConfig {
               const config = JSON.parse(http.responseText);
               try {
                 saveToGleapCache(`config-${session.sdkKey}`, config);
-              } catch (exp) {}
+              } catch (exp) { }
               AutoConfig.applyConfig(config, soft);
               return resolve();
-            } catch (e) {}
+            } catch (e) { }
           }
           reject();
         }
@@ -244,6 +244,6 @@ export default class AutoConfig {
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 }
