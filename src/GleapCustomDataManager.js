@@ -1,4 +1,4 @@
-import { truncateString } from "./GleapHelper";
+import { gleapDataParser } from "./GleapHelper";
 
 export default class GleapCustomDataManager {
   customData = {};

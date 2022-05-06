@@ -1,6 +1,5 @@
-import Gleap from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import GleapSession from "./GleapSession";
+import { GleapSession } from "./Gleap";
 
 export default class GleapConfigManager {
   flowConfig = null;

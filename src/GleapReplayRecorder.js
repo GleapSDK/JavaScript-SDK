@@ -12,7 +12,7 @@ import {
 } from "./ReplayConstants";
 import { isMobile, resizeImage } from "./GleapHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
-import Gleap from "..";
+import Gleap from "./Gleap";
 
 export default class GleapReplayRecorder {
   startDate = undefined;

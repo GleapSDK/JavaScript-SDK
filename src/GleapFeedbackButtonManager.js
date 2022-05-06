@@ -1,6 +1,4 @@
-import GleapConfigManager from "./GleapConfigManager";
-import Gleap from "./Gleap";
-import GleapFrameManager from "./GleapFrameManager";
+import Gleap, { GleapFrameManager, GleapConfigManager } from "./Gleap";
 import { translateText } from "./Translation";
 import { loadIcon } from "./UI";
 

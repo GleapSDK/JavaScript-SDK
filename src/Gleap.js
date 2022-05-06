@@ -1,13 +1,11 @@
-import { startScreenCapture } from "./ScreenCapture";
-import { translateText } from "./Translation";
 import { injectStyledCSS } from "./UI";
 import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
 import { gleapDataParser } from "./GleapHelper";
 import GleapSession from "./GleapSession";
-import StreamedEvent from "./StreamedEvent";
+import GleapStreamedEvent from "./GleapStreamedEvent";
 import GleapConfigManager from "./GleapConfigManager";
+import GleapFeedback from "./GleapFeedback";
 import { ScrollStopper } from "./ScrollStopper";
-import { ScreenRecorder } from "./ScreenRecorder";
 import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
@@ -18,6 +16,7 @@ import GleapCustomDataManager from "./GleapCustomDataManager";
 import GleapEventManager from "./GleapEventManager";
 import GleapCustomActionManager from "./GleapCustomActionManager";
 import GleapRageClickDetector from "./GleapRageClickDetector";
+import GleapReplayRecorder from "./GleapReplayRecorder";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -192,7 +191,7 @@ class Gleap {
    * @param {any} data
    */
   static logEvent(name, data) {
-    StreamedEvent.getInstance().logEvent(name, data);
+    GleapStreamedEvent.getInstance().logEvent(name, data);
   }
 
   /**
@@ -601,4 +600,5 @@ if (typeof window !== "undefined") {
   }
 }
 
+export { GleapNetworkIntercepter, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;

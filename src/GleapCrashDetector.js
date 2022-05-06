@@ -1,5 +1,5 @@
 import Gleap from "./Gleap";
-import GleapConsoleLogManager from "./GleapConsoleLogManager";
+import { GleapConsoleLogManager } from "./Gleap";
 
 export default class GleapCrashDetector {
   // GleapCrashDetector singleton

@@ -1,9 +1,4 @@
-import GleapConfigManager from "./GleapConfigManager";
-import GleapEventManager from "./GleapEventManager";
-import GleapFeedback from "./GleapFeedback";
-import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
-import GleapSession from "./GleapSession";
-import StreamedEvent from "./StreamedEvent";
+import { GleapStreamedEvent, GleapEventManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   gleapFrameContainer = null;
@@ -67,7 +62,7 @@ export default class GleapFrameManager {
     // Listen for messages.
     this.addMessageListener((data) => {
       if (data.name === "ping") {
-        StreamedEvent.getInstance().start();
+        GleapStreamedEvent.getInstance().start();
 
         // Inject the widget buttons
         GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
@@ -106,8 +101,10 @@ export default class GleapFrameManager {
             name: "feedback-sent"
           });
         }).catch((error) => {
+          console.log(error);
           this.sendMessage({
-            name: "feedback-sending-failed"
+            name: "feedback-sending-failed",
+            data: "Error sending data."
           });
         });
       }

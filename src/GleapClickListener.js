@@ -1,4 +1,4 @@
-import GleapConsoleLogManager from "./GleapConsoleLogManager";
+import { GleapConsoleLogManager } from "./Gleap";
 import { getDOMElementDescription } from "./GleapHelper";
 
 export default class GleapClickListener {

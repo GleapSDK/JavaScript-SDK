@@ -1,18 +1,17 @@
-import Gleap from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
-import GleapSession from "./GleapSession";
+import Gleap, { GleapSession } from "./Gleap";
 
-export default class StreamedEvent {
+export default class GleapStreamedEvent {
   eventArray = [];
-  streamedEventArray = [];
+  GleapStreamedEventArray = [];
   eventMaxLength = 500;
   lastUrl = undefined;
 
-  // StreamedEvent singleton
+  // GleapStreamedEvent singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new StreamedEvent();
+      this.instance = new GleapStreamedEvent();
       return this.instance;
     } else {
       return this.instance;
@@ -54,7 +53,7 @@ export default class StreamedEvent {
       log.data = gleapDataParser(data);
     }
     this.eventArray.push(log);
-    this.streamedEventArray.push(log);
+    this.GleapStreamedEventArray.push(log);
 
     // Check max size of event log
     if (this.eventArray.length > this.eventMaxLength) {
@@ -62,8 +61,8 @@ export default class StreamedEvent {
     }
 
     // Check max size of streamed event log
-    if (this.streamedEventArray.length > this.eventMaxLength) {
-      this.streamedEventArray.shift();
+    if (this.GleapStreamedEventArray.length > this.eventMaxLength) {
+      this.GleapStreamedEventArray.shift();
     }
   }
 
@@ -72,8 +71,8 @@ export default class StreamedEvent {
     let interval = 1500;
     if (
       GleapSession.getInstance().ready &&
-      self.streamedEventArray &&
-      self.streamedEventArray.length > 0
+      self.GleapStreamedEventArray &&
+      self.GleapStreamedEventArray.length > 0
     ) {
       self.streamEvents();
       interval = 3000;
@@ -107,11 +106,11 @@ export default class StreamedEvent {
       };
       http.send(
         JSON.stringify({
-          events: this.streamedEventArray,
+          events: this.GleapStreamedEventArray,
         })
       );
 
-      this.streamedEventArray = [];
+      this.GleapStreamedEventArray = [];
     }
   };
 }
