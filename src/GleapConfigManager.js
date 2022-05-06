@@ -1,5 +1,5 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import { GleapSession } from "./Gleap";
+import { GleapFrameManager, GleapSession, GleapReplayRecorder, GleapRageClickDetector } from "./Gleap";
 
 export default class GleapConfigManager {
   flowConfig = null;
@@ -87,6 +87,27 @@ export default class GleapConfigManager {
       this.flowConfig = flowConfig;
       this.projectActions = projectActions;
 
+      GleapFrameManager.getInstance().sendMessage({
+        name: "config-update",
+        data: {
+          config: flowConfig,
+          actions: projectActions
+        }
+      });
+
+      if (flowConfig.enableReplays) {
+        GleapReplayRecorder.getInstance().start();
+      } else {
+        GleapReplayRecorder.getInstance().stop();
+      }
+
+      if (
+        typeof flowConfig.enableRageClickDetector !== "undefined" &&
+        flowConfig.enableRageClickDetector
+      ) {
+        Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
+      }
+
       /*if (flowConfig.color) {
         Gleap.setStyles({
           primaryColor: flowConfig.color,
@@ -98,22 +119,7 @@ export default class GleapConfigManager {
             : "#FFFFFF",
         });
       }
-
-      /// REPLAY!
-      GleapReplayRecorder
-
-      // If it's only a soft update, return here.
-      if (soft) {
-        return;
-      }
       
-      if (flowConfig.hideBranding) {
-        Gleap.enablePoweredBy();
-      }
-
-      if (flowConfig.enableReplays) {
-        Gleap.enableReplays(flowConfig.enableReplays);
-      }
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 

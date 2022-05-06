@@ -46,6 +46,10 @@ export default class GleapReplayRecorder {
    * @returns 
    */
   start() {
+    if (!this.stopped) {
+      return;
+    }
+
     this.stopped = false;
     this.startDate = Date.now();
     this.node = document.documentElement;

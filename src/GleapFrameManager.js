@@ -70,12 +70,10 @@ export default class GleapFrameManager {
         // Answer with config.
         this.sendMessage({
           name: "config-update",
-          data: GleapConfigManager.getInstance().getFlowConfig()
-        });
-
-        this.sendMessage({
-          name: "actions-update",
-          data: GleapConfigManager.getInstance().getProjectActions()
+          data: {
+            config: GleapConfigManager.getInstance().getFlowConfig(),
+            actions: GleapConfigManager.getInstance().getProjectActions()
+          }
         });
 
         this.sendMessage({
