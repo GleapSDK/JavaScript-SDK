@@ -249,7 +249,7 @@ export default class MarkerManager {
             </div>
           </div>
         `;
-    Gleap.appendNode(bugReportingEditor);
+        document.body.appendChild(bugReportingEditor);
   }
 
   showNextStep = function () {

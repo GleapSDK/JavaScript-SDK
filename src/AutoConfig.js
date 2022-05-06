@@ -100,6 +100,9 @@ export default class AutoConfig {
         });
       }
 
+      /// REPLAY!
+      GleapReplayRecorder
+
       // If it's only a soft update, return here.
       if (soft) {
         return;
@@ -128,13 +131,6 @@ export default class AutoConfig {
       }
 
       if (
-        typeof flowConfig.enableCrashDetector !== "undefined" &&
-        flowConfig.enableCrashDetector
-      ) {
-        Gleap.enableCrashDetector(true, flowConfig.enableCrashDetector);
-      }
-
-      if (
         typeof flowConfig.enableRageClickDetector !== "undefined" &&
         flowConfig.enableRageClickDetector
       ) {
@@ -156,7 +152,7 @@ export default class AutoConfig {
         typeof flowConfig.widgetButtonText !== "undefined" &&
         flowConfig.widgetButtonText.length > 0
       ) {
-        Gleap.setFeedbackButtonText(flowConfig.widgetButtonText);
+        GleapFeedbackButtonManager.getInstance().setFeedbackButtonText(feedbackButtonText);
       }
 
       const instance = Gleap.getInstance();

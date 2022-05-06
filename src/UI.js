@@ -346,7 +346,7 @@ export const injectStyledCSS = (
   const node = document.createElement("style");
   node.innerHTML = colorStyleSheet;
   node.className = "gleap-styles";
-  Gleap.appendNode(node);
+  document.body.appendChild(node);
 };
 
 export const getHeaderImage = function (customLogoUrl) {
@@ -369,29 +369,26 @@ export const createWidgetDialog = function (
   var elem = document.createElement("div");
   elem.className = "bb-feedback-dialog-container";
   elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog ${appendClass}'>
-      <div class="bb-feedback-dialog-header${
-        back ? " bb-feedback-dialog-header--back" : ""
-      }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
-        ${
-          back
-            ? `<div class="bb-feedback-dialog-header-back">
+      <div class="bb-feedback-dialog-header${back ? " bb-feedback-dialog-header--back" : ""
+    }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
+        ${back
+      ? `<div class="bb-feedback-dialog-header-back">
         ${loadIcon("arrowleft", "#fff")}
         </div>`
-            : `<div class="bb-feedback-dialog-header-logo">
+      : `<div class="bb-feedback-dialog-header-logo">
           ${getHeaderImage(customLogoUrl)}
         </div>`
-        }
+    }
         <div class="bb-feedback-dialog-header-text">
           <div class="bb-feedback-dialog-header-title">
             ${title}
           </div>
-          ${
-            description === null
-              ? ""
-              : `<div class="bb-feedback-dialog-header-description">
+          ${description === null
+      ? ""
+      : `<div class="bb-feedback-dialog-header-description">
           ${description}
         </div>`
-          }
+    }
         </div>
         <div class="bb-feedback-dialog-header-close">
           ${loadIcon("close", "#fff")}
@@ -415,7 +412,7 @@ export const createWidgetDialog = function (
         </div>
       </div>
     </div>`;
-  Gleap.appendNode(elem);
+  document.body.appendChild(elem);
 
   const buttonType = Gleap.getInstance().buttonType;
   if (buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
@@ -483,20 +480,19 @@ export const createFeedbackTypeDialog = function (
   for (var i = 0; i < feedbackTypeActions.length; i++) {
     var action = feedbackTypeActions[i];
     optionsHTML += `<div id="bb-feedback-type-${i}" class="bb-feedback-type">
-        <div class="bb-feedback-type-icon" style="background-color: ${
-          action.color
-        };">
+        <div class="bb-feedback-type-icon" style="background-color: ${action.color
+      };">
           <img src="${action.icon}">
         </div>
         <div class="bb-feedback-type-text">
           <div class="bb-feedback-type-title">${translateText(
-            action.title,
-            overrideLanguage
-          )}</div>
+        action.title,
+        overrideLanguage
+      )}</div>
           <div class="bb-feedback-type-description">${translateText(
-            action.description,
-            overrideLanguage
-          )}</div>
+        action.description,
+        overrideLanguage
+      )}</div>
         </div>
       </div>`;
   }

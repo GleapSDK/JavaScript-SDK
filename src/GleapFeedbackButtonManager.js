@@ -6,6 +6,7 @@ import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
     feedbackButton = null;
+    injectedFeedbackButton = false;
 
     // Feedback button types
     static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -45,6 +46,11 @@ export default class GleapFeedbackButtonManager {
      * Injects the feedback button into the current DOM.
      */
     injectFeedbackButton() {
+        if (this.injectedFeedbackButton) {
+            return;
+        }
+        this.injectedFeedbackButton = true;
+
         const flowConfig = AutoConfig.getInstance().getFlowConfig();
 
         var buttonIcon = "";
@@ -81,9 +87,7 @@ export default class GleapFeedbackButtonManager {
         elem.onclick = () => {
             this.feedbackButtonPressed();
         };
-
-        Gleap.appendNode(elem);
-
+        
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
             elem.classList.add("bb-feedback-button--disabled");
         }
@@ -91,6 +95,8 @@ export default class GleapFeedbackButtonManager {
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
             elem.classList.add("bb-feedback-button--bottomleft");
         }
+
+        document.body.appendChild(elem);
 
         this.feedbackButton = elem;
     }

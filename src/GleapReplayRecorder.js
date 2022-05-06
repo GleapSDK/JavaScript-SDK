@@ -12,9 +12,40 @@ import {
 } from "./ReplayConstants";
 import { isMobile, resizeImage } from "./GleapHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
+import Gleap from "..";
 
-export default class ReplayRecorder {
+export default class GleapReplayRecorder {
+  startDate = undefined;
+
+  // GleapReplayRecorder singleton
+  static instance;
+  static getInstance() {
+    if (!this.instance) {
+      this.instance = new GleapReplayRecorder();
+      return this.instance;
+    } else {
+      return this.instance;
+    }
+  }
+
   constructor() {
+    this.initReplaySizeCheck();
+  }
+
+  initReplaySizeCheck() {
+    setInterval(() => {
+      if (this.isFull()) {
+        this.stop();
+        this.start();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Start Replays
+   * @returns 
+   */
+  start() {
     this.stopped = false;
     this.startDate = Date.now();
     this.node = document.documentElement;
@@ -26,8 +57,51 @@ export default class ReplayRecorder {
     this.resourcesToResolve = {};
     this.rootFrame = new ReplayRecFrame(window, this.node, this);
     this.evaluateFocus();
-    this.result = null;
-    this.finalizingResult = false;
+  }
+
+  /**
+   * Stop Replays
+   * @returns 
+   */
+  stop() {
+    this.stopped = true;
+    if (!this.rootFrame) {
+      this.rootFrame = null;
+      return;
+    }
+
+    this.rootFrame.stop();
+    this.rootFrame = null;
+  }
+
+  /**
+   * Get the current replay data
+   * @returns {Promise<void>}
+   */
+  getReplayData() {
+    if (!this.startDate) {
+      return Promise.resolve(null);
+    }
+
+    const replayResult = {
+      startDate: this.startDate,
+      initialState: this.rootFrame.initialState,
+      initialActions: this.rootFrame.initialActions,
+      actions: this.actions,
+      baseUrl: window.location.origin,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      resourcesToResolve: this.resourcesToResolve,
+      isMobile: isMobile(),
+    };
+
+    if (Gleap.getInstance().isLiveMode()) {
+      return this.fetchImageResources().then(() => {
+        return this.cleanupResources(replayResult);
+      });
+    } else {
+      return this.cleanupResources(replayResult);
+    }
   }
 
   isFull() {
@@ -190,51 +264,15 @@ export default class ReplayRecorder {
     return Promise.all(resolvePromises);
   }
 
-  stop(fetchResources = false) {
-    this.stopped = true;
-    if (!this.rootFrame) {
-      this.rootFrame = null;
-      return;
-    }
-
-    const replayResult = {
-      startDate: this.startDate,
-      initialState: this.rootFrame.initialState,
-      initialActions: this.rootFrame.initialActions,
-      actions: this.actions,
-      baseUrl: window.location.origin,
-      width: window.innerWidth,
-      height: window.innerHeight,
-      resourcesToResolve: this.resourcesToResolve,
-      isMobile: isMobile(),
-    };
-
-    this.rootFrame.stop();
-    this.rootFrame = null;
-
-    this.finalizingResult = true;
-    if (fetchResources) {
-      return this.fetchImageResources().then(() => {
-        this.cleanupAfterStop(replayResult);
-      });
-    } else {
-      this.cleanupAfterStop(replayResult);
-    }
-  }
-
-  cleanupAfterStop(replayResult) {
-    this.cleanupResources();
-    this.result = replayResult;
-    this.finalizingResult = false;
-  }
-
-  cleanupResources() {
+  cleanupResources(replayResult) {
     var resourceKeys = Object.keys(this.resourcesToResolve);
     for (var i = 0; i < resourceKeys.length; i++) {
       if (this.resourcesToResolve[resourceKeys[i]] === "--") {
         delete this.resourcesToResolve[resourceKeys[i]];
       }
     }
+
+    return Promise.resolve(replayResult);
   }
 
   evaluateFocus() {

@@ -1,20 +1,12 @@
 import { startScreenCapture } from "./ScreenCapture";
 import { translateText } from "./Translation";
-import {
-  createWidgetDialog,
-  loadIcon,
-  injectStyledCSS,
-  toggleLoading,
-} from "./UI";
+import { injectStyledCSS } from "./UI";
 import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
-import ReplayRecorder from "./ReplayRecorder";
 import { gleapDataParser } from "./GleapHelper";
-import { buildForm, getFormData, hookForm, rememberForm } from "./FeedbackForm";
 import GleapSession from "./GleapSession";
 import StreamedEvent from "./StreamedEvent";
 import AutoConfig from "./AutoConfig";
 import { ScrollStopper } from "./ScrollStopper";
-import { isLocalNetwork } from "./NetworkUtils";
 import { ScreenRecorder } from "./ScreenRecorder";
 import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
@@ -41,31 +33,20 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 
 class Gleap {
   initialized = false;
-
+  offlineMode = false;
   overrideLanguage = "";
   autostartDrawing = false;
 
-  formData = {};
-  excludeData = {};
-
-  offlineMode = false;
-  appCrashDetected = false;
-  replaysEnabled = false;
-  shortcutsEnabled = true;
-  customTranslation = {};
-  replay = null;
+  // Global data
+  screenRecordingData = null;
   snapshotPosition = {
     x: 0,
     y: 0,
   };
-  actionToPerform = undefined;
-  screenRecordingData = null;
-  screenRecordingUrl = null;
+  excludeData = {};
 
-  // Bug priorities
-  static PRIORITY_LOW = "LOW";
-  static PRIORITY_MEDIUM = "MEDIUM";
-  static PRIORITY_HIGH = "HIGH";
+  customTranslation = {};
+  actionToPerform = undefined;
 
   // Gleap singleton
   static instance;
@@ -83,7 +64,13 @@ class Gleap {
    */
   constructor() {
     if (typeof window !== "undefined") {
-      this.init();
+      // Make sure all instances are ready.
+      GleapMetaDataManager.getInstance();
+      GleapConsoleLogManager.getInstance().start();
+      GleapClickListener.getInstance().start();
+      GleapCrashDetector.getInstance().start();
+      GleapRageClickDetector.getInstance().start();
+      GleapNetworkIntercepter.getInstance().start();
     }
   }
 
@@ -131,28 +118,23 @@ class Gleap {
       // Run auto configuration.
       AutoConfig.getInstance().start()
         .then(() => {
-          instance.postInit();
+          if (
+            document.readyState === "complete" ||
+            document.readyState === "loaded" ||
+            document.readyState === "interactive"
+          ) {
+            instance.postInitialization();
+          } else {
+            document.addEventListener("DOMContentLoaded", function (event) {
+              instance.postInitialization();
+            });
+          }
         })
         .catch(function (err) {
           console.warn("Failed to initialize Gleap.");
         });
     });
     sessionInstance.startSession();
-  }
-
-  postInit() {
-    const self = this;
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
-      self.checkForInitType();
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
-        self.checkForInitType();
-      });
-    }
   }
 
   /**
@@ -206,36 +188,6 @@ class Gleap {
   }
 
   /**
-   * Sets the feedback button text
-   * @param {string} feedbackButtonText
-   */
-  static setFeedbackButtonText(feedbackButtonText) {
-    GleapFeedbackButtonManager.getInstance().setFeedbackButtonText(feedbackButtonText);
-  }
-
-  /**
-   * Enable replays
-   * @param {*} enabled
-   */
-  static enableReplays(enabled) {
-    const instance = this.getInstance();
-
-    instance.replaysEnabled = enabled;
-    if (enabled) {
-      if (instance.replay) {
-        instance.replay.stop();
-        instance.replay = null;
-      }
-      instance.replay = new ReplayRecorder();
-    } else {
-      if (instance.replay) {
-        instance.replay.stop();
-        instance.replay = null;
-      }
-    }
-  }
-
-  /**
    * Logs a custom event
    * @param {string} name
    * @param {any} data
@@ -254,19 +206,12 @@ class Gleap {
   }
 
   /**
-   * Appends a node to the widgets container.
-   * @param {*} node
-   */
-  static appendNode(node) {
-    document.body.appendChild(node);
-  }
-
-  /**
    * Enable or disable shortcuts
    * @param {boolean} enabled
    */
   static enableShortcuts(enabled) {
-    this.getInstance().shortcutsEnabled = enabled;
+    // TODO: Implement
+    //this.getInstance().shortcutsEnabled = enabled;
   }
 
   /**
@@ -362,18 +307,24 @@ class Gleap {
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
-    this.getInstance().overrideLanguage = language;
+    // TODO: Implement
+    // this.getInstance().overrideLanguage = language;
   }
 
   /**
-   * Enables crash detection.
-   * @param {*} enabled
-   * @param {*} silent
+   * Register custom action
+   * @param {*} action
    */
-  static enableCrashDetector(enabled, silent = false) {
-    const instance = this.getInstance();
-    instance.enabledCrashDetector = enabled;
-    instance.enabledCrashDetectorSilent = silent;
+  static registerCustomAction(customAction) {
+    GleapCustomActionManager.registerCustomAction(customAction);
+  }
+
+  /**
+   * Triggers a custom action
+   * @param {*} actionName
+   */
+  static triggerCustomAction(name) {
+    GleapCustomActionManager.triggerCustomAction(name);
   }
 
   /**
@@ -440,62 +391,9 @@ class Gleap {
   }
 
   /**
-   * Reports a bug silently
-   * @param {*} description
-   * @param {*} priority
-   * @deprecated Please use sendSilentReport instead.
-   */
-  static sendSilentBugReport(description, priority = Gleap.PRIORITY_MEDIUM) {
-    return Gleap.sendSilentReport(
-      {
-        description: description,
-      },
-      priority,
-      "BUG"
-    );
-  }
-
-  /**
-   * Register custom action
-   * @param {*} action
-   */
-  static registerCustomAction(customAction) {
-    GleapCustomActionManager.registerCustomAction(customAction);
-  }
-
-  /**
-   * Triggers a custom action
-   * @param {*} actionName
-   */
-  static triggerCustomAction(name) {
-    GleapCustomActionManager.triggerCustomAction(name);
-  }
-
-  getFeedbackOptions(feedbackFlow) {
-    var feedbackOptions = null;
-
-    // Try to load the specific feedback flow.
-    if (feedbackFlow) {
-      feedbackOptions = this.feedbackActions[feedbackFlow];
-    }
-
-    // Fallback
-    if (!feedbackOptions) {
-      feedbackOptions = this.feedbackActions.bugreporting;
-    }
-
-    // Deep copy to prevent changes.
-    try {
-      feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
-    } catch (e) { }
-
-    return feedbackOptions;
-  }
-
-  /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlow(feedbackFlow, silentBugReport = false) {
+  static startFeedbackFlow(feedbackFlow) {
     const sessionInstance = GleapSession.getInstance();
     const instance = this.getInstance();
 
@@ -510,14 +408,20 @@ class Gleap {
     };
 
     // Get feedback options
-    var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
+    /*var feedbackOptions = instance.getFeedbackOptions(feedbackFlow);
     if (!feedbackOptions) {
       return;
-    }
+    }*/
 
-    GleapEventManager.notifyEvent("flow-started", feedbackOptions);
+    GleapEventManager.notifyEvent("flow-started", feedbackFlow);
 
-    if (feedbackOptions.form && feedbackOptions.form.length > 0) {
+    GleapFrameManager.getInstance().showWidget();
+    GleapFrameManager.getInstance().sendMessage({
+      name: "start-feedbackflow",
+      data: feedbackFlow
+    });
+
+    /*if (feedbackOptions.form && feedbackOptions.form.length > 0) {
       // Cleanup form from unsupported items.
       let newFormArray = [];
       for (var i = 0; i < feedbackOptions.form.length; i++) {
@@ -640,172 +544,11 @@ class Gleap {
     } else {
       // Show editor
       instance.showBugReportEditor(feedbackOptions);
-    }
-  }
-
-  stopBugReportingAnalytics() {
-    /*this.networkIntercepter.setStopped(true);
-    if (this.replay && !this.replay.stopped) {
-      this.replay.stop(!this.isLiveMode());
     }*/
   }
 
-  createFeedbackFormDialog(feedbackOptions) {
-    const self = this;
-
-    const formData = buildForm(feedbackOptions, this.overrideLanguage);
-    const title = translateText(feedbackOptions.title, this.overrideLanguage);
-    const htmlContent = `<div class="bb-feedback-dialog-error">${translateText(
-      "Something went wrong, please try again.",
-      self.overrideLanguage
-    )}</div><div class="bb-feedback-dialog-loading bb-feedback-dialog-loading--main">
-    <svg
-      class="bb--progress-ring"
-      width="120"
-      height="120">
-      <circle
-        class="bb--progress-ring__circle"
-        stroke="${this.mainColor}"
-        stroke-width="6"
-        fill="transparent"
-        r="34"
-        cx="60"
-        cy="60"/>
-    </svg>
-  </div>
-  <div class="bb-feedback-dialog-success">
-    ${loadIcon("success", this.mainColor)}
-    <div class="bb-feedback-dialog-info-text">${translateText(
-      feedbackOptions.thanksMessage
-        ? feedbackOptions.thanksMessage
-        : "Thank you!",
-      this.overrideLanguage
-    )}</div>
-  </div>
-  <div class="bb-feedback-form">
-    ${formData}
-  </div>`;
-
-    createWidgetDialog(
-      title,
-      null,
-      this.customLogoUrl,
-      htmlContent,
-      function () {
-        self.goBackToMainMenu();
-      },
-      this.openedMenu,
-      `bb-anim-fadeinright bb-feedback-dialog-form`
-    );
-
-    hookForm(
-      feedbackOptions,
-      function () {
-        self.formSubmitAction(feedbackOptions);
-      },
-      this.overrideLanguage
-    );
-  }
-
-  formSubmitAction(feedbackOptions) {
-    const self = this;
-
-    // Remember form items
-    rememberForm(feedbackOptions.form);
-
-    // Show loading spinner
-    toggleLoading(true);
-
-    // Hide error message
-    const errorForm = document.querySelector(".bb-feedback-dialog-error");
-    if (errorForm) {
-      errorForm.style.display = "none";
-    }
-
-    // Send form
-    const formData = getFormData(feedbackOptions.form);
-    self.formData = formData;
-    self.excludeData = feedbackOptions.excludeData
-      ? feedbackOptions.excludeData
-      : {};
-
-    self.checkReplayLoaded();
-  }
-
-  checkReplayLoaded(retries = 0) {
-    if (
-      this.replaysEnabled &&
-      !(this.replay && this.replay.result) &&
-      retries < 5
-    ) {
-      // Replay is not ready yet.
-      setTimeout(() => {
-        this.checkReplayLoaded(++retries);
-      }, 1000);
-    } else {
-      this.checkForScreenRecording();
-    }
-  }
-
-  checkForScreenRecording() {
-    const self = this;
-    if (this.screenRecordingData != null) {
-      ScreenRecorder.uploadScreenRecording(this.screenRecordingData)
-        .then(function (recordingUrl) {
-          self.screenRecordingUrl = recordingUrl;
-          self.takeScreenshotAndSend();
-        })
-        .catch(function (err) {
-          self.takeScreenshotAndSend();
-        });
-    } else {
-      this.takeScreenshotAndSend();
-    }
-  }
-
-  takeScreenshotAndSend() {
-    const self = this;
-    if (this.excludeData && this.excludeData.screenshot) {
-      // Screenshot excluded.
-      this.sendBugReportToServer();
-    } else {
-      return startScreenCapture(this.isLiveMode())
-        .then((data) => {
-          // Set scroll position
-          if (data) {
-            data["x"] = self.snapshotPosition.x;
-            data["y"] = self.snapshotPosition.y;
-          }
-          this.sendBugReportToServer(data);
-        })
-        .catch((err) => {
-          //// this.showError();
-        });
-    }
-  }
-
-  reportCleanupOnClose() {
-    try {
-      Gleap.enableReplays(this.replaysEnabled);
-    } catch (exp) { }
-    try {
-      this.networkIntercepter.setStopped(false);
-    } catch (exp) { }
-
-    this.actionToPerform = undefined;
-  }
-
-  init() {
-    // Make sure all instances are ready.
-    GleapMetaDataManager.getInstance();
-    GleapConsoleLogManager.getInstance().start();
-    GleapClickListener.getInstance().start();
-    GleapCrashDetector.getInstance().start();
-    GleapRageClickDetector.getInstance().start();
-  }
-
   isLiveMode() {
-    if (offlineMode === true) {
+    if (this.offlineMode === true) {
       return false;
     }
 
@@ -819,14 +562,7 @@ class Gleap {
     );
   }
 
-  checkForInitType() {
-    // Watch replays.
-    setInterval(() => {
-      if (this.replay && this.replay.isFull()) {
-        Gleap.enableReplays(this.replaysEnabled);
-      }
-    }, 1000);
-
+  postInitialization() {
     // Load session.
     const onGleapReady = function () {
       GleapFrameManager.getInstance().injectFrame();
@@ -835,32 +571,24 @@ class Gleap {
   }
 
   performAction(action) {
-    if (action && action.outbound && action.actionType) {
+    // TODO: 
+    /*if (action && action.outbound && action.actionType) {
       this.actionToPerform = action;
       Gleap.startFeedbackFlow(action.actionType);
-    }
+    }*/
   }
 
-  sendBugReportToServer(screenshotData) {
+  /*sendBugReportToServer(screenshotData) {
     var gleapFeedbackItem = new GleapFeedback(
       "BUG",
       "LOW",
-      GleapCustomDataManager.getInstance().getCustomData(),
-      GleapMetaDataManager.getInstance().getMetaData(),
-      GleapConsoleLogManager.getInstance().getLogs(),
-      this.networkIntercepter.getRequests(),
-      StreamedEvent.getInstance().eventArray,
       this.feedbackType,
       this.formData,
-      this.silentBugReport,
-      screenshotData,
-      this.screenRecordingUrl,
-      this.screenRecordingData,
-      this.excludeData,
+      this.silentBugReport
     );
     console.log(gleapFeedbackItem);
     gleapFeedbackItem.sendFeedback();
-  }
+  }*/
 }
 
 // Check for unperformed Gleap actions.

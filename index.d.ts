@@ -52,11 +52,6 @@ export namespace Gleap {
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
   function attachNetworkLogs(externalConsoleLogs: any[]): void;
-  function setColors(
-    primaryColor: string,
-    headerColor: string,
-    buttonColor: string
-  ): void;
   function setStyles(styles: {
     primaryColor: string;
     headerColor: string;

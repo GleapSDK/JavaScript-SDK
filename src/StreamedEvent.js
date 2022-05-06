@@ -19,7 +19,11 @@ export default class StreamedEvent {
     }
   }
 
-  constructor() {}
+  constructor() { }
+
+  getEventArray() {
+    return this.eventArray;
+  }
 
   start() {
     this.startEventStream();
@@ -95,7 +99,7 @@ export default class StreamedEvent {
             try {
               const action = JSON.parse(http.responseText);
               Gleap.getInstance().performAction(action);
-            } catch (exp) {}
+            } catch (exp) { }
           } else {
             GleapSession.getInstance().clearSession(true);
           }

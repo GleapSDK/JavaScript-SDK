@@ -1,4 +1,13 @@
+import Gleap from "./Gleap";
+import GleapConsoleLogManager from "./GleapConsoleLogManager";
+import GleapCustomDataManager from "./GleapCustomDataManager";
+import GleapMetaDataManager from "./GleapMetaDataManager";
+import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
+import GleapReplayRecorder from "./GleapReplayRecorder";
 import GleapSession from "./GleapSession";
+import { startScreenCapture } from "./ScreenCapture";
+import { ScreenRecorder } from "./ScreenRecorder";
+import StreamedEvent from "./StreamedEvent";
 
 export default class GleapFeedback {
     excludeData = {};
@@ -17,20 +26,58 @@ export default class GleapFeedback {
     webReplay = undefined;
     screenRecordingUrl = undefined;
 
-    constructor(type, priority, customData, metaData, consoleLog, networkLogs, customEventLog, formData, isSilent, screenshotUrl, screenshotData, webReplay, screenRecordingUrl) {
+    constructor(type, priority, formData, isSilent, excludeData) {
         this.type = type;
         this.priority = priority;
-        this.customData = customData;
-        this.metaData = metaData;
-        this.consoleLog = consoleLog;
-        this.networkLogs = networkLogs;
-        this.customEventLog = customEventLog;
         this.formData = formData;
         this.isSilent = isSilent;
-        this.screenshotUrl = screenshotUrl;
-        this.screenshotData = screenshotData;
-        this.webReplay = webReplay;
-        this.screenRecordingUrl = screenRecordingUrl;
+        this.excludeData = excludeData;
+    }
+
+    async takeSnapshot() {
+        this.customData = GleapCustomDataManager.getInstance().getCustomData();
+        this.metaData = GleapMetaDataManager.getInstance().getMetaData();
+        this.consoleLog = GleapConsoleLogManager.getInstance().getLogs();
+        this.networkLogs = GleapNetworkIntercepter.getInstance.getRequests();
+        this.customEventLog = StreamedEvent.getInstance().getEventArray();
+
+        /*this.screenshotUrl = screenshotUrl;
+        this.screenshotData = screenshotData;*/
+
+        // Prepare replay
+        try {
+            let replayData = await GleapReplayRecorder.getInstance().getReplayData();
+            if (replayData) {
+                this.webReplay = replayData;
+            }
+        } catch (exp) {
+            console.log("Error getting replay data", exp);
+        }
+
+        // Prepare screen recording
+        if (Gleap.getInstance().screenRecordingData != null) {
+            try {
+                let recordingUrl = await ScreenRecorder.uploadScreenRecording(Gleap.getInstance().screenRecordingData);
+                if (recordingUrl) {
+                    this.screenRecordingUrl = recordingUrl;
+                }
+            } catch (exp) {
+                console.log("Error uploading screen recording", exp);
+            }
+        }
+
+        // Prepare screenshot
+        if (!(this.excludeData && this.excludeData.screenshot)) {
+            try {
+                const screenshotData = startScreenCapture(this.isLiveMode());
+                if (screenshotData) {
+                    data["x"] = self.snapshotPosition.x;
+                    data["y"] = self.snapshotPosition.y;
+                }
+            } catch (exp) {
+                console.log("Error taking screenshot", exp);
+            }
+        }
     }
 
     getData() {

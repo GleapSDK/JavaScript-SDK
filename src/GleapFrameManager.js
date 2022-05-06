@@ -7,7 +7,7 @@ import StreamedEvent from "./StreamedEvent";
 export default class GleapFrameManager {
   gleapFrameContainer = null;
   gleapFrame = null;
-  connected = false;
+  injectedFrame = false;
   widgetOpened = false;
   listeners = [];
   frameURL = "http://localhost:3000";
@@ -30,6 +30,11 @@ export default class GleapFrameManager {
   }
 
   injectFrame = () => {
+    if (this.injectedFrame) {
+      return;
+    }
+    this.injectedFrame = true;
+
     var elem = document.createElement("div");
     elem.className = "gleap-frame-container gleap-frame-container--hidden";
     elem.innerHTML = `<iframe src="${this.frameURL}" class="gleap-frame" scrolling="no" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
@@ -37,18 +42,17 @@ export default class GleapFrameManager {
 
     this.gleapFrameContainer = elem;
     this.gleapFrame = document.querySelector(".gleap-frame");
-    this.connected = true;
   };
 
   showWidget() {
     this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
-    widgetOpened = true;
+    this.widgetOpened = true;
     GleapEventManager.notifyEvent("open");
   }
 
   hideWidget() {
     this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
-    widgetOpened = false;
+    this.widgetOpened = false;
     GleapEventManager.notifyEvent("close");
   }
 
@@ -61,8 +65,6 @@ export default class GleapFrameManager {
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
-      console.log(data);
-
       if (data.name === "ping") {
         StreamedEvent.getInstance().start();
 
@@ -92,7 +94,6 @@ export default class GleapFrameManager {
 
       if (data.name === "send-form") {
         const formData = data.data;
-        console.log(formData);
 
         setTimeout(() => {
           this.sendMessage({

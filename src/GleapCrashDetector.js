@@ -28,6 +28,7 @@ export default class GleapCrashDetector {
       ];
       GleapConsoleLogManager.getInstance().addLog(messageObject, "ERROR");
 
+      // TODO: implement crash detection
       const gleapInstance = Gleap.getInstance();
       if (
         gleapInstance.enabledCrashDetector &&
