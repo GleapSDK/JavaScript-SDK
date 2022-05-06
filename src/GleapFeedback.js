@@ -21,7 +21,6 @@ export default class GleapFeedback {
     formData = {};
     isSilent = false;
     outbound = undefined;
-    screenshotUrl = undefined;
     screenshotData = undefined;
     webReplay = undefined;
     screenRecordingUrl = undefined;
@@ -40,9 +39,6 @@ export default class GleapFeedback {
         this.consoleLog = GleapConsoleLogManager.getInstance().getLogs();
         this.networkLogs = GleapNetworkIntercepter.getInstance.getRequests();
         this.customEventLog = StreamedEvent.getInstance().getEventArray();
-
-        /*this.screenshotUrl = screenshotUrl;
-        this.screenshotData = screenshotData;*/
 
         // Prepare replay
         try {
@@ -69,10 +65,11 @@ export default class GleapFeedback {
         // Prepare screenshot
         if (!(this.excludeData && this.excludeData.screenshot)) {
             try {
-                const screenshotData = startScreenCapture(this.isLiveMode());
+                var screenshotData = startScreenCapture(this.isLiveMode());
                 if (screenshotData) {
-                    data["x"] = self.snapshotPosition.x;
-                    data["y"] = self.snapshotPosition.y;
+                    screenshotData["x"] = self.snapshotPosition.x;
+                    screenshotData["y"] = self.snapshotPosition.y;
+                    this.screenshotData = screenshotData;
                 }
             } catch (exp) {
                 console.log("Error taking screenshot", exp);
@@ -92,7 +89,6 @@ export default class GleapFeedback {
             formData: this.formData,
             isSilent: this.isSilent,
             outbound: this.outbound,
-            screenshotUrl: this.screenshotUrl,
             screenshotData: this.screenshotData,
             webReplay: this.webReplay,
             screenRecordingUrl: this.screenRecordingUrl
@@ -106,7 +102,6 @@ export default class GleapFeedback {
 
                 if (keyToExclude === "screenshot") {
                     delete bugReportData.screenshotData;
-                    delete bugReportData.screenshotUrl;
                 }
 
                 if (keyToExclude === "replays") {
@@ -118,7 +113,7 @@ export default class GleapFeedback {
         return bugReportData;
     }
 
-    sendFeedback() {
+    async sendFeedback() {
         const self = this;
         const http = new XMLHttpRequest();
         http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
@@ -154,6 +149,11 @@ export default class GleapFeedback {
             }
         };
 
-        http.send(JSON.stringify(this.getData()));
+        try {
+            const dataToSend = await this.getData();
+            http.send(JSON.stringify(dataToSend));
+        } catch (exp) {
+            console.log("Error sending feedback", exp);
+        }
     }
 }

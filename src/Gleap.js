@@ -586,7 +586,6 @@ class Gleap {
       this.formData,
       this.silentBugReport
     );
-    console.log(gleapFeedbackItem);
     gleapFeedbackItem.sendFeedback();
   }*/
 }
