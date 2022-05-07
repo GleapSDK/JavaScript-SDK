@@ -43,12 +43,14 @@ export default class GleapFrameManager {
   showWidget() {
     this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
     this.widgetOpened = true;
+    GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
   }
 
   hideWidget() {
     this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
     this.widgetOpened = false;
+    GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("close");
   }
 
@@ -86,12 +88,13 @@ export default class GleapFrameManager {
         this.gleapFrameContainer.style.maxHeight = data.data + "px";
       }
 
+      if (data.name === "close-widget") {
+        this.hideWidget();
+      }
+
       if (data.name === "send-feedback") {
         const formData = data.data.formData;
         const action = data.data.action;
-
-        console.log(formData);
-        console.log(action);
 
         const feedback = new GleapFeedback(action.feedbackType, "MEDIUM", formData, false, action.excludeData);
         feedback.sendFeedback().then(() => {
@@ -99,7 +102,6 @@ export default class GleapFrameManager {
             name: "feedback-sent"
           });
         }).catch((error) => {
-          console.log(error);
           this.sendMessage({
             name: "feedback-sending-failed",
             data: "Error sending data."

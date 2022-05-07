@@ -37,7 +37,12 @@ export default class GleapFeedbackButtonManager {
     }
 
     feedbackButtonPressed() {
-        GleapFrameManager.getInstance().showWidget();
+        var frameManager = GleapFrameManager.getInstance();
+        if (frameManager.isOpened()) {
+            GleapFrameManager.getInstance().hideWidget();
+        } else {
+            GleapFrameManager.getInstance().showWidget();
+        }
     }
 
     /**
@@ -85,7 +90,7 @@ export default class GleapFeedbackButtonManager {
         elem.onclick = () => {
             this.feedbackButtonPressed();
         };
-        
+
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
             elem.classList.add("bb-feedback-button--disabled");
         }
@@ -104,31 +109,27 @@ export default class GleapFeedbackButtonManager {
      * @param {*} retry 
      * @returns 
      */
-    updateFeedbackButtonState(retry = false) {
-        /*if (this.feedbackButton === null) {
-            if (!retry) {
-                setTimeout(() => {
-                    this.updateFeedbackButtonState(true);
-                }, 500);
-            }
+    updateFeedbackButtonState() {
+        if (this.feedbackButton === null) {
             return;
         }
 
+        const frameManager = GleapFrameManager.getInstance();
         const sendingClass = "bb-feedback-button--sending";
-        if (this.widgetOpened) {
+        if (frameManager.isOpened()) {
             this.feedbackButton.classList.add(sendingClass);
         } else {
             this.feedbackButton.classList.remove(sendingClass);
         }
 
-        const crashedClass = "bb-feedback-button--crashed";
+        /*const crashedClass = "bb-feedback-button--crashed";
         if (this.appCrashDetected || this.rageClickDetected) {
             this.feedbackButton.classList.add(crashedClass);
         } else {
             this.feedbackButton.classList.remove(crashedClass);
-        }
+        }*/
 
-        const dialogContainer = document.querySelector(
+        /*const dialogContainer = document.querySelector(
             ".bb-feedback-dialog-container"
         );
         const containerFocusClass = "bb-feedback-dialog-container--focused";
