@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapEventManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { GleapStreamedEvent, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   gleapFrameContainer = null;
@@ -7,6 +7,7 @@ export default class GleapFrameManager {
   widgetOpened = false;
   listeners = [];
   frameURL = "http://localhost:3000";
+  markerManager = undefined;
 
   // GleapFrameManager singleton
   static instance;
@@ -48,6 +49,12 @@ export default class GleapFrameManager {
   }
 
   hideWidget() {
+    // Reset marker manager
+    if (this.markerManager) {
+      this.markerManager.hideWidgetUI();
+      this.markerManager = null;
+    }
+
     this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
     this.widgetOpened = false;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
@@ -106,6 +113,16 @@ export default class GleapFrameManager {
             name: "feedback-sending-failed",
             data: "Error sending data."
           });
+        });
+      }
+
+      if (data.name === "start-screen-drawing") {
+        this.hideWidget();
+
+        // Show screen drawing.
+        this.markerManager = new GleapMarkerManager("screenshot");
+        this.markerManager.show((result) => {
+          this.showWidget();
         });
       }
     });

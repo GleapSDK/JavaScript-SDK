@@ -5,7 +5,6 @@ import GleapSession from "./GleapSession";
 import GleapStreamedEvent from "./GleapStreamedEvent";
 import GleapConfigManager from "./GleapConfigManager";
 import GleapFeedback from "./GleapFeedback";
-import { ScrollStopper } from "./ScrollStopper";
 import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
@@ -17,6 +16,7 @@ import GleapEventManager from "./GleapEventManager";
 import GleapCustomActionManager from "./GleapCustomActionManager";
 import GleapRageClickDetector from "./GleapRageClickDetector";
 import GleapReplayRecorder from "./GleapReplayRecorder";
+import GleapMarkerManager from "./GleapMarkerManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -417,131 +417,6 @@ class Gleap {
       data: feedbackFlow
     });
     GleapFrameManager.getInstance().showWidget();
-
-    /*if (feedbackOptions.form && feedbackOptions.form.length > 0) {
-      // Cleanup form from unsupported items.
-      let newFormArray = [];
-      for (var i = 0; i < feedbackOptions.form.length; i++) {
-        var feedbackOption = feedbackOptions.form[i];
-        if (
-          feedbackOption &&
-          feedbackOption.type !== "privacypolicy" &&
-          feedbackOption.type !== "spacer" &&
-          feedbackOption.type !== "submit" &&
-          feedbackOption.name !== "reportedBy"
-        ) {
-          newFormArray.push(feedbackOption);
-        }
-      }
-
-      const emailFormItem =
-        feedbackOptions.collectEmail === true ||
-          feedbackOptions.collectEmail === undefined
-          ? {
-            title: "Email",
-            placeholder: "Your e-mail",
-            type: "text",
-            inputtype: "email",
-            name: "reportedBy",
-            required: true,
-            remember: true,
-          }
-          : null;
-
-      // Collect email when user needs to enter it.
-      if (
-        emailFormItem &&
-        !(sessionInstance.session && sessionInstance.session.email)
-      ) {
-        emailFormItem.hideOnDefaultSet = false;
-        newFormArray.push(emailFormItem);
-      }
-
-      // Update form.
-      feedbackOptions.form = newFormArray;
-      feedbackOptions.pages =
-        feedbackOptions.singlePageForm === true ? 1 : newFormArray.length;
-
-      // Add page id's
-      for (var i = 0; i < feedbackOptions.form.length; i++) {
-        var feedbackOption = feedbackOptions.form[i];
-        if (feedbackOptions.singlePageForm === true) {
-          feedbackOption.page = 0;
-        } else {
-          feedbackOption.page = i;
-        }
-      }
-
-      // Add email as hidden default option.
-      if (
-        emailFormItem &&
-        sessionInstance.session &&
-        sessionInstance.session.email
-      ) {
-        emailFormItem.hideOnDefaultSet = true;
-        emailFormItem.defaultValue = sessionInstance.session.email;
-        emailFormItem.page =
-          feedbackOptions.form[feedbackOptions.form.length - 1].page;
-        newFormArray.push(emailFormItem);
-      }
-
-      // Inject privacy policy.
-      if (!feedbackOptions.disableUserScreenshot) {
-        var captureItem = {
-          name: "capture",
-          type: "capture",
-          enableScreenshot: true,
-          autostartDrawing: instance.autostartDrawing,
-          enableCapture: feedbackOptions.enableUserScreenRecording
-            ? true
-            : false,
-          captureTitle: translateText(
-            "Record screen",
-            instance.overrideLanguage
-          ),
-          captureTooltip: translateText(
-            "Record your screen to showcase the bug",
-            instance.overrideLanguage
-          ),
-          screenshotTitle: translateText(
-            "Mark the bug",
-            instance.overrideLanguage
-          ),
-          screenshotTooltip: translateText(
-            "Draw on the screen to mark the bug",
-            instance.overrideLanguage
-          ),
-          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
-        };
-        feedbackOptions.form.push(captureItem);
-      }
-
-      // Inject privacy policy.
-      if (feedbackOptions.privacyPolicyEnabled) {
-        var policyItem = {
-          name: "privacypolicy",
-          type: "privacypolicy",
-          required: true,
-          url: feedbackOptions.privacyPolicyUrl,
-          page: feedbackOptions.form[feedbackOptions.form.length - 1].page,
-        };
-        feedbackOptions.form.push(policyItem);
-      }
-    }
-
-    // Disable autostart drawing for the next call.
-    instance.autostartDrawing = false;
-
-    // Stop bug analytics.
-    instance.stopBugReportingAnalytics();
-
-    if (instance.silentBugReport) {
-      // Move on
-      instance.checkReplayLoaded();
-    } else {
-      // Show editor
-      instance.showBugReportEditor(feedbackOptions);
-    }*/
   }
 
   isLiveMode() {
@@ -600,5 +475,5 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export { GleapNetworkIntercepter, GleapMarkerManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;

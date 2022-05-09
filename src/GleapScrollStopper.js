@@ -1,4 +1,4 @@
-export class ScrollStopper {
+export class GleapScrollStopper {
   keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
   supportsPassive = false;
   wheelOpt = this.supportsPassive ? { passive: false } : false;
@@ -6,11 +6,11 @@ export class ScrollStopper {
     "onwheel" in document.createElement("div") ? "wheel" : "mousewheel";
   scrollDisabled = false;
 
-  // ScrollStopper singleton
+  // GleapScrollStopper singleton
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new ScrollStopper();
+      this.instance = new GleapScrollStopper();
       return this.instance;
     } else {
       return this.instance;

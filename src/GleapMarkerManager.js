@@ -1,11 +1,11 @@
 import Gleap from "./Gleap";
 import { ScreenDrawer } from "./ScreenDrawer";
-import { ScrollStopper } from "./ScrollStopper";
+import { GleapScrollStopper } from "./GleapScrollStopper";
 import { ScreenRecorder } from "./ScreenRecorder";
 import { translateText } from "./Translation";
 import { loadIcon } from "./UI";
 
-export default class MarkerManager {
+export default class GleapMarkerManager {
   type = "screenshot";
   dragCursor = null;
   screenRecorder = null;
@@ -33,7 +33,7 @@ export default class MarkerManager {
 
   showWidgetUI() {
     if (this.type === "screenshot") {
-      ScrollStopper.enableScroll();
+      GleapScrollStopper.enableScroll();
     }
 
     // Stop screenrecording.
@@ -174,9 +174,8 @@ export default class MarkerManager {
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("rect")}</div>
           <div class="bb-capture-toolbar">
-            ${
-              this.type === "capture"
-                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
+            ${this.type === "capture"
+        ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
                   ${loadIcon("recorderon")}
                   ${loadIcon("recorderoff")}
                   <span class="bb-tooltip bb-tooltip-screen-recording"></span>
@@ -190,8 +189,8 @@ export default class MarkerManager {
                 <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="pointer">
                   ${loadIcon("pointer")}
                 </div>`
-                : ""
-            }
+        : ""
+      }
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="rect">
               ${loadIcon("rect")}
             </div>
@@ -204,25 +203,24 @@ export default class MarkerManager {
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
               <span class="bb-tooltip">${translateText(
-                `Pick a color`,
-                this.overrideLanguage
-              )}</span>
+        `Pick a color`,
+        this.overrideLanguage
+      )}</span>
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
               ${loadIcon("undo")}
               <span class="bb-tooltip">${translateText(
-                `Undo`,
-                this.overrideLanguage
-              )}</span>
+        `Undo`,
+        this.overrideLanguage
+      )}</span>
             </div>
-            ${
-              this.type !== "capture"
-                ? `<div class="bb-capture-button-next">${translateText(
-                    `Next`,
-                    this.overrideLanguage
-                  )}</div>`
-                : ""
-            }
+            ${this.type !== "capture"
+        ? `<div class="bb-capture-button-next">${translateText(
+          `Next`,
+          this.overrideLanguage
+        )}</div>`
+        : ""
+      }
           </div>
           <div class="bb-capture-toolbar-item-colorpicker">
             <div class="bb-capture-toolbar-item-color" data-color="#EB144C"></div>
@@ -238,18 +236,18 @@ export default class MarkerManager {
               <video controls muted autoplay></video>
               <div class="bb-capture-preview-buttons">
                 <div class="bb-capture-preview-retrybutton">${translateText(
-                  `Retry`,
-                  this.overrideLanguage
-                )}</div>
+        `Retry`,
+        this.overrideLanguage
+      )}</div>
                 <div class="bb-capture-preview-sendbutton">${translateText(
-                  `Next`,
-                  this.overrideLanguage
-                )}</div>
+        `Next`,
+        this.overrideLanguage
+      )}</div>
               </div>
             </div>
           </div>
         `;
-        document.body.appendChild(bugReportingEditor);
+    document.body.appendChild(bugReportingEditor);
   }
 
   showNextStep = function () {
@@ -271,7 +269,8 @@ export default class MarkerManager {
     }
 
     // Register Gleap listener.
-    Gleap.getInstance().registerEscListener();
+    // TODO: ???
+    // Gleap.getInstance().registerEscListener();
   }
 
   registerListeners() {
@@ -306,18 +305,22 @@ export default class MarkerManager {
     window.addEventListener("beforeunload", this.pageLeaveListener);
 
     // Unregister Gleap listener.
-    Gleap.getInstance().unregisterEscListener();
+    // TODO: ???
+    //Gleap.getInstance().unregisterEscListener();
   }
 
   show(callback) {
     this.callback = callback;
     const self = this;
 
+    console.log("????");
+
     this.registerListeners();
 
     // Hide widget UI
     this.hideWidgetUI();
 
+    console.log("????3");
     // Create the editor UI
     this.createEditorUI();
 
@@ -333,7 +336,7 @@ export default class MarkerManager {
       };
 
       // Disable scroll
-      ScrollStopper.disableScroll();
+      GleapScrollStopper.disableScroll();
     } else {
       // Setup screen recording
       this.setupScreenRecording();
@@ -371,7 +374,7 @@ export default class MarkerManager {
             colorpicker.style.display = "none";
           }
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
-          MarkerManager.setPenColor(hexColor);
+          GleapMarkerManager.setPenColor(hexColor);
         }
       };
     }
@@ -466,7 +469,7 @@ export default class MarkerManager {
               if (svgClone && self.dragCursor) {
                 self.dragCursor.appendChild(svgClone);
               }
-            } catch (exp) {}
+            } catch (exp) { }
           }
         }
         if (type === "colorpicker") {
