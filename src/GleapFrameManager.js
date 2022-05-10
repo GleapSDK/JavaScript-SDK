@@ -48,13 +48,16 @@ export default class GleapFrameManager {
     GleapEventManager.notifyEvent("open");
   }
 
-  hideWidget() {
+  hideMarkerManager() {
     // Reset marker manager
     if (this.markerManager) {
-      this.markerManager.hideWidgetUI();
+      this.markerManager.clear();
       this.markerManager = null;
     }
+  }
 
+  hideWidget() {
+    this.hideMarkerManager();
     this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
     this.widgetOpened = false;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
@@ -95,6 +98,10 @@ export default class GleapFrameManager {
         this.gleapFrameContainer.style.maxHeight = data.data + "px";
       }
 
+      if (data.name === "cleanup-drawings") {
+        this.hideMarkerManager();
+      }
+
       if (data.name === "close-widget") {
         this.hideWidget();
       }
@@ -120,8 +127,11 @@ export default class GleapFrameManager {
         this.hideWidget();
 
         // Show screen drawing.
-        this.markerManager = new GleapMarkerManager("screenshot");
-        this.markerManager.show((result) => {
+        this.markerManager = new GleapMarkerManager(data.data);
+        this.markerManager.show((success) => {
+          if (!success) {
+            this.hideMarkerManager();
+          }
           this.showWidget();
         });
       }

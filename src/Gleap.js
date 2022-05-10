@@ -329,11 +329,12 @@ class Gleap {
    * Sets a custom color scheme.
    * @param {string} primaryColor
    */
-  static setColors(
+  static setStyles(
     primaryColor,
     headerColor,
     buttonColor,
-    backgroundColor = "#ffffff"
+    backgroundColor = "#ffffff",
+    borderRadius = 20,
   ) {
     if (
       document.readyState === "complete" ||

@@ -75,20 +75,6 @@ module.exports = {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
 
-              // Using UglifyJS
-              minify({
-                compressor: cleanCSS,
-                input: "./src/css/index.css",
-                output: `published/${nodeVersion}/index.min.css`,
-                processImport: false,
-              });
-              minify({
-                compressor: cleanCSS,
-                input: "./demo/appwidget.css",
-                output: `published/${nodeVersion}/appwidget.min.css`,
-                processImport: false,
-              });
-
               return exec(
                 `mkdir -p published/latest & cp published/${nodeVersion}/* published/latest`,
                 (err, stdoutx, stderrx) => {

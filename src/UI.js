@@ -55,16 +55,782 @@ export const injectStyledCSS = (
     : calculateShadeColor(backgroundColor, -70);
 
   var borderRadius = parseInt(borderRadius, 10);
-  if (borderRadius === NaN || borderRadius === undefined) {
-    borderRadius = 20;
-  }
-
   const containerBorderRadius = Math.round(borderRadius * 0.6);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
 
   const colorStyleSheet = `
+    .gleap-frame-container {
+      right: 20px;
+      width: 380px !important;
+      max-width: none;
+      position: fixed;
+      z-index: 2147483647;
+      bottom: 100px;
+      visibility: visible;
+      min-width: 320px;
+      height: 100%;
+      max-height: 0px;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 5px 40px;
+      border-radius: 20px;
+      overflow: hidden;
+      background-color: #fff;
+    }
+    
+    .gleap-frame-container--hidden {
+      opacity: 0;
+      display: none;
+    }
+    
+    .gleap-frame-container iframe {
+      height: 100% !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block;
+    }
+    
+    .bb-feedback-button {
+      margin: 0px;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      background-color: transparent;
+      color: #000000;
+      z-index: 2147483100;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      padding: 0px;
+    }
+    
+    .bb-feedback-button--disabled .bb-feedback-button-icon {
+      display: none !important;
+    }
+    
+    .bb-feedback-button--disabled .bb-feedback-button-text {
+      display: none;
+    }
+    
+    .bb-feedback-button--bottomleft {
+      bottom: 20px;
+      right: auto;
+      left: 20px;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-button-shoutout {
+      right: auto;
+      left: 94px;
+    }
+    
+    .bb-feedback-button-text {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 99;
+    }
+    
+    .bb-feedback-button-text:before {
+      content: "";
+      position: absolute;
+      box-shadow: rgba(0, 0, 0, 0.04) 6px 6px 5px;
+      transform: rotate(315deg);
+      bottom: 16px;
+      right: -4px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #fff #fff transparent;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-button-text:before {
+      display: none;
+    }
+    
+    .bb-feedback-button-text:after {
+      content: "";
+      position: absolute;
+      bottom: 12px;
+      right: 0px;
+      background-color: #fff;
+      width: 5px;
+      height: 30px;
+    }
+    
+    .bb-feedback-button-text-title {
+      font-family: sans-serif;
+      font-size: 14px;
+      color: #666;
+      line-height: 18px;
+      max-width: 220px;
+    }
+    
+    .bb-feedback-button-text-title b {
+      color: #000000;
+      font-weight: 600;
+    }
+    
+    .bb-feedback-button-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 60px;
+      background-color: #485bff;
+      transition: box-shadow 0.3s ease-in-out;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .bb-feedback-button-classic {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      top: 50%;
+      right: 0px;
+      position: fixed;
+      transform: rotate(-90deg) translate(50%, -50%);
+      transform-origin: 100% 50%;
+      padding: 9px 20px;
+      text-align: center;
+      background-color: #485bff;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      font-family: sans-serif;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
+      animation-duration: 0.2s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
+    
+    .bb-feedback-button-classic--left {
+      top: 50%;
+      left: 0px;
+      right: auto;
+      transform: rotate(90deg) translate(-50%, -100%);
+      transform-origin: 0% 0%;
+    }
+    
+    .bb-feedback-button-classic--bottom {
+      top: auto;
+      bottom: 0px;
+      transform: none;
+      right: 20px;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-classic {
+      animation-duration: 0.2s;
+      animation-fill-mode: both;
+      animation-name: bbFadeOutRight;
+    }
+    
+    .bb-feedback-button .bb-logo-logo {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      top: 11px;
+      left: 11px;
+      object-fit: contain;
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+      animation-name: bbZoomIn;
+    }
+    
+    .bb-feedback-button .bb-logo-arrowdown {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 23px;
+      left: 21px;
+      object-fit: contain;
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+    }
+    
+    .bb-feedback-button .bb-logo-arrowdown {
+      animation-name: bbZoomOut;
+    }
+    
+    .bb-feedback-button--sending .bb-logo-arrowdown {
+      animation-name: bbZoomIn;
+    }
+    
+    .bb-feedback-button--sending .bb-logo-logo {
+      animation-name: bbZoomOut;
+    }
+    
+    .bb-feedback-button-icon:hover {
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .bb-feedback-button--bottomleft.bb-feedback-button--sending {
+      padding-left: 0px;
+      padding-right: 5px;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-text {
+      animation-name: bbFadeOutDown;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-icon {
+      display: flex;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-dialog {
+      right: auto;
+      left: 16px;
+    }
+    
+    .bb-feedback-button--classic .bb-feedback-dialog,
+    .bb-feedback-button--disabled .bb-feedback-dialog {
+      bottom: 20px;
+    }
+    
+    .bb-feedback-button--classic-left .bb-feedback-dialog {
+      right: auto;
+      left: 16px;
+    }
+    
+    .bb-capture-svg {
+      position: absolute;
+      z-index: 916777264;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      width: 100%;
+      height: 100%;
+      padding: 0px;
+      margin: 0px;
+      cursor: crosshair;
+    }
+    
+    .bb-rec-on-circle {
+      animation-name: bbRecIconFade;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    
+    .bb-rec-on-cont {
+      animation-name: bbRecIconContFade;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    
+    .bb-capture-editor-drag-info {
+      position: fixed;
+      top: -200px;
+      left: 0px;
+      z-index: 916777266;
+      transition: opacity 0.3s ease-in-out;
+    }
+    
+    .bb-capture-editor-drag-info svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .bb-capture-editor-borderlayer {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      border: 4px solid ${primaryColor};
+      cursor: crosshair;
+      z-index: 916777260;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    
+    .bb-feedback-dialog-backdrop {
+      display: none;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .bb-capture-editor-recording .bb-capture-dismiss {
+      display: none;
+    }
+    
+    .bb-capture-editor-item-inactive {
+      opacity: 0.3;
+      cursor: not-allowed !important;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-toolbar-drawingitem {
+      opacity: 0.3;
+      cursor: not-allowed !important;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-editor-drag-info {
+      display: none;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-svg {
+      pointer-events: none !important;
+    }
+    
+    .bb-capture-toolbar {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 916777268;
+      background-color: #fff;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.3s ease-in-out;
+    }
+    
+    .bb-capture-dismiss {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      z-index: 916777268;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: ${primaryColor};
+      border-bottom-left-radius: ${formItemSmallBorderRadius}px;
+    }
+    
+    .bb-capture-dismiss svg path {
+      fill: ${contrastColor};
+    }
+    
+    .bb-capture-dismiss svg {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    
+    .bb-capture-button-next {
+      font-family: sans-serif;
+      box-sizing: border-box;
+      font-weight: 600;
+      text-align: center;
+      width: auto;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0px;
+      line-height: 36px;
+      padding: 0px 12px;
+      font-size: 15px;
+      margin-left: 12px;
+    }
+    
+    .bb-capture-toolbar-item-spacer {
+      width: 1px;
+      height: 38px;
+      min-width: 1px;
+      margin: 0px 5px;
+    }
+    
+    .bb-capture-toolbar-item {
+      width: 42px;
+      height: 38px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      margin-right: 5px;
+    }
+    
+    .bb-capture-toolbar-item svg {
+      width: 23px;
+      height: 23px;
+      object-fit: contain;
+    }
+    
+    .bb-capture-toolbar-item-selectedcolor {
+      border-radius: 100%;
+      width: 20px;
+      height: 20px;
+      background-color: #db4035;
+    }
+    
+    .bb-capture-toolbar-item[data-type="undo"] svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .bb-capture-toolbar-item[data-active="true"] {
+      position: relative;
+    }
+    
+    .bb-capture-preview {
+      display: none;
+      background-color: rgba(0, 0, 0, 0.6);
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      z-index: 916777270;
+    }
+    
+    .bb-capture-preview-inner {
+      background-color: #fff;
+      padding: 0px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      flex-direction: column;
+      max-width: 640px;
+      width: 100%;
+      margin: 20px;
+    }
+    
+    .bb-capture-preview-inner video {
+      border-radius: 8px 8px 0px 0px;
+      display: block;
+      border: 0px;
+      outline: none;
+      width: 100%;
+      max-height: 60vh;
+    }
+    
+    .bb-capture-preview-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px;
+    }
+    
+    .bb-capture-preview-retrybutton {
+      font-family: sans-serif;
+      border-radius: 21px;
+      box-sizing: border-box;
+      padding: 12px 26px;
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-preview-sendbutton {
+      font-family: sans-serif;
+      border-radius: 21px;
+      box-sizing: border-box;
+      padding: 12px 26px;
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-preview-retrybutton:hover,
+    .bb-capture-preview-sendbutton:hover {
+      opacity: 0.9;
+    }
+    
+    .bb-capture-toolbar-item-recording {
+      margin-right: 0px;
+    }
+    
+    .bb-capture-toolbar-item-recording svg {
+      width: 33px;
+      height: 33px;
+    }
+    
+    .bb-capture-toolbar-item-colorpicker {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 916777268;
+      background-color: #fff;
+      display: none;
+      padding: 10px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    
+    .bb-capture-toolbar-item-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 100%;
+      margin-right: 12px;
+      box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-toolbar-item-color:hover {
+      box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.25);
+    }
+    
+    .bb-capture-toolbar-item-color:last-of-type {
+      margin-right: 0px;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="true"] svg:first-of-type {
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="true"] svg:nth-of-type(2) {
+      display: block;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="false"] svg:first-of-type {
+      display: block;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="false"] svg:nth-of-type(2) {
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item--active {
+      background-color: #eee;
+    }
+    
+    .bb-capture-toolbar-item:hover svg {
+      opacity: 1;
+    }
+    
+    .bb-capture-toolbar-item--active {
+      background-color: #f8f8f8;
+    }
+    
+    .bb-capture-toolbar-item--active svg {
+      opacity: 1;
+    }
+    
+    .bb-capture-toolbar-item--inactivecross::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 26px;
+      margin: auto;
+      border-radius: 4px;
+      background-color: #e80000;
+      transform: rotate(45deg);
+    }
+    
+    .bb-capture-toolbar-item--inactivecross svg {
+      fill: #eee;
+    }
+    
+    .bb-capture-toolbar-item-timer {
+      text-align: left;
+      line-height: 32px;
+      font-size: 14px;
+      margin: 5px;
+      min-width: 40px;
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item .bb-tooltip {
+      background-color: #555;
+      color: #fff;
+      visibility: hidden;
+      font-size: 14px;
+      text-align: center;
+      padding: 5px 10px;
+      position: absolute;
+      z-index: 1;
+      top: 45px;
+      left: 0px;
+      transform: translateX(calc(-50% + 21px));
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+    
+    .bb-capture-toolbar-item .bb-tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      transform: rotate(180deg);
+      border-color: #555 transparent transparent transparent;
+    }
+    
+    .bb-capture-toolbar-item:hover .bb-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .bb-capture-options {
+      display: none;
+    }
+    
+    .bb-capture-options--active {
+      display: flex;
+    }
+    
+    @media only screen and (max-width: 450px) {
+      .bb-tooltip {
+        display: none !important;
+      }
+    
+      .bb-capture-toolbar-item-colorpicker {
+        top: 75px;
+      }
+    
+      .bb-capture-button-next {
+        margin-left: auto;
+      }
+    
+      .bb-capture-dismiss {
+        display: none;
+      }
+    
+      .bb-capture-toolbar {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        width: auto;
+        transform: none;
+      }
+    
+      .bb-feedback-dialog-backdrop {
+        display: block;
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100vw;
+        height: 100vh;
+        height: -webkit-fill-available;
+        z-index: 916777230;
+        box-sizing: border-box;
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+    
+      .bb-capture-editor-drag-info {
+        display: none;
+      }
+    
+      .bb-feedback-button--bottomleft .bb-feedback-dialog {
+        left: 10px;
+        right: 10px;
+      }
+    
+      .bb-capture-editor-borderlayer {
+        border-width: 4px;
+      }
+    }
+    
+    .bb-feedback-button--crashed .bb-feedback-button-icon {
+      background-color: #ed4337;
+    }
+    
+    .bb-feedback-button--crashed .bb-feedback-button-icon:hover {
+      background-color: #c7372d;
+    }
+    
+    @media print {
+      .bb-feedback-button {
+        display: none !important;
+      }
+    }
+    
+    @keyframes bbFadeOutRight {
+      from {
+        opacity: 1;
+      }
+    
+      to {
+        opacity: 0;
+        transform: translate3d(100%, 0, 0);
+      }
+    }
+    
+    @keyframes bbFadeOutDown {
+      from {
+        opacity: 1;
+      }
+    
+      to {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+      }
+    }
+    
+    @keyframes bbFadeInOpacity {
+      from {
+        opacity: 0;
+      }
+    
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes bbZoomOut {
+      from {
+        opacity: 1;
+      }
+    
+      50% {
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+      }
+    
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes bbZoomIn {
+      from {
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+      }
+    
+      50% {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes bbRecIconContFade {
+      0% {
+        fill: #b10802;
+      }
+      50% {
+        fill: #ff0000;
+      }
+      100% {
+        fill: #b10802;
+      }
+    }  
     .bb-capture-preview-retrybutton {
       color: ${contrastBackgroundColor};
       border-radius: ${buttonBorderRadius}px;
@@ -73,24 +839,10 @@ export const injectStyledCSS = (
     .bb-capture-preview-retrybutton:hover {
       background-color: ${hoverHoverColor};
     }
-    .bb-feedback-dialog-success svg {
-      box-shadow: inset 0px 0px 0px ${primaryColor};
-    }
-
     @keyframes bb-suc-fill {
       100% {
         box-shadow: inset 0px 0px 0px 30px ${primaryColor};
       }
-    }
-    .bb-feedback-dialog-success svg circle {
-      stroke: ${primaryColor};
-    }
-    .bb-capture-dismiss {
-      background-color: ${primaryColor};
-      border-bottom-left-radius: ${formItemSmallBorderRadius}px;
-    }
-    .bb-capture-dismiss svg path {
-      fill: ${contrastColor};
     }
     .bb-capture-toolbar-item-spacer {
       background-color: ${backgroundColorHover};
@@ -109,11 +861,6 @@ export const injectStyledCSS = (
         fill: transparent;
       }
     }
-    .bb-feedback-inputgroup--privacy-policy a,
-    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
-    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
-      color: ${contrastBackgroundColor};
-    }
     .bb-capture-preview-sendbutton {
       color: ${contrastColor};
       background-color: ${primaryColor};
@@ -124,38 +871,15 @@ export const injectStyledCSS = (
       background-color: ${primaryColor};
       border-radius: ${formItemSmallBorderRadius}px;
     }
-    .bb-feedback-capture-item {
-      border-radius: ${buttonBorderRadius}px;
-      background-color: ${backgroundColorHover};
-    }
     .bb-capture-preview-inner {
       background-color: ${backgroundColor};
       border-radius: ${formItemBorderRadius}px;
     }
-    .bb-feedback-capture-item .bb-item-title {
-      color: ${contrastBackgroundColor};
-    }
     .bb-capture-toolbar-item-timer {
       color: ${subTextColor};
     }
-    .bb-feedback-capture-item-selected-icon path,
-    .bb-feedback-capture-item-selected-action path,
-    .bb-feedback-capture-item path {
-      fill: ${contrastBackgroundColor};
-    }
     .bb-svg-path {
       fill: ${contrastBackgroundColor};
-    }
-    .bb-feedback-capture-item-selected-button {
-      border-radius: ${formItemBorderRadius}px;
-      background-color: ${backgroundColorHover};
-    }
-    .bb-feedback-capture-item-selected-label {
-      color: ${contrastBackgroundColor};
-    }
-    .bb-feedback-capture-item-selected-action:hover {
-      background-color: ${hoverHoverColor};
-      border-radius: ${formItemSmallBorderRadius}px;
     }
     .bb-capture-toolbar-item {
       border-radius: ${formItemBorderRadius}px;
@@ -170,12 +894,6 @@ export const injectStyledCSS = (
     .bb-capture-toolbar-item--active {
       background-color: ${backgroundColorHover};
     }
-    .bb-feedback-capture-item:hover {
-      background-color: ${hoverHoverColor};
-    }
-    .bb-feedback-onetofive-button {
-      border-radius: ${formItemSmallBorderRadius}px;
-    }
     .bb-feedback-button-classic {
       border-top-left-radius: ${formItemBorderRadius}px;
       border-top-right-radius: ${formItemBorderRadius}px;
@@ -183,156 +901,15 @@ export const injectStyledCSS = (
     .bb-logo-logo--default path {
       fill: ${contrastButtonColor};
     }
-    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-inputgroup textarea,
-    .bb-feedback-inputgroup > input,
-    .bb-feedback-inputgroup input {
-      border-radius: ${formItemBorderRadius}px;
-    }
-    .bb-feedback-dialog-header-back:hover {
-      background-color: ${contrastHeaderColor};
-      border-radius: ${containerBorderRadius}px;
-    }
-    .bb-feedback-dialog-header-next {
-      background-color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-next span {
-      color: ${headerColor};
-    }
-    .bb-feedback-dialog-header-next svg {
-      fill: ${headerColor};
-    }
-    .bb-feedback-type {
-      border-radius: ${containerBorderRadius}px;
-      background-color: ${backgroundColor};
-    }
-    .bb-feedback-type-description,
-    .bb-feedback-poweredbycontainer span,
-    .bb-feedback-onetofive-description span {
-      color: ${subTextColor};
-    }
-    .bb-feedback-poweredbycontainer svg g {
-      fill: ${subTextColor};
-    }
-    .bb-feedback-type:hover {
-      background-color: ${backgroundColorHover};
-    }
-    #bb-drawing-colorpopup {
-      background-color: ${backgroundColor};
-    }
-    .bb-feedback-type-title,
-    .bb-feedback-form-description,
-    .bb-feedback-elementtitle,
-    .bb-feedback-multiplechoice-container,
-    .bb-feedback-dialog-info-text
-    {
-      color: ${contrastBackgroundColor};
-    }
-    .bb-drawing-tool-spacer {
-      background-color: ${backgroundColorHover};
-    }
-    .bb-feedback-dialog {
-      border-radius: ${borderRadius}px;
-      background-color: ${backgroundColor};
-    }
     .bb-logo-arrowdown {
       fill: ${contrastButtonColor};
     }
-    .bb-feedback-dialog-header-back svg {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-back:hover svg {
-      fill: ${headerColor};
-    }
-    .bb-feedback-dialog-header-close svg {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-title,
-    .bb-feedback-dialog-header-title span {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-title-small {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-description {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-onetofive-button-active,
-    .bb-feedback-onetofive-button:hover {
-      background-color: ${primaryColor};
-      color: ${contrastColor};
-    }    
     .bb-feedback-button-icon {
         background-color: ${buttonColor};
-    }
-    .bb-feedback-multiplechoice-checkmark {
-      border: 2px solid ${hoverHoverColor};
-    }
-    .bb-feedback-multiplechoice-container:hover
-      input
-      ~ .bb-feedback-multiplechoice-checkmark {
-      border: 2px solid ${primaryColor};
-    }
-    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {
-      background-color: ${primaryColor};
-      border: 2px solid ${primaryColor};
-    }
-    .bb-feedback-dialog-header-button {
-        color: ${primaryColor};
-    }
-    .bb-drawing-tool-item--active {
-      background-color: ${backgroundColorHover};
-    }
-    .bb-capture-editor-borderlayer {
-        border-color: ${primaryColor};
     }
     .bb-feedback-button-classic {
       background-color: ${buttonColor};
       color: ${contrastButtonColor};
-    }
-    .bb-feedback-dialog-header {
-      background-color: ${headerColor};
-    }
-    .bb-form-progress-inner {
-      background-color: ${headerColor}66;
-    }
-    .bb-feedback-inputgroup textarea,
-    .bb-feedback-inputgroup > input,
-    .bb-feedback-inputgroup input {
-      background-color: ${backgroundColor};
-      color: ${contrastBackgroundColor};
-      border-color: ${borderColor};
-    }
-    .bb-feedback-inputgroup textarea:focus {
-      border-color: ${primaryColor};
-    }
-    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {
-      border-color: ${primaryColor};
-    }
-    .bb-feedback-send-button {
-      color: ${contrastColor};
-      background-color: ${primaryColor};
-      border-radius: ${buttonBorderRadius}px;
-    }
-    .bb-double-bounce1,
-    .bb-double-bounce2 {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-dialog-header-button-cancel {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-type-icon {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-inputgroup--privacy-policy
-    [type="checkbox"]:not(:checked)
-    + label:after,
-    .bb-feedback-inputgroup--privacy-policy
-    [type="checkbox"]:checked
-    + label:after {
-    color: ${primaryColor};
     }
     `;
 

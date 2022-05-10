@@ -1,5 +1,5 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import { GleapFrameManager, GleapSession, GleapReplayRecorder, GleapRageClickDetector } from "./Gleap";
+import Gleap, { GleapFrameManager, GleapSession, GleapReplayRecorder } from "./Gleap";
 
 export default class GleapConfigManager {
   flowConfig = null;
@@ -105,20 +105,22 @@ export default class GleapConfigManager {
         typeof flowConfig.enableRageClickDetector !== "undefined" &&
         flowConfig.enableRageClickDetector
       ) {
-        Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
+        //Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
       }
 
-      /*if (flowConfig.color) {
-        Gleap.setStyles({
-          primaryColor: flowConfig.color,
-          headerColor: flowConfig.headerColor,
-          buttonColor: flowConfig.buttonColor,
-          borderRadius: flowConfig.borderRadius,
-          backgroundColor: flowConfig.backgroundColor
+      if (flowConfig.color) {
+        Gleap.setStyles(
+          flowConfig.color,
+          flowConfig.headerColor,
+          flowConfig.buttonColor,
+          flowConfig.backgroundColor
             ? flowConfig.backgroundColor
             : "#FFFFFF",
-        });
+          flowConfig.borderRadius,
+        );
       }
+
+      /*
       
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
@@ -231,7 +233,9 @@ export default class GleapConfigManager {
       if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
         Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
       }*/
-    } catch (e) { }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   getFeedbackOptions(feedbackFlow) {

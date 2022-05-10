@@ -4,6 +4,7 @@ import { GleapScrollStopper } from "./GleapScrollStopper";
 import { ScreenRecorder } from "./ScreenRecorder";
 import { translateText } from "./Translation";
 import { loadIcon } from "./UI";
+import { GleapFrameManager } from "./Gleap";
 
 export default class GleapMarkerManager {
   type = "screenshot";
@@ -255,6 +256,16 @@ export default class GleapMarkerManager {
     this.showWidgetUI();
 
     if (this.callback) {
+      GleapFrameManager.getInstance().sendMessage({
+        name: "set-form-data",
+        data: {
+          formKey: "capture",
+          data: {
+            value: this.type,
+            dirty: true,
+          }
+        }
+      });
       this.callback(true);
     }
   };
@@ -313,14 +324,12 @@ export default class GleapMarkerManager {
     this.callback = callback;
     const self = this;
 
-    console.log("????");
-
+    // Register for listeners
     this.registerListeners();
 
     // Hide widget UI
     this.hideWidgetUI();
 
-    console.log("????3");
     // Create the editor UI
     this.createEditorUI();
 
