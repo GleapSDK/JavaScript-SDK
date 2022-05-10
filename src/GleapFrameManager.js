@@ -90,7 +90,11 @@ export default class GleapFrameManager {
 
         this.sendMessage({
           name: "session-update",
-          data: GleapSession.getInstance().getSession()
+          data: {
+            sessionData: GleapSession.getInstance().getSession(),
+            apiUrl: GleapSession.getInstance().apiUrl,
+            sdkKey: GleapSession.getInstance().sdkKey,
+          }
         });
       }
 
