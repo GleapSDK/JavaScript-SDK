@@ -65,8 +65,6 @@ export default class GleapFeedback {
             dataPromises.push(screenshotDataPromise);
         }
 
-        console.log(dataPromises);
-
         return Promise.all(dataPromises);
     }
 

@@ -133,7 +133,6 @@ export default class GleapSession {
   };
 
   notifySessionReady() {
-    console.log(this);
     if (this.onSessionReadyListener.length > 0) {
       for (var i = 0; i < this.onSessionReadyListener.length; i++) {
         this.onSessionReadyListener[i]();

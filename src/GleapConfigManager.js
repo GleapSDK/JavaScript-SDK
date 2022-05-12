@@ -241,8 +241,6 @@ export default class GleapConfigManager {
   getFeedbackOptions(feedbackFlow) {
     var feedbackOptions = null;
 
-    console.log(this.projectActions);
-
     // Try to load the specific feedback flow.
     if (feedbackFlow) {
       feedbackOptions = this.projectActions[feedbackFlow];

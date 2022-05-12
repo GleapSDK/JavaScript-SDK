@@ -33,8 +33,8 @@ export default class GleapFrameManager {
     this.injectedFrame = true;
 
     var elem = document.createElement("div");
-    elem.className = "gleap-frame-container gleap-frame-container--hidden";
-    elem.innerHTML = `<iframe src="${this.frameURL}" class="gleap-frame" scrolling="no" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
+    elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
+    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameURL}" class="gleap-frame" scrolling="no" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;

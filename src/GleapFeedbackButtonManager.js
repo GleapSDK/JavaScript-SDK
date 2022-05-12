@@ -64,7 +64,7 @@ export default class GleapFeedbackButtonManager {
         }
 
         var elem = document.createElement("div");
-        elem.className = "bb-feedback-button";
+        elem.className = "bb-feedback-button gleap-hidden";
         if (
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||

@@ -72,10 +72,26 @@ export const injectStyledCSS = (
       min-width: 320px;
       height: 100%;
       max-height: 0px;
-      box-shadow: rgba(0, 0, 0, 0.16) 0px 5px 40px;
-      border-radius: 20px;
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
+      border-radius: ${borderRadius}px;
       overflow: hidden;
-      background-color: #fff;
+      transition: max-height 0.3s ease-in;
+    }
+
+    .gleap-frame-container-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .gleap-frame-container-inner:before {
+      content: " ";
+      position: absolute;
+      width: 100%;
+      height: calc(100% - ${borderRadius}px);
+      top: ${borderRadius}px;
+      background-color: ${backgroundColor};
+      z-index: -1;
     }
     
     .gleap-frame-container--hidden {
@@ -1097,35 +1113,4 @@ export const loadIcon = function (name, color) {
   }
 
   return "";
-};
-
-export const toggleLoading = function (loading) {
-  const form = document.querySelector(".bb-feedback-form");
-  const loader = document.querySelector(".bb-feedback-dialog-loading--main");
-  const next = document.querySelector(".bb-feedback-dialog-header-back");
-  const close = document.querySelector(".bb-feedback-dialog-header-close");
-
-  if (loading) {
-    form.style.display = "none";
-    loader.style.display = "flex";
-    if (next) {
-      next.setAttribute("d", "t");
-      next.style.opacity = "0.2";
-    }
-    if (close) {
-      close.setAttribute("d", "t");
-      close.style.opacity = "0.2";
-    }
-  } else {
-    form.style.display = "block";
-    loader.style.display = "none";
-    if (next) {
-      next.setAttribute("d", "n");
-      next.style.opacity = "1";
-    }
-    if (close) {
-      close.setAttribute("d", "n");
-      close.style.opacity = "1";
-    }
-  }
 };

@@ -332,7 +332,6 @@ export default class GleapReplayRecorder {
     switch (node.nodeType) {
       case Node.ELEMENT_NODE: {
         const tag = node.tagName;
-        // eslint-disable-next-line default-case
         switch (tag) {
           case "INPUT":
           case "TEXTAREA": {
@@ -352,11 +351,6 @@ export default class GleapReplayRecorder {
           }
           case "PRE":
           case "DIV": {
-            if (node.classList.contains("bb-hidden")) {
-              delete node.ReplayRecID;
-              return null;
-            }
-            // In Pernosco all scrollable elements happen to be DIV/INPUT/TEXTAREA
             const listener = node.ownerDocument.ReplayRecInner.scrollListener;
             node.addEventListener("scroll", listener, { passive: true });
             break;

@@ -225,7 +225,6 @@ class GleapNetworkIntercepter {
             contentType = req.headers.get("content-type");
           }
 
-          console.log(contentType);
           if (this.isContentTypeSupported(contentType)) {
             req
               .text()
