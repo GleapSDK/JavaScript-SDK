@@ -63,11 +63,11 @@ export const injectStyledCSS = (
   const colorStyleSheet = `
     .gleap-frame-container {
       right: 20px;
+      bottom: 95px;
       width: 380px !important;
       max-width: none;
       position: fixed;
       z-index: 2147483647;
-      bottom: 100px;
       visibility: visible;
       min-width: 320px;
       height: 100%;
@@ -76,6 +76,38 @@ export const injectStyledCSS = (
       border-radius: ${borderRadius}px;
       overflow: hidden;
       transition: max-height 0.3s ease-in;
+      animation-duration: .3s;
+      animation-fill-mode: both;
+      animation-name: gleapFadeInUp;
+      user-select: none;
+    }
+
+    @keyframes gleapFadeInUp {
+      from {
+          opacity: 0;
+          transform: translate3d(0, 100%, 0);
+      }
+      to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .gleap-frame-container--classic {
+      right: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--classic-left {
+      right: auto;
+      left: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--modern-left {
+      right: auto;
+      left: 20px;
+      bottom: 95px;
     }
 
     .gleap-frame-container-inner {
@@ -96,7 +128,8 @@ export const injectStyledCSS = (
     
     .gleap-frame-container--hidden {
       opacity: 0;
-      display: none;
+      pointer-events: none;
+      animation: none !important;
     }
     
     .gleap-frame-container iframe {

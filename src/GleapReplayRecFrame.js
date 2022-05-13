@@ -7,9 +7,9 @@ import {
   REPLAYREC_MOUSE_MOVE,
   REPLAYREC_MOUSE_UP,
   REPLAYREC_MAINSCROLL,
-} from "./ReplayConstants";
+} from "./GleapReplayConstants";
 
-export default class ReplayRecFrame {
+export default class GleapReplayRecFrame {
   constructor(win, node, rec) {
     this.win = win;
     this.node = node;
@@ -126,7 +126,7 @@ export default class ReplayRecFrame {
       }
     };
 
-    this.focusListener = () => {};
+    this.focusListener = () => { };
 
     node.ownerDocument.ReplayRecInner = this;
 

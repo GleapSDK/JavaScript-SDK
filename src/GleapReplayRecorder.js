@@ -1,4 +1,4 @@
-import ReplayRecFrame from "./ReplayRecFrame";
+import GleapReplayRecFrame from "./GleapReplayRecFrame";
 import {
   gleapRoughSizeOfObject,
   REPLAYREC_ADD,
@@ -9,7 +9,7 @@ import {
   REPLAYREC_REMOVE,
   REPLAYREC_SCROLL,
   REPLAYREC_TEXT,
-} from "./ReplayConstants";
+} from "./GleapReplayConstants";
 import { isMobile, resizeImage } from "./GleapHelper";
 import { isBlacklisted } from "./ResourceExclusionList";
 import Gleap from "./Gleap";
@@ -59,7 +59,7 @@ export default class GleapReplayRecorder {
     this.lastActionTime = Date.now();
     this.observerCallback = this.callback.bind(this);
     this.resourcesToResolve = {};
-    this.rootFrame = new ReplayRecFrame(window, this.node, this);
+    this.rootFrame = new GleapReplayRecFrame(window, this.node, this);
     this.evaluateFocus();
   }
 
