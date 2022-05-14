@@ -65,11 +65,9 @@ export const injectStyledCSS = (
       right: 20px;
       bottom: 95px;
       width: 380px !important;
-      max-width: none;
       position: fixed;
       z-index: 2147483647;
       visibility: visible;
-      min-width: 320px;
       height: 100%;
       max-height: 0px;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
@@ -743,74 +741,7 @@ export const injectStyledCSS = (
     .bb-capture-options--active {
       display: flex;
     }
-    
-    @media only screen and (max-width: 450px) {
-      .bb-tooltip {
-        display: none !important;
-      }
-    
-      .bb-capture-toolbar-item-colorpicker {
-        top: 75px;
-      }
-    
-      .bb-capture-button-next {
-        margin-left: auto;
-      }
-    
-      .bb-capture-dismiss {
-        display: none;
-      }
-    
-      .bb-capture-toolbar {
-        top: 15px;
-        right: 15px;
-        left: 15px;
-        width: auto;
-        transform: none;
-      }
-    
-      .bb-feedback-dialog-backdrop {
-        display: block;
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        width: 100vw;
-        height: 100vh;
-        height: -webkit-fill-available;
-        z-index: 916777230;
-        box-sizing: border-box;
-        pointer-events: none;
-        background-color: rgba(0, 0, 0, 0.6);
-      }
-    
-      .bb-capture-editor-drag-info {
-        display: none;
-      }
-    
-      .bb-feedback-button--bottomleft .bb-feedback-dialog {
-        left: 10px;
-        right: 10px;
-      }
-    
-      .bb-capture-editor-borderlayer {
-        border-width: 4px;
-      }
-    }
-    
-    .bb-feedback-button--crashed .bb-feedback-button-icon {
-      background-color: #ed4337;
-    }
-    
-    .bb-feedback-button--crashed .bb-feedback-button-icon:hover {
-      background-color: #c7372d;
-    }
-    
-    @media print {
-      .bb-feedback-button {
-        display: none !important;
-      }
-    }
-    
+
     @keyframes bbFadeOutRight {
       from {
         opacity: 1;
@@ -818,7 +749,6 @@ export const injectStyledCSS = (
     
       to {
         opacity: 0;
-        transform: translate3d(100%, 0, 0);
       }
     }
     
@@ -959,6 +889,75 @@ export const injectStyledCSS = (
     .bb-feedback-button-classic {
       background-color: ${buttonColor};
       color: ${contrastButtonColor};
+    }
+
+    @media only screen and (max-width: 450px) {
+      .gleap-frame-container {
+        left: 20px;
+        right: 20px;
+        width: calc(100% - 40px) !important;
+      }
+
+      .bb-tooltip {
+        display: none !important;
+      }
+    
+      .bb-capture-toolbar-item-colorpicker {
+        top: 75px;
+      }
+    
+      .bb-capture-button-next {
+        margin-left: auto;
+      }
+    
+      .bb-capture-dismiss {
+        display: none;
+      }
+    
+      .bb-capture-toolbar {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        width: auto;
+        transform: none;
+      }
+    
+      .bb-feedback-dialog-backdrop {
+        display: block;
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100vw;
+        height: 100vh;
+        height: -webkit-fill-available;
+        z-index: 916777230;
+        box-sizing: border-box;
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+    
+      .bb-capture-editor-drag-info {
+        display: none;
+      }
+    
+      .bb-feedback-button--bottomleft .bb-feedback-dialog {
+        left: 10px;
+        right: 10px;
+      }
+    
+      .bb-capture-editor-borderlayer {
+        border-width: 4px;
+      }
+    }
+    
+    @media print {
+      .bb-feedback-button {
+        display: none !important;
+      }
+      
+      .gleap-frame-container {
+        display: none !important;
+      }
     }
     `;
 

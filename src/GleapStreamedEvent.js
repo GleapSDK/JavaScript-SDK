@@ -3,7 +3,7 @@ import Gleap, { GleapSession } from "./Gleap";
 
 export default class GleapStreamedEvent {
   eventArray = [];
-  GleapStreamedEventArray = [];
+  streamedEventArray = [];
   eventMaxLength = 500;
   lastUrl = undefined;
 
@@ -53,7 +53,7 @@ export default class GleapStreamedEvent {
       log.data = gleapDataParser(data);
     }
     this.eventArray.push(log);
-    this.GleapStreamedEventArray.push(log);
+    this.streamedEventArray.push(log);
 
     // Check max size of event log
     if (this.eventArray.length > this.eventMaxLength) {
@@ -61,8 +61,8 @@ export default class GleapStreamedEvent {
     }
 
     // Check max size of streamed event log
-    if (this.GleapStreamedEventArray.length > this.eventMaxLength) {
-      this.GleapStreamedEventArray.shift();
+    if (this.streamedEventArray.length > this.eventMaxLength) {
+      this.streamedEventArray.shift();
     }
   }
 
@@ -71,8 +71,8 @@ export default class GleapStreamedEvent {
     let interval = 1500;
     if (
       GleapSession.getInstance().ready &&
-      self.GleapStreamedEventArray &&
-      self.GleapStreamedEventArray.length > 0
+      self.streamedEventArray &&
+      self.streamedEventArray.length > 0
     ) {
       self.streamEvents();
       interval = 3000;
@@ -106,11 +106,11 @@ export default class GleapStreamedEvent {
       };
       http.send(
         JSON.stringify({
-          events: this.GleapStreamedEventArray,
+          events: this.streamedEventArray,
         })
       );
 
-      this.GleapStreamedEventArray = [];
+      this.streamedEventArray = [];
     }
   };
 }

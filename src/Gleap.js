@@ -42,7 +42,6 @@ class Gleap {
     y: 0,
   };
   excludeData = {};
-
   customTranslation = {};
   actionToPerform = undefined;
 
@@ -392,7 +391,7 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlow(feedbackFlow) {
+  static startFeedbackFlow(feedbackFlow, actionOutboundId = undefined) {
     const sessionInstance = GleapSession.getInstance();
     const instance = this.getInstance();
 
@@ -406,16 +405,13 @@ class Gleap {
       y: window.scrollY,
     };
 
-    // Get feedback options
-    var feedbackOptions = GleapConfigManager.getInstance().getFeedbackOptions(feedbackFlow);
-    if (!feedbackOptions) {
-      return;
-    }
-
     GleapEventManager.notifyEvent("flow-started", feedbackFlow);
     GleapFrameManager.getInstance().sendMessage({
       name: "start-feedbackflow",
-      data: feedbackFlow
+      data: {
+        flow: feedbackFlow,
+        actionOutboundId: actionOutboundId,
+      }
     });
     GleapFrameManager.getInstance().showWidget();
   }
@@ -443,11 +439,10 @@ class Gleap {
   }
 
   performAction(action) {
-    // TODO: 
-    /*if (action && action.outbound && action.actionType) {
+    if (action && action.outbound && action.actionType) {
       this.actionToPerform = action;
-      Gleap.startFeedbackFlow(action.actionType);
-    }*/
+      Gleap.startFeedbackFlow(action.actionType, action.outbound);
+    }
   }
 
   /*sendBugReportToServer(screenshotData) {

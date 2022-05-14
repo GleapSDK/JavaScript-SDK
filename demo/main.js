@@ -17,6 +17,11 @@ Gleap.attachCustomData({
   },
 });
 
+Gleap.registerCustomAction((customAction) => {
+  console.log("MAGIC??");
+  console.log(customAction);
+});
+
 setTimeout(() => {
   console.log("Loading place infos");
 

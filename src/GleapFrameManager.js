@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { GleapStreamedEvent, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   gleapFrameContainer = null;
@@ -137,6 +137,10 @@ export default class GleapFrameManager {
         if (url && url.length > 0) {
           window.open(url, '_blank').focus();
         }
+      }
+
+      if (data.name === "run-custom-action") {
+        GleapCustomActionManager.triggerCustomAction(data.data);
       }
 
       if (data.name === "close-widget") {
