@@ -13,17 +13,18 @@ export default class GleapFeedback {
     customEventLog = [];
     formData = {};
     isSilent = false;
-    outbound = undefined;
+    outboundId = undefined;
     screenshotData = undefined;
     webReplay = undefined;
     screenRecordingUrl = undefined;
 
-    constructor(type, priority, formData, isSilent, excludeData) {
+    constructor(type, priority, formData, isSilent, excludeData, outboundId) {
         this.type = type;
         this.priority = priority;
         this.formData = formData;
         this.isSilent = isSilent;
         this.excludeData = excludeData;
+        this.outboundId = outboundId;
     }
 
     takeSnapshot() {
@@ -79,7 +80,7 @@ export default class GleapFeedback {
             customEventLog: this.customEventLog,
             formData: this.formData,
             isSilent: this.isSilent,
-            outbound: this.outbound,
+            outbound: this.outboundId,
             screenshotData: this.screenshotData,
             webReplay: this.webReplay,
             screenRecordingUrl: this.screenRecordingUrl
@@ -106,7 +107,6 @@ export default class GleapFeedback {
 
     sendFeedback() {
         return new Promise((resolve, reject) => {
-            const self = this;
             const http = new XMLHttpRequest();
             http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
             http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -114,29 +114,18 @@ export default class GleapFeedback {
             http.onerror = (error) => {
                 reject();
             };
-            http.upload.onprogress = function (e) {
-                /*if (self.silentBugReport) {
-                  self.closeGleap();
-                  return;
-                }*/
-            };
             http.onreadystatechange = function (e) {
                 if (http.readyState === XMLHttpRequest.DONE) {
                     if (http.status === 200 || http.status === 201) {
-                        //self.notifyEvent("feedback-sent");
-                        //self.showSuccessAndClose();
                         resolve();
                     } else {
-                        //self.showError(http.status);
                         reject();
                     }
                 }
             };
 
             this.takeSnapshot().then(() => {
-                console.log("Sending feedback");
-                const dataToSend = this.getData();
-                http.send(JSON.stringify(dataToSend));
+                http.send(JSON.stringify(this.getData()));
             });
         });
     }

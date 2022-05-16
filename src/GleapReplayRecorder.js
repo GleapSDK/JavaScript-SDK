@@ -16,6 +16,7 @@ import Gleap from "./Gleap";
 
 export default class GleapReplayRecorder {
   startDate = undefined;
+  stopped = true;
 
   // GleapReplayRecorder singleton
   static instance;
