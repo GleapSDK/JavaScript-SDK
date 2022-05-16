@@ -8,6 +8,7 @@ export default class GleapFrameManager {
   listeners = [];
   frameURL = "http://localhost:3000";
   markerManager = undefined;
+  escListener = undefined;
 
   // GleapFrameManager singleton
   static instance;
@@ -20,6 +21,27 @@ export default class GleapFrameManager {
 
   constructor() {
     this.startCommunication();
+  }
+
+  registerEscListener() {
+    if (this.escListener) {
+      return;
+    }
+
+    this.escListener = (evt) => {
+      evt = evt || window.event;
+      if (evt.key === "Escape") {
+        this.hideWidget();
+      }
+    };
+    document.addEventListener("keydown", this.escListener);
+  }
+
+  unregisterEscListener() {
+    if (this.escListener) {
+      document.removeEventListener("keydown", this.escListener);
+      this.escListener = null;
+    }
   }
 
   isOpened() {
@@ -77,6 +99,7 @@ export default class GleapFrameManager {
     this.widgetOpened = true;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
+    this.registerEscListener();
   }
 
   hideMarkerManager() {
@@ -92,6 +115,11 @@ export default class GleapFrameManager {
     this.widgetOpened = false;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("close");
+    this.unregisterEscListener();
+
+    if (typeof window !== "undefined" && typeof window.focus !== "undefined") {
+      window.focus();
+    }
   }
 
   sendMessage(data) {

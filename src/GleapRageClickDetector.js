@@ -1,4 +1,5 @@
 import Gleap, { GleapConfigManager } from "./Gleap";
+import { getDOMElementDescription } from "./GleapHelper";
 
 const detectRageClicks = function (subscribe, options) {
   var interval = options.interval,

@@ -271,10 +271,6 @@ export default class GleapMarkerManager {
     if (this.pageLeaveListener) {
       window.removeEventListener("beforeunload", this.pageLeaveListener);
     }
-
-    // Register Gleap listener.
-    // TODO: ???
-    // Gleap.getInstance().registerEscListener();
   }
 
   registerListeners() {
@@ -286,11 +282,8 @@ export default class GleapMarkerManager {
       var isEscape = false;
       var isEnter = false;
       if ("key" in evt) {
-        isEscape = evt.key === "Escape" || evt.key === "Esc";
+        isEscape = evt.key === "Escape";
         isEnter = evt.key === "Enter";
-      } else {
-        isEscape = evt.keyCode === 27;
-        isEnter = evt.keyCode === 13;
       }
       if (isEscape) {
         self.dismiss();
@@ -307,10 +300,6 @@ export default class GleapMarkerManager {
       event.returnValue = "";
     };
     window.addEventListener("beforeunload", this.pageLeaveListener);
-
-    // Unregister Gleap listener.
-    // TODO: ???
-    //Gleap.getInstance().unregisterEscListener();
   }
 
   show(callback) {

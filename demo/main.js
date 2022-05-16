@@ -39,7 +39,7 @@ setTimeout(() => {
 }, 3000);
 
 const ii = () => {
-  x();
+  // :)
 }
 
 setTimeout(() => {
