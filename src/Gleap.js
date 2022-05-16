@@ -222,14 +222,6 @@ class Gleap {
   }
 
   /**
-   * Sets the button logo url.
-   * @param {string} logoUrl
-   */
-  static setButtonLogoUrl(logoUrl) {
-    GleapFeedbackButtonManager.getInstance().setCustomButtonLogoUrl(logoUrl);
-  }
-
-  /**
    * Sets the app version code.
    * @param {string} appVersionCode
    */

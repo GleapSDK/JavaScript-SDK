@@ -1,8 +1,6 @@
 export namespace Gleap {
   function initialize(
-    sdkKey: string,
-    gleapId?: string,
-    gleapHash?: string
+    sdkKey: string
   ): void;
   /**
    * @deprecated Please use sendSilentReport instead.
@@ -32,7 +30,6 @@ export namespace Gleap {
       replays: Boolean;
     }
   ): void;
-  function setCustomerEmail(email: string): void;
   function attachCustomData(customData: any): void;
   function setCustomData(key: string, value: string): void;
   function removeCustomData(key: string): void;
@@ -44,9 +41,6 @@ export namespace Gleap {
     customAction: (action: { name: string }) => void
   ): void;
   function logEvent(name: string, data?: any): void;
-  function setLogoUrl(logoUrl: string): void;
-  function setButtonLogoUrl(buttonLogoUrl: string): void;
-  function enableCrashDetector(enabled: boolean, silent?: boolean): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
   function attachNetworkLogs(externalConsoleLogs: any[]): void;
@@ -57,11 +51,8 @@ export namespace Gleap {
     cornerRadius: string;
   }): void;
   function disableConsoleLogOverwrite(): void;
-  function enableNetworkLogger(): void;
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
-  function enableReplays(enabled: boolean): void;
-  function setShowUserName(showUserName: boolean): void;
   function setLanguage(language: string): void;
   function clearIdentity(): void;
   function identify(
@@ -73,7 +64,7 @@ export namespace Gleap {
   ): void;
   function open(): void;
   function hide(): void;
-  function startFeedbackFlow(feedbackFlow: string, actionOutboundId?: string): void;
+  function startFeedbackFlow(feedbackFlow: string, actionOutboundId?: string, autostartDrawing?: boolean): void;
   function on(event: string, callback: (data?: any) => void): void;
 }
 export default Gleap;
