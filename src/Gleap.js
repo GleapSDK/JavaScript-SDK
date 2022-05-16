@@ -354,10 +354,11 @@ class Gleap {
    * @param {*} formData
    * @param {*} priority
    * @param {*} feedbackType
+   * @param {*} excludeData
    */
   static sendSilentReport(
     formData,
-    priority = Gleap.PRIORITY_MEDIUM,
+    priority = "MEDIUM",
     feedbackType = "BUG",
     excludeData = {}
   ) {
@@ -371,11 +372,12 @@ class Gleap {
       newFormData.reportedBy = sessionInstance.session.email;
     }
 
+    GleapEventManager.notifyEvent("sending-silent-report");
     const feedback = new GleapFeedback(feedbackType, priority, newFormData, false, excludeData ? excludeData : {});
     feedback.sendFeedback().then(() => {
-      console.log("SILENT SENT");
+      GleapEventManager.notifyEvent("silent-report-sent");
     }).catch((error) => {
-      console.log("FAILED SENDING SILENT");
+      GleapEventManager.notifyEvent("failed-sending-silent-report");
     });
   }
 
