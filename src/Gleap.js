@@ -350,6 +350,43 @@ class Gleap {
   }
 
   /**
+   * Reports a bug silently
+   * @param {*} description
+   * @param {*} priority
+   * @param {*} type
+   * @deprecated Please use sendSilentReport instead.
+   */
+  static sendSilentBugReportWithType(
+    description,
+    priority = "MEDIUM",
+    type = "BUG"
+  ) {
+    return Gleap.sendSilentReport(
+      {
+        description: description,
+      },
+      priority,
+      type
+    );
+  }
+
+  /**
+   * Reports a bug silently
+   * @param {*} description
+   * @param {*} priority
+   * @deprecated Please use sendSilentReport instead.
+   */
+  static sendSilentBugReport(description, priority = "MEDIUM") {
+    return Gleap.sendSilentReport(
+      {
+        description: description,
+      },
+      priority,
+      "BUG"
+    );
+  }
+
+  /**
    * Sends a silent feedback report
    * @param {*} formData
    * @param {*} priority
