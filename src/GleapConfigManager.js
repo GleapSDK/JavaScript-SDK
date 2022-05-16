@@ -1,6 +1,5 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import Gleap, { GleapFrameManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder } from "./Gleap";
-import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
+import Gleap, { GleapFrameManager, GleapFeedbackButtonManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder } from "./Gleap";
 
 export default class GleapConfigManager {
   flowConfig = null;
@@ -122,26 +121,9 @@ export default class GleapConfigManager {
         GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
       }
 
-      if (
-        typeof flowConfig.enableRageClickDetector !== "undefined" &&
-        flowConfig.enableRageClickDetector
-      ) {
-        //Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
-      }
-
-
-      /*
-      
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 
-      if (
-        typeof flowConfig.enableRageClickDetector !== "undefined" &&
-        flowConfig.enableRageClickDetector
-      ) {
-        Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
-      }
-      */
 
     } catch (e) { }
   }

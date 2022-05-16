@@ -1,5 +1,4 @@
-import Gleap, { GleapConfigManager } from "./Gleap";
-import { GleapConsoleLogManager } from "./Gleap";
+import Gleap, { GleapConfigManager, GleapConsoleLogManager } from "./Gleap";
 
 export default class GleapCrashDetector {
   // GleapCrashDetector singleton
@@ -12,11 +11,9 @@ export default class GleapCrashDetector {
   }
 
   start() {
-    console.log("????");
-
     window.addEventListener('error', e => {
       const { message, filename, lineno, colno, error } = e;
-      
+
       var stackTrace = "";
       if (error !== null && typeof error.stack !== "undefined") {
         stackTrace = error.stack;
@@ -31,8 +28,8 @@ export default class GleapCrashDetector {
       GleapConsoleLogManager.getInstance().addLog(messageObject, "ERROR");
 
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-      if (flowConfig && flowConfig.enabledCrashDetector) {
-        if (flowConfig.enabledCrashDetectorSilent) {
+      if (flowConfig && typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector) {
+        if (flowConfig.crashDetectorIsSilent) {
           Gleap.sendSilentReport(
             {
               errorMessage: message,
@@ -41,7 +38,7 @@ export default class GleapCrashDetector {
               columnNo: colno,
               stackTrace: stackTrace,
             },
-            Gleap.PRIORITY_MEDIUM,
+            "MEDIUM",
             "CRASH",
             {
               screenshot: true,

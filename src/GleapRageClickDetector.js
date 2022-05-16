@@ -1,3 +1,5 @@
+import Gleap, { GleapConfigManager } from "./Gleap";
+
 const detectRageClicks = function (subscribe, options) {
   var interval = options.interval,
     limit = options.limit;
@@ -27,6 +29,8 @@ export const startRageClickDetector = function (callback) {
 };
 
 export default class GleapRageClickDetector {
+  initializedRageClickDetector = false;
+
   // GleapRageClickDetector singleton
   static instance;
   static getInstance() {
@@ -37,25 +41,28 @@ export default class GleapRageClickDetector {
   }
 
   start() {
-    /*const instance = this.getInstance();
-
-    if (instance.enabledRageClickDetector) {
+    if (this.initializedRageClickDetector) {
       return;
     }
-
-    instance.enabledRageClickDetector = true;
-    instance.enabledRageClickDetectorSilent = silent;
+    this.initializedRageClickDetector = true;
 
     startRageClickDetector(function (target) {
       const elementDescription = getDOMElementDescription(target, false);
-      if (instance.enabledRageClickDetectorSilent) {
-        Gleap.sendSilentReport({
-          description: `Rage click detected.`,
-          element: elementDescription,
-        });
-      } else {
-        Gleap.startFeedbackFlow("crash");
+      const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+      if (flowConfig && typeof flowConfig.enableRageClickDetector !== "undefined" && flowConfig.enableRageClickDetector) {
+        if (flowConfig.rageClickDetectorIsSilent) {
+          Gleap.sendSilentReport(
+            {
+              description: `Rage click detected.`,
+              element: elementDescription,
+            },
+            "MEDIUM",
+            "CRASH"
+          );
+        } else {
+          Gleap.startFeedbackFlow("crash");
+        }
       }
-    });*/
+    });
   }
 }

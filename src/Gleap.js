@@ -361,20 +361,22 @@ class Gleap {
     feedbackType = "BUG",
     excludeData = {}
   ) {
-    const instance = this.getInstance();
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
     }
 
-    instance.excludeData = excludeData ? excludeData : {};
-
-    instance.formData = formData ? formData : {};
+    var newFormData = formData ? formData : {};
     if (sessionInstance.session.email) {
-      instance.formData.reportedBy = sessionInstance.session.email;
+      newFormData.reportedBy = sessionInstance.session.email;
     }
 
-    this.startFeedbackFlow(null, true);
+    const feedback = new GleapFeedback(feedbackType, priority, newFormData, false, excludeData ? excludeData : {});
+    feedback.sendFeedback().then(() => {
+      console.log("SILENT SENT");
+    }).catch((error) => {
+      console.log("FAILED SENDING SILENT");
+    });
   }
 
   /**
