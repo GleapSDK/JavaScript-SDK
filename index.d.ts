@@ -44,10 +44,8 @@ export namespace Gleap {
     customAction: (action: { name: string }) => void
   ): void;
   function logEvent(name: string, data?: any): void;
-  function enableRageClickDetector(silent?: boolean): void;
   function setLogoUrl(logoUrl: string): void;
   function setButtonLogoUrl(buttonLogoUrl: string): void;
-  function setCustomTranslation(customTranslation: any): void;
   function enableCrashDetector(enabled: boolean, silent?: boolean): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
@@ -75,7 +73,7 @@ export namespace Gleap {
   ): void;
   function open(): void;
   function hide(): void;
-  function startFeedbackFlow(feedbackFlow: string): void;
+  function startFeedbackFlow(feedbackFlow: string, actionOutboundId?: string): void;
   function on(event: string, callback: (data?: any) => void): void;
 }
 export default Gleap;

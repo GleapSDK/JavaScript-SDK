@@ -9,7 +9,7 @@ import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import GleapClickListener from "./GleapClickListener";
-import GleapCrashDetector from "./GleapRageClickDetector";
+import GleapCrashDetector from "./GleapCrashDetector";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
 import GleapCustomDataManager from "./GleapCustomDataManager";
 import GleapEventManager from "./GleapEventManager";
@@ -17,6 +17,7 @@ import GleapCustomActionManager from "./GleapCustomActionManager";
 import GleapRageClickDetector from "./GleapRageClickDetector";
 import GleapReplayRecorder from "./GleapReplayRecorder";
 import GleapMarkerManager from "./GleapMarkerManager";
+import GleapTranslationManager from "./GleapTranslationManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -32,7 +33,6 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 class Gleap {
   initialized = false;
   offlineMode = false;
-  overrideLanguage = "";
   autostartDrawing = false;
 
   // Global data
@@ -67,7 +67,6 @@ class Gleap {
       GleapClickListener.getInstance().start();
       GleapCrashDetector.getInstance().start();
       GleapRageClickDetector.getInstance().start();
-      GleapNetworkIntercepter.getInstance().start();
     }
   }
 
@@ -173,15 +172,6 @@ class Gleap {
    */
   static open() {
     GleapFrameManager.getInstance().showWidget();
-  }
-
-  /**
-   * Sets a custom translation
-   * @param {*} customTranslation
-   */
-  static setCustomTranslation(customTranslation) {
-    const instance = this.getInstance();
-    instance.customTranslation = customTranslation;
   }
 
   /**
@@ -304,8 +294,7 @@ class Gleap {
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
-    // TODO: Implement
-    // this.getInstance().overrideLanguage = language;
+    GleapTranslationManager.getInstance().setOverrideLanguage(language);
   }
 
   /**
@@ -444,17 +433,6 @@ class Gleap {
       Gleap.startFeedbackFlow(action.actionType, action.outbound);
     }
   }
-
-  /*sendBugReportToServer(screenshotData) {
-    var gleapFeedbackItem = new GleapFeedback(
-      "BUG",
-      "LOW",
-      this.feedbackType,
-      this.formData,
-      this.silentBugReport
-    );
-    gleapFeedbackItem.sendFeedback();
-  }*/
 }
 
 // Check for unperformed Gleap actions.
@@ -470,5 +448,5 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapMarkerManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export { GleapNetworkIntercepter, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;

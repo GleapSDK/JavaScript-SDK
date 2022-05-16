@@ -1,5 +1,6 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import Gleap, { GleapFrameManager, GleapSession, GleapReplayRecorder } from "./Gleap";
+import Gleap, { GleapFrameManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder } from "./Gleap";
+import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
 
 export default class GleapConfigManager {
   flowConfig = null;
@@ -34,15 +35,15 @@ export default class GleapConfigManager {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
     if (cachedConfig) {
-      this.applyConfig(cachedConfig, false);
-      this.loadConfigFromServer(true).catch(function (e) { });
+      this.applyConfig(cachedConfig);
+      this.loadConfigFromServer().catch(function (e) { });
       return Promise.resolve();
     }
 
-    return this.loadConfigFromServer(false);
+    return this.loadConfigFromServer();
   };
 
-  loadConfigFromServer = (soft) => {
+  loadConfigFromServer = () => {
     const self = this;
     return new Promise(function (resolve, reject) {
       const session = GleapSession.getInstance();
@@ -64,7 +65,7 @@ export default class GleapConfigManager {
               try {
                 saveToGleapCache(`config-${session.sdkKey}`, config);
               } catch (exp) { }
-              self.applyConfig(config, soft);
+              self.applyConfig(config);
               return resolve();
             } catch (e) { }
           }
@@ -79,7 +80,7 @@ export default class GleapConfigManager {
    * Applies the Gleap config.
    * @param {*} config
    */
-  applyConfig(config, soft) {
+  applyConfig(config) {
     try {
       const flowConfig = config.flowConfig;
       const projectActions = config.projectActions;
@@ -87,25 +88,14 @@ export default class GleapConfigManager {
       this.flowConfig = flowConfig;
       this.projectActions = projectActions;
 
-      GleapFrameManager.getInstance().sendMessage({
-        name: "config-update",
-        data: {
-          config: flowConfig,
-          actions: projectActions
-        }
-      });
+      // Send config update.
+      GleapFrameManager.getInstance().sendConfigUpdate();
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
 
       if (flowConfig.enableReplays) {
         GleapReplayRecorder.getInstance().start();
       } else {
         GleapReplayRecorder.getInstance().stop();
-      }
-
-      if (
-        typeof flowConfig.enableRageClickDetector !== "undefined" &&
-        flowConfig.enableRageClickDetector
-      ) {
-        //Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
       }
 
       if (flowConfig.color) {
@@ -120,22 +110,30 @@ export default class GleapConfigManager {
         );
       }
 
-      /*
-      
-
-      Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
-
       if (flowConfig.enableNetworkLogs) {
         GleapNetworkIntercepter.getInstance().start();
       }
 
       if (flowConfig.networkLogPropsToIgnore) {
-        Gleap.setNetworkLogFilters(flowConfig.networkLogPropsToIgnore);
+        GleapNetworkIntercepter.getInstance().setFilters(flowConfig.networkLogPropsToIgnore);
       }
 
-      if (!flowConfig.enableConsoleLogs) {
-        Gleap.disableConsoleLogOverwrite();
+      if (flowConfig.customTranslations) {
+        GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
       }
+
+      if (
+        typeof flowConfig.enableRageClickDetector !== "undefined" &&
+        flowConfig.enableRageClickDetector
+      ) {
+        //Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
+      }
+
+
+      /*
+      
+
+      Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 
       if (
         typeof flowConfig.enableRageClickDetector !== "undefined" &&
@@ -143,99 +141,9 @@ export default class GleapConfigManager {
       ) {
         Gleap.enableRageClickDetector(flowConfig.rageClickDetectorIsSilent);
       }
+      */
 
-      if (flowConfig.customTranslations) {
-        Gleap.setCustomTranslation(flowConfig.customTranslations);
-      }
-
-      if (
-        typeof flowConfig.feedbackButtonPosition !== "undefined" &&
-        flowConfig.feedbackButtonPosition.length > 0
-      ) {
-        Gleap.setButtonType(flowConfig.feedbackButtonPosition);
-      }
-
-      if (
-        typeof flowConfig.widgetButtonText !== "undefined" &&
-        flowConfig.widgetButtonText.length > 0
-      ) {
-        GleapFeedbackButtonManager.getInstance().setFeedbackButtonText(feedbackButtonText);
-      }
-
-      const instance = Gleap.getInstance();
-      if (
-        flowConfig.enableMenu &&
-        flowConfig.menuItems &&
-        flowConfig.menuItems.length > 0
-      ) {
-        let menuItems = [];
-        for (let i = 0; i < flowConfig.menuItems.length; i++) {
-          let menuItem = flowConfig.menuItems[i];
-          let actionFlow = null;
-          let action = null;
-
-          if (menuItem.actionType === "OPEN_INTERCOM") {
-            action = function () {
-              if (instance.widgetCallback) {
-                return;
-              }
-              if (typeof Intercom !== "undefined") {
-                Intercom("showNewMessage");
-              }
-            };
-          } else if (menuItem.actionType === "REDIRECT_URL") {
-            if (instance.widgetCallback) {
-              action = function () {
-                instance.widgetCallback("openExternalURL", {
-                  url: menuItem.actionBody,
-                });
-              };
-            } else {
-              if (menuItem.actionOpenInNewTab) {
-                action = function () {
-                  window.open(menuItem.actionBody, "_blank").focus();
-                };
-              } else {
-                action = function () {
-                  window.location.href = menuItem.actionBody;
-                };
-              }
-            }
-          } else if (menuItem.actionType === "CUSTOM_ACTION") {
-            action = function () {
-              Gleap.triggerCustomAction(menuItem.actionBody);
-            };
-          } else {
-            actionFlow = menuItem.actionType;
-          }
-
-          // Action flow
-          if (actionFlow != null || action != null) {
-            var item = {
-              title: menuItem.title,
-              description: menuItem.description,
-              icon: menuItem.icon,
-              color: menuItem.color,
-            };
-            if (actionFlow) {
-              item["actionFlow"] = actionFlow;
-            }
-            if (action) {
-              item["action"] = action;
-            }
-            menuItems.push(item);
-          }
-        }
-
-        Gleap.setMenuOptions(menuItems);
-      }
-
-      if (flowConfig.buttonLogo && flowConfig.buttonLogo.length > 0) {
-        Gleap.setButtonLogoUrl(flowConfig.buttonLogo);
-      }*/
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) { }
   }
 
   getFeedbackOptions(feedbackFlow) {

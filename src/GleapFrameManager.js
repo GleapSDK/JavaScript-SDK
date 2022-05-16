@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { GleapStreamedEvent, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   gleapFrameContainer = null;
@@ -44,6 +44,10 @@ export default class GleapFrameManager {
   };
 
   updateFrameStyle = () => {
+    if (!this.gleapFrameContainer) {
+      return;
+    }
+
     const classicStyle = "gleap-frame-container--classic";
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
@@ -96,6 +100,30 @@ export default class GleapFrameManager {
     }
   };
 
+  sendSessionUpdate() {
+    this.sendMessage({
+      name: "session-update",
+      data: {
+        sessionData: GleapSession.getInstance().getSession(),
+        apiUrl: GleapSession.getInstance().apiUrl,
+        sdkKey: GleapSession.getInstance().sdkKey,
+      }
+    });
+  }
+
+  sendConfigUpdate() {
+    this.sendMessage({
+      name: "config-update",
+      data: {
+        config: GleapConfigManager.getInstance().getFlowConfig(),
+        actions: GleapConfigManager.getInstance().getProjectActions(),
+        overrideLanguage: GleapTranslationManager.getInstance().getOverrideLanguage(),
+      }
+    });
+
+    this.updateFrameStyle();
+  }
+
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
@@ -105,23 +133,8 @@ export default class GleapFrameManager {
         // Inject the widget buttons
         GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
 
-        // Answer with config.
-        this.sendMessage({
-          name: "config-update",
-          data: {
-            config: GleapConfigManager.getInstance().getFlowConfig(),
-            actions: GleapConfigManager.getInstance().getProjectActions()
-          }
-        });
-
-        this.sendMessage({
-          name: "session-update",
-          data: {
-            sessionData: GleapSession.getInstance().getSession(),
-            apiUrl: GleapSession.getInstance().apiUrl,
-            sdkKey: GleapSession.getInstance().sdkKey,
-          }
-        });
+        this.sendConfigUpdate();
+        this.sendSessionUpdate();
       }
 
       if (data.name === "height-update") {

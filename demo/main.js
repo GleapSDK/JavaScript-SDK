@@ -38,10 +38,16 @@ setTimeout(() => {
   xmlhttp.send();
 }, 3000);
 
+const ii = () => {
+  x();
+}
+
 setTimeout(() => {
   console.warn("Demo warning :)");
   console.log("Data will be loaded soon.");
-}, 0);
+  
+  ii();
+}, 4000);
 
 const files = [
   "https://biblephrasesm31p70v.blob.core.windows.net/phrases-v2/CD17C8A4CF4FA179C864FA4EFA561BBC405EF06304B1E239EE1A3A781A8905A0.mpga",

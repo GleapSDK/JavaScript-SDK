@@ -1,10 +1,8 @@
-import Gleap from "./Gleap";
+import Gleap, { GleapTranslationManager, GleapFrameManager } from "./Gleap";
 import { ScreenDrawer } from "./ScreenDrawer";
 import { GleapScrollStopper } from "./GleapScrollStopper";
 import { ScreenRecorder } from "./ScreenRecorder";
-import { translateText } from "./Translation";
 import { loadIcon } from "./UI";
-import { GleapFrameManager } from "./Gleap";
 
 export default class GleapMarkerManager {
   type = "screenshot";
@@ -203,22 +201,19 @@ export default class GleapMarkerManager {
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
-              <span class="bb-tooltip">${translateText(
-        `Pick a color`,
-        this.overrideLanguage
+              <span class="bb-tooltip">${GleapTranslationManager.translateText(
+        `Pick a color`
       )}</span>
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
               ${loadIcon("undo")}
-              <span class="bb-tooltip">${translateText(
-        `Undo`,
-        this.overrideLanguage
+              <span class="bb-tooltip">${GleapTranslationManager.translateText(
+        `Undo`
       )}</span>
             </div>
             ${this.type !== "capture"
-        ? `<div class="bb-capture-button-next">${translateText(
-          `Next`,
-          this.overrideLanguage
+        ? `<div class="bb-capture-button-next">${GleapTranslationManager.translateText(
+          `Next`
         )}</div>`
         : ""
       }
@@ -236,13 +231,11 @@ export default class GleapMarkerManager {
             <div class="bb-capture-preview-inner">
               <video controls muted autoplay></video>
               <div class="bb-capture-preview-buttons">
-                <div class="bb-capture-preview-retrybutton">${translateText(
-        `Retry`,
-        this.overrideLanguage
+                <div class="bb-capture-preview-retrybutton">${GleapTranslationManager.translateText(
+        `Retry`
       )}</div>
-                <div class="bb-capture-preview-sendbutton">${translateText(
-        `Next`,
-        this.overrideLanguage
+                <div class="bb-capture-preview-sendbutton">${GleapTranslationManager.translateText(
+        `Next`
       )}</div>
               </div>
             </div>
@@ -573,25 +566,22 @@ export default class GleapMarkerManager {
               toolbarItem.classList.remove(
                 "bb-capture-toolbar-item--inactivecross"
               );
-              audioRecordingTooltip.innerHTML = translateText(
-                "Mute",
-                this.overrideLanguage
+              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+                "Mute"
               );
             } else {
               toolbarItem.classList.add(
                 "bb-capture-toolbar-item--inactivecross"
               );
-              audioRecordingTooltip.innerHTML = translateText(
-                "Unmute",
-                this.overrideLanguage
+              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+                "Unmute"
               );
             }
           } else {
             toolbarItem.classList.add(itemInactiveClass);
             toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
-            audioRecordingTooltip.innerHTML = translateText(
-              "Browser not supported",
-              this.overrideLanguage
+            audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+              "Browser not supported"
             );
           }
           break;
@@ -601,25 +591,22 @@ export default class GleapMarkerManager {
             toolbarItem.classList.remove(itemInactiveClass);
             if (this.screenRecorder.isRecording) {
               toolbarItem.setAttribute("data-active", "true");
-              screenRecordingTooltip.innerHTML = translateText(
-                "Stop recording",
-                this.overrideLanguage
+              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+                "Stop recording"
               );
               timerLabel.style.display = "block";
             } else {
               toolbarItem.setAttribute("data-active", "false");
-              screenRecordingTooltip.innerHTML = translateText(
-                "Start recording",
-                this.overrideLanguage
+              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+                "Start recording"
               );
               timerLabel.style.display = "none";
             }
           } else {
             // Recording is not available.
             toolbarItem.classList.add(itemInactiveClass);
-            screenRecordingTooltip.innerHTML = translateText(
-              "Browser not supported",
-              this.overrideLanguage
+            screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
+              "Browser not supported"
             );
           }
           break;
@@ -653,9 +640,8 @@ export default class GleapMarkerManager {
     // Setup screen recorder
     this.screenRecorder = new ScreenRecorder(
       this.captureRenderer.bind(this),
-      translateText(
-        "You denied access to screen sharing. Please turn it on in your browser settings.",
-        this.overrideLanguage
+      GleapTranslationManager.translateText(
+        "You denied access to screen sharing. Please turn it on in your browser settings."
       )
     );
   }

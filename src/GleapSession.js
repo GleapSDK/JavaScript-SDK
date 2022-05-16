@@ -1,4 +1,4 @@
-import Gleap from "./Gleap";
+import Gleap, { GleapFrameManager } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapSession {
@@ -34,7 +34,7 @@ export default class GleapSession {
     return this.session;
   }
 
-  constructor() {}
+  constructor() { }
 
   setOnSessionReady = (onSessionReady) => {
     if (this.ready) {
@@ -54,9 +54,8 @@ export default class GleapSession {
 
   clearSession = (renewSession = true) => {
     try {
-      localStorage.removeItem(`bb-remember-reportedBy`);
       saveToGleapCache(`session-${this.sdkKey}`, null);
-    } catch (exp) {}
+    } catch (exp) { }
 
     this.session = {
       id: null,
@@ -82,16 +81,6 @@ export default class GleapSession {
     this.session = session;
     this.ready = true;
 
-    // Optionally update UI.
-    const userNameInfo = document.querySelector("#bb-user-name");
-    if (userNameInfo) {
-      if (session.name && Gleap.getInstance().showUserName) {
-        userNameInfo.textContent = session.name;
-      } else {
-        userNameInfo.textContent = "";
-      }
-    }
-
     this.notifySessionReady();
   };
 
@@ -113,7 +102,7 @@ export default class GleapSession {
         http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
       }
       http.setRequestHeader("App-Widget", Gleap.getInstance().widgetOnly);
-    } catch (exp) {}
+    } catch (exp) { }
     http.onerror = (error) => {
       self.clearSession(false);
     };
@@ -123,7 +112,7 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
-          } catch (exp) {}
+          } catch (exp) { }
         } else {
           self.clearSession(false);
         }
@@ -139,6 +128,9 @@ export default class GleapSession {
       }
     }
     this.onSessionReadyListener = [];
+
+    // Send session update to frame.
+    GleapFrameManager.getInstance().sendSessionUpdate();
   }
 
   checkIfSessionNeedsUpdate = (userId, userData) => {
@@ -150,9 +142,7 @@ export default class GleapSession {
       if (this.session.userId.toString() !== userId.toString()) {
         return true;
       }
-    } catch (exp) {}
-
-    console.log(userData);
+    } catch (exp) { }
 
     if (userData) {
       var userDataKeys = Object.keys(userData);
@@ -169,7 +159,6 @@ export default class GleapSession {
 
   identifySession = (userId, userData) => {
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
-    console.log(`Session needs update: ${sessionNeedsUpdate}.`);
     if (!sessionNeedsUpdate) {
       return;
     }
@@ -189,7 +178,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader("Gleap-Id", self.session.gleapId);
           http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
-        } catch (exp) {}
+        } catch (exp) { }
 
         http.onerror = () => {
           reject();

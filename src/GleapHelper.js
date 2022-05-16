@@ -72,6 +72,14 @@ export const gleapDataParser = function (data) {
   return data;
 };
 
+export const truncateString = (str, num) => {
+  if (str.length > num) {
+    return str.slice(0, num) + "...";
+  } else {
+    return str;
+  }
+}
+
 export const loadFromGleapCache = (key) => {
   try {
     const cachedData = localStorage.getItem(`gleap-widget-${key}`);
@@ -82,14 +90,6 @@ export const loadFromGleapCache = (key) => {
   } catch (exp) { }
   return null;
 };
-
-export const truncateString = (str, num) => {
-  if (str.length > num) {
-    return str.slice(0, num) + "...";
-  } else {
-    return str;
-  }
-}
 
 export const saveToGleapCache = (key, data) => {
   const k = `gleap-widget-${key}`;

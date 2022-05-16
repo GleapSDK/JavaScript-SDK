@@ -1,5 +1,4 @@
-import Gleap, { GleapFrameManager, GleapConfigManager } from "./Gleap";
-import { translateText } from "./Translation";
+import { GleapFrameManager, GleapConfigManager, GleapTranslationManager } from "./Gleap";
 import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
@@ -54,6 +53,25 @@ export default class GleapFeedbackButtonManager {
         }
         this.injectedFeedbackButton = true;
 
+        var elem = document.createElement("div");
+        elem.onclick = () => {
+            this.feedbackButtonPressed();
+        };
+        document.body.appendChild(elem);
+        this.feedbackButton = elem;
+
+        this.updateFeedbackButtonState();
+    }
+
+    /**
+     * Updates the feedback button state
+     * @returns 
+     */
+    updateFeedbackButtonState() {
+        if (this.feedbackButton === null) {
+            return;
+        }
+
         const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
         var buttonIcon = "";
@@ -63,82 +81,34 @@ export default class GleapFeedbackButtonManager {
             buttonIcon = loadIcon("bblogo", "#fff");
         }
 
-        var elem = document.createElement("div");
-        elem.className = "bb-feedback-button gleap-hidden";
+        this.feedbackButton.className = "bb-feedback-button gleap-hidden";
         if (
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
         ) {
-            elem.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+            this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
                 ? "bb-feedback-button-classic--left"
                 : ""
                 }${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
                     ? "bb-feedback-button-classic--bottom"
                     : ""
-                }">${translateText(
-                    flowConfig.widgetButtonText,
-                    Gleap.getInstance().overrideLanguage
+                }">${GleapTranslationManager.translateText(
+                    flowConfig.widgetButtonText
                 )}</div>`;
         } else {
-            elem.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
+            this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
                 "arrowdown",
                 "#fff"
             )}</div>`;
         }
 
-        elem.onclick = () => {
-            this.feedbackButtonPressed();
-        };
-
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
-            elem.classList.add("bb-feedback-button--disabled");
+            this.feedbackButton.classList.add("bb-feedback-button--disabled");
         }
 
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
-            elem.classList.add("bb-feedback-button--bottomleft");
+            this.feedbackButton.classList.add("bb-feedback-button--bottomleft");
         }
-
-        document.body.appendChild(elem);
-
-        this.feedbackButton = elem;
-    }
-
-    /**
-     * Updates the feedback button state
-     * @param {*} retry 
-     * @returns 
-     */
-    updateFeedbackButtonState() {
-        if (this.feedbackButton === null) {
-            return;
-        }
-
-        const frameManager = GleapFrameManager.getInstance();
-        const sendingClass = "bb-feedback-button--sending";
-        if (frameManager.isOpened()) {
-            this.feedbackButton.classList.add(sendingClass);
-        } else {
-            this.feedbackButton.classList.remove(sendingClass);
-        }
-
-        /*const crashedClass = "bb-feedback-button--crashed";
-        if (this.appCrashDetected || this.rageClickDetected) {
-            this.feedbackButton.classList.add(crashedClass);
-        } else {
-            this.feedbackButton.classList.remove(crashedClass);
-        }*/
-
-        /*const dialogContainer = document.querySelector(
-            ".bb-feedback-dialog-container"
-        );
-        const containerFocusClass = "bb-feedback-dialog-container--focused";
-        if (dialogContainer) {
-            if (this.appCrashDetected || this.rageClickDetected) {
-                dialogContainer.classList.add(containerFocusClass);
-            } else {
-                dialogContainer.classList.remove(containerFocusClass);
-            }
-        }*/
     }
 }
