@@ -4,7 +4,7 @@ const Gleap = window.Gleap;
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
 Gleap.identify("123338", {
-  email: "lukas@gleap.io",
+  email: "lukas+test@gleap.io",
   name: "Lukas",
 });
 

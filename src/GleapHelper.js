@@ -69,6 +69,7 @@ export const gleapDataParser = function (data) {
       return {};
     }
   }
+  return data;
 };
 
 export const loadFromGleapCache = (key) => {

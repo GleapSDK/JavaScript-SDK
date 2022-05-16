@@ -152,6 +152,8 @@ export default class GleapSession {
       }
     } catch (exp) {}
 
+    console.log(userData);
+
     if (userData) {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
@@ -166,7 +168,9 @@ export default class GleapSession {
   };
 
   identifySession = (userId, userData) => {
-    if (!this.checkIfSessionNeedsUpdate(userId, userData)) {
+    const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
+    console.log(`Session needs update: ${sessionNeedsUpdate}.`);
+    if (!sessionNeedsUpdate) {
       return;
     }
 
