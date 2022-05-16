@@ -152,6 +152,19 @@ export default class GleapFrameManager {
     this.updateFrameStyle();
   }
 
+  showDrawingScreen(type) {
+    this.hideWidget();
+
+    // Show screen drawing.
+    this.markerManager = new GleapMarkerManager(type);
+    this.markerManager.show((success) => {
+      if (!success) {
+        this.hideMarkerManager();
+      }
+      this.showWidget();
+    });
+  }
+
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
@@ -207,16 +220,7 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "start-screen-drawing") {
-        this.hideWidget();
-
-        // Show screen drawing.
-        this.markerManager = new GleapMarkerManager(data.data);
-        this.markerManager.show((success) => {
-          if (!success) {
-            this.hideMarkerManager();
-          }
-          this.showWidget();
-        });
+        this.showDrawingScreen(data.data);
       }
     });
 

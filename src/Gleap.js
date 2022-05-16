@@ -18,6 +18,7 @@ import GleapRageClickDetector from "./GleapRageClickDetector";
 import GleapReplayRecorder from "./GleapReplayRecorder";
 import GleapMarkerManager from "./GleapMarkerManager";
 import GleapTranslationManager from "./GleapTranslationManager";
+import GleapShortcutListener from "./GleapShortcutListener";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -197,8 +198,11 @@ class Gleap {
    * @param {boolean} enabled
    */
   static enableShortcuts(enabled) {
-    // TODO: Implement
-    //this.getInstance().shortcutsEnabled = enabled;
+    if (enabled) {
+      GleapShortcutListener.getInstance().start();
+    } else {
+      GleapShortcutListener.getInstance().stop();
+    }
   }
 
   /**
@@ -421,7 +425,7 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlow(feedbackFlow, actionOutboundId = undefined) {
+  static startFeedbackFlow(feedbackFlow, actionOutboundId = undefined, autostartDrawing = false) {
     const sessionInstance = GleapSession.getInstance();
     const instance = this.getInstance();
 
@@ -443,7 +447,12 @@ class Gleap {
         actionOutboundId: actionOutboundId,
       }
     });
-    GleapFrameManager.getInstance().showWidget();
+
+    if (autostartDrawing) {
+      GleapFrameManager.getInstance().showDrawingScreen("screenshot");
+    } else {
+      GleapFrameManager.getInstance().showWidget();
+    }
   }
 
   isLiveMode() {
@@ -489,5 +498,5 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export { GleapNetworkIntercepter, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;
