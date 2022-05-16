@@ -107,25 +107,28 @@ export default class GleapFeedback {
 
     sendFeedback() {
         return new Promise((resolve, reject) => {
-            const http = new XMLHttpRequest();
-            http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
-            http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            GleapSession.getInstance().injectSession(http);
-            http.onerror = (error) => {
-                reject();
-            };
-            http.onreadystatechange = function (e) {
-                if (http.readyState === XMLHttpRequest.DONE) {
-                    if (http.status === 200 || http.status === 201) {
-                        resolve();
-                    } else {
-                        reject();
-                    }
-                }
-            };
-
             this.takeSnapshot().then(() => {
-                http.send(JSON.stringify(this.getData()));
+                const dataToSend = this.getData();
+
+                const http = new XMLHttpRequest();
+                http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
+                http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                GleapSession.getInstance().injectSession(http);
+                http.onerror = (error) => {
+                    reject();
+                };
+                http.onreadystatechange = function (e) {
+                    if (http.readyState === XMLHttpRequest.DONE) {
+                        if (http.status === 200 || http.status === 201) {
+                            resolve();
+                        } else {
+                            reject();
+                        }
+                    }
+                };
+                http.send(JSON.stringify(dataToSend));
+            }).catch((exp) => {
+                reject();
             });
         });
     }
