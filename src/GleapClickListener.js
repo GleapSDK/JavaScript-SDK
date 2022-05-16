@@ -1,4 +1,4 @@
-import { GleapConsoleLogManager } from "./Gleap";
+import { GleapConsoleLogManager, GleapFrameManager } from "./Gleap";
 import { getDOMElementDescription } from "./GleapHelper";
 
 export default class GleapClickListener {
@@ -16,9 +16,7 @@ export default class GleapClickListener {
         return;
       }
 
-      if (
-        !Gleap.getInstance().currentlySendingBug
-      ) {
+      if (!GleapFrameManager.getInstance().isOpened()) {
         GleapConsoleLogManager.getInstance().addLog(
           [getDOMElementDescription(event.target)],
           "CLICK"

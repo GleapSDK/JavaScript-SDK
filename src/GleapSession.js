@@ -101,7 +101,6 @@ export default class GleapSession {
         http.setRequestHeader("Gleap-Id", this.session.gleapId);
         http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
       }
-      http.setRequestHeader("App-Widget", Gleap.getInstance().widgetOnly);
     } catch (exp) { }
     http.onerror = (error) => {
       self.clearSession(false);

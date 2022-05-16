@@ -78,7 +78,7 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
 
-    var styleToApply = "";
+    var styleToApply = undefined;
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
@@ -90,8 +90,9 @@ export default class GleapFrameManager {
     if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
       styleToApply = modernStyleLeft;
     }
-
-    this.gleapFrameContainer.classList.add(styleToApply);
+    if (styleToApply) {
+      this.gleapFrameContainer.classList.add(styleToApply);
+    }
   }
 
   showWidget() {
