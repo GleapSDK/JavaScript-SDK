@@ -70,36 +70,12 @@ module.exports = {
         compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
           const nodeVersion = process.env.npm_package_version;
           return exec(
-            `mkdir -p published/${nodeVersion} & cp ./build/index.js published/${nodeVersion}/index.js`,
+            `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/index.js published/${nodeVersion}/index.js & cp ./build/index.js published/latest/index.js`,
             (err, stdout, stderr) => {
               if (stdout) process.stdout.write(stdout);
               if (stderr) process.stderr.write(stderr);
 
-              // Using UglifyJS
-              minify({
-                compressor: cleanCSS,
-                input: "./src/css/index.css",
-                output: `published/${nodeVersion}/index.min.css`,
-                processImport: false,
-              });
-              minify({
-                compressor: cleanCSS,
-                input: "./demo/appwidget.css",
-                output: `published/${nodeVersion}/appwidget.min.css`,
-                processImport: false,
-              });
-
-              return exec(
-                `mkdir -p published/latest & cp published/${nodeVersion}/* published/latest`,
-                (err, stdoutx, stderrx) => {
-                  exec(
-                    `cp published/${nodeVersion}/index.min.css build/index.min.css`,
-                    (err, stdoutx, stderrx) => {
-                      console.log("DONE 🎉");
-                    }
-                  );
-                }
-              );
+              console.log("DONE 🎉");
             }
           );
         });

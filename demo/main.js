@@ -3,8 +3,8 @@ const Gleap = window.Gleap;
 // Gleap.setApiUrl("http://localhost:9000");
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
-Gleap.identify("12938", {
-  email: "lukas@gleap.io",
+Gleap.identify("123338", {
+  email: "lukas+test@gleap.io",
   name: "Lukas",
 });
 
@@ -15,6 +15,11 @@ Gleap.attachCustomData({
     possible: true,
     name: "Mission: Impossible - Ghost Protocol",
   },
+});
+
+Gleap.registerCustomAction((customAction) => {
+  console.log("MAGIC??");
+  console.log(customAction);
 });
 
 setTimeout(() => {
@@ -33,35 +38,19 @@ setTimeout(() => {
   xmlhttp.send();
 }, 3000);
 
+const ii = () => {
+  // :)
+}
+
 setTimeout(() => {
   console.warn("Demo warning :)");
   console.log("Data will be loaded soon.");
-}, 0);
+  
+  ii();
+}, 4000);
 
 const files = [
   "https://biblephrasesm31p70v.blob.core.windows.net/phrases-v2/CD17C8A4CF4FA179C864FA4EFA561BBC405EF06304B1E239EE1A3A781A8905A0.mpga",
   "https://biblephrasesm31p70v.blob.core.windows.net/phrases-v2/CD17C8A4CF4FA179C864FA4EFA561BBC405EF06304B1E239EE1A3A781A8905A0.mpga",
   "https://reqres.in/api/products/3",
 ];
-
-setTimeout(() => {
-  const sheet1 = new CSSStyleSheet();
-  sheet1.replaceSync("* { color: red; }");
-
-  /*const div = document.createElement("div");
-  const shadowRoot = div.attachShadow({ mode: "open" });
-  shadowRoot.adoptedStyleSheets = [sheet1];
-  shadowRoot.innerHTML = `
-<span class="foo">Hello!<br />HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello HelloHelloHelloHelloHelloHelloHelloHelloHello Hello</span>
-`;
-  document.body.appendChild(div);*/
-  document.adoptedStyleSheets = [sheet1];
-}, 2000);
-
-window.addEventListener('error', e => {
-  console.log(e);
-});
-
-setTimeout(() => {
-  // x();
-}, 3000);

@@ -1,6 +1,3 @@
-import Gleap from "./Gleap";
-import { translateText } from "./Translation";
-
 const calculateShadeColor = function (col, amt) {
   col = col.replace(/^#/, "");
   if (col.length === 3)
@@ -58,16 +55,761 @@ export const injectStyledCSS = (
     : calculateShadeColor(backgroundColor, -70);
 
   var borderRadius = parseInt(borderRadius, 10);
-  if (borderRadius === NaN || borderRadius === undefined) {
-    borderRadius = 20;
-  }
-
   const containerBorderRadius = Math.round(borderRadius * 0.6);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
 
   const colorStyleSheet = `
+    .gleap-frame-container {
+      right: 20px;
+      bottom: 95px;
+      width: 380px !important;
+      position: fixed;
+      z-index: 2147483647;
+      visibility: visible;
+      height: 100%;
+      max-height: 0px;
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
+      border-radius: ${borderRadius}px;
+      overflow: hidden;
+      transition: max-height 0.3s ease-in;
+      animation-duration: .3s;
+      animation-fill-mode: both;
+      animation-name: gleapFadeInUp;
+      user-select: none;
+    }
+
+    @keyframes gleapFadeInUp {
+      from {
+          opacity: 0;
+          transform: translate3d(0, 100%, 0);
+      }
+      to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+      }
+    }
+
+    .gleap-frame-container--classic {
+      right: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--classic-left {
+      right: auto;
+      left: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--modern-left {
+      right: auto;
+      left: 20px;
+      bottom: 95px;
+    }
+
+    .gleap-frame-container-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .gleap-frame-container-inner:before {
+      content: " ";
+      position: absolute;
+      width: 100%;
+      height: calc(100% - ${borderRadius}px);
+      top: ${borderRadius}px;
+      background-color: ${backgroundColor};
+      z-index: -1;
+    }
+    
+    .gleap-frame-container--hidden {
+      opacity: 0;
+      pointer-events: none;
+      animation: none !important;
+    }
+    
+    .gleap-frame-container iframe {
+      height: 100% !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      display: block;
+    }
+    
+    .bb-feedback-button {
+      margin: 0px;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      background-color: transparent;
+      color: #000000;
+      z-index: 2147483100;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      padding: 0px;
+    }
+    
+    .bb-feedback-button--disabled .bb-feedback-button-icon {
+      display: none !important;
+    }
+    
+    .bb-feedback-button--disabled .bb-feedback-button-text {
+      display: none;
+    }
+    
+    .bb-feedback-button--bottomleft {
+      bottom: 20px;
+      right: auto;
+      left: 20px;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-button-shoutout {
+      right: auto;
+      left: 94px;
+    }
+    
+    .bb-feedback-button-text {
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 99;
+    }
+    
+    .bb-feedback-button-text:before {
+      content: "";
+      position: absolute;
+      box-shadow: rgba(0, 0, 0, 0.04) 6px 6px 5px;
+      transform: rotate(315deg);
+      bottom: 16px;
+      right: -4px;
+      border-width: 10px;
+      border-style: solid;
+      border-color: transparent #fff #fff transparent;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-button-text:before {
+      display: none;
+    }
+    
+    .bb-feedback-button-text:after {
+      content: "";
+      position: absolute;
+      bottom: 12px;
+      right: 0px;
+      background-color: #fff;
+      width: 5px;
+      height: 30px;
+    }
+    
+    .bb-feedback-button-text-title {
+      font-family: sans-serif;
+      font-size: 14px;
+      color: #666;
+      line-height: 18px;
+      max-width: 220px;
+    }
+    
+    .bb-feedback-button-text-title b {
+      color: #000000;
+      font-weight: 600;
+    }
+    
+    .bb-feedback-button-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 60px;
+      background-color: #485bff;
+      transition: box-shadow 0.3s ease-in-out;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .bb-feedback-button-classic {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      top: 50%;
+      right: 0px;
+      position: fixed;
+      transform: rotate(-90deg) translate(50%, -50%);
+      transform-origin: 100% 50%;
+      padding: 9px 20px;
+      text-align: center;
+      background-color: #485bff;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      font-family: sans-serif;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
+      animation-duration: 0.2s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
+    
+    .bb-feedback-button-classic--left {
+      top: 50%;
+      left: 0px;
+      right: auto;
+      transform: rotate(90deg) translate(-50%, -100%);
+      transform-origin: 0% 0%;
+    }
+    
+    .bb-feedback-button-classic--bottom {
+      top: auto;
+      bottom: 0px;
+      transform: none;
+      right: 20px;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-classic {
+      animation-duration: 0.2s;
+      animation-fill-mode: both;
+      animation-name: bbFadeOutRight;
+    }
+    
+    .bb-feedback-button .bb-logo-logo {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      top: 11px;
+      left: 11px;
+      object-fit: contain;
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+      animation-name: bbZoomIn;
+    }
+    
+    .bb-feedback-button .bb-logo-arrowdown {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      top: 23px;
+      left: 21px;
+      object-fit: contain;
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+    }
+    
+    .bb-feedback-button .bb-logo-arrowdown {
+      animation-name: bbZoomOut;
+    }
+    
+    .bb-feedback-button--sending .bb-logo-arrowdown {
+      animation-name: bbZoomIn;
+    }
+    
+    .bb-feedback-button--sending .bb-logo-logo {
+      animation-name: bbZoomOut;
+    }
+    
+    .bb-feedback-button-icon:hover {
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .bb-feedback-button--bottomleft.bb-feedback-button--sending {
+      padding-left: 0px;
+      padding-right: 5px;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-text {
+      animation-name: bbFadeOutDown;
+    }
+    
+    .bb-feedback-button--sending .bb-feedback-button-icon {
+      display: flex;
+    }
+    
+    .bb-feedback-button--bottomleft .bb-feedback-dialog {
+      right: auto;
+      left: 16px;
+    }
+    
+    .bb-feedback-button--classic .bb-feedback-dialog,
+    .bb-feedback-button--disabled .bb-feedback-dialog {
+      bottom: 20px;
+    }
+    
+    .bb-feedback-button--classic-left .bb-feedback-dialog {
+      right: auto;
+      left: 16px;
+    }
+    
+    .bb-capture-svg {
+      position: absolute;
+      z-index: 916777264;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      width: 100%;
+      height: 100%;
+      padding: 0px;
+      margin: 0px;
+      cursor: crosshair;
+    }
+    
+    .bb-rec-on-circle {
+      animation-name: bbRecIconFade;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    
+    .bb-rec-on-cont {
+      animation-name: bbRecIconContFade;
+      animation-duration: 2s;
+      animation-iteration-count: infinite;
+      animation-direction: alternate;
+    }
+    
+    .bb-capture-editor-drag-info {
+      position: fixed;
+      top: -200px;
+      left: 0px;
+      z-index: 916777266;
+      transition: opacity 0.3s ease-in-out;
+    }
+    
+    .bb-capture-editor-drag-info svg {
+      width: 24px;
+      height: 24px;
+    }
+    
+    .bb-capture-editor-borderlayer {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      border: 4px solid ${primaryColor};
+      cursor: crosshair;
+      z-index: 916777260;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    
+    .bb-feedback-dialog-backdrop {
+      display: none;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
+      background-color: rgba(0, 0, 0, 0.8);
+    }
+    
+    .bb-capture-editor-recording .bb-capture-dismiss {
+      display: none;
+    }
+    
+    .bb-capture-editor-item-inactive {
+      opacity: 0.3;
+      cursor: not-allowed !important;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-toolbar-drawingitem {
+      opacity: 0.3;
+      cursor: not-allowed !important;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-editor-drag-info {
+      display: none;
+    }
+    
+    .bb-capture-editor-notrecording .bb-capture-svg {
+      pointer-events: none !important;
+    }
+    
+    .bb-capture-toolbar {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 916777268;
+      background-color: #fff;
+      padding: 5px;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      transition: opacity 0.3s ease-in-out;
+    }
+    
+    .bb-capture-dismiss {
+      position: fixed;
+      top: 0px;
+      right: 0px;
+      z-index: 916777268;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: ${primaryColor};
+      border-bottom-left-radius: ${formItemSmallBorderRadius}px;
+    }
+    
+    .bb-capture-dismiss svg path {
+      fill: ${contrastColor};
+    }
+    
+    .bb-capture-dismiss svg {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+    
+    .bb-capture-button-next {
+      font-family: sans-serif;
+      box-sizing: border-box;
+      font-weight: 600;
+      text-align: center;
+      width: auto;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      margin: 0px;
+      line-height: 36px;
+      padding: 0px 12px;
+      font-size: 15px;
+      margin-left: 12px;
+    }
+    
+    .bb-capture-toolbar-item-spacer {
+      width: 1px;
+      height: 38px;
+      min-width: 1px;
+      margin: 0px 5px;
+    }
+    
+    .bb-capture-toolbar-item {
+      width: 42px;
+      height: 38px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      margin-right: 5px;
+    }
+    
+    .bb-capture-toolbar-item svg {
+      width: 23px;
+      height: 23px;
+      object-fit: contain;
+    }
+    
+    .bb-capture-toolbar-item-selectedcolor {
+      border-radius: 100%;
+      width: 20px;
+      height: 20px;
+      background-color: #db4035;
+    }
+    
+    .bb-capture-toolbar-item[data-type="undo"] svg {
+      width: 18px;
+      height: 18px;
+    }
+    
+    .bb-capture-toolbar-item[data-active="true"] {
+      position: relative;
+    }
+    
+    .bb-capture-preview {
+      display: none;
+      background-color: rgba(0, 0, 0, 0.6);
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      z-index: 916777270;
+    }
+    
+    .bb-capture-preview-inner {
+      background-color: #fff;
+      padding: 0px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      flex-direction: column;
+      max-width: 640px;
+      width: 100%;
+      margin: 20px;
+    }
+    
+    .bb-capture-preview-inner video {
+      border-radius: 8px 8px 0px 0px;
+      display: block;
+      border: 0px;
+      outline: none;
+      width: 100%;
+      max-height: 60vh;
+    }
+    
+    .bb-capture-preview-buttons {
+      display: flex;
+      justify-content: space-between;
+      padding: 14px;
+    }
+    
+    .bb-capture-preview-retrybutton {
+      font-family: sans-serif;
+      border-radius: 21px;
+      box-sizing: border-box;
+      padding: 12px 26px;
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-preview-sendbutton {
+      font-family: sans-serif;
+      border-radius: 21px;
+      box-sizing: border-box;
+      padding: 12px 26px;
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 600;
+      text-align: center;
+      margin-top: 0px;
+      margin-bottom: 0px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-preview-retrybutton:hover,
+    .bb-capture-preview-sendbutton:hover {
+      opacity: 0.9;
+    }
+    
+    .bb-capture-toolbar-item-recording {
+      margin-right: 0px;
+    }
+    
+    .bb-capture-toolbar-item-recording svg {
+      width: 33px;
+      height: 33px;
+    }
+    
+    .bb-capture-toolbar-item-colorpicker {
+      position: fixed;
+      top: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 916777268;
+      background-color: #fff;
+      display: none;
+      padding: 10px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+    
+    .bb-capture-toolbar-item-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 100%;
+      margin-right: 12px;
+      box-shadow: 0px 0px 3px rgba(0, 0, 0, 0.15);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .bb-capture-toolbar-item-color:hover {
+      box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.25);
+    }
+    
+    .bb-capture-toolbar-item-color:last-of-type {
+      margin-right: 0px;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="true"] svg:first-of-type {
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="true"] svg:nth-of-type(2) {
+      display: block;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="false"] svg:first-of-type {
+      display: block;
+    }
+    
+    .bb-capture-toolbar-item-recording[data-active="false"] svg:nth-of-type(2) {
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item--active {
+      background-color: #eee;
+    }
+    
+    .bb-capture-toolbar-item:hover svg {
+      opacity: 1;
+    }
+    
+    .bb-capture-toolbar-item--active {
+      background-color: #f8f8f8;
+    }
+    
+    .bb-capture-toolbar-item--active svg {
+      opacity: 1;
+    }
+    
+    .bb-capture-toolbar-item--inactivecross::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 26px;
+      margin: auto;
+      border-radius: 4px;
+      background-color: #e80000;
+      transform: rotate(45deg);
+    }
+    
+    .bb-capture-toolbar-item--inactivecross svg {
+      fill: #eee;
+    }
+    
+    .bb-capture-toolbar-item-timer {
+      text-align: left;
+      line-height: 32px;
+      font-size: 14px;
+      margin: 5px;
+      min-width: 40px;
+      display: none;
+    }
+    
+    .bb-capture-toolbar-item .bb-tooltip {
+      background-color: #555;
+      color: #fff;
+      visibility: hidden;
+      font-size: 14px;
+      text-align: center;
+      padding: 5px 10px;
+      position: absolute;
+      z-index: 1;
+      top: 45px;
+      left: 0px;
+      transform: translateX(calc(-50% + 21px));
+      opacity: 0;
+      transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+    
+    .bb-capture-toolbar-item .bb-tooltip::after {
+      content: "";
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      transform: rotate(180deg);
+      border-color: #555 transparent transparent transparent;
+    }
+    
+    .bb-capture-toolbar-item:hover .bb-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+    
+    .bb-capture-options {
+      display: none;
+    }
+    
+    .bb-capture-options--active {
+      display: flex;
+    }
+
+    @keyframes bbFadeOutRight {
+      from {
+        opacity: 1;
+      }
+    
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes bbFadeOutDown {
+      from {
+        opacity: 1;
+      }
+    
+      to {
+        opacity: 0;
+        transform: translate3d(0, 100%, 0);
+      }
+    }
+    
+    @keyframes bbFadeInOpacity {
+      from {
+        opacity: 0;
+      }
+    
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes bbZoomOut {
+      from {
+        opacity: 1;
+      }
+    
+      50% {
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+      }
+    
+      to {
+        opacity: 0;
+      }
+    }
+    
+    @keyframes bbZoomIn {
+      from {
+        opacity: 0;
+        transform: scale3d(0.3, 0.3, 0.3);
+      }
+    
+      50% {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes bbRecIconContFade {
+      0% {
+        fill: #b10802;
+      }
+      50% {
+        fill: #ff0000;
+      }
+      100% {
+        fill: #b10802;
+      }
+    }  
     .bb-capture-preview-retrybutton {
       color: ${contrastBackgroundColor};
       border-radius: ${buttonBorderRadius}px;
@@ -76,24 +818,10 @@ export const injectStyledCSS = (
     .bb-capture-preview-retrybutton:hover {
       background-color: ${hoverHoverColor};
     }
-    .bb-feedback-dialog-success svg {
-      box-shadow: inset 0px 0px 0px ${primaryColor};
-    }
-
     @keyframes bb-suc-fill {
       100% {
         box-shadow: inset 0px 0px 0px 30px ${primaryColor};
       }
-    }
-    .bb-feedback-dialog-success svg circle {
-      stroke: ${primaryColor};
-    }
-    .bb-capture-dismiss {
-      background-color: ${primaryColor};
-      border-bottom-left-radius: ${formItemSmallBorderRadius}px;
-    }
-    .bb-capture-dismiss svg path {
-      fill: ${contrastColor};
     }
     .bb-capture-toolbar-item-spacer {
       background-color: ${backgroundColorHover};
@@ -112,11 +840,6 @@ export const injectStyledCSS = (
         fill: transparent;
       }
     }
-    .bb-feedback-inputgroup--privacy-policy a,
-    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:not(:checked) + label,
-    .bb-feedback-inputgroup--privacy-policy [type="checkbox"]:checked + label {
-      color: ${contrastBackgroundColor};
-    }
     .bb-capture-preview-sendbutton {
       color: ${contrastColor};
       background-color: ${primaryColor};
@@ -127,38 +850,15 @@ export const injectStyledCSS = (
       background-color: ${primaryColor};
       border-radius: ${formItemSmallBorderRadius}px;
     }
-    .bb-feedback-capture-item {
-      border-radius: ${buttonBorderRadius}px;
-      background-color: ${backgroundColorHover};
-    }
     .bb-capture-preview-inner {
       background-color: ${backgroundColor};
       border-radius: ${formItemBorderRadius}px;
     }
-    .bb-feedback-capture-item .bb-item-title {
-      color: ${contrastBackgroundColor};
-    }
     .bb-capture-toolbar-item-timer {
       color: ${subTextColor};
     }
-    .bb-feedback-capture-item-selected-icon path,
-    .bb-feedback-capture-item-selected-action path,
-    .bb-feedback-capture-item path {
-      fill: ${contrastBackgroundColor};
-    }
     .bb-svg-path {
       fill: ${contrastBackgroundColor};
-    }
-    .bb-feedback-capture-item-selected-button {
-      border-radius: ${formItemBorderRadius}px;
-      background-color: ${backgroundColorHover};
-    }
-    .bb-feedback-capture-item-selected-label {
-      color: ${contrastBackgroundColor};
-    }
-    .bb-feedback-capture-item-selected-action:hover {
-      background-color: ${hoverHoverColor};
-      border-radius: ${formItemSmallBorderRadius}px;
     }
     .bb-capture-toolbar-item {
       border-radius: ${formItemBorderRadius}px;
@@ -173,12 +873,6 @@ export const injectStyledCSS = (
     .bb-capture-toolbar-item--active {
       background-color: ${backgroundColorHover};
     }
-    .bb-feedback-capture-item:hover {
-      background-color: ${hoverHoverColor};
-    }
-    .bb-feedback-onetofive-button {
-      border-radius: ${formItemSmallBorderRadius}px;
-    }
     .bb-feedback-button-classic {
       border-top-left-radius: ${formItemBorderRadius}px;
       border-top-right-radius: ${formItemBorderRadius}px;
@@ -186,156 +880,84 @@ export const injectStyledCSS = (
     .bb-logo-logo--default path {
       fill: ${contrastButtonColor};
     }
-    .bb-feedback-dialog-header-logo .bb-logo-logo--default path {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-inputgroup textarea,
-    .bb-feedback-inputgroup > input,
-    .bb-feedback-inputgroup input {
-      border-radius: ${formItemBorderRadius}px;
-    }
-    .bb-feedback-dialog-header-back:hover {
-      background-color: ${contrastHeaderColor};
-      border-radius: ${containerBorderRadius}px;
-    }
-    .bb-feedback-dialog-header-next {
-      background-color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-next span {
-      color: ${headerColor};
-    }
-    .bb-feedback-dialog-header-next svg {
-      fill: ${headerColor};
-    }
-    .bb-feedback-type {
-      border-radius: ${containerBorderRadius}px;
-      background-color: ${backgroundColor};
-    }
-    .bb-feedback-type-description,
-    .bb-feedback-poweredbycontainer span,
-    .bb-feedback-onetofive-description span {
-      color: ${subTextColor};
-    }
-    .bb-feedback-poweredbycontainer svg g {
-      fill: ${subTextColor};
-    }
-    .bb-feedback-type:hover {
-      background-color: ${backgroundColorHover};
-    }
-    #bb-drawing-colorpopup {
-      background-color: ${backgroundColor};
-    }
-    .bb-feedback-type-title,
-    .bb-feedback-form-description,
-    .bb-feedback-elementtitle,
-    .bb-feedback-multiplechoice-container,
-    .bb-feedback-dialog-info-text
-    {
-      color: ${contrastBackgroundColor};
-    }
-    .bb-drawing-tool-spacer {
-      background-color: ${backgroundColorHover};
-    }
-    .bb-feedback-dialog {
-      border-radius: ${borderRadius}px;
-      background-color: ${backgroundColor};
-    }
     .bb-logo-arrowdown {
       fill: ${contrastButtonColor};
     }
-    .bb-feedback-dialog-header-back svg {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-back:hover svg {
-      fill: ${headerColor};
-    }
-    .bb-feedback-dialog-header-close svg {
-      fill: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-title,
-    .bb-feedback-dialog-header-title span {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-title-small {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-dialog-header-description {
-      color: ${contrastHeaderColor};
-    }
-    .bb-feedback-onetofive-button-active,
-    .bb-feedback-onetofive-button:hover {
-      background-color: ${primaryColor};
-      color: ${contrastColor};
-    }    
     .bb-feedback-button-icon {
         background-color: ${buttonColor};
-    }
-    .bb-feedback-multiplechoice-checkmark {
-      border: 2px solid ${hoverHoverColor};
-    }
-    .bb-feedback-multiplechoice-container:hover
-      input
-      ~ .bb-feedback-multiplechoice-checkmark {
-      border: 2px solid ${primaryColor};
-    }
-    .bb-feedback-multiplechoice-container input:checked ~ .bb-feedback-multiplechoice-checkmark {
-      background-color: ${primaryColor};
-      border: 2px solid ${primaryColor};
-    }
-    .bb-feedback-dialog-header-button {
-        color: ${primaryColor};
-    }
-    .bb-drawing-tool-item--active {
-      background-color: ${backgroundColorHover};
-    }
-    .bb-capture-editor-borderlayer {
-        border-color: ${primaryColor};
     }
     .bb-feedback-button-classic {
       background-color: ${buttonColor};
       color: ${contrastButtonColor};
     }
-    .bb-feedback-dialog-header {
-      background-color: ${headerColor};
+
+    @media only screen and (max-width: 450px) {
+      .gleap-frame-container {
+        left: 20px;
+        right: 20px;
+        width: calc(100% - 40px) !important;
+      }
+
+      .bb-tooltip {
+        display: none !important;
+      }
+    
+      .bb-capture-toolbar-item-colorpicker {
+        top: 75px;
+      }
+    
+      .bb-capture-button-next {
+        margin-left: auto;
+      }
+    
+      .bb-capture-dismiss {
+        display: none;
+      }
+    
+      .bb-capture-toolbar {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        width: auto;
+        transform: none;
+      }
+    
+      .bb-feedback-dialog-backdrop {
+        display: block;
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100vw;
+        height: 100vh;
+        height: -webkit-fill-available;
+        z-index: 916777230;
+        box-sizing: border-box;
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.6);
+      }
+    
+      .bb-capture-editor-drag-info {
+        display: none;
+      }
+    
+      .bb-feedback-button--bottomleft .bb-feedback-dialog {
+        left: 10px;
+        right: 10px;
+      }
+    
+      .bb-capture-editor-borderlayer {
+        border-width: 4px;
+      }
     }
-    .bb-form-progress-inner {
-      background-color: ${headerColor}66;
-    }
-    .bb-feedback-inputgroup textarea,
-    .bb-feedback-inputgroup > input,
-    .bb-feedback-inputgroup input {
-      background-color: ${backgroundColor};
-      color: ${contrastBackgroundColor};
-      border-color: ${borderColor};
-    }
-    .bb-feedback-inputgroup textarea:focus {
-      border-color: ${primaryColor};
-    }
-    .bb-feedback-inputgroup > input:focus, .bb-feedback-inputgroup input:focus {
-      border-color: ${primaryColor};
-    }
-    .bb-feedback-send-button {
-      color: ${contrastColor};
-      background-color: ${primaryColor};
-      border-radius: ${buttonBorderRadius}px;
-    }
-    .bb-double-bounce1,
-    .bb-double-bounce2 {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-dialog-header-button-cancel {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-type-icon {
-      background-color: ${primaryColor};
-    }
-    .bb-feedback-inputgroup--privacy-policy
-    [type="checkbox"]:not(:checked)
-    + label:after,
-    .bb-feedback-inputgroup--privacy-policy
-    [type="checkbox"]:checked
-    + label:after {
-    color: ${primaryColor};
+    
+    @media print {
+      .bb-feedback-button {
+        display: none !important;
+      }
+      
+      .gleap-frame-container {
+        display: none !important;
+      }
     }
     `;
 
@@ -346,225 +968,7 @@ export const injectStyledCSS = (
   const node = document.createElement("style");
   node.innerHTML = colorStyleSheet;
   node.className = "gleap-styles";
-  Gleap.appendNode(node);
-};
-
-export const getHeaderImage = function (customLogoUrl) {
-  var headerImage = loadIcon("bblogo", "#fff");
-  if (customLogoUrl) {
-    headerImage = `<img src="${customLogoUrl}" alt="bb-logo" />`;
-  }
-  return headerImage;
-};
-
-export const createWidgetDialog = function (
-  title,
-  description,
-  customLogoUrl,
-  content,
-  back,
-  showBack = true,
-  appendClass = ""
-) {
-  var elem = document.createElement("div");
-  elem.className = "bb-feedback-dialog-container";
-  elem.innerHTML = `<div class="bb-feedback-dialog-backdrop"></div><div class='bb-feedback-dialog ${appendClass}'>
-      <div class="bb-feedback-dialog-header${
-        back ? " bb-feedback-dialog-header--back" : ""
-      }${!showBack ? " bb-feedback-dialog-header--backhidden" : ""}">
-        ${
-          back
-            ? `<div class="bb-feedback-dialog-header-back">
-        ${loadIcon("arrowleft", "#fff")}
-        </div>`
-            : `<div class="bb-feedback-dialog-header-logo">
-          ${getHeaderImage(customLogoUrl)}
-        </div>`
-        }
-        <div class="bb-feedback-dialog-header-text">
-          <div class="bb-feedback-dialog-header-title">
-            ${title}
-          </div>
-          ${
-            description === null
-              ? ""
-              : `<div class="bb-feedback-dialog-header-description">
-          ${description}
-        </div>`
-          }
-        </div>
-        <div class="bb-feedback-dialog-header-close">
-          ${loadIcon("close", "#fff")}
-        </div>
-      </div>
-      <div class="bb-feedback-dialog-body">
-        ${content}
-        <div class="bb-feedback-poweredbycontainer">
-          <span>Powered by</span>
-          <svg width="90px" height="32px" viewBox="0 0 90 32" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-              <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                  <g transform="translate(0.653299, 0.000000)" fill="#59617D" fill-rule="nonzero">
-                      <path d="M16.7989119,8.32577189 L22.1014291,8.32577189 C21.4265888,3.43890649 17.1242771,0 11.5448484,0 C5.02513746,0 0,4.70586291 0,12.7178969 C0,20.5368768 4.69977222,25.3876017 11.6532254,25.3876017 C17.8836188,25.3876017 22.3303551,21.4418423 22.3303551,14.9380999 L22.3303551,11.8250016 L12.0027005,11.8250016 L12.0027005,15.7586204 L17.3052177,15.7586204 C17.2328883,18.823461 15.1479759,20.7661416 11.6773352,20.7661416 C7.76078035,20.7661416 5.29034525,17.8340271 5.29034525,12.6696392 C5.29034525,7.52939191 7.85721955,4.62139446 11.6291156,4.62139446 C14.3165389,4.62139446 16.1362435,6.00903014 16.7989119,8.32577189 Z"></path>
-                      <polygon points="30.2692671 0.337857389 25.1355185 0.337857389 25.1355185 25.0496341 30.2692671 25.0496341"></polygon>
-                      <path d="M41.7991346,25.4117422 C46.3785919,25.4117422 49.4634758,23.1793283 50.1865357,19.7404968 L45.4385438,19.426787 C44.9203002,20.8385398 43.5947294,21.5745684 41.883636,21.5745684 C39.3167617,21.5745684 37.6897014,19.8732229 37.6897014,17.1100453 L37.6897014,17.097975 L50.2951468,17.097975 L50.2951468,15.6862222 C50.2951468,9.38760404 46.486969,6.27448232 41.5943184,6.27448232 C36.1473765,6.27448232 32.6163443,10.1477732 32.6163443,15.8672059 C32.6163443,21.7435053 36.0991569,25.4117422 41.7991346,25.4117422 Z M37.6897014,13.9124785 C37.7983125,11.8008611 39.4010289,10.1115858 41.6785856,10.1115858 C43.9081568,10.1115858 45.4507158,11.7043223 45.4626536,13.9124785 L37.6897014,13.9124785 Z"></path>
-                      <path d="M57.9054165,25.3995548 C60.6410594,25.3995548 62.4125444,24.2049497 63.3163107,22.4795574 L63.4609695,22.4795574 L63.4609695,25.0496341 L68.3295103,25.0496341 L68.3295103,12.5489834 C68.3295103,8.13269445 64.593896,6.27448232 60.4722908,6.27448232 C56.0377263,6.27448232 53.121377,8.39817007 52.410255,11.7767205 L57.1582468,12.162852 C57.5077218,10.9320829 58.6043666,10.0271174 60.448181,10.0271174 C62.1955562,10.0271174 63.1957617,10.9079424 63.1957617,12.4283041 L63.1957617,12.5007023 C63.1957617,13.695284 61.9305825,13.8521272 58.7129777,14.1658604 C55.0494587,14.5037108 51.7595245,15.7344799 51.7595245,19.8732229 C51.7595245,23.5414364 54.3746184,25.3995548 57.9054165,25.3995548 Z M59.375646,21.8521143 C57.7970394,21.8521143 56.664347,21.1160622 56.664347,19.7043095 C56.664347,18.2563459 57.8571969,17.5444343 59.6649636,17.291029 C60.7857181,17.1341858 62.6173606,16.8687102 63.2320434,16.4584616 L63.2320434,18.4252828 C63.2320434,20.3679399 61.629327,21.8521143 59.375646,21.8521143 Z"></path>
-                      <path d="M71.2943133,32 L76.4280619,32 L76.4280619,22.0813791 L76.5846586,22.0813791 C77.2957806,23.6258111 78.8502774,25.3512737 81.8389562,25.3512737 C86.0567665,25.3512737 89.3467007,22.0089575 89.3467007,15.806878 C89.3467007,9.43586168 85.9121077,6.27448232 81.850894,6.27448232 C78.7538382,6.27448232 77.2716708,8.12062418 76.5846586,9.62891568 L76.3557325,9.62891568 L76.3557325,6.5158174 L71.2943133,6.5158174 L71.2943133,32 Z M76.3196849,15.7827375 C76.3196849,12.4765852 77.717585,10.3649677 80.2121299,10.3649677 C82.7548944,10.3649677 84.104575,12.5731005 84.104575,15.7827375 C84.104575,19.016515 82.7307846,21.2608586 80.2121299,21.2608586 C77.7416948,21.2608586 76.3196849,19.0889132 76.3196849,15.7827375 Z"></path>
-                  </g>
-              </g>
-          </svg>
-        </div>
-      </div>
-    </div>`;
-  Gleap.appendNode(elem);
-
-  const buttonType = Gleap.getInstance().buttonType;
-  if (buttonType === Gleap.FEEDBACK_BUTTON_BOTTOM_LEFT) {
-    elem.classList.add("bb-feedback-button--bottomleft");
-  }
-
-  if (buttonType === Gleap.FEEDBACK_BUTTON_NONE) {
-    elem.classList.add("bb-feedback-button--disabled");
-  }
-
-  if (
-    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC ||
-    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT ||
-    buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_BOTTOM
-  ) {
-    elem.classList.add("bb-feedback-button--classic");
-  }
-
-  if (buttonType === Gleap.FEEDBACK_BUTTON_CLASSIC_LEFT) {
-    elem.classList.add("bb-feedback-button--classic-left");
-  }
-
-  const closeButton = document.querySelector(
-    ".bb-feedback-dialog-header-close"
-  );
-  closeButton.onclick = function () {
-    if (closeButton && closeButton.getAttribute("d") === "t") {
-      return;
-    }
-    Gleap.getInstance().closeGleap();
-  };
-
-  // Hook back action
-  if (back) {
-    const backButton = document.querySelector(
-      ".bb-feedback-dialog-header-back"
-    );
-    backButton.onclick = function () {
-      if (backButton && backButton.getAttribute("d") === "t") {
-        return;
-      }
-      back();
-    };
-  }
-
-  return elem;
-};
-
-/**
- * Creates the feedback type dialog
- */
-export const createFeedbackTypeDialog = function (
-  feedbackTypeActions,
-  overrideLanguage,
-  customLogoUrl,
-  poweredByHidden,
-  selectedMenuOption,
-  title,
-  subtitle,
-  fromBack
-) {
-  // Generate options
-  var optionsHTML = `<div class="bb-feedback-types">`;
-
-  for (var i = 0; i < feedbackTypeActions.length; i++) {
-    var action = feedbackTypeActions[i];
-    optionsHTML += `<div id="bb-feedback-type-${i}" class="bb-feedback-type">
-        <div class="bb-feedback-type-icon" style="background-color: ${
-          action.color
-        };">
-          <img src="${action.icon}">
-        </div>
-        <div class="bb-feedback-type-text">
-          <div class="bb-feedback-type-title">${translateText(
-            action.title,
-            overrideLanguage
-          )}</div>
-          <div class="bb-feedback-type-description">${translateText(
-            action.description,
-            overrideLanguage
-          )}</div>
-        </div>
-      </div>`;
-  }
-
-  optionsHTML += "</div>";
-
-  const dialog = createWidgetDialog(
-    title,
-    subtitle,
-    customLogoUrl,
-    optionsHTML,
-    null,
-    true,
-    fromBack ? "bb-anim-fadeinfromback" : "bb-anim-fadein"
-  );
-
-  // Hook actions
-  for (var i = 0; i < feedbackTypeActions.length; i++) {
-    const index = i;
-    document.getElementById(`bb-feedback-type-${index}`).onclick = function () {
-      dialog.remove();
-      if (feedbackTypeActions[index].action) {
-        // Cleanup widget.
-        Gleap.getInstance().closeGleap();
-
-        // Call custom action.
-        feedbackTypeActions[index].action();
-      }
-
-      if (feedbackTypeActions[index].actionFlow) {
-        Gleap.startFeedbackFlow(feedbackTypeActions[index].actionFlow);
-      }
-
-      if (selectedMenuOption) {
-        selectedMenuOption();
-      }
-    };
-  }
-
-  validatePoweredBy(poweredByHidden);
-};
-
-export const validatePoweredBy = function (poweredByHidden) {
-  const poweredByContainer = document.querySelector(
-    ".bb-feedback-poweredbycontainer"
-  );
-  if (poweredByHidden) {
-    poweredByContainer.style.display = "none";
-  } else {
-    poweredByContainer.onclick = function () {
-      window.open("https://www.gleap.io/", "_blank");
-    };
-  }
-};
-
-export const setLoadingIndicatorProgress = function (
-  percentComplete,
-  loader = "main"
-) {
-  const circle = window.document.querySelector(
-    `.bb-feedback-dialog-loading--${loader} .bb--progress-ring__circle`
-  );
-  const circumference = 213.628300444;
-  const offset = circumference - (percentComplete / 100) * circumference;
-  if (circle) {
-    circle.style.strokeDasharray = `${circumference} ${circumference}`;
-    circle.style.strokeDashoffset = offset;
-  }
+  document.body.appendChild(node);
 };
 
 export const loadIcon = function (name, color) {
@@ -585,32 +989,6 @@ export const loadIcon = function (name, color) {
     return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
     <path d="m684 600 439.2-439.2c22.801-22.801 22.801-60 0-84s-60-22.801-84 0l-439.2 439.2-439.2-439.2c-22.801-22.801-60-22.801-84 0s-22.801 60 0 84l439.2 439.2-439.2 439.2c-22.801 22.801-22.801 60 0 84 12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801l439.2-439.2 439.2 439.2c12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801 22.801-22.801 22.801-60 0-84z" fill="#333"/>
    </svg>`;
-  }
-
-  if (name === "screenshot") {
-    return `<svg width="23px" height="20px" viewBox="0 0 23 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g transform="translate(-1172.000000, -570.000000)" fill="#333333" fill-rule="nonzero">
-            <g transform="translate(1155.000000, 558.000000)">
-                <g transform="translate(17.000000, 12.000000)">
-                    <path d="M3.40727379,8.2362507e-05 C3.18136472,8.2362507e-05 2.96469164,0.0879281104 2.80495864,0.244168699 C2.64522565,0.400409287 2.55545534,0.61238707 2.55545534,0.83340698 L2.55545534,5.00003007 C2.55226113,5.22311663 2.6405486,5.43804771 2.80062005,5.59689049 C2.96078009,5.75574217 3.17923631,5.84524345 3.40727379,5.84524345 C3.63531126,5.84524345 3.85376294,5.75574883 4.01392753,5.59689049 C4.17399898,5.43803882 4.26229507,5.22311663 4.25909223,5.00003007 L4.25909223,1.6667316 L7.66636602,1.6667316 C7.8944035,1.66985645 8.11410451,1.5834858 8.27647247,1.42688966 C8.43884951,1.27020686 8.53033708,1.05649354 8.53033708,0.83340698 C8.53033708,0.610320425 8.43885632,0.396611549 8.27647247,0.239924299 C8.11409543,0.0833281585 7.8944035,-0.00305093806 7.66636602,8.2362507e-05 L3.40727379,8.2362507e-05 Z"></path>
-                    <path d="M22.1347863,14.1552677 C21.909143,14.158653 21.6941576,14.2495378 21.5369233,14.4079539 C21.3797798,14.5662856 21.2931897,14.7792167 21.2962789,14.9999699 L21.2962789,18.3332684 L17.8890051,18.3332684 C17.6609677,18.3301435 17.4412666,18.4165142 17.2788987,18.5731103 C17.1165216,18.7297931 17.0250341,18.9435065 17.0250341,19.166593 C17.0250341,19.3896796 17.1165148,19.6033885 17.2788987,19.7600757 C17.4412757,19.9166718 17.6609677,20.0030509 17.8890051,19.9999176 L22.1480974,19.9999176 C22.3740064,19.9999176 22.5906795,19.9120719 22.7504125,19.7558313 C22.9101455,19.5995907 22.9999158,19.3876129 22.9999158,19.166593 L22.9999158,14.9999699 C23.00311,14.7747056 22.9128713,14.5577968 22.7498673,14.3986651 C22.5869565,14.2395512 22.3650498,14.1517121 22.1347863,14.1552677 L22.1347863,14.1552677 Z"></path>
-                    <path d="M22.1347863,7.48867071 C21.909143,7.49205601 21.6941576,7.58294083 21.5369233,7.74135696 C21.3797798,7.89968863 21.2931897,8.11261974 21.2962789,8.33337299 L21.2962789,11.6666715 C21.2930847,11.889758 21.3813722,12.1046891 21.5414436,12.2635319 C21.7016037,12.4223836 21.9200599,12.5118848 22.1480974,12.5118848 C22.3761348,12.5118848 22.5945865,12.4223902 22.7547511,12.2635319 C22.9148226,12.1046802 23.0031186,11.889758 22.9999158,11.6666715 L22.9999158,8.33337299 C23.00311,8.10810868 22.9128713,7.89119983 22.7498673,7.73206816 C22.5869565,7.57295427 22.3650498,7.48511519 22.1347863,7.48867071 L22.1347863,7.48867071 Z"></path>
-                    <path d="M17.8881874,8.2362507e-05 C17.6601499,-0.0030424937 17.4404489,0.0833281585 17.2780809,0.239924299 C17.1157039,0.396607104 17.0242163,0.610320425 17.0242163,0.83340698 C17.0242163,1.05649354 17.1156971,1.27020241 17.2780809,1.42688966 C17.440458,1.5834858 17.6601499,1.6698649 17.8881874,1.6667316 L21.2954612,1.6667316 L21.2954612,5.00003007 C21.292267,5.22311663 21.3805544,5.43804771 21.5406259,5.59689049 C21.7007859,5.75574217 21.9192421,5.84524345 22.1472796,5.84524345 C22.3753171,5.84524345 22.5937688,5.75574883 22.7539334,5.59689049 C22.9140048,5.43803882 23.0023009,5.22311663 22.9990981,5.00003007 L22.9990981,0.83340698 C22.9990981,0.612402625 22.9093028,0.400433731 22.7495948,0.244168699 C22.5898868,0.0879036662 22.3732046,8.2362507e-05 22.1472796,8.2362507e-05 L17.8881874,8.2362507e-05 Z"></path>
-                    <path d="M11.0736398,8.2362507e-05 C10.8456023,-0.0030424937 10.6259013,0.0833281585 10.4635334,0.239924299 C10.3011563,0.396607104 10.2096688,0.610320425 10.2096688,0.83340698 C10.2096688,1.05649354 10.3011495,1.27020241 10.4635334,1.42688966 C10.6259104,1.5834858 10.8456023,1.6698649 11.0736398,1.6667316 L14.4809136,1.6667316 C14.7089511,1.66985645 14.9286521,1.5834858 15.09102,1.42688966 C15.2533971,1.27020686 15.3448847,1.05649354 15.3448847,0.83340698 C15.3448847,0.610320425 15.2534039,0.396611549 15.09102,0.239924299 C14.928643,0.0833281585 14.7089511,-0.00305093806 14.4809136,8.2362507e-05 L11.0736398,8.2362507e-05 Z"></path>
-                    <path d="M5.11091068,7.50000392 C3.70993056,7.50000392 2.55545534,8.62941433 2.55545534,9.99997778 C1.15447522,9.99997778 0,11.1293882 0,12.4999516 L0,17.4998993 C0,18.8704628 1.15447522,19.9998732 2.55545534,19.9998732 L12.7772767,19.9998732 C14.1782568,19.9998732 15.332732,18.8704628 15.332732,17.4998993 L15.332732,12.4999516 C15.332732,11.1293882 14.1782568,9.99997778 12.7772767,9.99997778 C12.7772767,8.62941433 11.6228015,7.50000392 10.2218214,7.50000392 L5.11091068,7.50000392 Z M7.66636602,11.666627 C9.06761872,11.666627 10.2218214,12.7957708 10.2218214,14.1666009 C10.2218214,15.537431 9.06761872,16.6665747 7.66636602,16.6665747 C6.26511332,16.6665747 5.11091068,15.537431 5.11091068,14.1666009 C5.11091068,12.7957708 6.26511332,11.666627 7.66636602,11.666627 Z"></path>
-                </g>
-            </g>
-        </g>
-    </g>
-</svg>`;
-  }
-
-  if (name === "success") {
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-    <circle cx="26" cy="26" r="25" fill="none"/>
-    <path fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-  </svg>`;
   }
 
   if (name === "blur") {
@@ -767,35 +1145,4 @@ export const loadIcon = function (name, color) {
   }
 
   return "";
-};
-
-export const toggleLoading = function (loading) {
-  const form = document.querySelector(".bb-feedback-form");
-  const loader = document.querySelector(".bb-feedback-dialog-loading--main");
-  const next = document.querySelector(".bb-feedback-dialog-header-back");
-  const close = document.querySelector(".bb-feedback-dialog-header-close");
-
-  if (loading) {
-    form.style.display = "none";
-    loader.style.display = "flex";
-    if (next) {
-      next.setAttribute("d", "t");
-      next.style.opacity = "0.2";
-    }
-    if (close) {
-      close.setAttribute("d", "t");
-      close.style.opacity = "0.2";
-    }
-  } else {
-    form.style.display = "block";
-    loader.style.display = "none";
-    if (next) {
-      next.setAttribute("d", "n");
-      next.style.opacity = "1";
-    }
-    if (close) {
-      close.setAttribute("d", "n");
-      close.style.opacity = "1";
-    }
-  }
 };
