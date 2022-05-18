@@ -54,6 +54,7 @@ export namespace Gleap {
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
+  function preFillForm(key: string, value: string): void;
   function clearIdentity(): void;
   function identify(
     userId: string,

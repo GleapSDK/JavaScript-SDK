@@ -36,7 +36,9 @@ setTimeout(() => {
   };
   xmlhttp.open("GET", url, true);
   xmlhttp.send();
-}, 3000);
+
+  Gleap.preFillForm("bqfp3v", "DIES IST EIN TEST");
+}, 1000);
 
 const ii = () => {
   // :)
@@ -45,7 +47,7 @@ const ii = () => {
 setTimeout(() => {
   console.warn("Demo warning :)");
   console.log("Data will be loaded soon.");
-  
+
   ii();
 }, 4000);
 

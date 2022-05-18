@@ -17,10 +17,12 @@ export default class GleapEventManager {
    */
   static notifyEvent(event, data = {}) {
     if (event === "flow-started") {
-      Gleap.getInstance().takeCurrentReplay();
-    }
 
-    console.log(event);
+      const gleapInstance = Gleap.getInstance();
+      gleapInstance.setGlobalDataItem("webReplay", null);
+      gleapInstance.setGlobalDataItem("screenRecordingData", null);
+      gleapInstance.takeCurrentReplay();
+    }
 
     const eventListeners = this.getInstance().eventListeners[event];
     if (eventListeners) {

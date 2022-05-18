@@ -38,13 +38,13 @@ export default class GleapFeedback {
         var dataPromises = [];
 
         // Assign replays
-        var webReplay = gleapInstance.popGlobalDataItem("webReplay");
+        var webReplay = gleapInstance.getGlobalDataItem("webReplay");
         if (webReplay !== null) {
             this.webReplay = webReplay;
         }
 
         // Prepare screen recording
-        var screenRecordingData = gleapInstance.popGlobalDataItem("screenRecordingData");
+        var screenRecordingData = gleapInstance.getGlobalDataItem("screenRecordingData");
         if (screenRecordingData != null) {
             var recordingUrlPromise = ScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
                 if (recordingUrl) {
@@ -112,7 +112,7 @@ export default class GleapFeedback {
                 const dataToSend = this.getData();
 
                 const http = new XMLHttpRequest();
-                http.open("POST", GleapSession.getInstance().apiUrl + "/abugs");
+                http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
                 http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                 GleapSession.getInstance().injectSession(http);
                 http.onerror = (error) => {

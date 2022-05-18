@@ -184,6 +184,21 @@ class Gleap {
   }
 
   /**
+   * Prefills a specific form field.
+   * @param {*} key 
+   * @param {*} value 
+   */
+  static preFillForm(key, value) {
+    GleapFrameManager.getInstance().sendMessage({
+      name: "prefill-form-data",
+      data: {
+        formKey: key,
+        data: value
+      }
+    });
+  }
+
+  /**
    * Register events for Gleap.
    * @param {*} eventName
    * @param {*} callback
@@ -485,17 +500,6 @@ class Gleap {
    */
   setGlobalDataItem(key, value) {
     this.globalData[key] = value;
-  }
-
-  /**
-   * Sets a global data value
-   * @param {*} key 
-   * @param {*} value 
-   */
-  popGlobalDataItem(key) {
-    const value = this.globalData[key];
-    this.globalData[key] = null;
-    return value;
   }
 
   /**
