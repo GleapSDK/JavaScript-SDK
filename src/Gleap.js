@@ -34,17 +34,16 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 class Gleap {
   initialized = false;
   offlineMode = false;
-  autostartDrawing = false;
 
   // Global data
-  screenRecordingData = null;
-  snapshotPosition = {
-    x: 0,
-    y: 0,
+  globalData = {
+    screenRecordingData: null,
+    webReplay: null,
+    snapshotPosition: {
+      x: 0,
+      y: 0,
+    }
   };
-  excludeData = {};
-  customTranslation = {};
-  actionToPerform = undefined;
 
   // Gleap singleton
   static instance;
@@ -419,19 +418,16 @@ class Gleap {
    */
   static startFeedbackFlow(feedbackFlow, actionOutboundId = undefined, autostartDrawing = false) {
     const sessionInstance = GleapSession.getInstance();
-    const instance = this.getInstance();
-
     if (!sessionInstance.ready) {
       return;
     }
 
     // Initially set scroll position
-    instance.snapshotPosition = {
+    Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
       x: window.scrollX,
       y: window.scrollY,
-    };
+    });
 
-    GleapEventManager.notifyEvent("flow-started", feedbackFlow);
     GleapFrameManager.getInstance().sendMessage({
       name: "start-feedbackflow",
       data: {
@@ -461,6 +457,9 @@ class Gleap {
     return !isLocalHost;
   }
 
+  /**
+   * Post initialization
+   */
   postInitialization() {
     // Load session.
     const onGleapReady = function () {
@@ -469,11 +468,54 @@ class Gleap {
     GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
   }
 
+  /**
+   * Performs an action.
+   * @param {*} action 
+   */
   performAction(action) {
     if (action && action.outbound && action.actionType) {
-      this.actionToPerform = action;
       Gleap.startFeedbackFlow(action.actionType, action.outbound);
     }
+  }
+
+  /**
+   * Sets a global data value
+   * @param {*} key 
+   * @param {*} value 
+   */
+  setGlobalDataItem(key, value) {
+    this.globalData[key] = value;
+  }
+
+  /**
+   * Sets a global data value
+   * @param {*} key 
+   * @param {*} value 
+   */
+  popGlobalDataItem(key) {
+    const value = this.globalData[key];
+    this.globalData[key] = null;
+    return value;
+  }
+
+  /**
+   * Gets a global data value
+   * @param {*} key 
+   * @returns 
+   */
+  getGlobalDataItem(key) {
+    return this.globalData[key];
+  }
+
+  /**
+   * Takes the current replay and assigns it to the global data array.
+   */
+  takeCurrentReplay() {
+    GleapReplayRecorder.getInstance().getReplayData().then((replayData) => {
+      if (replayData) {
+        this.setGlobalDataItem("webReplay", replayData);
+      }
+    }).catch((exp) => { });
   }
 }
 

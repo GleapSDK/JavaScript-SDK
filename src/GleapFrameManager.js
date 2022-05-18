@@ -6,7 +6,7 @@ export default class GleapFrameManager {
   injectedFrame = false;
   widgetOpened = false;
   listeners = [];
-  frameURL = "https://frame.gleap.io";
+  frameURL = "http://localhost:3000"; // "https://frame.gleap.io";
   markerManager = undefined;
   escListener = undefined;
 
@@ -183,6 +183,10 @@ export default class GleapFrameManager {
         this.gleapFrameContainer.style.maxHeight = data.data + "px";
       }
 
+      if (data.name === "notify-event") {
+        GleapEventManager.notifyEvent(data.data.type, data.data.data);
+      }
+
       if (data.name === "cleanup-drawings") {
         this.hideMarkerManager();
       }
@@ -212,11 +216,13 @@ export default class GleapFrameManager {
           this.sendMessage({
             name: "feedback-sent"
           });
+          GleapEventManager.notifyEvent("feedback-sent", formData);
         }).catch((error) => {
           this.sendMessage({
             name: "feedback-sending-failed",
             data: "Error sending data."
           });
+          GleapEventManager.notifyEvent("error-while-sending");
         });
       }
 

@@ -277,7 +277,7 @@ export default class GleapReplayRecorder {
       }
     }
 
-    return Promise.resolve(replayResult);
+    return Promise.resolve(JSON.parse(JSON.stringify(replayResult)));
   }
 
   evaluateFocus() {

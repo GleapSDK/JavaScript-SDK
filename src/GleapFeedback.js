@@ -28,6 +28,7 @@ export default class GleapFeedback {
     }
 
     takeSnapshot() {
+        const gleapInstance = Gleap.getInstance();
         this.customData = GleapCustomDataManager.getInstance().getCustomData();
         this.metaData = GleapMetaDataManager.getInstance().getMetaData();
         this.consoleLog = GleapConsoleLogManager.getInstance().getLogs();
@@ -36,17 +37,16 @@ export default class GleapFeedback {
 
         var dataPromises = [];
 
-        // Prepare replay
-        var replayDataPromise = GleapReplayRecorder.getInstance().getReplayData().then((replayData) => {
-            if (replayData) {
-                this.webReplay = replayData;
-            }
-        });
-        dataPromises.push(replayDataPromise);
+        // Assign replays
+        var webReplay = gleapInstance.popGlobalDataItem("webReplay");
+        if (webReplay !== null) {
+            this.webReplay = webReplay;
+        }
 
         // Prepare screen recording
-        if (Gleap.getInstance().screenRecordingData != null) {
-            var recordingUrlPromise = ScreenRecorder.uploadScreenRecording(Gleap.getInstance().screenRecordingData).then((recordingUrl) => {
+        var screenRecordingData = gleapInstance.popGlobalDataItem("screenRecordingData");
+        if (screenRecordingData != null) {
+            var recordingUrlPromise = ScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
                 if (recordingUrl) {
                     this.screenRecordingUrl = recordingUrl;
                 }
@@ -56,10 +56,11 @@ export default class GleapFeedback {
 
         // Prepare screenshot
         if (!(this.excludeData && this.excludeData.screenshot)) {
-            var screenshotDataPromise = startScreenCapture(Gleap.getInstance().isLiveMode()).then((screenshotData) => {
+            var screenshotDataPromise = startScreenCapture(gleapInstance.isLiveMode()).then((screenshotData) => {
                 if (screenshotData) {
-                    screenshotData["x"] = Gleap.getInstance().snapshotPosition.x;
-                    screenshotData["y"] = Gleap.getInstance().snapshotPosition.y;
+                    const snapshotPosition = gleapInstance.getGlobalDataItem("snapshotPosition");
+                    screenshotData["x"] = snapshotPosition.x;
+                    screenshotData["y"] = snapshotPosition.y;
                     this.screenshotData = screenshotData;
                 }
             });
@@ -111,7 +112,7 @@ export default class GleapFeedback {
                 const dataToSend = this.getData();
 
                 const http = new XMLHttpRequest();
-                http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
+                http.open("POST", GleapSession.getInstance().apiUrl + "/abugs");
                 http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                 GleapSession.getInstance().injectSession(http);
                 http.onerror = (error) => {

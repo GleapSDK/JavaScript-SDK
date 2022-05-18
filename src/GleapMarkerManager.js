@@ -321,10 +321,10 @@ export default class GleapMarkerManager {
     // Setup screenshot data
     if (this.type === "screenshot") {
       // Overwrite snapshot position
-      Gleap.getInstance().snapshotPosition = {
+      Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
         x: window.scrollX,
         y: window.scrollY,
-      };
+      });
 
       // Disable scroll
       GleapScrollStopper.disableScroll();
@@ -510,7 +510,7 @@ export default class GleapMarkerManager {
     }
 
     if (this.screenRecorder.file) {
-      Gleap.getInstance().screenRecordingData = this.screenRecorder.file;
+      Gleap.getInstance().setGlobalDataItem("screenRecordingData", this.screenRecorder.file);
     }
 
     const itemInactiveClass = "bb-capture-editor-item-inactive";

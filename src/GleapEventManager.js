@@ -1,3 +1,5 @@
+import Gleap from "./Gleap";
+
 export default class GleapEventManager {
   eventListeners = {};
 
@@ -14,6 +16,12 @@ export default class GleapEventManager {
    * Notify all registrants for event.
    */
   static notifyEvent(event, data = {}) {
+    if (event === "flow-started") {
+      Gleap.getInstance().takeCurrentReplay();
+    }
+
+    console.log(event);
+
     const eventListeners = this.getInstance().eventListeners[event];
     if (eventListeners) {
       for (var i = 0; i < eventListeners.length; i++) {
