@@ -220,7 +220,7 @@ export default class GleapFrameManager {
         }).catch((error) => {
           this.sendMessage({
             name: "feedback-sending-failed",
-            data: "Error sending data."
+            data: "Something went wrong, please try again."
           });
           GleapEventManager.notifyEvent("error-while-sending");
         });
