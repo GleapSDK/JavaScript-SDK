@@ -112,7 +112,7 @@ export default class GleapFeedbackButtonManager {
         }
 
         if (GleapFrameManager.getInstance().isOpened()) {
-            this.feedbackButton.classList.add("bb-feedback-button--sending");
+            this.feedbackButton.classList.add("bb-feedback-button--open");
         }
     }
 }

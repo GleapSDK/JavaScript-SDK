@@ -272,7 +272,7 @@ export const injectStyledCSS = (
       right: 20px;
     }
     
-    .bb-feedback-button--sending .bb-feedback-button-classic {
+    .bb-feedback-button--open .bb-feedback-button-classic {
       animation-duration: 0.2s;
       animation-fill-mode: both;
       animation-name: bbFadeOutRight;
@@ -305,11 +305,11 @@ export const injectStyledCSS = (
       animation-name: bbZoomOut;
     }
     
-    .bb-feedback-button--sending .bb-logo-arrowdown {
+    .bb-feedback-button--open .bb-logo-arrowdown {
       animation-name: bbZoomIn;
     }
     
-    .bb-feedback-button--sending .bb-logo-logo {
+    .bb-feedback-button--open .bb-logo-logo {
       animation-name: bbZoomOut;
     }
     
@@ -317,16 +317,16 @@ export const injectStyledCSS = (
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
     }
     
-    .bb-feedback-button--bottomleft.bb-feedback-button--sending {
+    .bb-feedback-button--bottomleft.bb-feedback-button--open {
       padding-left: 0px;
       padding-right: 5px;
     }
     
-    .bb-feedback-button--sending .bb-feedback-button-text {
+    .bb-feedback-button--open .bb-feedback-button-text {
       animation-name: bbFadeOutDown;
     }
     
-    .bb-feedback-button--sending .bb-feedback-button-icon {
+    .bb-feedback-button--open .bb-feedback-button-icon {
       display: flex;
     }
     
