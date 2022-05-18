@@ -9,6 +9,7 @@ export default class GleapFrameManager {
   frameURL = "https://frame.gleap.io";
   markerManager = undefined;
   escListener = undefined;
+  frameHeight = 0;
 
   // GleapFrameManager singleton
   static instance;
@@ -56,7 +57,7 @@ export default class GleapFrameManager {
 
     var elem = document.createElement("div");
     elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
-    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameURL}" class="gleap-frame" scrolling="no" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameURL}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;
@@ -166,7 +167,23 @@ export default class GleapFrameManager {
     });
   }
 
+  calculateFrameHeight() {
+    if (this.gleapFrameContainer) {
+      const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+      var bottomOffset = 40;
+      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT || flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_RIGHT) {
+        bottomOffset = 115;
+      }
+      var newMaxHeight = Math.min(this.frameHeight, (window.innerHeight - bottomOffset));
+      this.gleapFrameContainer.style.maxHeight = newMaxHeight + "px";
+    }
+  }
+
   startCommunication() {
+    window.addEventListener('resize', (event) => {
+      this.calculateFrameHeight();
+    }, true);
+
     // Listen for messages.
     this.addMessageListener((data) => {
       if (data.name === "ping") {
@@ -180,7 +197,8 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "height-update") {
-        this.gleapFrameContainer.style.maxHeight = data.data + "px";
+        this.frameHeight = data.data;
+        this.calculateFrameHeight();
       }
 
       if (data.name === "notify-event") {

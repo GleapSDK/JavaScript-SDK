@@ -38,9 +38,9 @@ export default class GleapFeedbackButtonManager {
     feedbackButtonPressed() {
         var frameManager = GleapFrameManager.getInstance();
         if (frameManager.isOpened()) {
-            GleapFrameManager.getInstance().hideWidget();
+            frameManager.hideWidget();
         } else {
-            GleapFrameManager.getInstance().showWidget();
+            frameManager.showWidget();
         }
     }
 
@@ -109,6 +109,10 @@ export default class GleapFeedbackButtonManager {
 
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
             this.feedbackButton.classList.add("bb-feedback-button--bottomleft");
+        }
+
+        if (GleapFrameManager.getInstance().isOpened()) {
+            this.feedbackButton.classList.add("bb-feedback-button--sending");
         }
     }
 }
