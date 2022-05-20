@@ -1,4 +1,7 @@
+import Gleap from "./Gleap";
+
 class GleapNetworkIntercepter {
+  startTimestamp = Date.now();
   requestId = 0;
   requests = {};
   externalConsoleLogs = [];
@@ -83,6 +86,27 @@ class GleapNetworkIntercepter {
         } catch (e) { }
       }
     }
+
+    // Get static resources from performance.
+    try {
+      if (typeof window !== "undefined" && window.performance) {
+        var resources = window.performance.getEntriesByType("resource");
+        for (var i = 0; i < resources.length; i++) {
+          var resource = resources[i];
+          if (resource && resource.name) {
+            if (!requests.find(request => request.url === resource.name)) {
+              requests.push({
+                type: "RESOURCE",
+                date: new Date(this.startTimestamp + resource.startTime),
+                url: resource.name,
+                duration: Math.round(resource.duration),
+                initiatorType: resource.initiatorType
+              });
+            }
+          }
+        }
+      }
+    } catch (exp) { }
 
     return requests;
   }
