@@ -40,16 +40,11 @@ setTimeout(() => {
   Gleap.preFillForm("bqfp3v", "DIES IST EIN TEST");
 }, 1000);
 
-const ii = () => {
-  // :)
-  x();
-}
-
 setTimeout(() => {
   console.warn("Demo warning :)");
   console.log("Data will be loaded soon.");
 
-  ii();
+  xxx();
 }, 4000);
 
 const files = [
