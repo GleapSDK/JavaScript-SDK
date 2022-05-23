@@ -65,7 +65,11 @@ export namespace Gleap {
   ): void;
   function open(): void;
   function hide(): void;
-  function startFeedbackFlow(feedbackFlow: string, actionOutboundId?: string, autostartDrawing?: boolean): void;
+  function startFeedbackFlow(feedbackFlow: string, options?: {
+    actionOutboundId?: string,
+    autostartDrawing?: boolean,
+    showBackButton?: boolean
+  }): void;
   function on(event: string, callback: (data?: any) => void): void;
 }
 export default Gleap;

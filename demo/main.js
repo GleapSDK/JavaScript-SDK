@@ -42,6 +42,7 @@ setTimeout(() => {
 
 const ii = () => {
   // :)
+  x();
 }
 
 setTimeout(() => {

@@ -36,7 +36,9 @@ export default class GleapShortcutListener {
         e.ctrlKey &&
         (char === "i" || char === "I" || char === 73)
       ) {
-        Gleap.startFeedbackFlow("bugreporting", undefined, true);
+        Gleap.startFeedbackFlow("bugreporting", {
+          autostartDrawing: true
+        });
       }
     });
   }

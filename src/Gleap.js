@@ -431,7 +431,8 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlow(feedbackFlow, actionOutboundId = undefined, autostartDrawing = false) {
+  static startFeedbackFlow(feedbackFlow, options = {}) {
+    const { actionOutboundId, autostartDrawing, hideBackButton } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -448,6 +449,7 @@ class Gleap {
       data: {
         flow: feedbackFlow,
         actionOutboundId: actionOutboundId,
+        hideBackButton: hideBackButton,
       }
     });
 
@@ -489,7 +491,10 @@ class Gleap {
    */
   performAction(action) {
     if (action && action.outbound && action.actionType) {
-      Gleap.startFeedbackFlow(action.actionType, action.outbound);
+      Gleap.startFeedbackFlow(action.actionType, {
+        actionOutboundId: action.outbound,
+        hideBackButton: true
+      });
     }
   }
 

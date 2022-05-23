@@ -6,7 +6,7 @@ export default class GleapFrameManager {
   injectedFrame = false;
   widgetOpened = false;
   listeners = [];
-  frameURL = "https://frame.gleap.io";
+  frameURL = "http://localhost:3000"; // "https://frame.gleap.io";
   markerManager = undefined;
   escListener = undefined;
   frameHeight = 0;
