@@ -420,7 +420,7 @@ class Gleap {
     }
 
     GleapEventManager.notifyEvent("sending-silent-report");
-    const feedback = new GleapFeedback(feedbackType, priority, newFormData, false, excludeData ? excludeData : {});
+    const feedback = new GleapFeedback(feedbackType, priority, newFormData, true, excludeData ? excludeData : {});
     feedback.sendFeedback().then(() => {
       GleapEventManager.notifyEvent("silent-report-sent");
     }).catch((error) => {
