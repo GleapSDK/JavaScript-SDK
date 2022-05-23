@@ -1,5 +1,3 @@
-import Gleap from "./Gleap";
-
 class GleapNetworkIntercepter {
   startTimestamp = Date.now();
   requestId = 0;
@@ -9,6 +7,7 @@ class GleapNetworkIntercepter {
   filters = [];
   initialized = false;
   stopped = false;
+  loadAllResources = false;
 
   // GleapNetworkIntercepter singleton
   static instance;
@@ -17,6 +16,10 @@ class GleapNetworkIntercepter {
       this.instance = new GleapNetworkIntercepter();
     }
     return this.instance;
+  }
+
+  setLoadAllResources(loadAllResources) {
+    this.loadAllResources = loadAllResources;
   }
 
   isContentTypeSupported(contentType) {
@@ -45,45 +48,43 @@ class GleapNetworkIntercepter {
       Object.values(this.requests)
     );
 
-    if (!this.filters || this.filters.length === 0) {
-      return requests;
-    }
+    if (this.filters && this.filters.length > 0) {
+      // Perform network log filtering.
+      for (var i = 0; i < requests.length; i++) {
+        var request = requests[i];
 
-    // Perform network log filtering.
-    for (var i = 0; i < requests.length; i++) {
-      var request = requests[i];
-
-      // Headers
-      if (request && request.request && request.request.headers) {
-        for (var j = 0; j < this.filters.length; j++) {
-          delete request.request.headers[this.filters[j]];
-        }
-      }
-
-      // Payload
-      if (request && request.request && request.request.payload) {
-        var payloadObj = request.request.payload;
-        try {
-          payloadObj = JSON.parse(request.request.payload);
-        } catch (e) { }
-
-        if (payloadObj) {
+        // Headers
+        if (request && request.request && request.request.headers) {
           for (var j = 0; j < this.filters.length; j++) {
-            delete payloadObj[this.filters[j]];
+            delete request.request.headers[this.filters[j]];
           }
-          request.request.payload = JSON.stringify(payloadObj);
         }
-      }
 
-      // Response
-      if (request && request.response && request.response.responseText) {
-        try {
-          var data = JSON.parse(request.response.responseText);
-          for (var j = 0; j < this.filters.length; j++) {
-            delete data[this.filters[j]];
+        // Payload
+        if (request && request.request && request.request.payload) {
+          var payloadObj = request.request.payload;
+          try {
+            payloadObj = JSON.parse(request.request.payload);
+          } catch (e) { }
+
+          if (payloadObj) {
+            for (var j = 0; j < this.filters.length; j++) {
+              delete payloadObj[this.filters[j]];
+            }
+            request.request.payload = JSON.stringify(payloadObj);
           }
-          request.response.responseText = JSON.stringify(data);
-        } catch (e) { }
+        }
+
+        // Response
+        if (request && request.response && request.response.responseText) {
+          try {
+            var data = JSON.parse(request.response.responseText);
+            for (var j = 0; j < this.filters.length; j++) {
+              delete data[this.filters[j]];
+            }
+            request.response.responseText = JSON.stringify(data);
+          } catch (e) { }
+        }
       }
     }
 
@@ -94,7 +95,7 @@ class GleapNetworkIntercepter {
         for (var i = 0; i < resources.length; i++) {
           var resource = resources[i];
           if (resource && resource.name) {
-            if (!requests.find(request => request.url === resource.name)) {
+            if ((this.loadAllResources || ["xmlhttprequest", "fetch"].indexOf(resource.initiatorType) > -1) && !requests.find(request => request.url === resource.name)) {
               requests.push({
                 type: "RESOURCE",
                 date: new Date(this.startTimestamp + resource.startTime),

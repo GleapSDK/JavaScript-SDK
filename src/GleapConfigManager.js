@@ -113,6 +113,8 @@ export default class GleapConfigManager {
         GleapNetworkIntercepter.getInstance().start();
       }
 
+      GleapNetworkIntercepter.getInstance().setLoadAllResources(flowConfig.sendNetworkResources ? true : false);
+
       if (flowConfig.networkLogPropsToIgnore) {
         GleapNetworkIntercepter.getInstance().setFilters(flowConfig.networkLogPropsToIgnore);
       }
@@ -121,11 +123,8 @@ export default class GleapConfigManager {
         GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
       }
 
-
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
-
-
-    } catch (e) {}
+    } catch (e) { }
   }
 
   getFeedbackOptions(feedbackFlow) {
