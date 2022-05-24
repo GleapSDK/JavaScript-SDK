@@ -228,8 +228,9 @@ export default class GleapFrameManager {
         const formData = data.data.formData;
         const action = data.data.action;
         const outboundId = data.data.outboundId;
+        const spamToken = data.data.spamToken;
 
-        const feedback = new GleapFeedback(action.feedbackType, "MEDIUM", formData, false, action.excludeData, outboundId);
+        const feedback = new GleapFeedback(action.feedbackType, "MEDIUM", formData, false, action.excludeData, outboundId, spamToken);
         feedback.sendFeedback().then(() => {
           this.sendMessage({
             name: "feedback-sent"

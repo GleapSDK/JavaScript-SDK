@@ -2,24 +2,11 @@ export namespace Gleap {
   function initialize(
     sdkKey: string
   ): void;
-  /**
-   * @deprecated Please use sendSilentReport instead.
-   */
-  function sendSilentBugReport(
-    description: string,
-    priority: "LOW" | "MEDIUM" | "HIGH"
-  ): void;
-  function sendSilentBugReportWithType(
-    description: string,
-    priority: "LOW" | "MEDIUM" | "HIGH",
-    type: string
-  ): void;
-  function sendSilentReport(
+  function sendSilentCrashReport(
     formData: {
       [key: string]: string;
     },
     priority?: "LOW" | "MEDIUM" | "HIGH",
-    feedbackType?: string,
     excludeData?: {
       customData: Boolean;
       metaData: Boolean;
@@ -43,7 +30,6 @@ export namespace Gleap {
   function logEvent(name: string, data?: any): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
-  function attachNetworkLogs(externalConsoleLogs: any[]): void;
   function setStyles(styles: {
     primaryColor: string;
     headerColor: string;

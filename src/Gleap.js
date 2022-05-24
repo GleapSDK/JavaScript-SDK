@@ -71,15 +71,6 @@ class Gleap {
   }
 
   /**
-   * Attaches external network logs that get merged with the internal network logs.
-   * @param {*} externalConsoleLogs
-   */
-  static attachNetworkLogs(externalConsoleLogs) {
-    GleapNetworkIntercepter.getInstance().externalConsoleLogs =
-      externalConsoleLogs;
-  }
-
-  /**
    * Active the Gleap offline mode.
    * @param {*} offlineMode
    */
@@ -229,13 +220,6 @@ class Gleap {
   }
 
   /**
-   * Enables the network logger.
-   */
-  static setNetworkLogFilters(filters) {
-    GleapNetworkIntercepter.getInstance().setFilters(filters);
-  }
-
-  /**
    * Sets the app version code.
    * @param {string} appVersionCode
    */
@@ -360,53 +344,14 @@ class Gleap {
   }
 
   /**
-   * Reports a bug silently
-   * @param {*} description
-   * @param {*} priority
-   * @param {*} type
-   * @deprecated Please use sendSilentReport instead.
-   */
-  static sendSilentBugReportWithType(
-    description,
-    priority = "MEDIUM",
-    type = "BUG"
-  ) {
-    return Gleap.sendSilentReport(
-      {
-        description: description,
-      },
-      priority,
-      type
-    );
-  }
-
-  /**
-   * Reports a bug silently
-   * @param {*} description
-   * @param {*} priority
-   * @deprecated Please use sendSilentReport instead.
-   */
-  static sendSilentBugReport(description, priority = "MEDIUM") {
-    return Gleap.sendSilentReport(
-      {
-        description: description,
-      },
-      priority,
-      "BUG"
-    );
-  }
-
-  /**
    * Sends a silent feedback report
    * @param {*} formData
    * @param {*} priority
-   * @param {*} feedbackType
    * @param {*} excludeData
    */
-  static sendSilentReport(
+  static sendSilentCrashReport(
     formData,
     priority = "MEDIUM",
-    feedbackType = "BUG",
     excludeData = {}
   ) {
     const sessionInstance = GleapSession.getInstance();
@@ -420,7 +365,7 @@ class Gleap {
     }
 
     GleapEventManager.notifyEvent("sending-silent-report");
-    const feedback = new GleapFeedback(feedbackType, priority, newFormData, true, excludeData ? excludeData : {});
+    const feedback = new GleapFeedback("CRASH", priority, newFormData, true, excludeData ? excludeData : {});
     feedback.sendFeedback().then(() => {
       GleapEventManager.notifyEvent("silent-report-sent");
     }).catch((error) => {

@@ -44,7 +44,7 @@ setTimeout(() => {
   console.warn("Demo warning :)");
   console.log("Data will be loaded soon.");
 
-  xxx();
+  // xxx();
 }, 4000);
 
 const files = [

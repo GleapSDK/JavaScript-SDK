@@ -17,14 +17,16 @@ export default class GleapFeedback {
     screenshotData = undefined;
     webReplay = undefined;
     screenRecordingUrl = undefined;
+    spamToken = undefined;
 
-    constructor(type, priority, formData, isSilent, excludeData, outboundId) {
+    constructor(type, priority, formData, isSilent, excludeData, outboundId, spamToken) {
         this.type = type;
         this.priority = priority;
         this.formData = formData;
         this.isSilent = isSilent;
         this.excludeData = excludeData;
         this.outboundId = outboundId;
+        this.spamToken = spamToken;
     }
 
     takeSnapshot() {
@@ -84,7 +86,8 @@ export default class GleapFeedback {
             outbound: this.outboundId,
             screenshotData: this.screenshotData,
             webReplay: this.webReplay,
-            screenRecordingUrl: this.screenRecordingUrl
+            screenRecordingUrl: this.screenRecordingUrl,
+            spamToken: this.spamToken,
         };
 
         const keysToExclude = Object.keys(this.excludeData);
@@ -112,7 +115,7 @@ export default class GleapFeedback {
                 const dataToSend = this.getData();
 
                 const http = new XMLHttpRequest();
-                http.open("POST", GleapSession.getInstance().apiUrl + "/bugs");
+                http.open("POST", GleapSession.getInstance().apiUrl + "/bugs/v2");
                 http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                 GleapSession.getInstance().injectSession(http);
                 http.onerror = (error) => {

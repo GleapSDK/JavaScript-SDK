@@ -52,13 +52,12 @@ export default class GleapRageClickDetector {
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
       if (flowConfig && typeof flowConfig.enableRageClickDetector !== "undefined" && flowConfig.enableRageClickDetector) {
         if (flowConfig.rageClickDetectorIsSilent) {
-          Gleap.sendSilentReport(
+          Gleap.sendSilentCrashReport(
             {
               description: `Rage click detected.`,
               element: elementDescription,
             },
-            "MEDIUM",
-            "CRASH"
+            "MEDIUM"
           );
         } else {
           Gleap.startFeedbackFlow("crash");

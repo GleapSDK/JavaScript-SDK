@@ -2,9 +2,9 @@ class GleapNetworkIntercepter {
   startTimestamp = Date.now();
   requestId = 0;
   requests = {};
-  externalConsoleLogs = [];
   maxRequests = 10;
   filters = [];
+  blacklist = [];
   initialized = false;
   stopped = false;
   loadAllResources = false;
@@ -44,9 +44,7 @@ class GleapNetworkIntercepter {
   }
 
   getRequests() {
-    var requests = this.externalConsoleLogs.concat(
-      Object.values(this.requests)
-    );
+    var requests = JSON.parse(JSON.stringify(Object.values(this.requests)));
 
     if (this.filters && this.filters.length > 0) {
       // Perform network log filtering.
@@ -109,6 +107,17 @@ class GleapNetworkIntercepter {
       }
     } catch (exp) { }
 
+    if (this.blacklist && this.blacklist.length > 0) {
+      requests = requests.filter((request) => {
+        for (var i = 0; i < this.blacklist.length; i++) {
+          if (request.url && request.url.includes(this.blacklist[i])) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
     return requests;
   }
 
@@ -121,9 +130,11 @@ class GleapNetworkIntercepter {
   }
 
   setFilters(filters) {
-    if (filters) {
-      this.filters = filters;
-    }
+    this.filters = filters ? filters : [];
+  }
+
+  setBlacklist(blacklist) {
+    this.blacklist = blacklist ? blacklist : [];
   }
 
   cleanRequests() {
@@ -148,14 +159,23 @@ class GleapNetworkIntercepter {
     }
   }
 
-  calculateTextSize(text) {
+  getTextContentSize(text) {
     const size = new TextEncoder().encode(text).length;
     const kiloBytes = size / 1024;
     const megaBytes = kiloBytes / 1024;
     return megaBytes;
   }
 
-  fixPayload(payload) {
+  cleanupContentSize(text) {
+    const contentSize = this.getTextContentSize(text);
+    if (contentSize > 0.2) {
+      return "<content_too_large>";
+    }
+
+    return text;
+  }
+
+  cleanupPayload(payload) {
     if (payload === undefined || payload === null) {
       return "{}";
     }
@@ -168,6 +188,11 @@ class GleapNetworkIntercepter {
     } catch (exp) { }
 
     return payload;
+  }
+
+  preparePayload(payload) {
+    var payloadText = this.cleanupPayload(payload);
+    return this.cleanupContentSize(payloadText);
   }
 
   start() {
@@ -207,7 +232,7 @@ class GleapNetworkIntercepter {
               params[1] && params[1].method ? params[1].method : "GET";
             this.requests[bbRequestId] = {
               request: {
-                payload: self.fixPayload(params[1].body),
+                payload: self.preparePayload(params[1].body),
                 headers: params[1].headers,
               },
               type: method,
@@ -259,10 +284,7 @@ class GleapNetworkIntercepter {
                   this.requests[bbRequestId]["response"] = {
                     status: req.status,
                     statusText: req.statusText,
-                    responseText:
-                      self.calculateTextSize(responseText) > 0.5
-                        ? "<response_too_large>"
-                        : responseText,
+                    responseText: self.cleanupContentSize(responseText)
                   };
                 }
                 this.calcRequestTime(bbRequestId);
@@ -331,7 +353,7 @@ class GleapNetworkIntercepter {
           this.requests[request.bbRequestId]
         ) {
           this.requests[request.bbRequestId]["request"] = {
-            payload: this.fixPayload(args.length > 0 ? args[0] : "{}"),
+            payload: this.preparePayload(args.length > 0 ? args[0] : "{}"),
             headers: request.requestHeaders,
           };
         }
@@ -369,10 +391,7 @@ class GleapNetworkIntercepter {
           var responseType = target.responseType;
           var responseText = "<" + responseType + ">";
           if (responseType === "" || responseType === "text") {
-            responseText =
-              this.calculateTextSize(target.responseText) > 0.5
-                ? "<response_too_large>"
-                : target.responseText;
+            responseText = this.cleanupContentSize(target.responseText);
           }
 
           this.requests[target.bbRequestId]["success"] = true;

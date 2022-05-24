@@ -119,6 +119,10 @@ export default class GleapConfigManager {
         GleapNetworkIntercepter.getInstance().setFilters(flowConfig.networkLogPropsToIgnore);
       }
 
+      if (flowConfig.networkLogBlacklist) {
+        GleapNetworkIntercepter.getInstance().setBlacklist(flowConfig.networkLogBlacklist);
+      }
+
       if (flowConfig.customTranslations) {
         GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
       }
