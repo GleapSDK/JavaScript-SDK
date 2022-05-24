@@ -129,10 +129,11 @@ class Gleap {
    * @param {string} userId
    * @param {*} userData
    */
-  static identify(userId, userData) {
+  static identify(userId, userData, userHash) {
     return GleapSession.getInstance().identifySession(
       userId,
-      gleapDataParser(userData)
+      gleapDataParser(userData),
+      userHash
     );
   }
 

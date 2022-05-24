@@ -1,4 +1,4 @@
-import Gleap, { GleapFrameManager } from "./Gleap";
+import { GleapFrameManager } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapSession {
@@ -156,7 +156,7 @@ export default class GleapSession {
     return false;
   };
 
-  identifySession = (userId, userData) => {
+  identifySession = (userId, userData, userHash) => {
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
     if (!sessionNeedsUpdate) {
       return;
@@ -180,6 +180,7 @@ export default class GleapSession {
         } catch (exp) { }
 
         http.onerror = () => {
+          self.clearSession(true);
           reject();
         };
         http.onreadystatechange = function (e) {
@@ -191,6 +192,7 @@ export default class GleapSession {
 
                 resolve(sessionData);
               } catch (exp) {
+                self.clearSession(true);
                 reject(exp);
               }
             } else {
@@ -203,6 +205,7 @@ export default class GleapSession {
           JSON.stringify({
             ...userData,
             userId,
+            userHash,
           })
         );
       });

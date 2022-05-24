@@ -47,7 +47,8 @@ export namespace Gleap {
     customerData: {
       name?: string;
       email?: string;
-    }
+    },
+    userHash?: string
   ): void;
   function open(): void;
   function hide(): void;
