@@ -1,7 +1,7 @@
 import Gleap, { GleapTranslationManager, GleapFrameManager } from "./Gleap";
 import { ScreenDrawer } from "./ScreenDrawer";
 import { GleapScrollStopper } from "./GleapScrollStopper";
-import { ScreenRecorder } from "./ScreenRecorder";
+import { GleapScreenRecorder } from "./GleapScreenRecorder";
 import { loadIcon } from "./UI";
 
 export default class GleapMarkerManager {
@@ -627,7 +627,7 @@ export default class GleapMarkerManager {
     };
 
     // Setup screen recorder
-    this.screenRecorder = new ScreenRecorder(
+    this.screenRecorder = new GleapScreenRecorder(
       this.captureRenderer.bind(this),
       GleapTranslationManager.translateText(
         "You denied access to screen sharing. Please turn it on in your browser settings."

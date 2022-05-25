@@ -1,5 +1,5 @@
 import { startScreenCapture } from "./ScreenCapture";
-import { ScreenRecorder } from "./ScreenRecorder";
+import { GleapScreenRecorder } from "./GleapScreenRecorder";
 import Gleap, { GleapConsoleLogManager, GleapStreamedEvent, GleapSession, GleapReplayRecorder, GleapCustomDataManager, GleapMetaDataManager, GleapNetworkIntercepter } from "./Gleap";
 
 export default class GleapFeedback {
@@ -48,7 +48,7 @@ export default class GleapFeedback {
         // Prepare screen recording
         var screenRecordingData = gleapInstance.getGlobalDataItem("screenRecordingData");
         if (screenRecordingData != null) {
-            var recordingUrlPromise = ScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
+            var recordingUrlPromise = GleapScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
                 if (recordingUrl) {
                     this.screenRecordingUrl = recordingUrl;
                 }

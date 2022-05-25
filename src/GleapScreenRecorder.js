@@ -1,6 +1,6 @@
 import GleapSession from "./GleapSession";
 
-export class ScreenRecorder {
+export class GleapScreenRecorder {
   rerender;
   stream;
   mediaRecorder;
@@ -9,7 +9,7 @@ export class ScreenRecorder {
   available = true;
   isRecording = false;
   file = null;
-  maxRecordTime = 180;
+  maxRecordTime = 60;
   recordTime = 0;
   recordingTimer = null;
   permissionErrorText = "";
@@ -173,7 +173,7 @@ export class ScreenRecorder {
       if (remainingTime > 0) {
         timerLabel.innerHTML = self.formatTime(remainingTime);
       } else {
-        timerLabel.innerHTML = "3:00";
+        timerLabel.innerHTML = "1:00";
         self.stopScreenRecording();
       }
     }, 1000);
@@ -204,6 +204,8 @@ export class ScreenRecorder {
     this.file = new File([completeBlob], "screen-recording.mp4", {
       type: "video/mp4",
     });
+
+    console.log(this.file.size);
 
     const previewVideoElement = document.querySelector(
       ".bb-capture-preview video"
