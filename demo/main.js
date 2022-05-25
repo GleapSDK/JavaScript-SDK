@@ -2,10 +2,10 @@ const Gleap = window.Gleap;
 
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
-Gleap.identify("123338", {
+/*Gleap.identify("123338", {
   email: "lukas+test@gleap.io",
   name: "Lukas",
-}, "232310140176f44725d35f8191b51bd8821f41dba9b4c3cfab409721feadb4fb");
+}, "232310140176f44725d35f8191b51bd8821f41dba9b4c3cfab409721feadb4fb");*/
 
 Gleap.attachCustomData({
   mission: "Unicorn",
