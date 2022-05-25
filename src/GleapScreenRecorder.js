@@ -9,7 +9,7 @@ export class GleapScreenRecorder {
   available = true;
   isRecording = false;
   file = null;
-  maxRecordTime = 60;
+  maxRecordTime = 120;
   recordTime = 0;
   recordingTimer = null;
   permissionErrorText = "";
@@ -43,7 +43,7 @@ export class GleapScreenRecorder {
     }
 
     navigator.mediaDevices
-      .getDisplayMedia({ video: true, audio: true })
+      .getDisplayMedia({ video: { width: 1280 }, audio: true })
       .then(function (displayStream) {
         self.stream = displayStream;
 
@@ -173,7 +173,7 @@ export class GleapScreenRecorder {
       if (remainingTime > 0) {
         timerLabel.innerHTML = self.formatTime(remainingTime);
       } else {
-        timerLabel.innerHTML = "1:00";
+        timerLabel.innerHTML = "2:00";
         self.stopScreenRecording();
       }
     }, 1000);
@@ -204,8 +204,6 @@ export class GleapScreenRecorder {
     this.file = new File([completeBlob], "screen-recording.mp4", {
       type: "video/mp4",
     });
-
-    console.log(this.file.size);
 
     const previewVideoElement = document.querySelector(
       ".bb-capture-preview video"
