@@ -97,7 +97,9 @@ export default class GleapFrameManager {
   }
 
   showWidget() {
-    this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+    if (this.gleapFrameContainer.classList) {
+      this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+    }
     this.widgetOpened = true;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
@@ -113,7 +115,9 @@ export default class GleapFrameManager {
 
   hideWidget() {
     this.hideMarkerManager();
-    this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
+    if (this.gleapFrameContainer) {
+      this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
+    }
     this.widgetOpened = false;
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("close");
