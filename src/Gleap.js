@@ -353,7 +353,11 @@ class Gleap {
   static sendSilentCrashReport(
     formData,
     priority = "MEDIUM",
-    excludeData = {}
+    excludeData = {
+      screenshot: true,
+      replays: true,
+      attachments: true,
+    }
   ) {
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {

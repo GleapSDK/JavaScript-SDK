@@ -10,6 +10,7 @@ export namespace Gleap {
     excludeData?: {
       customData: Boolean;
       metaData: Boolean;
+      attachments: Boolean;
       consoleLog: Boolean;
       networkLogs: Boolean;
       customEventLog: Boolean;
