@@ -4,7 +4,7 @@ class GleapNetworkIntercepter {
   requests = {};
   maxRequests = 10;
   filters = [];
-  blacklist = [];
+  blacklist = ["gleap.io"];
   initialized = false;
   stopped = false;
   loadAllResources = false;
