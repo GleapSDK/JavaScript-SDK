@@ -73,11 +73,14 @@ export const injectStyledCSS = (
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${borderRadius}px;
       overflow: hidden;
-      transition: max-height 0.3s ease-in;
       animation-duration: .3s;
       animation-fill-mode: both;
       animation-name: gleapFadeInUp;
       user-select: none;
+    }
+
+    .gleap-frame-container--animate {
+      transition: max-height 0.3s ease-in;
     }
 
     @keyframes gleapFadeInUp {
@@ -132,7 +135,7 @@ export const injectStyledCSS = (
     }
     
     .gleap-frame-container--hidden {
-      opacity: 0;
+      display: none !important;
       pointer-events: none;
       animation: none !important;
     }

@@ -41,16 +41,19 @@ export default class GleapTranslationManager {
   static translateText(key) {
     const instance = GleapTranslationManager.getInstance();
 
-    var language = navigator.language;
-    if (instance.overrideLanguage !== "") {
-      language = instance.overrideLanguage;
+    var language = "en";
+    if (typeof navigator !== "undefined") {
+      navigator.language.substring(0, 2).toLowerCase();
+    }
+    if (instance.overrideLanguage && instance.overrideLanguage !== "") {
+      language = instance.overrideLanguage.toLowerCase();
     }
 
     var customTranslation = {};
     const translationKeys = Object.keys(instance.customTranslation);
     for (var i = 0; i < translationKeys.length; i++) {
       const translationKey = translationKeys[i];
-      if (language && language.includes(translationKey)) {
+      if (language && translationKey && language === translationKey.toLowerCase()) {
         if (instance.customTranslation[translationKey]) {
           customTranslation = instance.customTranslation[translationKey];
         }
