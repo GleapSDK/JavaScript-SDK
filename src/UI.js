@@ -124,17 +124,17 @@ export const injectStyledCSS = (
       z-index: -1;
     }
     
-    .gleap-frame-container--hidden {
-      opacity: 0;
-      pointer-events: none;
-      animation: none !important;
-    }
-    
     .gleap-frame-container iframe {
       height: 100% !important;
       width: 100% !important;
       max-width: 100% !important;
       display: block;
+    }
+    
+    .gleap-frame-container--hidden {
+      opacity: 0;
+      pointer-events: none;
+      animation: none !important;
     }
     
     .bb-feedback-button {
