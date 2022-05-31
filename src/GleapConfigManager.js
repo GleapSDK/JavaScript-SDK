@@ -49,7 +49,7 @@ export default class GleapConfigManager {
       const http = new XMLHttpRequest();
       http.open(
         "GET",
-        session.widgetUrl + "/widget/" + session.sdkKey + "/config"
+        session.apiUrl + "/config/" + session.sdkKey
       );
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       session.injectSession(http);

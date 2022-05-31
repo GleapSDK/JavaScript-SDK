@@ -1,12 +1,12 @@
 import { GleapStreamedEvent, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
+  frameUrl = "https://frame.gleap.io";
   gleapFrameContainer = null;
   gleapFrame = null;
   injectedFrame = false;
   widgetOpened = false;
   listeners = [];
-  frameURL = "https://frame.gleap.io";
   markerManager = undefined;
   escListener = undefined;
   frameHeight = 0;
@@ -57,7 +57,7 @@ export default class GleapFrameManager {
 
     var elem = document.createElement("div");
     elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
-    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameURL}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;
@@ -262,7 +262,7 @@ export default class GleapFrameManager {
 
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if (event.origin !== this.frameURL) {
+      if (event.origin !== this.frameUrl) {
         return;
       }
 

@@ -3,7 +3,6 @@ import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapSession {
   apiUrl = "https://api.gleap.io";
-  widgetUrl = "https://widget.gleap.io";
   sdkKey = null;
   session = {
     gleapId: null,

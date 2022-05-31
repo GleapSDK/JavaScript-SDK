@@ -245,11 +245,11 @@ class Gleap {
   }
 
   /**
-   * Set a custom widget api url.
-   * @param {string} widgetUrl
+   * Set a custom frame api url.
+   * @param {string} frameUrl
    */
-  static setWidgetUrl(widgetUrl) {
-    GleapSession.getInstance().widgetUrl = widgetUrl;
+  static setFrameUrl(frameUrl) {
+    GleapFrameManager.getInstance().frameUrl = frameUrl;
   }
 
   /**
@@ -369,13 +369,8 @@ class Gleap {
       newFormData.reportedBy = sessionInstance.session.email;
     }
 
-    GleapEventManager.notifyEvent("sending-silent-report");
     const feedback = new GleapFeedback("CRASH", priority, newFormData, true, excludeData ? excludeData : {});
-    feedback.sendFeedback().then(() => {
-      GleapEventManager.notifyEvent("silent-report-sent");
-    }).catch((error) => {
-      GleapEventManager.notifyEvent("failed-sending-silent-report");
-    });
+    feedback.sendFeedback().then(() => { }).catch((error) => { });
   }
 
   /**
