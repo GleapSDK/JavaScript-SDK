@@ -1,5 +1,9 @@
 const Gleap = window.Gleap;
 
+Gleap.preFillForm({
+  "description": "This is a pre-fill test."
+});
+
 // Gleap.setApiUrl("http://localhost:9000");
 Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
@@ -33,6 +37,4 @@ setTimeout(() => {
   };
   xmlhttp.open("GET", url, true);
   xmlhttp.send();
-
-  Gleap.preFillForm("bqfp3v", "DIES IST EIN TEST");
 }, 1000);

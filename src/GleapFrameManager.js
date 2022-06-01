@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { GleapStreamedEvent, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   frameUrl = "https://frame.gleap.io";
@@ -151,6 +151,13 @@ export default class GleapFrameManager {
     });
   }
 
+  sendFormPreFillData() {
+    this.sendMessage({
+      name: "prefill-form-data",
+      data: GleapPreFillManager.getInstance().formPreFill
+    });
+  }
+
   sendConfigUpdate() {
     this.sendMessage({
       name: "config-update",
@@ -204,6 +211,7 @@ export default class GleapFrameManager {
 
         this.sendConfigUpdate();
         this.sendSessionUpdate();
+        this.sendFormPreFillData();
       }
 
       if (data.name === "height-update") {

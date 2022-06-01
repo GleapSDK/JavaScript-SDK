@@ -19,6 +19,7 @@ import GleapReplayRecorder from "./GleapReplayRecorder";
 import GleapMarkerManager from "./GleapMarkerManager";
 import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
+import GleapPreFillManager from "./GleapPreFillManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -180,14 +181,9 @@ class Gleap {
    * @param {*} key 
    * @param {*} value 
    */
-  static preFillForm(key, value) {
-    GleapFrameManager.getInstance().sendMessage({
-      name: "prefill-form-data",
-      data: {
-        formKey: key,
-        data: value
-      }
-    });
+  static preFillForm(data) {
+    GleapPreFillManager.getInstance().formPreFill = data;
+    GleapFrameManager.getInstance().sendFormPreFillData();
   }
 
   /**
@@ -486,5 +482,5 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export { GleapNetworkIntercepter, GleapPreFillManager, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;
