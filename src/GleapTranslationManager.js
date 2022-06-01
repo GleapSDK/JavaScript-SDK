@@ -39,6 +39,10 @@ export default class GleapTranslationManager {
   }
 
   static translateText(key) {
+    if (!key) {
+      return "";
+    }
+
     const instance = GleapTranslationManager.getInstance();
 
     var language = "en";
@@ -49,23 +53,33 @@ export default class GleapTranslationManager {
       language = instance.overrideLanguage.toLowerCase();
     }
 
-    var customTranslation = {};
-    const translationKeys = Object.keys(instance.customTranslation);
-    for (var i = 0; i < translationKeys.length; i++) {
-      const translationKey = translationKeys[i];
-      if (language && translationKey && language === translationKey.toLowerCase()) {
-        if (instance.customTranslation[translationKey]) {
-          customTranslation = instance.customTranslation[translationKey];
+    const searchForTranslationTable = (langKey) => {
+      var customTranslation = null;
+      const translationKeys = Object.keys(instance.customTranslation);
+      for (var i = 0; i < translationKeys.length; i++) {
+        const translationKey = translationKeys[i];
+        if (langKey && translationKey && langKey === translationKey.toLowerCase()) {
+          if (instance.customTranslation[translationKey]) {
+            customTranslation = instance.customTranslation[translationKey];
+          }
         }
       }
+
+      return customTranslation;
     }
 
-    if (customTranslation[key]) {
+    var customTranslation = searchForTranslationTable(language);
+
+    // Extended search for language match only.
+    if (!customTranslation && language) {
+      const langKeys = language.split("-");
+      if (langKeys && langKeys.length > 1) {
+        customTranslation = searchForTranslationTable(langKeys[0]);
+      }
+    }
+    
+    if (customTranslation && customTranslation[key]) {
       return customTranslation[key];
-    }
-
-    if (!key) {
-      return "";
     }
 
     return key;
