@@ -47,7 +47,7 @@ export default class GleapTranslationManager {
 
     var language = "en";
     if (typeof navigator !== "undefined") {
-      navigator.language.substring(0, 2).toLowerCase();
+      language = navigator.language.substring(0, 2).toLowerCase();
     }
     if (instance.overrideLanguage && instance.overrideLanguage !== "") {
       language = instance.overrideLanguage.toLowerCase();
@@ -67,7 +67,7 @@ export default class GleapTranslationManager {
 
       return customTranslation;
     }
-
+    
     var customTranslation = searchForTranslationTable(language);
 
     // Extended search for language match only.
@@ -77,7 +77,7 @@ export default class GleapTranslationManager {
         customTranslation = searchForTranslationTable(langKeys[0]);
       }
     }
-    
+
     if (customTranslation && customTranslation[key]) {
       return customTranslation[key];
     }
