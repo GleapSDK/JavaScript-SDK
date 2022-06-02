@@ -1,7 +1,8 @@
 const Gleap = window.Gleap;
 
 Gleap.preFillForm({
-  "description": "This is a pre-fill test."
+  "description": "This is a pre-fill test.",
+  "userId": "1233"
 });
 
 // Gleap.setApiUrl("http://localhost:9000");
