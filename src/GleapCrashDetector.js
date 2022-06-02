@@ -45,7 +45,7 @@ export default class GleapCrashDetector {
             }
           );
         } else {
-          Gleap.startFeedbackFlow("crash");
+          Gleap.startFeedbackFlowWithOptions("crash");
         }
       }
     });

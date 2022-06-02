@@ -60,7 +60,7 @@ export default class GleapRageClickDetector {
             "MEDIUM"
           );
         } else {
-          Gleap.startFeedbackFlow("crash");
+          Gleap.startFeedbackFlowWithOptions("crash");
         }
       }
     });

@@ -372,7 +372,16 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlow(feedbackFlow, options = {}) {
+  static startFeedbackFlow(feedbackFlow, showBackButton) {
+    Gleap.startFeedbackFlowWithOptions(feedbackFlow, {
+      hideBackButton: !showBackButton,
+    });
+  }
+
+  /**
+   * Starts the bug reporting flow.
+   */
+  static startFeedbackFlowWithOptions(feedbackFlow, options = {}) {
     const { actionOutboundId, autostartDrawing, hideBackButton } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
@@ -432,7 +441,7 @@ class Gleap {
    */
   performAction(action) {
     if (action && action.outbound && action.actionType) {
-      Gleap.startFeedbackFlow(action.actionType, {
+      Gleap.startFeedbackFlowWithOptions(action.actionType, {
         actionOutboundId: action.outbound,
         hideBackButton: true
       });
