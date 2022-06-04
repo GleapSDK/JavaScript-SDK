@@ -37,7 +37,6 @@ export const injectStyledCSS = (
   backgroundColor
 ) => {
   const contrastColor = calculateContrast(primaryColor);
-  const contrastHeaderColor = calculateContrast(headerColor);
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
   const isDarkMode = contrastBackgroundColor === "#ffffff";
@@ -50,12 +49,8 @@ export const injectStyledCSS = (
   const hoverHoverColor = isDarkMode
     ? calculateShadeColor(backgroundColor, 80)
     : calculateShadeColor(backgroundColor, -30);
-  const borderColor = isDarkMode
-    ? calculateShadeColor(backgroundColor, 70)
-    : calculateShadeColor(backgroundColor, -70);
 
   var borderRadius = parseInt(borderRadius, 10);
-  const containerBorderRadius = Math.round(borderRadius * 0.6);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);

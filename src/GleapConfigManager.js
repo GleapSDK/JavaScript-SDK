@@ -91,12 +91,6 @@ export default class GleapConfigManager {
       GleapFrameManager.getInstance().sendConfigUpdate();
       GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
 
-      if (flowConfig.enableReplays) {
-        GleapReplayRecorder.getInstance().start();
-      } else {
-        GleapReplayRecorder.getInstance().stop();
-      }
-
       if (flowConfig.color) {
         Gleap.setStyles(
           flowConfig.color,
@@ -107,6 +101,12 @@ export default class GleapConfigManager {
             : "#FFFFFF",
           flowConfig.borderRadius,
         );
+      }
+
+      if (flowConfig.enableReplays) {
+        GleapReplayRecorder.getInstance().start();
+      } else {
+        GleapReplayRecorder.getInstance().stop();
       }
 
       if (flowConfig.enableNetworkLogs) {
