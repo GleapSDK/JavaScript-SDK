@@ -182,7 +182,7 @@ class Gleap {
    * @param {*} value 
    */
   static preFillForm(data) {
-    GleapPreFillManager.getInstance().formPreFill = data;
+    GleapPreFillManager.getInstance().formPreFill = gleapDataParser(data);
     GleapFrameManager.getInstance().sendFormPreFillData();
   }
 
@@ -355,6 +355,7 @@ class Gleap {
       attachments: true,
     }
   ) {
+    const excludeDataCleaned = excludeData ? gleapDataParser(excludeData) : {};
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -365,7 +366,7 @@ class Gleap {
       newFormData.reportedBy = sessionInstance.session.email;
     }
 
-    const feedback = new GleapFeedback("CRASH", priority, newFormData, true, excludeData ? excludeData : {});
+    const feedback = new GleapFeedback("CRASH", priority, newFormData, true, excludeDataCleaned);
     feedback.sendFeedback().then(() => { }).catch((error) => { });
   }
 
