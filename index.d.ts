@@ -3,6 +3,20 @@ export namespace Gleap {
     sdkKey: string
   ): void;
   function sendSilentCrashReport(
+    description: string,
+    priority?: "LOW" | "MEDIUM" | "HIGH",
+    excludeData?: {
+      customData: Boolean;
+      metaData: Boolean;
+      attachments: Boolean;
+      consoleLog: Boolean;
+      networkLogs: Boolean;
+      customEventLog: Boolean;
+      screenshot: Boolean;
+      replays: Boolean;
+    }
+  ): void;
+  function sendSilentCrashReportWithFormData(
     formData: {
       [key: string]: string;
     },

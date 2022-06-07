@@ -354,6 +354,30 @@ class Gleap {
    * @param {*} excludeData
    */
   static sendSilentCrashReport(
+    description = "",
+    priority = "MEDIUM",
+    excludeData = {
+      screenshot: true,
+      replays: true,
+      attachments: true,
+    }
+  ) {
+    return Gleap.sendSilentCrashReportWithFormData(
+      {
+        description
+      },
+      priority,
+      excludeData
+    );
+  }
+
+  /**
+   * Sends a silent feedback report
+   * @param {*} formData
+   * @param {*} priority
+   * @param {*} excludeData
+   */
+  static sendSilentCrashReportWithFormData(
     formData,
     priority = "MEDIUM",
     excludeData = {

@@ -30,7 +30,7 @@ export default class GleapCrashDetector {
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
       if (flowConfig && typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector) {
         if (flowConfig.crashDetectorIsSilent) {
-          Gleap.sendSilentCrashReport(
+          Gleap.sendSilentCrashReportWithFormData(
             {
               errorMessage: message,
               url: filename,
