@@ -52,6 +52,7 @@ export namespace Gleap {
     userHash?: string
   ): void;
   function open(): void;
+  function close(): void;
   function hide(): void;
   function startFeedbackFlow(feedbackFlow: string, showBackButton?: boolean): void;
   function on(event: string, callback: (data?: any) => void): void;

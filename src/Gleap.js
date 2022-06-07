@@ -161,6 +161,13 @@ class Gleap {
   }
 
   /**
+   * Closes any open Gleap dialogs.
+   */
+  static close() {
+    GleapFrameManager.getInstance().hideWidget();
+  }
+
+  /**
    * Starts the Gleap flow.
    */
   static open() {
