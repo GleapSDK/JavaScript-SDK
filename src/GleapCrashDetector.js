@@ -25,7 +25,7 @@ export default class GleapCrashDetector {
         "Column: " + colno,
         "Stack: " + stackTrace,
       ];
-      GleapConsoleLogManager.getInstance().addLog(messageObject, "ERROR");
+      GleapConsoleLogManager.getInstance().addLogWithArgs(messageObject, "ERROR");
 
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
       if (flowConfig && typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector) {

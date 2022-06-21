@@ -18,7 +18,7 @@ export default class GleapClickListener {
 
       if (!GleapFrameManager.getInstance().isOpened()) {
         GleapConsoleLogManager.getInstance().addLog(
-          [getDOMElementDescription(event.target)],
+          getDOMElementDescription(event.target),
           "CLICK"
         );
       }

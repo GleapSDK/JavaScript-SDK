@@ -6,7 +6,8 @@ Gleap.preFillForm({
 });
 
 // Gleap.setApiUrl("http://localhost:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+// Gleap.setFrameUrl("http://localhost:3001");
+Gleap.initialize("MMxTvMklWdr6pgZzA3hJk9K0IvOsIT2A");
 
 Gleap.attachCustomData({
   mission: "Unicorn",
@@ -16,6 +17,11 @@ Gleap.attachCustomData({
     name: "Mission: Impossible - Ghost Protocol",
   },
 });
+
+Gleap.log("Test log");
+Gleap.log("Test log info", "INFO");
+Gleap.log("Test log warn", "WARNING");
+Gleap.log("Test log err", "ERROR");
 
 // Register custom action.
 Gleap.registerCustomAction((customAction) => {

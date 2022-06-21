@@ -2,6 +2,7 @@ import { truncateString } from "./GleapHelper";
 
 export default class GleapConsoleLogManager {
   logArray = [];
+  disabled = false;
   originalConsoleLog;
   logMaxLength = 500;
 
@@ -26,28 +27,25 @@ export default class GleapConsoleLogManager {
    * Revert console log overwrite.
    */
   stop() {
+    this.disabled = true;
     window.console = this.originalConsoleLog;
   }
 
   /**
-   * Add entry to logs.
-   * @param {*} args
-   * @param {*} priority
+   * Add message with log level to logs.
+   * @param {*} message
+   * @param {*} logLevel
    * @returns
    */
-  addLog(args, priority) {
-    if (!args || args.length <= 0) {
+   addLog(message, logLevel = "INFO") {
+    if (!message || message.length <= 0) {
       return;
     }
 
-    var log = "";
-    for (var i = 0; i < args.length; i++) {
-      log += args[i] + " ";
-    }
     this.logArray.push({
-      log: truncateString(log, 1000),
+      log: truncateString(message, 1000),
       date: new Date(),
-      priority,
+      priority: logLevel,
     });
 
     if (this.logArray.length > this.logMaxLength) {
@@ -56,9 +54,32 @@ export default class GleapConsoleLogManager {
   }
 
   /**
+   * Add entry to logs.
+   * @param {*} args
+   * @param {*} logLevel
+   * @returns
+   */
+  addLogWithArgs(args, logLevel) {
+    if (!args || args.length <= 0) {
+      return;
+    }
+
+    var log = "";
+    for (var i = 0; i < args.length; i++) {
+      log += args[i] + " ";
+    }
+
+    this.addLog(log, logLevel);
+  }
+
+  /**
    * Start console log overwrite.
    */
   start() {
+    if (this.disabled) {
+      return;
+    }
+
     const self = this;
     window.console = (function (origConsole) {
       if (!window.console || !origConsole) {
@@ -70,19 +91,19 @@ export default class GleapConsoleLogManager {
       return {
         ...origConsole,
         log: function () {
-          self.addLog(arguments, "INFO");
+          self.addLogWithArgs(arguments, "INFO");
           origConsole.log && origConsole.log.apply(origConsole, arguments);
         },
         warn: function () {
-          self.addLog(arguments, "WARNING");
+          self.addLogWithArgs(arguments, "WARNING");
           origConsole.warn && origConsole.warn.apply(origConsole, arguments);
         },
         error: function () {
-          self.addLog(arguments, "ERROR");
+          self.addLogWithArgs(arguments, "ERROR");
           origConsole.error && origConsole.error.apply(origConsole, arguments);
         },
         info: function (v) {
-          self.addLog(arguments, "INFO");
+          self.addLogWithArgs(arguments, "INFO");
           origConsole.info && origConsole.info.apply(origConsole, arguments);
         },
       };

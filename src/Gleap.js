@@ -88,6 +88,16 @@ class Gleap {
   }
 
   /**
+  * Add entry to logs.
+  * @param {*} message
+  * @param {*} logLevel
+  * @returns
+  */
+  static log(message, logLevel = "INFO") {
+    GleapConsoleLogManager.getInstance().addLog(message, logLevel);
+  }
+
+  /**
    * Initializes the SDK
    * @param {*} sdkKey
    */
