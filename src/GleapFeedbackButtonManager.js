@@ -78,7 +78,7 @@ export default class GleapFeedbackButtonManager {
         if (flowConfig.buttonLogo) {
             buttonIcon = `<img class="bb-logo-logo" src="${flowConfig.buttonLogo}" alt="Feedback Button" />`;
         } else {
-            buttonIcon = loadIcon("bblogo", "#fff");
+            buttonIcon = loadIcon("button", "#fff");
         }
 
         this.feedbackButton.className = "bb-feedback-button gleap-hidden";
