@@ -55,6 +55,12 @@ export default class GleapMarkerManager {
     if (dialog) {
       dialog.remove();
     }
+    
+    // Capture SVG ref
+    const captureSVG = document.querySelector(".bb-capture-svg");
+    if (captureSVG) {
+      captureSVG.classList.add("bb-capture-svg--preview");
+    }
 
     // Remove the preview UI
     const videoPreviewContainer = document.querySelector(".bb-capture-preview");

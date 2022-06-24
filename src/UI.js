@@ -54,6 +54,7 @@ export const injectStyledCSS = (
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
+  const zIndexBase = 2147483600;
 
   const colorStyleSheet = `
     .gleap-frame-container {
@@ -61,7 +62,7 @@ export const injectStyledCSS = (
       bottom: 95px;
       width: 380px !important;
       position: fixed;
-      z-index: 2147483647;
+      z-index: ${zIndexBase + 30};
       visibility: visible;
       height: 100%;
       max-height: 0px;
@@ -145,7 +146,7 @@ export const injectStyledCSS = (
       -webkit-tap-highlight-color: transparent;
       background-color: transparent;
       color: #000000;
-      z-index: 2147483100;
+      z-index: ${zIndexBase + 30};
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -345,7 +346,7 @@ export const injectStyledCSS = (
     
     .bb-capture-svg {
       position: absolute;
-      z-index: 916777264;
+      z-index: ${zIndexBase + 14};
       top: 0px;
       left: 0px;
       right: 0px;
@@ -354,6 +355,10 @@ export const injectStyledCSS = (
       padding: 0px;
       margin: 0px;
       cursor: crosshair;
+    }
+
+    .bb-capture-svg--preview {
+      cursor: auto !important;
     }
     
     .bb-rec-on-circle {
@@ -374,7 +379,7 @@ export const injectStyledCSS = (
       position: fixed;
       top: -200px;
       left: 0px;
-      z-index: 916777266;
+      z-index: ${zIndexBase + 16};
       transition: opacity 0.3s ease-in-out;
     }
     
@@ -391,13 +396,9 @@ export const injectStyledCSS = (
       height: 100vh;
       border: 4px solid ${primaryColor};
       cursor: crosshair;
-      z-index: 916777260;
+      z-index: ${zIndexBase + 10};
       box-sizing: border-box;
       pointer-events: none;
-    }
-    
-    .bb-feedback-dialog-backdrop {
-      display: none;
     }
     
     .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
@@ -431,7 +432,7 @@ export const injectStyledCSS = (
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 916777268;
+      z-index: ${zIndexBase + 18};
       background-color: #fff;
       padding: 5px;
       display: flex;
@@ -445,7 +446,7 @@ export const injectStyledCSS = (
       position: fixed;
       top: 0px;
       right: 0px;
-      z-index: 916777268;
+      z-index: ${zIndexBase + 18};
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       width: 36px;
@@ -534,7 +535,7 @@ export const injectStyledCSS = (
       height: 100vh;
       justify-content: center;
       align-items: center;
-      z-index: 916777270;
+      z-index: ${zIndexBase + 20};
     }
     
     .bb-capture-preview-inner {
@@ -612,7 +613,7 @@ export const injectStyledCSS = (
       top: 70px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 916777268;
+      z-index: ${zIndexBase + 18};
       background-color: #fff;
       display: none;
       padding: 10px;
@@ -918,20 +919,6 @@ export const injectStyledCSS = (
         left: 15px;
         width: auto;
         transform: none;
-      }
-    
-      .bb-feedback-dialog-backdrop {
-        display: block;
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        width: 100vw;
-        height: 100vh;
-        height: -webkit-fill-available;
-        z-index: 916777230;
-        box-sizing: border-box;
-        pointer-events: none;
-        background-color: rgba(0, 0, 0, 0.6);
       }
     
       .bb-capture-editor-drag-info {
