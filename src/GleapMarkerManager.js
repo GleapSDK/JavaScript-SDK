@@ -55,7 +55,7 @@ export default class GleapMarkerManager {
     if (dialog) {
       dialog.remove();
     }
-    
+
     // Capture SVG ref
     const captureSVG = document.querySelector(".bb-capture-svg");
     if (captureSVG) {
@@ -248,6 +248,9 @@ export default class GleapMarkerManager {
           </div>
         `;
     document.body.appendChild(bugReportingEditor);
+
+    // Set RTL layout
+    bugReportingEditor.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
   }
 
   showNextStep = function () {

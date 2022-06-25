@@ -62,7 +62,7 @@ export const injectStyledCSS = (
       bottom: 95px;
       width: 380px !important;
       position: fixed;
-      z-index: ${zIndexBase + 30};
+      z-index: ${zIndexBase + 31};
       visibility: visible;
       height: 100%;
       max-height: 0px;
@@ -493,6 +493,14 @@ export const injectStyledCSS = (
       background-color: ${primaryColor};
       border-bottom-left-radius: ${formItemSmallBorderRadius}px;
     }
+
+    [dir=rtl] .bb-capture-dismiss {
+      top: 0px;
+      left: 0px;
+      right: auto;
+      border-bottom-left-radius: 0px !important;
+      border-bottom-right-radius: ${formItemSmallBorderRadius}px;
+    }
     
     .bb-capture-dismiss svg path {
       fill: ${contrastColor};
@@ -517,6 +525,11 @@ export const injectStyledCSS = (
       padding: 0px 12px;
       font-size: 15px;
       margin-left: 12px;
+    }
+
+    [dir=rtl].bb-capture-editor .bb-capture-button-next {
+      margin-left: auto;
+      margin-right: 12px;
     }
     
     .bb-capture-toolbar-item-spacer {
@@ -673,6 +686,16 @@ export const injectStyledCSS = (
     
     .bb-capture-toolbar-item-color:last-of-type {
       margin-right: 0px;
+    }
+    
+    [dir=rtl].bb-capture-editor .bb-capture-toolbar-item-color {
+      margin-right: auto;
+      margin-left: 12px;
+    }
+    
+    [dir=rtl].bb-capture-editor .bb-capture-toolbar-item-color:last-of-type {
+      margin-right: auto;
+      margin-left: 0px;
     }
     
     .bb-capture-toolbar-item-recording[data-active="true"] svg:first-of-type {
