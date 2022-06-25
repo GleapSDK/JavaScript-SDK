@@ -82,6 +82,7 @@ export default class GleapFeedbackButtonManager {
         }
 
         this.feedbackButton.className = "bb-feedback-button gleap-hidden";
+        this.feedbackButton.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
         if (
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||

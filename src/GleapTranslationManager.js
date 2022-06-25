@@ -1,8 +1,9 @@
-import { GleapFrameManager } from "./Gleap";
+import { GleapFrameManager, GleapFeedbackButtonManager } from "./Gleap";
 
 export default class GleapTranslationManager {
   customTranslation = {};
   overrideLanguage = "";
+  isRTLLayout = false;
 
   // GleapTranslationManager singleton
   static instance;
@@ -28,6 +29,14 @@ export default class GleapTranslationManager {
   setOverrideLanguage(language) {
     this.overrideLanguage = language;
     GleapFrameManager.getInstance().sendConfigUpdate();
+    this.updateRTLSupport();
+  }
+
+  updateRTLSupport() {
+    // Update RTL support.
+    this.isRTLLayout = GleapTranslationManager.translateText("rtlLang") === "true";
+    GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+    GleapFrameManager.getInstance().updateFrameStyle();
   }
 
   /**
@@ -67,7 +76,7 @@ export default class GleapTranslationManager {
 
       return customTranslation;
     }
-    
+
     var customTranslation = searchForTranslationTable(language);
 
     // Extended search for language match only.

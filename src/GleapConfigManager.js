@@ -125,6 +125,7 @@ export default class GleapConfigManager {
 
       if (flowConfig.customTranslations) {
         GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
+        GleapTranslationManager.getInstance().updateRTLSupport();
       }
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);

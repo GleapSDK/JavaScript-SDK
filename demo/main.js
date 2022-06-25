@@ -6,7 +6,8 @@ Gleap.preFillForm({
 });
 
 // Gleap.setApiUrl("http://localhost:9000");
-//Gleap.setFrameUrl("http://localhost:3000");
+//Gleap.setLanguage("en");
+Gleap.setFrameUrl("http://localhost:3001");
 Gleap.initialize("MMxTvMklWdr6pgZzA3hJk9K0IvOsIT2A");
 
 Gleap.attachCustomData({

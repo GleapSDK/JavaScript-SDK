@@ -75,6 +75,47 @@ export const injectStyledCSS = (
       user-select: none;
     }
 
+    [dir=rtl].gleap-frame-container {
+      right: auto;
+      left: 20px;
+      bottom: 95px;
+    }
+
+    .gleap-frame-container--classic {
+      right: 20px;
+      bottom: 20px;
+    }
+
+    [dir=rtl].gleap-frame-container--classic {
+      right: auto;
+      left: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--classic-left {
+      right: auto;
+      left: 20px;
+      bottom: 20px;
+    }
+
+    [dir=rtl].gleap-frame-container--classic-left {
+      left: auto;
+      right: 20px;
+      bottom: 20px;
+    }
+
+    .gleap-frame-container--modern-left {
+      right: auto;
+      left: 20px;
+      bottom: 95px;
+    }
+
+    [dir=rtl].gleap-frame-container--modern-left {
+      left: auto;
+      right: 20px;
+      bottom: 95px;
+    }
+
     .gleap-frame-container--animate {
       transition: max-height 0.3s ease-in;
     }
@@ -88,23 +129,6 @@ export const injectStyledCSS = (
           opacity: 1;
           transform: translate3d(0, 0, 0);
       }
-    }
-
-    .gleap-frame-container--classic {
-      right: 20px;
-      bottom: 20px;
-    }
-
-    .gleap-frame-container--classic-left {
-      right: auto;
-      left: 20px;
-      bottom: 20px;
-    }
-
-    .gleap-frame-container--modern-left {
-      right: auto;
-      left: 20px;
-      bottom: 95px;
     }
 
     .gleap-frame-container-inner {
@@ -152,13 +176,11 @@ export const injectStyledCSS = (
       align-items: center;
       padding: 0px;
     }
-    
-    .bb-feedback-button--disabled .bb-feedback-button-icon {
-      display: none !important;
-    }
-    
-    .bb-feedback-button--disabled .bb-feedback-button-text {
-      display: none;
+
+    [dir=rtl].bb-feedback-button {
+      bottom: 20px;
+      right: auto;
+      left: 20px;
     }
     
     .bb-feedback-button--bottomleft {
@@ -166,10 +188,19 @@ export const injectStyledCSS = (
       right: auto;
       left: 20px;
     }
+
+    [dir=rtl].bb-feedback-button--bottomleft {
+      bottom: 20px;
+      right: 20px;
+      left: auto;
+    }
     
-    .bb-feedback-button--bottomleft .bb-feedback-button-shoutout {
-      right: auto;
-      left: 94px;
+    .bb-feedback-button--disabled .bb-feedback-button-icon {
+      display: none !important;
+    }
+    
+    .bb-feedback-button--disabled .bb-feedback-button-text {
+      display: none;
     }
     
     .bb-feedback-button-text {
@@ -255,6 +286,14 @@ export const injectStyledCSS = (
       animation-fill-mode: both;
       animation-name: bbFadeInOpacity;
     }
+
+    [dir=rtl].bb-feedback-button .bb-feedback-button-classic {
+      top: 50%;
+      left: 0px;
+      right: auto;
+      transform: rotate(90deg) translate(-50%, -100%);
+      transform-origin: 0% 0%;
+    }
     
     .bb-feedback-button-classic--left {
       top: 50%;
@@ -263,12 +302,29 @@ export const injectStyledCSS = (
       transform: rotate(90deg) translate(-50%, -100%);
       transform-origin: 0% 0%;
     }
+
+    [dir=rtl].bb-feedback-button .bb-feedback-button-classic--left {
+      top: 50%;
+      right: 0px;
+      left: auto;
+      transform: rotate(-90deg) translate(50%, -50%);
+      transform-origin: 100% 50%;
+    }
     
     .bb-feedback-button-classic--bottom {
       top: auto;
       bottom: 0px;
       transform: none;
       right: 20px;
+      left: auto;
+    }
+    
+    [dir=rtl].bb-feedback-button .bb-feedback-button-classic--bottom {
+      top: auto;
+      bottom: 0px;
+      transform: none;
+      left: 20px;
+      right: auto;
     }
     
     .bb-feedback-button--open .bb-feedback-button-classic {
@@ -316,32 +372,12 @@ export const injectStyledCSS = (
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
     }
     
-    .bb-feedback-button--bottomleft.bb-feedback-button--open {
-      padding-left: 0px;
-      padding-right: 5px;
-    }
-    
     .bb-feedback-button--open .bb-feedback-button-text {
       animation-name: bbFadeOutDown;
     }
     
     .bb-feedback-button--open .bb-feedback-button-icon {
       display: flex;
-    }
-    
-    .bb-feedback-button--bottomleft .bb-feedback-dialog {
-      right: auto;
-      left: 16px;
-    }
-    
-    .bb-feedback-button--classic .bb-feedback-dialog,
-    .bb-feedback-button--disabled .bb-feedback-dialog {
-      bottom: 20px;
-    }
-    
-    .bb-feedback-button--classic-left .bb-feedback-dialog {
-      right: auto;
-      left: 16px;
     }
     
     .bb-capture-svg {
@@ -923,11 +959,6 @@ export const injectStyledCSS = (
     
       .bb-capture-editor-drag-info {
         display: none;
-      }
-    
-      .bb-feedback-button--bottomleft .bb-feedback-dialog {
-        left: 10px;
-        right: 10px;
       }
     
       .bb-capture-editor-borderlayer {

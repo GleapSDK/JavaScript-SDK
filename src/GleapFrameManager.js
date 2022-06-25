@@ -94,6 +94,8 @@ export default class GleapFrameManager {
     if (styleToApply) {
       this.gleapFrameContainer.classList.add(styleToApply);
     }
+
+    this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
   }
 
   showWidget() {
