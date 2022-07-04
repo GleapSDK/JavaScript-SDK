@@ -30,6 +30,9 @@ export class GleapScreenRecorder {
     if (MediaRecorder.isTypeSupported("video/mp4")) {
       return "video/mp4";
     }
+    if (MediaRecorder.isTypeSupported("video/webm;codecs=h264")) {
+      return "video/webm;codecs=h264";
+    }
     return "video/webm";
   }
 
