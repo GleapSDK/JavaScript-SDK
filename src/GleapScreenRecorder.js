@@ -26,6 +26,13 @@ export class GleapScreenRecorder {
     }, 100);
   }
 
+  getSupportedMimeType() {
+    if (MediaRecorder.isTypeSupported("video/mp4")) {
+      return "video/mp4";
+    }
+    return "video/webm";
+  }
+
   formatTime(s) {
     return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
   }
@@ -157,11 +164,13 @@ export class GleapScreenRecorder {
     this.rerender();
   };
 
-  handleRecord = function ({ stream, mimeType = "video/mp4" }) {
+  handleRecord = function ({ stream }) {
     const self = this;
 
     var recordedChunks = [];
-    this.mediaRecorder = new MediaRecorder(stream);
+    this.mediaRecorder = new MediaRecorder(stream, {
+      mimeType: this.getSupportedMimeType()
+    });
     this.isRecording = true;
     this.recordTime = 0;
 
@@ -185,24 +194,25 @@ export class GleapScreenRecorder {
     };
 
     stream.getVideoTracks()[0].onended = function () {
-      self.prepareRecording(recordedChunks, mimeType);
+      self.prepareRecording(recordedChunks);
     };
 
     this.mediaRecorder.onstop = function () {
-      self.prepareRecording(recordedChunks, mimeType);
+      self.prepareRecording(recordedChunks);
     };
 
     this.mediaRecorder.start(200); // here 200ms is interval of chunk collection
+
     self.rerender();
   };
 
-  prepareRecording = function (recordedChunks, mimeType) {
+  prepareRecording = function (recordedChunks) {
     const completeBlob = new Blob(recordedChunks, {
-      type: mimeType,
+      type: this.getSupportedMimeType(),
     });
 
-    this.file = new File([completeBlob], "screen-recording.mp4", {
-      type: "video/mp4",
+    this.file = new File([completeBlob], `screen-recording.${this.getSupportedMimeType() === "video/mp4" ? 'mp4' : "webm"}`, {
+      type: this.getSupportedMimeType(),
     });
 
     const previewVideoElement = document.querySelector(

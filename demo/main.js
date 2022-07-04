@@ -8,7 +8,7 @@ Gleap.preFillForm({
 //Gleap.setApiUrl("http://localhost:9000");
 // Gleap.setLanguage("en");
 Gleap.setFrameUrl("http://localhost:3000");
-Gleap.initialize("MMxTvMklWdr6pgZzA3hJk9K0IvOsIT2A");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 Gleap.identify("user_19283", {
   name: "Franz AB",
