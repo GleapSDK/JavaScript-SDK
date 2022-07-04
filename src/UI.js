@@ -73,6 +73,7 @@ export const injectStyledCSS = (
       animation-fill-mode: both;
       animation-name: gleapFadeInUp;
       user-select: none;
+      pointer-events: none;
     }
 
     [dir=rtl].gleap-frame-container {
@@ -118,6 +119,7 @@ export const injectStyledCSS = (
 
     .gleap-frame-container--animate {
       transition: max-height 0.3s ease-in;
+      pointer-events: auto !important;
     }
 
     @keyframes gleapFadeInUp {
