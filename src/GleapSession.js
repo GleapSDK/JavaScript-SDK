@@ -10,6 +10,7 @@ export default class GleapSession {
     name: "",
     email: "",
     userId: "",
+    value: 0
   };
   ready = false;
   onSessionReadyListener = [];
@@ -62,6 +63,7 @@ export default class GleapSession {
       type: null,
       name: "",
       email: "",
+      value: 0,
     };
 
     // Start guest session.

@@ -5,12 +5,12 @@ Gleap.preFillForm({
   "userId": "1233"
 });
 
-Gleap.setApiUrl("http://localhost:9000");
+// Gleap.setFrameUrl("http://localhost:3000");
 // Gleap.setLanguage("en");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
 Gleap.identify("user_19283", {
-  name: "Franz AB",
+  name: "Franz AB"
 });
 
 Gleap.attachCustomData({
