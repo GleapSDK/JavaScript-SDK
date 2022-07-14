@@ -10,7 +10,9 @@ Gleap.preFillForm({
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 
 Gleap.identify("user_19283", {
-  name: "Franz AB"
+  name: "Franz Demoman",
+  email: "lukas@gleap.io",
+  value: 199
 });
 
 Gleap.attachCustomData({
