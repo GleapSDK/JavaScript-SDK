@@ -5,9 +5,10 @@ Gleap.preFillForm({
   "userId": "1233"
 });
 
-// Gleap.setFrameUrl("http://localhost:3000");
+Gleap.setFrameUrl("http://localhost:3001");
+Gleap.setApiUrl("http://localhost:9000");
 // Gleap.setLanguage("en");
-Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
+Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
 Gleap.identify("user_19283", {
   name: "Franz Demoman",
@@ -41,7 +42,6 @@ setTimeout(() => {
 
   var xmlhttp = new XMLHttpRequest();
   var url = "https://jsonplaceholder.typicode.com/todos/1";
-
   xmlhttp.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
       var myArr = JSON.parse(this.responseText);
@@ -49,5 +49,7 @@ setTimeout(() => {
     }
   };
   xmlhttp.open("GET", url, true);
+  xmlhttp.setRequestHeader("asdfasdf1", "wertwertwert1");
+  xmlhttp.setRequestHeader("asdfasdf2", "wertwertwert2");
   xmlhttp.send();
 }, 1000);

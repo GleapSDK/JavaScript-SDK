@@ -186,7 +186,7 @@ export default class GleapFrameManager {
     });
   }
 
-  calculateFrameHeight() {
+  /*calculateFrameHeight() {
     if (this.gleapFrameContainer) {
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
       var bottomOffset = 40;
@@ -196,11 +196,11 @@ export default class GleapFrameManager {
       var newMaxHeight = Math.min(this.frameHeight, (window.innerHeight - bottomOffset));
       this.gleapFrameContainer.style.maxHeight = newMaxHeight + "px";
     }
-  }
+  }*/
 
   startCommunication() {
     window.addEventListener('resize', (event) => {
-      this.calculateFrameHeight();
+      //this.calculateFrameHeight();
     }, true);
 
     // Listen for messages.
@@ -218,7 +218,7 @@ export default class GleapFrameManager {
 
       if (data.name === "height-update") {
         this.frameHeight = data.data;
-        this.calculateFrameHeight();
+        //this.calculateFrameHeight();
       }
 
       if (data.name === "notify-event") {

@@ -64,8 +64,8 @@ export const injectStyledCSS = (
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
-      height: 100%;
-      max-height: 0px;
+      height: calc(100% - 150px);
+      max-height: 660px;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${borderRadius}px;
       overflow: hidden;
