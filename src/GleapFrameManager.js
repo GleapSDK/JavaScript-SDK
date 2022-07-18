@@ -108,9 +108,19 @@ export default class GleapFrameManager {
     }
 
     this.widgetOpened = true;
+    this.updateWidgetStatus();
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
     this.registerEscListener();
+  }
+
+  updateWidgetStatus() {
+    this.sendMessage({
+      name: "widget-status-update",
+      data: {
+        isWidgetOpen: this.widgetOpened,
+      }
+    });
   }
 
   hideMarkerManager() {
@@ -127,6 +137,7 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--animate');
     }
     this.widgetOpened = false;
+    this.updateWidgetStatus();
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("close");
     this.unregisterEscListener();
