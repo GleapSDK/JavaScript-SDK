@@ -6,7 +6,7 @@ Gleap.preFillForm({
 });
 
 Gleap.setFrameUrl("http://localhost:3001");
-Gleap.setApiUrl("http://localhost:4455");
+Gleap.setApiUrl("http://localhost:9000");
 // Gleap.setLanguage("en");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
