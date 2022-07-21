@@ -1,4 +1,5 @@
 import { GleapStreamedEvent, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import GleapAudioManager from "./GleapAudioManager";
 
 export default class GleapFrameManager {
   frameUrl = "https://frame.gleap.io";
@@ -197,18 +198,6 @@ export default class GleapFrameManager {
     });
   }
 
-  /*calculateFrameHeight() {
-    if (this.gleapFrameContainer) {
-      const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-      var bottomOffset = 40;
-      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT || flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_RIGHT) {
-        bottomOffset = 115;
-      }
-      var newMaxHeight = Math.min(this.frameHeight, (window.innerHeight - bottomOffset));
-      this.gleapFrameContainer.style.maxHeight = newMaxHeight + "px";
-    }
-  }*/
-
   startCommunication() {
     window.addEventListener('resize', (event) => {
       //this.calculateFrameHeight();
@@ -225,6 +214,10 @@ export default class GleapFrameManager {
         this.sendConfigUpdate();
         this.sendSessionUpdate();
         this.sendFormPreFillData();
+      }
+
+      if (data.name === "play-ping") {
+        GleapAudioManager.ping();
       }
 
       if (data.name === "height-update") {
