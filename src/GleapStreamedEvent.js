@@ -89,9 +89,7 @@ export default class GleapStreamedEvent {
       http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/stream");
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       GleapSession.getInstance().injectSession(http);
-      http.onerror = (error) => {
-        GleapSession.getInstance().clearSession(true);
-      };
+      http.onerror = (error) => {};
       http.onreadystatechange = function (e) {
         if (http.readyState === XMLHttpRequest.DONE) {
           if (http.status === 200 || http.status === 201) {
@@ -99,8 +97,6 @@ export default class GleapStreamedEvent {
               const action = JSON.parse(http.responseText);
               Gleap.getInstance().performAction(action);
             } catch (exp) { }
-          } else {
-            GleapSession.getInstance().clearSession(true);
           }
         }
       };

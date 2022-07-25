@@ -53,7 +53,7 @@ export default class GleapSession {
     }
   };
 
-  clearSession = (renewSession = true) => {
+  clearSession = (attemp = 0) => {
     try {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
@@ -68,9 +68,12 @@ export default class GleapSession {
       value: 0,
     };
 
-    // Start guest session.
-    if (renewSession) {
-      this.startSession();
+    if (!isNaN(attemp)) {
+      // Exponentially retry to renew session.
+      const newTimeout = (Math.pow(attemp, 2) * 10) + 10;
+      setTimeout(() => {
+        this.startSession(attemp + 1);
+      }, newTimeout * 1000);
     }
   };
 
@@ -87,7 +90,7 @@ export default class GleapSession {
     this.notifySessionReady();
   };
 
-  startSession = () => {
+  startSession = (attemp = 0) => {
     // Check if session is already ready.
     const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
     if (cachedSession) {
@@ -105,9 +108,6 @@ export default class GleapSession {
         http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
       }
     } catch (exp) { }
-    http.onerror = (error) => {
-      self.clearSession(false);
-    };
     http.onreadystatechange = function (e) {
       if (http.readyState === XMLHttpRequest.DONE) {
         if (http.status === 200 || http.status === 201) {
@@ -116,7 +116,9 @@ export default class GleapSession {
             self.validateSession(sessionData);
           } catch (exp) { }
         } else {
-          self.clearSession(false);
+          if (http.status !== 429) {
+            self.clearSession(attemp);
+          }
         }
       }
     };
@@ -183,7 +185,6 @@ export default class GleapSession {
         } catch (exp) { }
 
         http.onerror = () => {
-          self.clearSession(true);
           reject();
         };
         http.onreadystatechange = function (e) {
@@ -195,11 +196,9 @@ export default class GleapSession {
 
                 resolve(sessionData);
               } catch (exp) {
-                self.clearSession(true);
                 reject(exp);
               }
             } else {
-              self.clearSession(true);
               reject();
             }
           }
