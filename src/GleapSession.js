@@ -10,6 +10,7 @@ export default class GleapSession {
     name: "",
     email: "",
     userId: "",
+    phone: "",
     value: 0
   };
   ready = false;
@@ -63,6 +64,7 @@ export default class GleapSession {
       type: null,
       name: "",
       email: "",
+      phone: "",
       value: 0,
     };
 

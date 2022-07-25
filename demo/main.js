@@ -1,17 +1,13 @@
 const Gleap = window.Gleap;
 
-Gleap.preFillForm({
-  "description": "This is a pre-fill test.",
-  "userId": "1233"
-});
-
 // Gleap.setFrameUrl("http://localhost:3000");
 // Gleap.setLanguage("en");
-Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
+Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
 Gleap.identify("user_19283", {
   name: "Franz Demoman",
   email: "lukas@gleap.io",
+  phone: "+436606210119",
   value: 199
 });
 
