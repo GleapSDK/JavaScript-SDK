@@ -33,6 +33,7 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 }
 
 class Gleap {
+  static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
 
@@ -396,6 +397,15 @@ class Gleap {
       attachments: true,
     }
   ) {
+    if (this.silentCrashReportSent) {
+      return;
+    }
+
+    this.silentCrashReportSent = true;
+    setTimeout(() => {
+      this.silentCrashReportSent = false;
+    }, 10000);
+
     const excludeDataCleaned = excludeData ? gleapDataParser(excludeData) : {};
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
