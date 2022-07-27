@@ -483,10 +483,14 @@ class Gleap {
     // Load session.
     const onGleapReady = function () {
       setTimeout(() => {
-        GleapFrameManager.getInstance().injectFrame();
+        GleapFrameManager.getInstance().injectFrame(false);
       }, 100);
     }
     GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
+  }
+
+  injectFrame() {
+    GleapFrameManager.getInstance().injectFrame(true);
   }
 
   /**

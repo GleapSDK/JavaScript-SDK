@@ -1,8 +1,8 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://localhost:3001");
+// Gleap.setFrameUrl("http://localhost:3001");
 // Gleap.setLanguage("en");
-Gleap.setApiUrl("http://localhost:9000");
+// Gleap.setApiUrl("http://localhost:9000");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
 Gleap.identify("user_19283", {

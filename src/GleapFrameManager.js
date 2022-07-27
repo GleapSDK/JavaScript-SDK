@@ -49,8 +49,8 @@ export default class GleapFrameManager {
     return this.widgetOpened;
   }
 
-  injectFrame = () => {
-    if (this.injectedFrame) {
+  injectFrame = (force = false) => {
+    if (this.injectedFrame && force === false) {
       return;
     }
     this.injectedFrame = true;
