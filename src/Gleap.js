@@ -490,9 +490,8 @@ class Gleap {
   }
 
   softReInitialize() {
-    GleapConfigManager.getInstance().start().then(() => {
-      GleapFrameManager.getInstance().injectFrame(true);
-    }).catch((exp) => {});
+    GleapConfigManager.getInstance().start();
+    GleapFrameManager.getInstance().injectFrame(true);
   }
 
   /**
