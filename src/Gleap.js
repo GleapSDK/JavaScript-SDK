@@ -483,15 +483,20 @@ class Gleap {
     // Load session.
     const onGleapReady = function () {
       setTimeout(() => {
-        GleapFrameManager.getInstance().injectFrame(false);
+        GleapFrameManager.getInstance().injectFrame();
       }, 100);
     }
     GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
   }
 
   softReInitialize() {
-    GleapConfigManager.getInstance().start();
-    GleapFrameManager.getInstance().injectFrame(true);
+    GleapFeedbackButtonManager.getInstance().injectedFeedbackButton = false;
+    GleapFrameManager.getInstance().injectedFrame = false;
+
+    // Reload config.
+    GleapConfigManager.getInstance().start().then(() => {
+      GleapFrameManager.getInstance().injectFrame();
+    }).catch((exp) => {});
   }
 
   /**
