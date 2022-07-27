@@ -6,7 +6,7 @@ const Gleap = window.Gleap;
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
 Gleap.identify("user_19283", {
-  name: "Franz Demoman",
+  name: "Franz",
   email: "lukas@gleap.io",
   phone: "+436606210119",
   value: 199
