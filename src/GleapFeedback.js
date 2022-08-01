@@ -122,7 +122,7 @@ export default class GleapFeedback {
                     reject();
                 };
                 http.onreadystatechange = function (e) {
-                    if (http.readyState === XMLHttpRequest.DONE) {
+                    if (http.readyState === 4) {
                         if (http.status === 200 || http.status === 201) {
                             resolve();
                         } else {

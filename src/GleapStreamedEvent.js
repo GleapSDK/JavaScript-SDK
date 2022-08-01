@@ -91,7 +91,7 @@ export default class GleapStreamedEvent {
       GleapSession.getInstance().injectSession(http);
       http.onerror = (error) => {};
       http.onreadystatechange = function (e) {
-        if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.readyState === 4) {
           if (http.status === 200 || http.status === 201) {
             try {
               const action = JSON.parse(http.responseText);

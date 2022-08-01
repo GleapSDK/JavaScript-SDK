@@ -496,7 +496,7 @@ class Gleap {
     // Reload config.
     GleapConfigManager.getInstance().start().then(() => {
       GleapFrameManager.getInstance().injectFrame();
-    }).catch((exp) => {});
+    }).catch((exp) => { });
   }
 
   /**

@@ -109,12 +109,12 @@ export default class GleapSession {
       }
     } catch (exp) { }
     http.onreadystatechange = function (e) {
-      if (http.readyState === XMLHttpRequest.DONE) {
+      if (http.readyState === 4) {
         if (http.status === 200 || http.status === 201) {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
-          } catch (exp) { }
+          } catch (exp) {}
         } else {
           if (http.status !== 429) {
             self.clearSession(attemp);
@@ -188,7 +188,7 @@ export default class GleapSession {
           reject();
         };
         http.onreadystatechange = function (e) {
-          if (http.readyState === XMLHttpRequest.DONE) {
+          if (http.readyState === 4) {
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
