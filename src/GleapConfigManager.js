@@ -87,10 +87,6 @@ export default class GleapConfigManager {
       this.flowConfig = flowConfig;
       this.projectActions = projectActions;
 
-      // Send config update.
-      GleapFrameManager.getInstance().sendConfigUpdate();
-      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
-
       if (flowConfig.color) {
         Gleap.setStyles(
           flowConfig.color,
@@ -102,6 +98,10 @@ export default class GleapConfigManager {
           flowConfig.borderRadius,
         );
       }
+
+      // Send config update.
+      GleapFrameManager.getInstance().sendConfigUpdate();
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
 
       if (flowConfig.enableReplays) {
         GleapReplayRecorder.getInstance().start();
