@@ -75,6 +75,21 @@ export default class GleapConfigManager {
     });
   };
 
+  applyStylesFromConfig() {
+    const flowConfig = this.flowConfig;
+    if (flowConfig && flowConfig.color) {
+      Gleap.setStyles(
+        flowConfig.color,
+        flowConfig.headerColor,
+        flowConfig.buttonColor,
+        flowConfig.backgroundColor
+          ? flowConfig.backgroundColor
+          : "#FFFFFF",
+        flowConfig.borderRadius,
+      );
+    }
+  }
+
   /**
    * Applies the Gleap config.
    * @param {*} config
@@ -87,17 +102,8 @@ export default class GleapConfigManager {
       this.flowConfig = flowConfig;
       this.projectActions = projectActions;
 
-      if (flowConfig.color) {
-        Gleap.setStyles(
-          flowConfig.color,
-          flowConfig.headerColor,
-          flowConfig.buttonColor,
-          flowConfig.backgroundColor
-            ? flowConfig.backgroundColor
-            : "#FFFFFF",
-          flowConfig.borderRadius,
-        );
-      }
+      // Update styles.
+      this.applyStylesFromConfig();
 
       // Send config update.
       GleapFrameManager.getInstance().sendConfigUpdate();

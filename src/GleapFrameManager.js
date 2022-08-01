@@ -1,4 +1,5 @@
 import { GleapStreamedEvent, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { runFunctionWhenDomIsReady } from "./GleapHelper";
 
 export default class GleapFrameManager {
   frameUrl = "https://frame.gleap.io";
@@ -55,15 +56,22 @@ export default class GleapFrameManager {
     }
     this.injectedFrame = true;
 
-    var elem = document.createElement("div");
-    elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
-    elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
-    document.body.appendChild(elem);
+    // Apply CSS.
+    GleapConfigManager.getInstance().applyStylesFromConfig();
 
-    this.gleapFrameContainer = elem;
-    this.gleapFrame = document.querySelector(".gleap-frame");
+    // Inject the frame manager after it has been loaded.
+    runFunctionWhenDomIsReady(() => {
+      // Inject widget HTML.
+      var elem = document.createElement("div");
+      elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
+      elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+      document.body.appendChild(elem);
 
-    this.updateFrameStyle();
+      this.gleapFrameContainer = elem;
+      this.gleapFrame = document.querySelector(".gleap-frame");
+
+      this.updateFrameStyle();
+    });
   };
 
   updateFrameStyle = () => {

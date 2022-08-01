@@ -1,6 +1,6 @@
 import { injectStyledCSS } from "./UI";
 import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
-import { gleapDataParser } from "./GleapHelper";
+import { gleapDataParser, runFunctionWhenDomIsReady } from "./GleapHelper";
 import GleapSession from "./GleapSession";
 import GleapStreamedEvent from "./GleapStreamedEvent";
 import GleapConfigManager from "./GleapConfigManager";
@@ -117,17 +117,8 @@ class Gleap {
       // Run auto configuration.
       GleapConfigManager.getInstance().start()
         .then(() => {
-          if (
-            document.readyState === "complete" ||
-            document.readyState === "loaded" ||
-            document.readyState === "interactive"
-          ) {
-            instance.postInitialization();
-          } else {
-            document.addEventListener("DOMContentLoaded", function (event) {
-              instance.postInitialization();
-            });
-          }
+          // Inject the Gleap frame.
+          GleapFrameManager.getInstance().injectFrame();
         })
         .catch(function (err) {
           console.warn("Failed to initialize Gleap.");
@@ -333,11 +324,7 @@ class Gleap {
     backgroundColor = "#ffffff",
     borderRadius = 20,
   ) {
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
+    runFunctionWhenDomIsReady(() => {
       injectStyledCSS(
         primaryColor,
         headerColor,
@@ -345,17 +332,7 @@ class Gleap {
         borderRadius,
         backgroundColor
       );
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
-        injectStyledCSS(
-          primaryColor,
-          headerColor,
-          buttonColor,
-          borderRadius,
-          backgroundColor
-        );
-      });
-    }
+    });
   }
 
   /**
@@ -474,19 +451,6 @@ class Gleap {
       hostname.endsWith(".local") ||
       !hostname.includes(".");
     return !isLocalHost;
-  }
-
-  /**
-   * Post initialization
-   */
-  postInitialization() {
-    // Load session.
-    const onGleapReady = function () {
-      setTimeout(() => {
-        GleapFrameManager.getInstance().injectFrame();
-      }, 100);
-    }
-    GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
   }
 
   softReInitialize() {
