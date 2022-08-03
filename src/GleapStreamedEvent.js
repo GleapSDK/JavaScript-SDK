@@ -1,10 +1,11 @@
 import { gleapDataParser } from "./GleapHelper";
-import Gleap, { GleapSession } from "./Gleap";
+import Gleap, { GleapSession, GleapNotificationManager } from "./Gleap";
 
 export default class GleapStreamedEvent {
   eventArray = [];
   streamedEventArray = [];
   eventMaxLength = 500;
+  streamingEvents = false;
   lastUrl = undefined;
 
   // GleapStreamedEvent singleton
@@ -68,49 +69,57 @@ export default class GleapStreamedEvent {
 
   startEventStream = () => {
     const self = this;
-    let interval = 1500;
-    if (
-      GleapSession.getInstance().ready &&
-      self.streamedEventArray &&
-      self.streamedEventArray.length > 0
-    ) {
-      self.streamEvents();
-      interval = 3000;
-    }
+    this.streamEvents();
 
     setTimeout(function () {
       self.startEventStream();
-    }, interval);
+    }, 5000);
   };
 
   streamEvents = () => {
-    if (GleapSession.getInstance().ready) {
-      const http = new XMLHttpRequest();
-      http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/stream");
-      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      GleapSession.getInstance().injectSession(http);
-      http.onerror = (error) => {
-        GleapSession.getInstance().clearSession(true);
-      };
-      http.onreadystatechange = function (e) {
-        if (http.readyState === XMLHttpRequest.DONE) {
-          if (http.status === 200 || http.status === 201) {
-            try {
-              const action = JSON.parse(http.responseText);
-              Gleap.getInstance().performAction(action);
-            } catch (exp) { }
-          } else {
-            GleapSession.getInstance().clearSession(true);
-          }
-        }
-      };
-      http.send(
-        JSON.stringify({
-          events: this.streamedEventArray,
-        })
-      );
-
-      this.streamedEventArray = [];
+    if (!GleapSession.getInstance().ready || this.streamingEvents) {
+      return;
     }
+
+    const self = this;
+    this.streamingEvents = true;
+
+    const http = new XMLHttpRequest();
+    http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/ping");
+    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    GleapSession.getInstance().injectSession(http);
+    http.onerror = (error) => {
+      GleapSession.getInstance().clearSession(true);
+      self.streamingEvents = false;
+    };
+    http.onreadystatechange = function (e) {
+      if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.status === 200 || http.status === 201) {
+          try {
+            const response = JSON.parse(http.responseText);
+            const { actions, unreadCount } = response;
+            if (actions) {
+              Gleap.getInstance().performActions(actions);
+            }
+            if (unreadCount != null) {
+              GleapNotificationManager.getInstance().setNotificationCount(unreadCount);
+            }
+          } catch (exp) {
+            console.log(exp);
+          }
+        } else {
+          GleapSession.getInstance().clearSession(true);
+        }
+
+        self.streamingEvents = false;
+      }
+    };
+    http.send(
+      JSON.stringify({
+        events: this.streamedEventArray,
+      })
+    );
+
+    this.streamedEventArray = [];
   };
 }

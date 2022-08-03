@@ -1,4 +1,4 @@
-import { GleapFrameManager, GleapConfigManager, GleapTranslationManager } from "./Gleap";
+import { GleapFrameManager, GleapConfigManager, GleapTranslationManager, GleapNotificationManager } from "./Gleap";
 import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
@@ -63,6 +63,21 @@ export default class GleapFeedbackButtonManager {
         this.updateFeedbackButtonState();
     }
 
+    updateNotificationBadge(count) {
+        const notificationBadge = document.querySelector(".bb-notification-bubble");
+        if (!notificationBadge) {
+            return;
+        }
+
+        const notificationHiddenClass = "bb-notification-bubble--hidden";
+        if (count > 0) {
+            notificationBadge.classList.remove(notificationHiddenClass);
+            notificationBadge.innerText = count;
+        } else {
+            notificationBadge.classList.add(notificationHiddenClass);
+        }
+    }
+
     /**
      * Updates the feedback button state
      * @returns 
@@ -81,6 +96,7 @@ export default class GleapFeedbackButtonManager {
             buttonIcon = loadIcon("button", "#fff");
         }
 
+        const notificationBubble = `<div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
         this.feedbackButton.className = "bb-feedback-button gleap-hidden";
         this.feedbackButton.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
         if (
@@ -96,12 +112,12 @@ export default class GleapFeedbackButtonManager {
                     : ""
                 }">${GleapTranslationManager.translateText(
                     flowConfig.widgetButtonText
-                )}</div>`;
+                )}</div>${notificationBubble}`;
         } else {
             this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
                 "arrowdown",
                 "#fff"
-            )}</div>`;
+            )}</div>${notificationBubble}`;
         }
 
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {

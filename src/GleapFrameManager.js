@@ -1,5 +1,4 @@
-import { GleapStreamedEvent, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
-import GleapAudioManager from "./GleapAudioManager";
+import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapFrameManager {
   frameUrl = "https://frame.gleap.io";
@@ -110,6 +109,8 @@ export default class GleapFrameManager {
 
     this.widgetOpened = true;
     this.updateWidgetStatus();
+    GleapNotificationManager.getInstance().clearAllNotifications();
+    GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
     this.registerEscListener();
@@ -199,10 +200,6 @@ export default class GleapFrameManager {
   }
 
   startCommunication() {
-    window.addEventListener('resize', (event) => {
-      //this.calculateFrameHeight();
-    }, true);
-
     // Listen for messages.
     this.addMessageListener((data) => {
       if (data.name === "ping") {
@@ -210,6 +207,9 @@ export default class GleapFrameManager {
 
         // Inject the widget buttons
         GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
+
+        // Inject the notification container
+        GleapNotificationManager.getInstance().injectNotificationUI();
 
         this.sendConfigUpdate();
         this.sendSessionUpdate();

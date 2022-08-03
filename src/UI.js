@@ -133,6 +133,43 @@ export const injectStyledCSS = (
       }
     }
 
+    .gleap-notification-container {
+      position: fixed;
+      bottom: 88px;
+      right: 24px;
+      z-index: ${zIndexBase + 30};
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      max-width: min(300px, 80vw);
+    }
+
+    .gleap-notification-item {
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
+      border-radius: ${formItemBorderRadius}px;
+      padding: 12px 16px;
+      background-color: ${backgroundColor};
+      margin-bottom: 12px;
+      cursor: pointer;
+      font-size: 15px;
+      line-height: 21px;
+      color: ${contrastBackgroundColor};
+      animation-duration: 0.7s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
+
+    .gleap-notification-item-sender {
+      font-size: 13px;
+      color: ${contrastBackgroundColor};
+    }
+
+    .gleap-notification-item-content {
+      font-size: 14px;
+      line-height: 20px;
+      color: ${subTextColor};
+    }
+
     .gleap-frame-container-inner {
       width: 100%;
       height: 100%;
@@ -255,6 +292,25 @@ export const injectStyledCSS = (
     .bb-feedback-button-text-title b {
       color: #000000;
       font-weight: 600;
+    }
+
+    .bb-notification-bubble {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      min-width: 22px;
+      padding: 0px 4px;
+      height: 22px;
+      border-radius: 22px;
+      background-color: red;
+      color: #fff;
+      font-size: 12px;
+      text-align: center;
+      line-height: 22px;
+    }
+
+    .bb-notification-bubble--hidden {
+      display: none;
     }
     
     .bb-feedback-button-icon {

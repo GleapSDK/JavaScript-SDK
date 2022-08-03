@@ -20,6 +20,8 @@ import GleapMarkerManager from "./GleapMarkerManager";
 import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
+import GleapNotificationManager from "./GleapNotificationManager";
+import GleapAudioManager from "./GleapAudioManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -452,6 +454,24 @@ class Gleap {
     }
   }
 
+  /**
+   * Opens a conversation
+   */
+  static openConversation(shareToken) {
+    if (!shareToken) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-conversation",
+      data: {
+        shareToken,
+      }
+    });
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
   isLiveMode() {
     if (this.offlineMode === true) {
       return false;
@@ -483,13 +503,25 @@ class Gleap {
    * Performs an action.
    * @param {*} action 
    */
-  performAction(action) {
-    if (action && action.outbound && action.actionType) {
-      Gleap.startFeedbackFlowWithOptions(action.actionType, {
-        actionOutboundId: action.outbound,
-        hideBackButton: true
-      });
+  performActions(actions) {    
+    for (let i = 0; i < actions.length; i++) {
+      const action = actions[i];
+      if (action && action.outbound && action.actionType) {
+        if (action.actionType === "notification") {
+          Gleap.showNotification(action);
+        } else {
+          Gleap.startFeedbackFlowWithOptions(action.actionType, {
+            actionOutboundId: action.outbound,
+            hideBackButton: true
+          });
+        }
+      }
     }
+  }
+
+  static showNotification(data) {
+    GleapNotificationManager.getInstance().showNotification(data);
+    GleapAudioManager.ping();
   }
 
   /**
@@ -535,5 +567,5 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapPreFillManager, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export { GleapNetworkIntercepter, GleapAudioManager, GleapNotificationManager, GleapPreFillManager, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
 export default Gleap;
