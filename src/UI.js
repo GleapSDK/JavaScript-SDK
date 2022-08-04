@@ -1009,9 +1009,14 @@ export const injectStyledCSS = (
 
     @media only screen and (max-width: 450px) {
       .gleap-frame-container {
-        left: 20px;
-        right: 20px;
-        width: calc(100% - 40px) !important;
+        left: 0px;
+        right: 00px;
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+        top: 0px !important;
+        bottom: initial !important;
+        border-radius: 0px !important;
       }
 
       .bb-tooltip {

@@ -26,7 +26,7 @@ export default class GleapStreamedEvent {
   }
 
   start() {
-    this.startEventStream();
+    this.runEventStreamLoop();
     this.startPageListener();
   }
 
@@ -67,13 +67,13 @@ export default class GleapStreamedEvent {
     }
   }
 
-  startEventStream = () => {
+  runEventStreamLoop = () => {
     const self = this;
     this.streamEvents();
 
     setTimeout(function () {
-      self.startEventStream();
-    }, 5000);
+      self.runEventStreamLoop();
+    }, 6000);
   };
 
   streamEvents = () => {
