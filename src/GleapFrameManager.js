@@ -1,4 +1,5 @@
 import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { widgetMaxHeight } from "./UI";
 
 export default class GleapFrameManager {
   frameUrl = "https://frame.gleap.io";
@@ -7,6 +8,7 @@ export default class GleapFrameManager {
   injectedFrame = false;
   widgetOpened = false;
   listeners = [];
+  appMode = "widget";
   markerManager = undefined;
   escListener = undefined;
   frameHeight = 0;
@@ -22,6 +24,16 @@ export default class GleapFrameManager {
 
   constructor() {
     this.startCommunication();
+  }
+
+  setAppMode(appMode) {
+    this.appMode = appMode;
+    this.updateFrameStyle();
+
+    const innerContainer = document.querySelector(".gleap-frame-container-inner");
+    if ((appMode === "widget" || appMode === "survey_full") && innerContainer) {
+      innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
+    }
   }
 
   registerEscListener() {
@@ -71,10 +83,12 @@ export default class GleapFrameManager {
       return;
     }
 
+    const surveyStyle = "gleap-frame-container--survey";
+    const surveyFullStyle = "gleap-frame-container--survey-full";
     const classicStyle = "gleap-frame-container--classic";
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
-    const allStyles = [classicStyle, classicStyleLeft, modernStyleLeft];
+    const allStyles = [classicStyle, classicStyleLeft, modernStyleLeft, surveyStyle, surveyFullStyle];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
@@ -93,6 +107,13 @@ export default class GleapFrameManager {
     }
     if (styleToApply) {
       this.gleapFrameContainer.classList.add(styleToApply);
+    }
+
+    if (this.appMode === "survey") {
+      this.gleapFrameContainer.classList.add(surveyStyle);
+    }
+    if (this.appMode === "survey_full") {
+      this.gleapFrameContainer.classList.add(surveyFullStyle);
     }
 
     this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
@@ -222,7 +243,11 @@ export default class GleapFrameManager {
 
       if (data.name === "height-update") {
         this.frameHeight = data.data;
-        //this.calculateFrameHeight();
+
+        const innerContainer = document.querySelector(".gleap-frame-container-inner");
+        if ((this.appMode === "survey" || this.appMode === "survey_full") && innerContainer) {
+          innerContainer.style.maxHeight = `${this.frameHeight}px`;
+        }
       }
 
       if (data.name === "notify-event") {

@@ -183,6 +183,7 @@ class Gleap {
    * Starts the Gleap flow.
    */
   static open() {
+    GleapFrameManager.getInstance().setAppMode("widget");
     GleapFrameManager.getInstance().showWidget();
   }
 
@@ -425,8 +426,8 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlowWithOptions(feedbackFlow, options = {}) {
-    const { actionOutboundId, autostartDrawing, hideBackButton } = options;
+  static startFeedbackFlowWithOptions(feedbackFlow, options = {}, isSurvey = false) {
+    const { actionOutboundId, autostartDrawing, hideBackButton, format } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -438,12 +439,20 @@ class Gleap {
       y: window.scrollY,
     });
 
+    var action = "start-feedbackflow";
+    if (isSurvey) {
+      action = "start-survey";
+    }
+
+    GleapFrameManager.getInstance().setAppMode(isSurvey ? format : "widget");
+
     GleapFrameManager.getInstance().sendMessage({
-      name: "start-feedbackflow",
+      name: action,
       data: {
         flow: feedbackFlow,
         actionOutboundId: actionOutboundId,
         hideBackButton: hideBackButton,
+        format,
       }
     });
 
@@ -503,7 +512,7 @@ class Gleap {
    * Performs an action.
    * @param {*} action 
    */
-  performActions(actions) {    
+  performActions(actions) {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       if (action && action.outbound && action.actionType) {
@@ -512,8 +521,9 @@ class Gleap {
         } else {
           Gleap.startFeedbackFlowWithOptions(action.actionType, {
             actionOutboundId: action.outbound,
-            hideBackButton: true
-          });
+            hideBackButton: true,
+            format: action.format
+          }, true);
         }
       }
     }

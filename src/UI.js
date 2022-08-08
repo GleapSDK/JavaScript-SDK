@@ -29,6 +29,8 @@ const calculateContrast = (hex) => {
   return yiq >= 160 ? "#000000" : "#ffffff";
 };
 
+export const widgetMaxHeight = 660;
+
 export const injectStyledCSS = (
   primaryColor,
   headerColor,
@@ -64,8 +66,6 @@ export const injectStyledCSS = (
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
-      height: calc(100% - 150px);
-      max-height: 660px;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
       border-radius: ${borderRadius}px;
       overflow: hidden;
@@ -80,6 +80,34 @@ export const injectStyledCSS = (
       right: auto;
       left: 20px;
       bottom: 95px;
+    }
+
+    .gleap-frame-container--survey {
+      bottom: 20px !important;
+    }
+
+    .gleap-frame-container--survey-full {
+      position: fixed;
+      top: 0 !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      animation-name: none !important;
+    }
+
+    .gleap-frame-container--survey-full .gleap-frame-container-inner {
+      max-width: 500px !important;
+      border-radius: ${borderRadius}px;
+      overflow: hidden;
     }
 
     .gleap-frame-container--classic {
@@ -118,7 +146,6 @@ export const injectStyledCSS = (
     }
 
     .gleap-frame-container--animate {
-      transition: max-height 0.2s ease-in;
       pointer-events: auto !important;
     }
 
@@ -171,9 +198,10 @@ export const injectStyledCSS = (
     }
 
     .gleap-frame-container-inner {
-      width: 100%;
-      height: 100%;
       position: relative;
+      width: 100%;
+      height: calc(100vh - 150px);
+      max-height: ${widgetMaxHeight}px;
     }
 
     .gleap-frame-container-inner:before {
@@ -385,6 +413,7 @@ export const injectStyledCSS = (
       right: auto;
     }
     
+    .bb-feedback-button--open.bb-feedback-button--survey,
     .bb-feedback-button--open .bb-feedback-button-classic {
       animation-duration: 0.2s;
       animation-fill-mode: both;

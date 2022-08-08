@@ -40,6 +40,7 @@ export default class GleapFeedbackButtonManager {
         if (frameManager.isOpened()) {
             frameManager.hideWidget();
         } else {
+            frameManager.setAppMode("widget");
             frameManager.showWidget();
         }
     }
@@ -130,6 +131,11 @@ export default class GleapFeedbackButtonManager {
 
         if (GleapFrameManager.getInstance().isOpened()) {
             this.feedbackButton.classList.add("bb-feedback-button--open");
+        }
+
+        const appMode = GleapFrameManager.getInstance().appMode;
+        if (appMode === "survey" || appMode === "survey_full") {
+            this.feedbackButton.classList.add("bb-feedback-button--survey");
         }
     }
 }
