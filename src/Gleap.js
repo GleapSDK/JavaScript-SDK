@@ -82,10 +82,17 @@ class Gleap {
   }
 
   /**
-   * Revert console log overwrite
+   * Revert console log overwrite.
    */
   static disableConsoleLogOverwrite() {
     GleapConsoleLogManager.getInstance().stop();
+  }
+
+  /**
+   * Attaches external network logs.
+   */
+   static attachNetworkLogs(networkLogs) {
+    GleapNetworkIntercepter.getInstance().externalRequests = networkLogs;
   }
 
   /**
