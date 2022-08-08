@@ -47,8 +47,6 @@ class GleapNetworkIntercepter {
   getRequests() {
     var requests = JSON.parse(JSON.stringify(Object.values(this.requests)));
 
-    console.log(JSON.stringify(requests));
-
     // Merge external requests into internal requests.
     if (this.externalRequests && this.externalRequests.length > 0) {
       requests = requests.concat(this.externalRequests);
