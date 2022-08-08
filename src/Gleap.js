@@ -92,7 +92,7 @@ class Gleap {
    * Attaches external network logs.
    */
    static attachNetworkLogs(networkLogs) {
-    GleapNetworkIntercepter.getInstance().externalRequests = networkLogs;
+    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
   }
 
   /**
