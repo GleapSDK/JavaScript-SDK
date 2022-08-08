@@ -106,6 +106,7 @@ export const injectStyledCSS = (
 
     .gleap-frame-container--survey-full .gleap-frame-container-inner {
       max-width: 500px !important;
+      width: calc(100% - 24px);
       border-radius: ${borderRadius}px;
       overflow: hidden;
     }
@@ -1046,6 +1047,12 @@ export const injectStyledCSS = (
         top: 0px !important;
         bottom: initial !important;
         border-radius: 0px !important;
+      }
+
+      .gleap-frame-container--survey {
+        height: auto !important;
+        top: initial !important;
+        bottom: 0px !important;
       }
 
       .bb-tooltip {

@@ -26,22 +26,27 @@ export default class GleapStreamedEvent {
   }
 
   start() {
-    this.runEventStreamLoop();
     this.startPageListener();
+    this.runEventStreamLoop();
+  }
+
+  logCurrentPage() {
+    const currentUrl = window.location.href;
+    if (currentUrl && currentUrl !== this.lastUrl) {
+      this.lastUrl = currentUrl;
+      this.logEvent("pageView", {
+        page: currentUrl,
+      });
+    }
   }
 
   startPageListener() {
     this.logEvent("sessionStarted");
+    this.logCurrentPage();
 
     const self = this;
     setInterval(function () {
-      const currentUrl = window.location.href;
-      if (currentUrl && currentUrl !== self.lastUrl) {
-        self.lastUrl = currentUrl;
-        self.logEvent("pageView", {
-          page: currentUrl,
-        });
-      }
+      self.logCurrentPage();
     }, 1000);
   }
 
@@ -97,6 +102,7 @@ export default class GleapStreamedEvent {
         if (http.status === 200 || http.status === 201) {
           try {
             const response = JSON.parse(http.responseText);
+            console.log(response);
             const { actions, unreadCount } = response;
             if (actions) {
               Gleap.getInstance().performActions(actions);
@@ -119,6 +125,8 @@ export default class GleapStreamedEvent {
         events: this.streamedEventArray,
       })
     );
+
+    console.log(this.streamedEventArray);
 
     this.streamedEventArray = [];
   };
