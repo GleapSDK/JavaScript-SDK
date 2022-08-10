@@ -30,6 +30,11 @@ export default class GleapMetaDataManager {
     this.getInstance().appBuildNumber = appBuildNumber;
   }
 
+  getSessionDuration() {
+    const now = new Date();
+    return Math.round((now.getTime() - this.sessionStart.getTime()) / 1000);
+  }
+
   getMetaData() {
     var nAgt = navigator.userAgent;
     var browserName = navigator.appName;
@@ -98,10 +103,6 @@ export default class GleapMetaDataManager {
     if (navigator.appVersion.indexOf("iPhone") !== -1) OSName = "iPhone";
     if (navigator.appVersion.indexOf("Android") !== -1) OSName = "Android";
 
-    const now = new Date();
-    const sessionDuration =
-      (now.getTime() - this.sessionStart.getTime()) / 1000;
-
     return {
       browserName: browserName + "(" + fullVersion + ")",
       userAgent: nAgt,
@@ -109,7 +110,7 @@ export default class GleapMetaDataManager {
       systemName: OSName,
       buildVersionNumber: this.appBuildNumber,
       releaseVersionNumber: this.appVersionCode,
-      sessionDuration: sessionDuration,
+      sessionDuration: this.getSessionDuration(),
       devicePixelRatio: window.devicePixelRatio,
       screenWidth: window.screen.width,
       screenHeight: window.screen.height,

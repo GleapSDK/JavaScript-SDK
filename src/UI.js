@@ -1049,6 +1049,12 @@ export const injectStyledCSS = (
         border-radius: 0px !important;
       }
 
+      .gleap-frame-container-inner {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-height: 100vh !important;
+      }
+
       .gleap-frame-container--survey {
         height: auto !important;
         top: initial !important;
