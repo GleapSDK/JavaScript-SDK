@@ -1,9 +1,11 @@
 import Gleap, { GleapFeedbackButtonManager, GleapFrameManager } from "./Gleap";
+import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapNotificationManager {
     notificationContainer = null;
     notifications = [];
     unreadCount = 0;
+    unreadNotificationsKey = "unread-notifications";
 
     // GleapNotificationManager singleton
     static instance;
@@ -26,6 +28,10 @@ export default class GleapNotificationManager {
         elem.className = "gleap-notification-container";
         document.body.appendChild(elem);
         this.notificationContainer = elem;
+
+        // Load persisted notifications.
+        this.notifications = loadFromGleapCache(this.unreadNotificationsKey);
+        this.renderNotifications();
     }
 
     setNotificationCount(unreadCount) {
@@ -50,6 +56,9 @@ export default class GleapNotificationManager {
             this.notifications.shift();
         }
 
+        // Persist notifications.
+        saveToGleapCache(this.unreadNotificationsKey, this.notifications);
+
         this.renderNotifications();
     }
 
@@ -71,7 +80,9 @@ export default class GleapNotificationManager {
                 }
             };
             elem.className = "gleap-notification-item";
-            elem.innerHTML = `<div class="gleap-notification-item-container">
+            elem.innerHTML = `
+            ${notification.data.sender && notification.data.sender.profileImageUrl && `<img src="${notification.data.sender.profileImageUrl}" />`}
+            <div class="gleap-notification-item-container">
                 ${notification.data.sender ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>` : ""}
                 <div class="gleap-notification-item-content">${notification.data.text}</div>
             </div>`;
@@ -86,8 +97,9 @@ export default class GleapNotificationManager {
 
         if (!uiOnly) {
             this.notifications = [];
+            saveToGleapCache(this.unreadNotificationsKey, this.notifications);
         }
-        
+
         while (this.notificationContainer.firstChild) {
             this.notificationContainer.removeChild(this.notificationContainer.firstChild);
         }

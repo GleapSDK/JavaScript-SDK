@@ -5,6 +5,7 @@ export default class GleapStreamedEvent {
   eventArray = [];
   streamedEventArray = [];
   eventMaxLength = 500;
+  errorCount = 0;
   streamingEvents = false;
   lastUrl = undefined;
 
@@ -25,9 +26,16 @@ export default class GleapStreamedEvent {
     return this.eventArray;
   }
 
+  resetErrorCountLoop() {
+    setInterval(() => {
+      this.errorCount = 0;
+    }, 60000);
+  }
+
   start() {
     this.startPageListener();
     this.runEventStreamLoop();
+    this.resetErrorCountLoop();
   }
 
   logCurrentPage() {
@@ -82,7 +90,7 @@ export default class GleapStreamedEvent {
   };
 
   streamEvents = () => {
-    if (!GleapSession.getInstance().ready || this.streamingEvents) {
+    if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 3) {
       return;
     }
 
@@ -94,24 +102,25 @@ export default class GleapStreamedEvent {
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     GleapSession.getInstance().injectSession(http);
     http.onerror = (error) => {
-      GleapSession.getInstance().clearSession(true);
+      self.errorCount++;
       self.streamingEvents = false;
     };
     http.onreadystatechange = function (e) {
       if (http.readyState === XMLHttpRequest.DONE) {
         if (http.status === 200 || http.status === 201) {
+          self.errorCount = 0;
           try {
             const response = JSON.parse(http.responseText);
-            const { actions, unreadCount } = response;
-            if (actions) {
-              Gleap.getInstance().performActions(actions);
+            const { a, u } = response;
+            if (a) {
+              Gleap.getInstance().performActions(a);
             }
-            if (unreadCount != null) {
-              GleapNotificationManager.getInstance().setNotificationCount(unreadCount);
+            if (u != null) {
+              GleapNotificationManager.getInstance().setNotificationCount(u);
             }
-          } catch (exp) {}
+          } catch (exp) { }
         } else {
-          GleapSession.getInstance().clearSession(true);
+          self.errorCount++;
         }
 
         self.streamingEvents = false;

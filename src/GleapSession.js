@@ -181,7 +181,6 @@ export default class GleapSession {
         } catch (exp) { }
 
         http.onerror = () => {
-          self.clearSession(true);
           reject();
         };
         http.onreadystatechange = function (e) {

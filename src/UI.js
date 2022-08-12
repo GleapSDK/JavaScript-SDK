@@ -62,7 +62,7 @@ export const injectStyledCSS = (
     .gleap-frame-container {
       right: 20px;
       bottom: 95px;
-      width: 380px !important;
+      width: 380px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
@@ -161,6 +161,17 @@ export const injectStyledCSS = (
       }
     }
 
+    @keyframes gleapFadeInUpMobile {
+      from {
+          opacity: 0;
+          transform: translate3d(0, 10%, 0);
+      }
+      to {
+          opacity: 1;
+          transform: translate3d(0, 0, 0);
+      }
+    }
+
     .gleap-notification-container {
       position: fixed;
       bottom: 88px;
@@ -173,7 +184,29 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-item {
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
+
+      animation-duration: 0.7s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
+
+    .gleap-notification-item {
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .gleap-notification-item img {
+      width: 30px;
+      height: 30px;
+      min-width: 30px;
+      border-radius: 100%;
+      object-fit: cover;
+      margin-right: 8px;
+      margin-bottom: 12px;
+    }
+
+    .gleap-notification-item-container {
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
       border-radius: ${formItemBorderRadius}px;
       padding: 12px 16px;
       background-color: ${backgroundColor};
@@ -182,9 +215,6 @@ export const injectStyledCSS = (
       font-size: 15px;
       line-height: 21px;
       color: ${contrastBackgroundColor};
-      animation-duration: 0.7s;
-      animation-fill-mode: both;
-      animation-name: bbFadeInOpacity;
     }
 
     .gleap-notification-item-sender {
@@ -1040,25 +1070,34 @@ export const injectStyledCSS = (
     @media only screen and (max-width: 450px) {
       .gleap-frame-container {
         left: 0px;
-        right: 00px;
-        width: 100vw !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
-        top: 0px !important;
-        bottom: initial !important;
-        border-radius: 0px !important;
+        right: 0px;
+        width: 100vw;
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+        top: 0px;
+        bottom: 0px;
+        border-radius: 0px;
+        animation-name: gleapFadeInUpMobile;
       }
 
       .gleap-frame-container-inner {
-        width: 100vw !important;
-        height: 100vh !important;
-        max-height: 100vh !important;
+        width: 100vw;
+        height: 100%;
+      }
+
+      .gleap-frame-container:not(.gleap-frame-container--survey) .gleap-frame-container-inner {
+        max-height: initial !important;
       }
 
       .gleap-frame-container--survey {
         height: auto !important;
         top: initial !important;
         bottom: 0px !important;
+        min-height: initial !important;
+      }
+
+      .gleap-frame-container--survey .gleap-frame-container-inner {
+        height: 100vh !important;
       }
 
       .bb-tooltip {
