@@ -30,8 +30,11 @@ export default class GleapNotificationManager {
         this.notificationContainer = elem;
 
         // Load persisted notifications.
-        this.notifications = loadFromGleapCache(this.unreadNotificationsKey);
-        this.renderNotifications();
+        const notificationsFromCache = loadFromGleapCache(this.unreadNotificationsKey);
+        if (notificationsFromCache && notificationsFromCache.length > 0) {
+            this.notifications = notificationsFromCache;
+            this.renderNotifications();
+        }
     }
 
     setNotificationCount(unreadCount) {
