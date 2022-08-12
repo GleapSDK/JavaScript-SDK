@@ -2,7 +2,7 @@ import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapP
 import { widgetMaxHeight } from "./UI";
 
 export default class GleapFrameManager {
-  frameUrl = "https://frame.gleap.io";
+  frameUrl = "https://framebeta.gleap.io";
   gleapFrameContainer = null;
   gleapFrame = null;
   injectedFrame = false;
