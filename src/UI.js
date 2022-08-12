@@ -1085,7 +1085,7 @@ export const injectStyledCSS = (
         height: 100%;
       }
 
-      .gleap-frame-container:not(.gleap-frame-container--survey) .gleap-frame-container-inner {
+      .gleap-frame-container:not(.gleap-frame-container--survey):not(.gleap-frame-container--survey-full) .gleap-frame-container-inner {
         max-height: initial !important;
       }
 
