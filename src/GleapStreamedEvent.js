@@ -1,5 +1,5 @@
 import { gleapDataParser } from "./GleapHelper";
-import Gleap, { GleapSession, GleapNotificationManager, GleapMetaDataManager } from "./Gleap";
+import Gleap, { GleapSession, GleapNotificationManager, GleapMetaDataManager, GleapFrameManager } from "./Gleap";
 
 export default class GleapStreamedEvent {
   eventArray = [];
@@ -112,11 +112,13 @@ export default class GleapStreamedEvent {
           try {
             const response = JSON.parse(http.responseText);
             const { a, u } = response;
-            if (a) {
-              Gleap.getInstance().performActions(a);
-            }
-            if (u != null) {
-              GleapNotificationManager.getInstance().setNotificationCount(u);
+            if (!GleapFrameManager.getInstance().isOpened()) {
+              if (a) {
+                Gleap.getInstance().performActions(a);
+              }
+              if (u != null) {
+                GleapNotificationManager.getInstance().setNotificationCount(u);
+              }
             }
           } catch (exp) { }
         } else {
@@ -132,6 +134,7 @@ export default class GleapStreamedEvent {
       JSON.stringify({
         time: sessionDuration,
         events: this.streamedEventArray,
+        opened: GleapFrameManager.getInstance().isOpened()
       })
     );
 

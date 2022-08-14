@@ -124,7 +124,12 @@ export default class GleapFeedback {
                 http.onreadystatechange = function (e) {
                     if (http.readyState === XMLHttpRequest.DONE) {
                         if (http.status === 200 || http.status === 201) {
-                            resolve();
+                            try {
+                                const feedback = JSON.parse(http.responseText);
+                                resolve(feedback);
+                            } catch (exp) {
+                                reject();
+                            }
                         } else {
                             reject();
                         }
