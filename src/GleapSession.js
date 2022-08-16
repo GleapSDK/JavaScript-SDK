@@ -34,6 +34,17 @@ export default class GleapSession {
     return this.session;
   }
 
+  /**
+   * Determines if the current session is a identified user.
+   * @returns boolean
+   */
+  isUser() {
+    if (this.session && this.session.userId) {
+      return true;
+    }
+    return false;
+  }
+
   constructor() { }
 
   setOnSessionReady = (onSessionReady) => {

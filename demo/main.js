@@ -10,11 +10,12 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 // Gleap.setLanguage("en");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
-Gleap.identify("user_19283", {
+/*Gleap.identify("user_19283", {
   name: "Franz Demoman",
   email: "lukas@gleap.io",
   value: 199
-});
+});*/
+Gleap.clearIdentity();
 
 Gleap.attachCustomData({
   mission: "Unicorn",

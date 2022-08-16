@@ -300,6 +300,10 @@ export const injectStyledCSS = (
     .bb-feedback-button--disabled .bb-feedback-button-text {
       display: none;
     }
+
+    .bb-feedback-button--hidden {
+      display: none !important;
+    }
     
     .bb-feedback-button-text {
       padding: 8px 12px;

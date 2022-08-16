@@ -1,4 +1,4 @@
-import { GleapFrameManager, GleapConfigManager, GleapTranslationManager, GleapNotificationManager } from "./Gleap";
+import { GleapFrameManager, GleapConfigManager, GleapTranslationManager, GleapSession } from "./Gleap";
 import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
@@ -136,6 +136,10 @@ export default class GleapFeedbackButtonManager {
         const appMode = GleapFrameManager.getInstance().appMode;
         if (appMode === "survey" || appMode === "survey_full") {
             this.feedbackButton.classList.add("bb-feedback-button--survey");
+        }
+
+        if (flowConfig.hideForGuests && !GleapSession.getInstance().isUser()) {
+            this.feedbackButton.classList.add("bb-feedback-button--hidden");
         }
     }
 }
