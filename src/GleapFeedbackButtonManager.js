@@ -138,7 +138,7 @@ export default class GleapFeedbackButtonManager {
             this.feedbackButton.classList.add("bb-feedback-button--survey");
         }
 
-        if (flowConfig.hideForGuests && !GleapSession.getInstance().isUser()) {
+        if (flowConfig.hideForGuests === true && !GleapSession.getInstance().isUser()) {
             this.feedbackButton.classList.add("bb-feedback-button--hidden");
         }
     }
