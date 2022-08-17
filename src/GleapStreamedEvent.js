@@ -90,7 +90,7 @@ export default class GleapStreamedEvent {
   };
 
   streamEvents = () => {
-    if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 3) {
+    if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 2) {
       return;
     }
 
