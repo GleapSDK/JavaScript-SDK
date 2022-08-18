@@ -94,7 +94,9 @@ export default class GleapFeedback {
         for (let i = 0; i < keysToExclude.length; i++) {
             const keyToExclude = keysToExclude[i];
             if (this.excludeData[keyToExclude] === true) {
-                delete feedbackData[keyToExclude];
+                if (feedbackData[keyToExclude]) {
+                    delete feedbackData[keyToExclude];
+                }
 
                 if (keyToExclude === "screenshot") {
                     delete feedbackData.screenshotData;

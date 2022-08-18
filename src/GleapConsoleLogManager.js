@@ -37,7 +37,7 @@ export default class GleapConsoleLogManager {
    * @param {*} logLevel
    * @returns
    */
-   addLog(message, logLevel = "INFO") {
+  addLog(message, logLevel = "INFO") {
     if (!message || message.length <= 0) {
       return;
     }
@@ -65,9 +65,11 @@ export default class GleapConsoleLogManager {
     }
 
     var log = "";
-    for (var i = 0; i < args.length; i++) {
-      log += args[i] + " ";
-    }
+    try {
+      for (var i = 0; i < args.length; i++) {
+        log += args[i] + " ";
+      }
+    } catch (exp) { }
 
     this.addLog(log, logLevel);
   }
