@@ -5,16 +5,16 @@ Gleap.preFillForm({
   "userId": "1233"
 });
 
-// Gleap.setFrameUrl("http://0.0.0.0:3001");
-// Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
 // Gleap.setLanguage("en");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
-/*Gleap.identify("user_19283", {
+Gleap.identify("user_19283", {
   name: "Franz Demoman",
   email: "lukas@gleap.io",
   value: 199
-});*/
+});
 
 Gleap.attachCustomData({
   mission: "Unicorn",
