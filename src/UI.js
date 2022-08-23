@@ -184,7 +184,6 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-item {
-
       animation-duration: 0.7s;
       animation-fill-mode: both;
       animation-name: bbFadeInOpacity;
@@ -203,6 +202,7 @@ export const injectStyledCSS = (
       object-fit: cover;
       margin-right: 8px;
       margin-bottom: 12px;
+      cursor: pointer;
     }
 
     .gleap-notification-item-container {
