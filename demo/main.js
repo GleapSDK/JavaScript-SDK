@@ -11,7 +11,7 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
 Gleap.identify("user_19283", {
-  name: "Franz Demoman",
+  name: "Franz.Demoman+asdf@eap.io",
   email: "lukas@gleap.io",
   value: 199
 });

@@ -531,7 +531,10 @@ class Gleap {
 
   static showNotification(data) {
     GleapNotificationManager.getInstance().showNotification(data);
-    GleapAudioManager.ping();
+
+    if (data && data.sound) {
+      GleapAudioManager.ping();
+    }
   }
 
   /**

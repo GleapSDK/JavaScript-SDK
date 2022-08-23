@@ -27,6 +27,18 @@ export default class GleapSession {
   }
 
   /**
+   * Returns the current session name.
+   * @returns string
+   */
+  getName() {
+    try {
+      return this.session.name ? this.session.name.split(' ')[0].split('@')[0].split('.')[0].split('+')[0] : "";
+    } catch (exp) {
+      return this.session.name;
+    }
+  }
+
+  /**
    * Returns the Gleap session object.
    * @returns 
    */

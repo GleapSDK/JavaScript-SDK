@@ -1,4 +1,4 @@
-import Gleap, { GleapFeedbackButtonManager, GleapFrameManager } from "./Gleap";
+import Gleap, { GleapFeedbackButtonManager, GleapFrameManager, GleapSession } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapNotificationManager {
@@ -54,7 +54,10 @@ export default class GleapNotificationManager {
             return;
         }
 
-        this.notifications.push(notification);
+        const notificationsForOutbound = this.notifications.find((e) => notification.outbound === e.outbound);
+        if (!notificationsForOutbound) {
+            this.notifications.push(notification);
+        }
         if (this.notifications.length > 2) {
             this.notifications.shift();
         }
@@ -76,10 +79,18 @@ export default class GleapNotificationManager {
         // Render the notifications.
         for (var i = 0; i < this.notifications.length; i++) {
             const notification = this.notifications[i];
+
+            var content = notification.data.text;
+
+            // Try replacing the session name.
+            content = content.replaceAll("{{name}}", GleapSession.getInstance().getName());
+
             const elem = document.createElement("div");
             elem.onclick = () => {
                 if (notification.data.conversation) {
                     Gleap.openConversation(notification.data.conversation.shareToken);
+                } else {
+                    Gleap.open();
                 }
             };
             elem.className = "gleap-notification-item";
@@ -87,7 +98,7 @@ export default class GleapNotificationManager {
             ${notification.data.sender && notification.data.sender.profileImageUrl && `<img src="${notification.data.sender.profileImageUrl}" />`}
             <div class="gleap-notification-item-container">
                 ${notification.data.sender ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>` : ""}
-                <div class="gleap-notification-item-content">${notification.data.text}</div>
+                <div class="gleap-notification-item-content">${content}</div>
             </div>`;
             this.notificationContainer.appendChild(elem);
         }
