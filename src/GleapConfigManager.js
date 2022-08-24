@@ -30,6 +30,10 @@ export default class GleapConfigManager {
     return this.projectActions;
   }
 
+  /**
+   * Load config.
+   * @returns {string}
+   */
   start = () => {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
@@ -77,17 +81,16 @@ export default class GleapConfigManager {
 
   applyStylesFromConfig() {
     const flowConfig = this.flowConfig;
-    if (flowConfig && flowConfig.color) {
-      Gleap.setStyles(
-        flowConfig.color,
-        flowConfig.headerColor,
-        flowConfig.buttonColor,
-        flowConfig.backgroundColor
-          ? flowConfig.backgroundColor
-          : "#FFFFFF",
-        flowConfig.borderRadius,
-      );
-    }
+
+    Gleap.setStyles(
+      flowConfig.color ? flowConfig.color : "#485BFF",
+      flowConfig.headerColor ? flowConfig.headerColor : "#485BFF",
+      flowConfig.buttonColor ? flowConfig.buttonColor : "#485BFF",
+      flowConfig.backgroundColor
+        ? flowConfig.backgroundColor
+        : "#FFFFFF",
+      flowConfig.borderRadius,
+    );
   }
 
   /**
@@ -136,7 +139,9 @@ export default class GleapConfigManager {
       }
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
-    } catch (e) { }
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   getFeedbackOptions(feedbackFlow) {

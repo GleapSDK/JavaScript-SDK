@@ -93,7 +93,7 @@ class Gleap {
   /**
    * Attaches external network logs.
    */
-   static attachNetworkLogs(networkLogs) {
+  static attachNetworkLogs(networkLogs) {
     GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
   }
 
@@ -124,14 +124,16 @@ class Gleap {
     sessionInstance.sdkKey = sdkKey;
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
-      GleapConfigManager.getInstance().start()
-        .then(() => {
-          // Inject the Gleap frame.
-          GleapFrameManager.getInstance().injectFrame();
-        })
-        .catch(function (err) {
-          console.warn("Failed to initialize Gleap.");
-        });
+      setTimeout(() => {
+        GleapConfigManager.getInstance().start()
+          .then(() => {
+            // Inject the Gleap frame.
+            GleapFrameManager.getInstance().injectFrame();
+          })
+          .catch(function (err) {
+            console.warn("Failed to initialize Gleap.");
+          });
+      }, 0);
     });
     sessionInstance.startSession();
   }
