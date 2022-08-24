@@ -1,6 +1,6 @@
 import { injectStyledCSS } from "./UI";
 import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
-import { gleapDataParser } from "./GleapHelper";
+import { gleapDataParser, runFunctionWhenDomIsReady } from "./GleapHelper";
 import GleapSession from "./GleapSession";
 import GleapStreamedEvent from "./GleapStreamedEvent";
 import GleapConfigManager from "./GleapConfigManager";
@@ -35,6 +35,7 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 }
 
 class Gleap {
+  static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
 
@@ -83,10 +84,17 @@ class Gleap {
   }
 
   /**
-   * Revert console log overwrite
+   * Revert console log overwrite.
    */
   static disableConsoleLogOverwrite() {
     GleapConsoleLogManager.getInstance().stop();
+  }
+
+  /**
+   * Attaches external network logs.
+   */
+   static attachNetworkLogs(networkLogs) {
+    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
   }
 
   /**
@@ -118,17 +126,8 @@ class Gleap {
       // Run auto configuration.
       GleapConfigManager.getInstance().start()
         .then(() => {
-          if (
-            document.readyState === "complete" ||
-            document.readyState === "loaded" ||
-            document.readyState === "interactive"
-          ) {
-            instance.postInitialization();
-          } else {
-            document.addEventListener("DOMContentLoaded", function (event) {
-              instance.postInitialization();
-            });
-          }
+          // Inject the Gleap frame.
+          GleapFrameManager.getInstance().injectFrame();
         })
         .catch(function (err) {
           console.warn("Failed to initialize Gleap.");
@@ -339,11 +338,7 @@ class Gleap {
     backgroundColor = "#ffffff",
     borderRadius = 20,
   ) {
-    if (
-      document.readyState === "complete" ||
-      document.readyState === "loaded" ||
-      document.readyState === "interactive"
-    ) {
+    runFunctionWhenDomIsReady(() => {
       injectStyledCSS(
         primaryColor,
         headerColor,
@@ -351,17 +346,7 @@ class Gleap {
         borderRadius,
         backgroundColor
       );
-    } else {
-      document.addEventListener("DOMContentLoaded", function (event) {
-        injectStyledCSS(
-          primaryColor,
-          headerColor,
-          buttonColor,
-          borderRadius,
-          backgroundColor
-        );
-      });
-    }
+    });
   }
 
   /**
@@ -403,6 +388,15 @@ class Gleap {
       attachments: true,
     }
   ) {
+    if (this.silentCrashReportSent) {
+      return;
+    }
+
+    this.silentCrashReportSent = true;
+    setTimeout(() => {
+      this.silentCrashReportSent = false;
+    }, 10000);
+
     const excludeDataCleaned = excludeData ? gleapDataParser(excludeData) : {};
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
@@ -499,17 +493,14 @@ class Gleap {
     return !isLocalHost;
   }
 
-  /**
-   * Post initialization
-   */
-  postInitialization() {
-    // Load session.
-    const onGleapReady = function () {
-      setTimeout(() => {
-        GleapFrameManager.getInstance().injectFrame();
-      }, 100);
-    }
-    GleapSession.getInstance().setOnSessionReady(onGleapReady.bind(this));
+  softReInitialize() {
+    GleapFeedbackButtonManager.getInstance().injectedFeedbackButton = false;
+    GleapFrameManager.getInstance().injectedFrame = false;
+
+    // Reload config.
+    GleapConfigManager.getInstance().start().then(() => {
+      GleapFrameManager.getInstance().injectFrame();
+    }).catch((exp) => { });
   }
 
   /**

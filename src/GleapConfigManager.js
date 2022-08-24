@@ -57,7 +57,7 @@ export default class GleapConfigManager {
         reject();
       };
       http.onreadystatechange = function (e) {
-        if (http.readyState === XMLHttpRequest.DONE) {
+        if (http.readyState === 4) {
           if (http.status === 200 || http.status === 201) {
             try {
               const config = JSON.parse(http.responseText);
@@ -75,6 +75,21 @@ export default class GleapConfigManager {
     });
   };
 
+  applyStylesFromConfig() {
+    const flowConfig = this.flowConfig;
+    if (flowConfig && flowConfig.color) {
+      Gleap.setStyles(
+        flowConfig.color,
+        flowConfig.headerColor,
+        flowConfig.buttonColor,
+        flowConfig.backgroundColor
+          ? flowConfig.backgroundColor
+          : "#FFFFFF",
+        flowConfig.borderRadius,
+      );
+    }
+  }
+
   /**
    * Applies the Gleap config.
    * @param {*} config
@@ -87,22 +102,13 @@ export default class GleapConfigManager {
       this.flowConfig = flowConfig;
       this.projectActions = projectActions;
 
+      // Update styles.
+      this.applyStylesFromConfig();
+
       // Send config update.
       GleapFrameManager.getInstance().sendConfigUpdate();
       GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
       GleapNotificationManager.getInstance().updateContainerStyle();
-
-      if (flowConfig.color) {
-        Gleap.setStyles(
-          flowConfig.color,
-          flowConfig.headerColor,
-          flowConfig.buttonColor,
-          flowConfig.backgroundColor
-            ? flowConfig.backgroundColor
-            : "#FFFFFF",
-          flowConfig.borderRadius,
-        );
-      }
 
       if (flowConfig.enableReplays) {
         GleapReplayRecorder.getInstance().start();

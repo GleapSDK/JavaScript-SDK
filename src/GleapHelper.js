@@ -127,3 +127,15 @@ export const getDOMElementDescription = (element, html = true) => {
 
   return `${htmlPre}${elementTag}${elementId}${elementClass}${htmlPost}${innerText}${htmlPre}/${elementTag}${htmlPost}`;
 }
+
+export const runFunctionWhenDomIsReady = (callback) => {
+  if (
+    document.readyState === "complete" ||
+    document.readyState === "loaded" ||
+    document.readyState === "interactive"
+  ) {
+    callback();
+  } else {
+    document.addEventListener("DOMContentLoaded", callback);
+  }
+}

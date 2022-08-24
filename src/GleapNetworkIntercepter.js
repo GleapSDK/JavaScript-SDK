@@ -2,6 +2,7 @@ class GleapNetworkIntercepter {
   startTimestamp = Date.now();
   requestId = 0;
   requests = {};
+  externalRequests = [];
   maxRequests = 10;
   filters = [];
   blacklist = ["gleap.io"];
@@ -45,6 +46,11 @@ class GleapNetworkIntercepter {
 
   getRequests() {
     var requests = JSON.parse(JSON.stringify(Object.values(this.requests)));
+
+    // Merge external requests into internal requests.
+    if (this.externalRequests && this.externalRequests.length > 0) {
+      requests = requests.concat(this.externalRequests);
+    }
 
     if (this.filters && this.filters.length > 0) {
       // Perform network log filtering.
