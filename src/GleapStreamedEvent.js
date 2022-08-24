@@ -101,7 +101,7 @@ export default class GleapStreamedEvent {
     http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/ping");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     GleapSession.getInstance().injectSession(http);
-    http.onerror = (error) => {
+    http.onerror = () => {
       self.errorCount++;
       self.streamingEvents = false;
     };
