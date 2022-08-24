@@ -1,4 +1,4 @@
-import Gleap, { GleapFeedbackButtonManager, GleapFrameManager, GleapSession } from "./Gleap";
+import Gleap, { GleapFeedbackButtonManager, GleapConfigManager, GleapFrameManager, GleapSession } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapNotificationManager {
@@ -28,6 +28,8 @@ export default class GleapNotificationManager {
         elem.className = "gleap-notification-container";
         document.body.appendChild(elem);
         this.notificationContainer = elem;
+
+        this.updateContainerStyle();
 
         // Load persisted notifications.
         const notificationsFromCache = loadFromGleapCache(this.unreadNotificationsKey);
@@ -116,6 +118,22 @@ export default class GleapNotificationManager {
 
         while (this.notificationContainer.firstChild) {
             this.notificationContainer.removeChild(this.notificationContainer.firstChild);
+        }
+    }
+
+    updateContainerStyle() {
+        if (!this.notificationContainer) {
+            return;
+        }
+
+        const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+        const classLeft = "gleap-notification-container--left";
+        this.notificationContainer.classList.remove(classLeft);
+        if (
+            flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
+            flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+        ) {
+            this.notificationContainer.classList.add(classLeft);
         }
     }
 }

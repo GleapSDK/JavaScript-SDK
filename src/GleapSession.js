@@ -80,6 +80,10 @@ export default class GleapSession {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
 
+    GleapFrameManager.getInstance().sendMessage({
+      name: "session-cleared"
+    }, true);
+
     this.session = {
       id: null,
       hash: null,

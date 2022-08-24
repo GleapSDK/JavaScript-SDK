@@ -183,6 +183,11 @@ export const injectStyledCSS = (
       max-width: min(300px, 80vw);
     }
 
+    .gleap-notification-container--left {
+      left: 24px;
+      right: initial !important;
+    }
+
     .gleap-notification-item {
       animation-duration: 0.7s;
       animation-fill-mode: both;

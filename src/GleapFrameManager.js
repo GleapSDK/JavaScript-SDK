@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapPreFillManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 import { widgetMaxHeight } from "./UI";
 
 export default class GleapFrameManager {
@@ -12,6 +12,7 @@ export default class GleapFrameManager {
   markerManager = undefined;
   escListener = undefined;
   frameHeight = 0;
+  queue = [];
 
   // GleapFrameManager singleton
   static instance;
@@ -170,9 +171,13 @@ export default class GleapFrameManager {
     }
   }
 
-  sendMessage(data) {
+  sendMessage(data, queue = false) {
     if (this.gleapFrame) {
       this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), "*");
+    } else {
+      if (queue) {
+        this.queue.push(data);
+      }
     }
   };
 
@@ -184,13 +189,6 @@ export default class GleapFrameManager {
         apiUrl: GleapSession.getInstance().apiUrl,
         sdkKey: GleapSession.getInstance().sdkKey,
       }
-    });
-  }
-
-  sendFormPreFillData() {
-    this.sendMessage({
-      name: "prefill-form-data",
-      data: GleapPreFillManager.getInstance().formPreFill
     });
   }
 
@@ -220,6 +218,13 @@ export default class GleapFrameManager {
     });
   }
 
+  workThroughQueue() {
+    for (let i = 0; i < this.queue.length; i++) {
+      this.sendMessage(this.queue[i]);
+    }
+    this.queue = [];
+  }
+
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
@@ -234,7 +239,7 @@ export default class GleapFrameManager {
 
         this.sendConfigUpdate();
         this.sendSessionUpdate();
-        this.sendFormPreFillData();
+        this.workThroughQueue();
       }
 
       if (data.name === "play-ping") {

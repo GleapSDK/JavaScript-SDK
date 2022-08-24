@@ -1,5 +1,5 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import Gleap, { GleapFrameManager, GleapFeedbackButtonManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder } from "./Gleap";
+import Gleap, { GleapFrameManager, GleapFeedbackButtonManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder, GleapNotificationManager } from "./Gleap";
 
 export default class GleapConfigManager {
   flowConfig = null;
@@ -90,6 +90,7 @@ export default class GleapConfigManager {
       // Send config update.
       GleapFrameManager.getInstance().sendConfigUpdate();
       GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+      GleapNotificationManager.getInstance().updateContainerStyle();
 
       if (flowConfig.color) {
         Gleap.setStyles(

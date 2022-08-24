@@ -202,8 +202,12 @@ class Gleap {
    * @param {*} value 
    */
   static preFillForm(data) {
-    GleapPreFillManager.getInstance().formPreFill = gleapDataParser(data);
-    GleapFrameManager.getInstance().sendFormPreFillData();
+    const cleanedData = gleapDataParser(data);
+    GleapPreFillManager.getInstance().formPreFill = cleanedData;
+    GleapFrameManager.getInstance().sendMessage({
+      name: "prefill-form-data",
+      data: cleanedData
+    }, true);
   }
 
   /**
