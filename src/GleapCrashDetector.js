@@ -15,7 +15,7 @@ export default class GleapCrashDetector {
       const { message, filename, lineno, colno, error } = e;
 
       var stackTrace = "";
-      if (error !== null && typeof error.stack !== "undefined") {
+      if (error && typeof error.stack !== "undefined") {
         stackTrace = error.stack;
       }
       var messageObject = [
