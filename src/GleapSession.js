@@ -141,7 +141,7 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
-          } catch (exp) {}
+          } catch (exp) { }
         } else {
           if (http.status !== 429) {
             self.clearSession(attemp);
@@ -199,7 +199,7 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject();
+          return reject("No session ready to identify. This usually means that you called clearSession() directly before calling this method.");
         }
 
         const http = new XMLHttpRequest();
