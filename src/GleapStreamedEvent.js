@@ -128,7 +128,7 @@ export default class GleapStreamedEvent {
         self.streamingEvents = false;
       }
     };
-
+    
     const sessionDuration = GleapMetaDataManager.getInstance().getSessionDuration();
     http.send(
       JSON.stringify({
