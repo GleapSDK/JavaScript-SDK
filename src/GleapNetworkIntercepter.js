@@ -5,7 +5,8 @@ class GleapNetworkIntercepter {
   externalRequests = [];
   maxRequests = 10;
   filters = [];
-  blacklist = ["gleap.io"];
+  defaultBlacklist = ["gleap.io"];
+  blacklist = [];
   initialized = false;
   stopped = false;
   loadAllResources = false;
@@ -113,10 +114,11 @@ class GleapNetworkIntercepter {
       }
     } catch (exp) { }
 
-    if (this.blacklist && this.blacklist.length > 0) {
+    var blacklist = this.blacklist.concat(this.defaultBlacklist);
+    if (blacklist && blacklist.length > 0) {
       requests = requests.filter((request) => {
-        for (var i = 0; i < this.blacklist.length; i++) {
-          if (request.url && request.url.includes(this.blacklist[i])) {
+        for (var i = 0; i < blacklist.length; i++) {
+          if (request.url && request.url.includes(blacklist[i])) {
             return false;
           }
         }

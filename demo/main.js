@@ -5,8 +5,8 @@ Gleap.preFillForm({
   "userId": "1233"
 });
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
+//Gleap.setFrameUrl("http://0.0.0.0:3001");
+//Gleap.setApiUrl("http://0.0.0.0:9000");
 // Gleap.setLanguage("en");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 
@@ -53,3 +53,20 @@ setTimeout(() => {
   xmlhttp.setRequestHeader("asdfasdf2", "wertwertwert2");
   xmlhttp.send();
 }, 1000);
+
+
+setTimeout(() => {
+  fetch('https://jsonplaceholder.typicode.com/todos/1', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      console.log('Success:', data);
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    });
+}, 3000);
