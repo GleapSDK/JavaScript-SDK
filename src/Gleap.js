@@ -139,6 +139,19 @@ class Gleap {
   }
 
   /**
+   * Destroy
+   * @returns 
+   */
+  static destroy() {
+    GleapReplayRecorder.getInstance().stop();
+    GleapStreamedEvent.getInstance().stop();
+    GleapFrameManager.getInstance().destroy();
+    GleapFeedbackButtonManager.getInstance().toggleFeedbackButton(false);
+    GleapNotificationManager.getInstance().clearAllNotifications(true);
+    GleapSession.getInstance().clearSession(0, false);
+  }
+
+  /**
    * Indentifies the user session
    * @param {string} userId
    * @param {*} userData

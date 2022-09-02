@@ -76,7 +76,7 @@ export default class GleapSession {
     }
   };
 
-  clearSession = (attemp = 0) => {
+  clearSession = (attemp = 0, retry = true) => {
     try {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
@@ -95,12 +95,14 @@ export default class GleapSession {
       value: 0,
     };
 
-    if (!isNaN(attemp)) {
-      // Exponentially retry to renew session.
-      const newTimeout = (Math.pow(attemp, 2) * 10) + 10;
-      setTimeout(() => {
-        this.startSession(attemp + 1);
-      }, newTimeout * 1000);
+    if (retry) {
+      if (!isNaN(attemp)) {
+        // Exponentially retry to renew session.
+        const newTimeout = (Math.pow(attemp, 2) * 10) + 10;
+        setTimeout(() => {
+          this.startSession(attemp + 1);
+        }, newTimeout * 1000);
+      }
     }
   };
 
@@ -144,7 +146,7 @@ export default class GleapSession {
           } catch (exp) { }
         } else {
           if (http.status !== 429) {
-            self.clearSession(attemp);
+            self.clearSession(attemp, true);
           }
         }
       }

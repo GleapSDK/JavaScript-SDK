@@ -8,6 +8,7 @@ export default class GleapStreamedEvent {
   errorCount = 0;
   streamingEvents = false;
   lastUrl = undefined;
+  stopped = false;
 
   // GleapStreamedEvent singleton
   static instance;
@@ -20,10 +21,14 @@ export default class GleapStreamedEvent {
     }
   }
 
-  constructor() { }
+  constructor() {}
 
   getEventArray() {
     return this.eventArray;
+  }
+
+  stop() {
+    this.stopped = true;
   }
 
   resetErrorCountLoop() {
@@ -54,6 +59,9 @@ export default class GleapStreamedEvent {
 
     const self = this;
     setInterval(function () {
+      if (self.stopped) {
+        return;
+      }
       self.logCurrentPage();
     }, 1000);
   }
@@ -81,6 +89,10 @@ export default class GleapStreamedEvent {
   }
 
   runEventStreamLoop = () => {
+    if (this.stopped) {
+      return;
+    }
+    
     const self = this;
     this.streamEvents();
 

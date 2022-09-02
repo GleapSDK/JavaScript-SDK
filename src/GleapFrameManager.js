@@ -59,6 +59,18 @@ export default class GleapFrameManager {
     }
   }
 
+  destroy() {
+    if (this.gleapFrame) {
+      this.gleapFrame.remove();
+    }
+    if (this.gleapFrameContainer) {
+      this.gleapFrameContainer.remove();
+    }
+    this.injectedFrame = false;
+    this.gleapFrameContainer = null;
+    this.gleapFrame = null;
+  }
+
   isOpened() {
     return this.widgetOpened;
   }
@@ -129,6 +141,10 @@ export default class GleapFrameManager {
   }
 
   showWidget() {
+    if (!this.gleapFrameContainer) {
+      return;
+    }
+
     if (this.gleapFrameContainer.classList) {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
 
