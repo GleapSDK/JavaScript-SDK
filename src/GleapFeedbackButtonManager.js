@@ -97,9 +97,9 @@ export default class GleapFeedbackButtonManager {
             buttonIcon = loadIcon("button", "#fff");
         }
 
-        const notificationBubble = `<div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
         this.feedbackButton.className = "bb-feedback-button gleap-hidden";
         this.feedbackButton.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
+
         if (
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
@@ -113,12 +113,12 @@ export default class GleapFeedbackButtonManager {
                     : ""
                 }">${GleapTranslationManager.translateText(
                     flowConfig.widgetButtonText
-                )}</div>${notificationBubble}`;
+                )}</div>`;
         } else {
             this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
                 "arrowdown",
                 "#fff"
-            )}</div>${notificationBubble}`;
+            )}</div><div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
         }
 
         if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {

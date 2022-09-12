@@ -150,7 +150,7 @@ class Gleap {
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
   }
-
+  
   /**
    * Indentifies the user session
    * @param {string} userId

@@ -21,7 +21,7 @@ export default class GleapStreamedEvent {
     }
   }
 
-  constructor() {}
+  constructor() { }
 
   getEventArray() {
     return this.eventArray;
@@ -92,13 +92,13 @@ export default class GleapStreamedEvent {
     if (this.stopped) {
       return;
     }
-    
+
     const self = this;
     this.streamEvents();
 
     setTimeout(function () {
       self.runEventStreamLoop();
-    }, 6000);
+    }, 7500);
   };
 
   streamEvents = () => {
@@ -108,6 +108,8 @@ export default class GleapStreamedEvent {
 
     const self = this;
     this.streamingEvents = true;
+
+    const preGleapId = GleapSession.getInstance().getGleapId();
 
     const http = new XMLHttpRequest();
     http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/ping");
@@ -121,18 +123,22 @@ export default class GleapStreamedEvent {
       if (http.readyState === 4) {
         if (http.status === 200 || http.status === 201) {
           self.errorCount = 0;
-          try {
-            const response = JSON.parse(http.responseText);
-            const { a, u } = response;
-            if (!GleapFrameManager.getInstance().isOpened()) {
-              if (a) {
-                Gleap.getInstance().performActions(a);
+
+          // Only perform actions if gleapId was not changed.
+          if (GleapSession.getInstance().getGleapId() === preGleapId) {
+            try {
+              const response = JSON.parse(http.responseText);
+              const { a, u } = response;
+              if (!GleapFrameManager.getInstance().isOpened()) {
+                if (a) {
+                  Gleap.getInstance().performActions(a);
+                }
+                if (u != null) {
+                  GleapNotificationManager.getInstance().setNotificationCount(u);
+                }
               }
-              if (u != null) {
-                GleapNotificationManager.getInstance().setNotificationCount(u);
-              }
-            }
-          } catch (exp) { }
+            } catch (exp) { }
+          }
         } else {
           self.errorCount++;
         }
@@ -140,7 +146,7 @@ export default class GleapStreamedEvent {
         self.streamingEvents = false;
       }
     };
-    
+
     const sessionDuration = GleapMetaDataManager.getInstance().getSessionDuration();
     http.send(
       JSON.stringify({

@@ -1,9 +1,10 @@
-import { GleapFrameManager } from "./Gleap";
+import { GleapFrameManager, GleapNotificationManager } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 
 export default class GleapSession {
   apiUrl = "https://api.gleap.io";
   sdkKey = null;
+  updatingSession = false;
   session = {
     gleapId: null,
     gleapHash: null,
@@ -45,6 +46,18 @@ export default class GleapSession {
    */
   getSession() {
     return this.session;
+  }
+
+  /**
+   * Returns the Gleap session object.
+   * @returns 
+   */
+  getGleapId() {
+    if (this.session && this.session.gleapId) {
+      return this.session.gleapId;
+    }
+    
+    return null;
   }
 
   /**
@@ -203,7 +216,7 @@ export default class GleapSession {
         if (!self.session.gleapId || !self.session.gleapHash) {
           return reject("No session ready to identify. This usually means that you called clearSession() directly before calling this method.");
         }
-
+        
         const http = new XMLHttpRequest();
         http.open("POST", self.apiUrl + "/sessions/identify");
         http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -223,6 +236,7 @@ export default class GleapSession {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
 
+                GleapNotificationManager.getInstance().clearAllNotifications(true);
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
