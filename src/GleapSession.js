@@ -236,7 +236,7 @@ export default class GleapSession {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
 
-                GleapNotificationManager.getInstance().clearAllNotifications(true);
+                GleapNotificationManager.getInstance().clearAllNotifications(false);
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
