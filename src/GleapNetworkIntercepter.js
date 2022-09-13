@@ -3,7 +3,7 @@ class GleapNetworkIntercepter {
   requestId = 0;
   requests = {};
   externalRequests = [];
-  maxRequests = 10;
+  maxRequests = 30;
   filters = [];
   defaultBlacklist = ["gleap.io"];
   blacklist = [];
