@@ -130,8 +130,8 @@ class GleapNetworkIntercepter {
   }
 
   setMaxRequests(maxRequests) {
-    if (maxRequests > 50) {
-      maxRequests = 50;
+    if (maxRequests > 70) {
+      maxRequests = 70;
     }
     this.maxRequests = maxRequests;
   }
