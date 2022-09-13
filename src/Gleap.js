@@ -38,7 +38,7 @@ class Gleap {
   static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
-  
+
   // Global data
   globalData = {
     screenRecordingData: null,
@@ -78,7 +78,7 @@ class Gleap {
    * Sets the development environment
    * @param {*} environment
    */
-   static setEnvironment(environment) {
+  static setEnvironment(environment) {
     GleapMetaDataManager.getInstance().environment = environment;
   }
 
@@ -158,7 +158,7 @@ class Gleap {
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
   }
-  
+
   /**
    * Indentifies the user session
    * @param {string} userId
@@ -192,6 +192,13 @@ class Gleap {
    */
   static hide() {
     GleapFrameManager.getInstance().hideWidget();
+  }
+
+  /**
+   * Sets the maximum network request count.
+   */
+  static setMaxNetworkRequests(maxRequests) {
+    GleapNetworkIntercepter.getInstance().setMaxRequests(maxRequests);
   }
 
   /**

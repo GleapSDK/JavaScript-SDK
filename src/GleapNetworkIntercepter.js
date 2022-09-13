@@ -130,6 +130,9 @@ class GleapNetworkIntercepter {
   }
 
   setMaxRequests(maxRequests) {
+    if (maxRequests > 50) {
+      maxRequests = 50;
+    }
     this.maxRequests = maxRequests;
   }
 
@@ -176,7 +179,7 @@ class GleapNetworkIntercepter {
 
   cleanupContentSize(text) {
     const contentSize = this.getTextContentSize(text);
-    if (contentSize > 0.2) {
+    if (contentSize > 0.15) {
       return "<content_too_large>";
     }
 
