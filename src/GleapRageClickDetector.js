@@ -1,4 +1,4 @@
-import Gleap, { GleapConfigManager } from "./Gleap";
+import Gleap, { GleapConfigManager, GleapMetaDataManager } from "./Gleap";
 import { getDOMElementDescription } from "./GleapHelper";
 
 const detectRageClicks = function (subscribe, options) {
@@ -50,7 +50,7 @@ export default class GleapRageClickDetector {
     startRageClickDetector(function (target) {
       const elementDescription = getDOMElementDescription(target, false);
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-      if (flowConfig && typeof flowConfig.enableRageClickDetector !== "undefined" && flowConfig.enableRageClickDetector) {
+      if (flowConfig && typeof flowConfig.enableRageClickDetector !== "undefined" && flowConfig.enableRageClickDetector && GleapMetaDataManager.getInstance().environment !== "dev") {
         if (flowConfig.rageClickDetectorIsSilent) {
           Gleap.sendSilentCrashReportWithFormData(
             {

@@ -71,6 +71,7 @@ export namespace Gleap {
   function open(): void;
   function close(): void;
   function hide(): void;
+  function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(feedbackFlow: string, showBackButton?: boolean): void;
   function on(event: string, callback: (data?: any) => void): void;

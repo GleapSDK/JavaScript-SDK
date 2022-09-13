@@ -38,7 +38,7 @@ class Gleap {
   static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
-
+  
   // Global data
   globalData = {
     screenRecordingData: null,
@@ -72,6 +72,14 @@ class Gleap {
       GleapCrashDetector.getInstance().start();
       GleapRageClickDetector.getInstance().start();
     }
+  }
+
+  /**
+   * Sets the development environment
+   * @param {*} environment
+   */
+   static setEnvironment(environment) {
+    GleapMetaDataManager.getInstance().environment = environment;
   }
 
   /**

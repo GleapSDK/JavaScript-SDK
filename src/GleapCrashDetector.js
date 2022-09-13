@@ -1,4 +1,4 @@
-import Gleap, { GleapConfigManager, GleapConsoleLogManager } from "./Gleap";
+import Gleap, { GleapConfigManager, GleapConsoleLogManager, GleapMetaDataManager } from "./Gleap";
 
 export default class GleapCrashDetector {
   // GleapCrashDetector singleton
@@ -28,7 +28,7 @@ export default class GleapCrashDetector {
       GleapConsoleLogManager.getInstance().addLogWithArgs(messageObject, "ERROR");
 
       const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-      if (flowConfig && typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector) {
+      if (flowConfig && typeof flowConfig.enableCrashDetector !== "undefined" && flowConfig.enableCrashDetector && GleapMetaDataManager.getInstance().environment !== "dev") {
         if (flowConfig.crashDetectorIsSilent) {
           Gleap.sendSilentCrashReportWithFormData(
             {

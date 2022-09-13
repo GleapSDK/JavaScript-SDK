@@ -4,6 +4,7 @@ export default class GleapMetaDataManager {
   sessionStart = new Date();
   appBuildNumber = "";
   appVersionCode = "";
+  environment = "prod";
 
   // GleapMetaDataManager singleton
   static instance;
@@ -121,6 +122,7 @@ export default class GleapMetaDataManager {
       mobile: isMobile(),
       sdkVersion: SDK_VERSION,
       sdkType: "javascript",
+      environment: this.environment,
     };
   }
 }
