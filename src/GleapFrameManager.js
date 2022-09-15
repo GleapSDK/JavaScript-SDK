@@ -1,4 +1,4 @@
-import { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import Gleap, { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
 
@@ -144,6 +144,11 @@ export default class GleapFrameManager {
     if (!this.gleapFrameContainer) {
       return;
     }
+    
+    Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
+      x: window.scrollX,
+      y: window.scrollY,
+    });
 
     if (this.gleapFrameContainer.classList) {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');

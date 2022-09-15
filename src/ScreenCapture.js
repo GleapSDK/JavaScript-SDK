@@ -383,7 +383,7 @@ const deepClone = (host) => {
         clone.setAttribute("bb-width", boundingRect.width);
       }
 
-      if (tagName == "DIV" && (node.scrollTop > 0 || node.scrollLeft > 0)) {
+      if ((node.scrollTop > 0 || node.scrollLeft > 0)) {
         clone.setAttribute("bb-scrollpos", true);
         clone.setAttribute("bb-scrolltop", node.scrollTop);
         clone.setAttribute("bb-scrollleft", node.scrollLeft);
