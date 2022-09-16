@@ -62,7 +62,7 @@ export const injectStyledCSS = (
     .gleap-frame-container {
       right: 20px;
       bottom: 95px;
-      width: 380px;
+      width: 375px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
