@@ -45,7 +45,11 @@ export namespace Gleap {
     customAction: (action: { name: string }) => void
   ): void;
   function log(message: string, logLevel?: "INFO" | "WARNING" | "ERROR"): void;
+  /**
+ * @deprecated Please use trackEvent instead.
+ */
   function logEvent(name: string, data?: any): void;
+  function trackEvent(name: string, data?: any): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
   function setStyles(styles: {

@@ -221,6 +221,16 @@ class Gleap {
    * @param {string} name
    * @param {any} data
    */
+  static trackEvent(name, data) {
+    GleapStreamedEvent.getInstance().logEvent(name, data);
+  }
+
+  /**
+   * Logs a custom event
+   * @param {string} name
+   * @param {any} data
+   * @deprecated Please use trackEvent instead.
+   */
   static logEvent(name, data) {
     GleapStreamedEvent.getInstance().logEvent(name, data);
   }
