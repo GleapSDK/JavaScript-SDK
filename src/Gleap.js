@@ -217,7 +217,7 @@ class Gleap {
   }
 
   /**
-   * Logs a custom event
+   * Track a custom event
    * @param {string} name
    * @param {any} data
    */
