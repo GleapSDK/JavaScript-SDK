@@ -8,7 +8,7 @@ Gleap.preFillForm({
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 // Gleap.setLanguage("en");
-Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
+Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 //Gleap.setEnvironment("dev");
 
 Gleap.identify("user_19283", {
@@ -30,6 +30,8 @@ Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");
 Gleap.log("Test log warn", "WARNING");
 Gleap.log("Test log err", "ERROR");
+
+Gleap.trackEvent("Master Event");
 
 // Register custom action.
 Gleap.registerCustomAction((customAction) => {
@@ -54,8 +56,3 @@ setTimeout(() => {
   xmlhttp.setRequestHeader("asdfasdf2", "wertwertwert2");
   xmlhttp.send();
 }, 1000);
-
-
-setTimeout(() => {
-  x();
-}, 3000);
