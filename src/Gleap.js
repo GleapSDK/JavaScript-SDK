@@ -513,6 +513,8 @@ class Gleap {
       return;
     }
 
+    GleapFrameManager.getInstance().setAppMode("widget");
+
     GleapFrameManager.getInstance().sendMessage({
       name: "open-conversation",
       data: {

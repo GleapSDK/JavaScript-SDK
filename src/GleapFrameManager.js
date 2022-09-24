@@ -144,7 +144,7 @@ export default class GleapFrameManager {
     if (!this.gleapFrameContainer) {
       return;
     }
-    
+
     Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
       x: window.scrollX,
       y: window.scrollY,
