@@ -1,6 +1,14 @@
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import Gleap, { GleapFrameManager, GleapFeedbackButtonManager, GleapTranslationManager, GleapNetworkIntercepter, GleapSession, GleapReplayRecorder, GleapNotificationManager } from "./Gleap";
 
+const parseIntWithDefault = (val, def) => {
+  const parsed = parseInt(val);
+  if (isNaN(parsed)) {
+    return def;
+  }
+  return parsed;
+}
+
 export default class GleapConfigManager {
   flowConfig = null;
   projectActions = null;
@@ -89,7 +97,9 @@ export default class GleapConfigManager {
       flowConfig.backgroundColor
         ? flowConfig.backgroundColor
         : "#FFFFFF",
-      flowConfig.borderRadius,
+      parseIntWithDefault(flowConfig.borderRadius, 20),
+      parseIntWithDefault(flowConfig.buttonX, 20),
+      parseIntWithDefault(flowConfig.buttonY, 20),
     );
   }
 

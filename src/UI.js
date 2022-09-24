@@ -36,7 +36,9 @@ export const injectStyledCSS = (
   headerColor,
   buttonColor,
   borderRadius,
-  backgroundColor
+  backgroundColor,
+  buttonX,
+  buttonY
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
@@ -60,8 +62,8 @@ export const injectStyledCSS = (
 
   const colorStyleSheet = `
     .gleap-frame-container {
-      right: 20px;
-      bottom: 95px;
+      right: ${buttonX}px;
+      bottom: ${75 + buttonY}px;
       width: 375px;
       position: fixed;
       z-index: ${zIndexBase + 31};
@@ -78,12 +80,12 @@ export const injectStyledCSS = (
 
     [dir=rtl].gleap-frame-container {
       right: auto;
-      left: 20px;
-      bottom: 95px;
+      left: ${buttonX}px;
+      bottom: ${75 + buttonY}px;
     }
 
     .gleap-frame-container--survey {
-      bottom: 20px !important;
+      bottom: ${buttonY}px !important;
     }
 
     .gleap-frame-container--survey-full {
@@ -112,38 +114,38 @@ export const injectStyledCSS = (
     }
 
     .gleap-frame-container--classic {
-      right: 20px;
-      bottom: 20px;
+      right: ${buttonX}px;
+      bottom: ${buttonY}px;
     }
 
     [dir=rtl].gleap-frame-container--classic {
       right: auto;
-      left: 20px;
-      bottom: 20px;
+      left: ${buttonX}px;
+      bottom: ${buttonY}px;
     }
 
     .gleap-frame-container--classic-left {
       right: auto;
-      left: 20px;
-      bottom: 20px;
+      left: ${buttonX}px;
+      bottom: ${buttonY}px;
     }
 
     [dir=rtl].gleap-frame-container--classic-left {
       left: auto;
-      right: 20px;
-      bottom: 20px;
+      right: ${buttonX}px;
+      bottom: ${buttonY}px;
     }
 
     .gleap-frame-container--modern-left {
       right: auto;
-      left: 20px;
-      bottom: 95px;
+      left: ${buttonX}px;
+      bottom: ${75 + buttonY}px;
     }
 
     [dir=rtl].gleap-frame-container--modern-left {
       left: auto;
-      right: 20px;
-      bottom: 95px;
+      right: ${buttonX}px;
+      bottom: ${75 + buttonY}px;
     }
 
     .gleap-frame-container--animate {
@@ -236,7 +238,7 @@ export const injectStyledCSS = (
     .gleap-frame-container-inner {
       position: relative;
       width: 100%;
-      height: calc(100vh - 150px);
+      height: calc(100vh - ${130 + buttonY}px);
       max-height: ${widgetMaxHeight}px;
     }
 
@@ -266,8 +268,8 @@ export const injectStyledCSS = (
     .bb-feedback-button {
       margin: 0px;
       position: fixed;
-      bottom: 20px;
-      right: 20px;
+      bottom: ${buttonY}px;
+      right: ${buttonX}px;
       border-radius: 30px;
       cursor: pointer;
       -webkit-tap-highlight-color: transparent;
@@ -281,20 +283,20 @@ export const injectStyledCSS = (
     }
 
     [dir=rtl].bb-feedback-button {
-      bottom: 20px;
+      bottom: ${buttonY}px;
       right: auto;
-      left: 20px;
+      left: ${buttonX}px;
     }
     
     .bb-feedback-button--bottomleft {
-      bottom: 20px;
+      bottom: ${buttonY}px;
       right: auto;
-      left: 20px;
+      left: ${buttonX}px;
     }
 
     [dir=rtl].bb-feedback-button--bottomleft {
-      bottom: 20px;
-      right: 20px;
+      bottom: ${buttonY}px;
+      right: ${buttonX}px;
       left: auto;
     }
     
@@ -441,7 +443,7 @@ export const injectStyledCSS = (
       top: auto;
       bottom: 0px;
       transform: none;
-      right: 20px;
+      right: ${buttonX}px;
       left: auto;
     }
     
@@ -449,7 +451,7 @@ export const injectStyledCSS = (
       top: auto;
       bottom: 0px;
       transform: none;
-      left: 20px;
+      left: ${buttonX}px;
       right: auto;
     }
     

@@ -377,6 +377,8 @@ class Gleap {
     buttonColor,
     backgroundColor = "#ffffff",
     borderRadius = 20,
+    buttonX = 20,
+    buttonY = 20
   ) {
     runFunctionWhenDomIsReady(() => {
       injectStyledCSS(
@@ -384,7 +386,9 @@ class Gleap {
         headerColor,
         buttonColor,
         borderRadius,
-        backgroundColor
+        backgroundColor,
+        buttonX,
+        buttonY
       );
     });
   }
