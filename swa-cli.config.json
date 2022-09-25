@@ -1,0 +1,9 @@
+{
+  "$schema": "https://aka.ms/azure/static-web-apps-cli/schema",
+  "configurations": {
+    "gleap-js-sdk": {
+      "appLocation": "/",
+      "outputLocation": "/published"
+    }
+  }
+}
