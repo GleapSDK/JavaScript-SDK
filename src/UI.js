@@ -124,6 +124,14 @@ export const injectStyledCSS = (
       bottom: ${buttonY}px;
     }
 
+    .gleap-frame-container--no-button {
+      bottom: ${buttonY}px;
+    }
+
+    [dir=rtl].gleap-frame-container--classic-left {
+      bottom: ${buttonY}px;
+    }
+
     .gleap-frame-container--classic-left {
       right: auto;
       left: ${buttonX}px;
@@ -176,8 +184,8 @@ export const injectStyledCSS = (
 
     .gleap-notification-container {
       position: fixed;
-      bottom: 88px;
-      right: 24px;
+      bottom: ${68 + buttonY}px;
+      right: ${4 + buttonX}px;
       z-index: ${zIndexBase + 30};
       display: flex;
       flex-direction: column;
@@ -186,8 +194,12 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-container--left {
-      left: 24px;
+      left: ${4 + buttonX}px;
       right: initial !important;
+    }
+
+    .gleap-notification-container--no-button {
+      bottom: ${buttonY}px;
     }
 
     .gleap-notification-item {

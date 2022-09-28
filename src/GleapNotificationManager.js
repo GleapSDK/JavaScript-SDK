@@ -128,12 +128,24 @@ export default class GleapNotificationManager {
 
         const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
         const classLeft = "gleap-notification-container--left";
+        const classNoButton = "gleap-notification-container--no-button";
         this.notificationContainer.classList.remove(classLeft);
+        this.notificationContainer.classList.remove(classNoButton);
         if (
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
         ) {
             this.notificationContainer.classList.add(classLeft);
+        }
+
+        if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
+            if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+                this.notificationContainer.classList.add(classNoButton);
+            }
+        } else {
+            if (GleapFeedbackButtonManager.getInstance().buttonHidden) {
+                this.notificationContainer.classList.add(classNoButton);
+            }
         }
     }
 }

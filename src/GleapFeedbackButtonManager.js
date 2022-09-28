@@ -1,9 +1,10 @@
-import { GleapFrameManager, GleapConfigManager, GleapTranslationManager, GleapSession } from "./Gleap";
+import { GleapFrameManager, GleapConfigManager, GleapNotificationManager, GleapTranslationManager, GleapSession } from "./Gleap";
 import { loadIcon } from "./UI";
 
 export default class GleapFeedbackButtonManager {
     feedbackButton = null;
     injectedFeedbackButton = false;
+    buttonHidden = null;
 
     // Feedback button types
     static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -28,11 +29,10 @@ export default class GleapFeedbackButtonManager {
      * @returns 
      */
     toggleFeedbackButton(show) {
-        if (!this.feedbackButton) {
-            return;
-        }
+        this.buttonHidden = !show;
 
-        this.feedbackButton.style.display = show ? "flex" : "none";
+        GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+        GleapNotificationManager.getInstance().updateContainerStyle();
     }
 
     feedbackButtonPressed() {
@@ -121,7 +121,17 @@ export default class GleapFeedbackButtonManager {
             )}</div><div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
         }
 
-        if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+        var hideButton = false;
+        if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
+            if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+                hideButton = true;
+            }
+        } else {
+            if (GleapFeedbackButtonManager.getInstance().buttonHidden) {
+                hideButton = true;
+            }
+        }
+        if (hideButton) {
             this.feedbackButton.classList.add("bb-feedback-button--disabled");
         }
 

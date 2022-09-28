@@ -109,7 +109,8 @@ export default class GleapFrameManager {
     const classicStyle = "gleap-frame-container--classic";
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
-    const allStyles = [classicStyle, classicStyleLeft, modernStyleLeft, surveyStyle, surveyFullStyle];
+    const noButtonStyleLeft = "gleap-frame-container--no-button";
+    const allStyles = [classicStyle, classicStyleLeft, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
@@ -125,6 +126,15 @@ export default class GleapFrameManager {
     }
     if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
       styleToApply = modernStyleLeft;
+    }
+    if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
+      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+        styleToApply = noButtonStyleLeft;
+      }
+    } else {
+      if (GleapFeedbackButtonManager.getInstance().buttonHidden) {
+        styleToApply = noButtonStyleLeft;
+      }
     }
     if (styleToApply) {
       this.gleapFrameContainer.classList.add(styleToApply);
