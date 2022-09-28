@@ -300,12 +300,8 @@ export const injectStyledCSS = (
       left: auto;
     }
     
-    .bb-feedback-button--disabled .bb-feedback-button-icon {
+    .bb-feedback-button--disabled {
       display: none !important;
-    }
-    
-    .bb-feedback-button--disabled .bb-feedback-button-text {
-      display: none;
     }
 
     .bb-feedback-button--hidden {
