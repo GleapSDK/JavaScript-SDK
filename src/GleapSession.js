@@ -94,10 +94,6 @@ export default class GleapSession {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "session-cleared"
-    }, true);
-
     this.session = {
       id: null,
       hash: null,
@@ -108,10 +104,16 @@ export default class GleapSession {
       value: 0,
     };
 
+    GleapFrameManager.getInstance().sendMessage({
+      name: "session-cleared"
+    }, true);
+    GleapNotificationManager.getInstance().clearAllNotifications(false);
+    GleapNotificationManager.getInstance().setNotificationCount(0);
+
     if (retry) {
       if (!isNaN(attemp)) {
         // Exponentially retry to renew session.
-        const newTimeout = (Math.pow(attemp, 2) * 10) + 10;
+        const newTimeout = (Math.pow(attemp, 2) * 10);
         setTimeout(() => {
           this.startSession(attemp + 1);
         }, newTimeout * 1000);
