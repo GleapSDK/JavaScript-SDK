@@ -11,11 +11,11 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 //Gleap.setEnvironment("dev");
 
-Gleap.identify("user_1933333283", {
+/*Gleap.identify("user_1933333283", {
   name: "Franz.Demoddddman+asdf@eap.io",
   email: "lukas@gleap.io",
   value: 199
-});
+});*/
 
 Gleap.attachCustomData({
   mission: "Unicorn",

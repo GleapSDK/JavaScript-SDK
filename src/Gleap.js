@@ -525,6 +525,39 @@ class Gleap {
     GleapFrameManager.getInstance().showWidget();
   }
 
+  /**
+   * Opens a news article
+   */
+  static openNewsArticle(id) {
+    if (!id) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-news-article",
+      data: {
+        id,
+      }
+    });
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Opens the news overview.
+   */
+  static openNews() {
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-news",
+    });
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
   isLiveMode() {
     if (this.offlineMode === true) {
       return false;
