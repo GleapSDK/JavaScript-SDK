@@ -74,6 +74,7 @@ export namespace Gleap {
     userHash?: string
   ): void;
   function open(): void;
+  function openNews(): void;
   function close(): void;
   function hide(): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
