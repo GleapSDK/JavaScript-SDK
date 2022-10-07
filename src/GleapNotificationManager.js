@@ -1,5 +1,6 @@
 import Gleap, { GleapFeedbackButtonManager, GleapConfigManager, GleapFrameManager, GleapSession } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import { loadIcon } from "./UI";
 
 export default class GleapNotificationManager {
     notificationContainer = null;
@@ -77,6 +78,15 @@ export default class GleapNotificationManager {
 
         // Clear the existing notifications.
         this.clearAllNotifications(true);
+
+        // Append close button.
+        const clearElem = document.createElement("div");
+        clearElem.onclick = () => {
+            this.clearAllNotifications();
+        };
+        clearElem.className = "gleap-notification-close";
+        clearElem.innerHTML = loadIcon("dismiss");
+        this.notificationContainer.appendChild(clearElem);
 
         // Render the notifications.
         for (var i = 0; i < this.notifications.length; i++) {

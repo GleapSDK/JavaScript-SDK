@@ -208,6 +208,35 @@ export const injectStyledCSS = (
       animation-name: bbFadeInOpacity;
     }
 
+    .gleap-notification-close {
+      border-radius: 100%;
+      width: 30px;
+      height: 30px;
+      background-color: ${subTextColor};
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 8px;
+      cursor: pointer;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .gleap-notification-container:hover .gleap-notification-close {
+      visibility: visible;
+      pointer-events: auto;
+      animation-duration: 0.7s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
+
+    .gleap-notification-close svg {
+      width: 45%;
+      height: 45%;
+      object-fit: contain;
+      fill: ${backgroundColor};
+    }
+
     .gleap-notification-item {
       display: flex;
       align-items: flex-end;
@@ -1185,9 +1214,7 @@ export const loadIcon = function (name, color) {
   }
 
   if (name === "dismiss") {
-    return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
-    <path d="m684 600 439.2-439.2c22.801-22.801 22.801-60 0-84s-60-22.801-84 0l-439.2 439.2-439.2-439.2c-22.801-22.801-60-22.801-84 0s-22.801 60 0 84l439.2 439.2-439.2 439.2c-22.801 22.801-22.801 60 0 84 12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801l439.2-439.2 439.2 439.2c12 12 26.398 16.801 42 16.801 15.602 0 30-6 42-16.801 22.801-22.801 22.801-60 0-84z" fill="#333"/>
-   </svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M294.6 166.6L317.3 144 272 98.7l-22.6 22.6L160 210.7 70.6 121.4 48 98.7 2.7 144l22.6 22.6L114.7 256 25.4 345.4 2.7 368 48 413.3l22.6-22.6L160 301.3l89.4 89.4L272 413.3 317.3 368l-22.6-22.6L205.3 256l89.4-89.4z"/></svg>`;
   }
 
   if (name === "blur") {
