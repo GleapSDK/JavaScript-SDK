@@ -261,17 +261,20 @@ export const injectStyledCSS = (
       margin-bottom: 12px;
       cursor: pointer;
       font-size: 15px;
+      font-family: sans-serif;
       line-height: 21px;
       color: ${contrastBackgroundColor};
     }
 
     .gleap-notification-item-sender {
       font-size: 13px;
+      font-family: sans-serif;
       color: ${contrastBackgroundColor};
     }
 
     .gleap-notification-item-content {
       font-size: 14px;
+      font-family: sans-serif;
       line-height: 20px;
       color: ${subTextColor};
     }
@@ -412,6 +415,7 @@ export const injectStyledCSS = (
       background-color: red;
       color: #fff;
       font-size: 12px;
+      font-family: sans-serif;
       text-align: center;
       line-height: 22px;
     }
@@ -919,6 +923,7 @@ export const injectStyledCSS = (
       text-align: left;
       line-height: 32px;
       font-size: 14px;
+      font-family: sans-serif;
       margin: 5px;
       min-width: 40px;
       display: none;
@@ -929,6 +934,7 @@ export const injectStyledCSS = (
       color: #fff;
       visibility: hidden;
       font-size: 14px;
+      font-family: sans-serif;
       text-align: center;
       padding: 5px 10px;
       position: absolute;
