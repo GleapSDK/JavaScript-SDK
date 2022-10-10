@@ -75,6 +75,7 @@ export namespace Gleap {
   ): void;
   function open(): void;
   function openNews(): void;
+  function openFeatureRequests(): void;
   function close(): void;
   function hide(): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;

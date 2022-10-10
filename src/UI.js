@@ -210,8 +210,8 @@ export const injectStyledCSS = (
 
     .gleap-notification-close {
       border-radius: 100%;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       background-color: ${subTextColor};
       display: flex;
       justify-content: center;
@@ -228,6 +228,16 @@ export const injectStyledCSS = (
       animation-duration: 0.7s;
       animation-fill-mode: both;
       animation-name: bbFadeInOpacity;
+    }
+
+    @media only screen and (max-width: 450px) {
+      .gleap-notification-close {
+        visibility: visible;
+        pointer-events: auto;
+        animation-duration: 0.7s;
+        animation-fill-mode: both;
+        animation-name: bbFadeInOpacity;
+      }
     }
 
     .gleap-notification-close svg {

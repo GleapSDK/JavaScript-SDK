@@ -558,6 +558,19 @@ class Gleap {
     GleapFrameManager.getInstance().showWidget();
   }
 
+  /**
+   * Opens the feature requests overview.
+   */
+  static openFeatureRequests() {
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-feature-requests",
+    });
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
   isLiveMode() {
     if (this.offlineMode === true) {
       return false;
