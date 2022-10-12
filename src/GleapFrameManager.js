@@ -211,7 +211,7 @@ export default class GleapFrameManager {
   }
 
   sendMessage(data, queue = false) {
-    if (this.gleapFrame) {
+    if (this.gleapFrame && this.gleapFrame.contentWindow) {
       this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), "*");
     } else {
       if (queue) {
