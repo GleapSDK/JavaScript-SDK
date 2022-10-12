@@ -82,5 +82,7 @@ export namespace Gleap {
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(feedbackFlow: string, showBackButton?: boolean): void;
   function on(event: string, callback: (data?: any) => void): void;
+  function getIdentity(): any;
+  function isUserIdentified(): boolean;
 }
 export default Gleap;

@@ -56,7 +56,7 @@ export default class GleapSession {
     if (this.session && this.session.gleapId) {
       return this.session.gleapId;
     }
-    
+
     return null;
   }
 
@@ -94,6 +94,7 @@ export default class GleapSession {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
 
+    this.ready = false;
     this.session = {
       id: null,
       hash: null,
@@ -122,7 +123,7 @@ export default class GleapSession {
   };
 
   validateSession = (session) => {
-    if (!session) {
+    if (!session || !session.gleapId) {
       return;
     }
 
@@ -216,9 +217,9 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject("No session ready to identify. This usually means that you called clearSession() directly before calling this method.");
+          return reject("Session not ready yet.");
         }
-        
+
         const http = new XMLHttpRequest();
         http.open("POST", self.apiUrl + "/sessions/identify");
         http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");

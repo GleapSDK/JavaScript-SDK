@@ -180,6 +180,23 @@ class Gleap {
   }
 
   /**
+   * Returns the current user session
+   */
+  static getIdentity() {
+    GleapSession.getInstance().session;
+  }
+
+  /**
+   * Returns whether the user is identified or not.
+   */
+  static isUserIdentified() {
+    const session = GleapSession.getInstance().session;
+    if (session && session.userId && session.userId.length > 0) {
+      return true;
+    }
+  }
+
+  /**
    * Widget opened status
    * @returns {boolean} isOpened
    */
