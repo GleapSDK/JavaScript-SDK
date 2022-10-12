@@ -183,7 +183,7 @@ class Gleap {
    * Returns the current user session
    */
   static getIdentity() {
-    GleapSession.getInstance().session;
+    return GleapSession.getInstance().getSession();
   }
 
   /**
