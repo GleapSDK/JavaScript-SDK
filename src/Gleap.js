@@ -194,6 +194,7 @@ class Gleap {
     if (session && session.userId && session.userId.length > 0) {
       return true;
     }
+    return false;
   }
 
   /**
