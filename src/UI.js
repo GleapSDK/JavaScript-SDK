@@ -64,7 +64,8 @@ export const injectStyledCSS = (
     .gleap-frame-container {
       right: ${buttonX}px;
       bottom: ${75 + buttonY}px;
-      width: 375px;
+      width: 100%;
+      max-width: 375px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
@@ -76,6 +77,7 @@ export const injectStyledCSS = (
       animation-name: gleapFadeInUp;
       user-select: none;
       pointer-events: none;
+      transition: max-width 0.3s ease-out;
     }
 
     [dir=rtl].gleap-frame-container {
@@ -88,6 +90,10 @@ export const injectStyledCSS = (
       bottom: ${buttonY}px !important;
     }
 
+    .gleap-frame-container--news {
+      max-width: 690px !important;
+    }
+
     .gleap-frame-container--survey-full {
       position: fixed;
       top: 0 !important;
@@ -95,6 +101,7 @@ export const injectStyledCSS = (
       bottom: 0 !important;
       right: 0 !important;
       width: 100vw !important;
+      max-width: 100vw !important;
       height: 100vh !important;
       background-color: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(6px);
@@ -1136,6 +1143,7 @@ export const injectStyledCSS = (
         left: 0px;
         right: 0px;
         width: 100vw;
+        max-width: 100vw;
         min-height: 100vh;
         min-height: -webkit-fill-available;
         top: 0px;

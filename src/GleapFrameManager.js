@@ -105,12 +105,13 @@ export default class GleapFrameManager {
     }
 
     const surveyStyle = "gleap-frame-container--survey";
+    const newsdetailsStyle = "gleap-frame-container--news";
     const surveyFullStyle = "gleap-frame-container--survey-full";
     const classicStyle = "gleap-frame-container--classic";
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
     const noButtonStyleLeft = "gleap-frame-container--no-button";
-    const allStyles = [classicStyle, classicStyleLeft, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
+    const allStyles = [classicStyle, classicStyleLeft, newsdetailsStyle, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
@@ -146,6 +147,9 @@ export default class GleapFrameManager {
     if (this.appMode === "survey_full") {
       this.gleapFrameContainer.classList.add(surveyFullStyle);
     }
+    if (this.appMode === "newsdetails") {
+      this.gleapFrameContainer.classList.add(newsdetailsStyle);
+    }
 
     this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
   }
@@ -154,6 +158,8 @@ export default class GleapFrameManager {
     if (!this.gleapFrameContainer) {
       return;
     }
+
+    this.workThroughQueue();
 
     Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
       x: window.scrollX,
@@ -211,13 +217,16 @@ export default class GleapFrameManager {
   }
 
   sendMessage(data, queue = false) {
-    if (this.gleapFrame && this.gleapFrame.contentWindow) {
-      this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), "*");
-    } else {
-      if (queue) {
-        this.queue.push(data);
+    try {
+      this.gleapFrame = document.querySelector(".gleap-frame");
+      if (this.gleapFrame && this.gleapFrame.contentWindow) {
+        this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), "*");
+      } else {
+        if (queue) {
+          this.queue.push(data);
+        }
       }
-    }
+    } catch (e) { }
   };
 
   sendSessionUpdate() {
@@ -283,6 +292,16 @@ export default class GleapFrameManager {
 
       if (data.name === "play-ping") {
         GleapAudioManager.ping();
+      }
+
+      if (data.name === "page-changed") {
+        if (data.data && data.data.name === "newsdetails") {
+          this.setAppMode("newsdetails");
+        } else {
+          if (this.appMode === "newsdetails") {
+            this.setAppMode("widget");
+          }
+        }
       }
 
       if (data.name === "height-update") {
