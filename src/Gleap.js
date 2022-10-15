@@ -136,7 +136,13 @@ class Gleap {
         GleapConfigManager.getInstance().start()
           .then(() => {
             // Inject the Gleap frame.
-            GleapFrameManager.getInstance().injectFrame();
+            GleapStreamedEvent.getInstance().start();
+
+            // Inject the widget buttons
+            GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
+
+            // Inject the notification container
+            GleapNotificationManager.getInstance().injectNotificationUI();
           })
           .catch(function (err) {
             console.warn("Failed to initialize Gleap.");
@@ -514,7 +520,7 @@ class Gleap {
         hideBackButton: hideBackButton,
         format,
       }
-    });
+    }, true);
 
     if (autostartDrawing) {
       GleapFrameManager.getInstance().showDrawingScreen("screenshot");
@@ -538,7 +544,7 @@ class Gleap {
       data: {
         shareToken,
       }
-    });
+    }, true);
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -558,7 +564,7 @@ class Gleap {
       data: {
         id,
       }
-    });
+    }, true);
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -571,7 +577,7 @@ class Gleap {
 
     GleapFrameManager.getInstance().sendMessage({
       name: "open-news",
-    });
+    }, true);
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -584,7 +590,7 @@ class Gleap {
 
     GleapFrameManager.getInstance().sendMessage({
       name: "open-feature-requests",
-    });
+    }, true);
 
     GleapFrameManager.getInstance().showWidget();
   }

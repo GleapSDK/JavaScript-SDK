@@ -43,7 +43,9 @@ export const injectStyledCSS = (
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
+  const contrastHeaderColor = calculateContrast(headerColor);
   const isDarkMode = contrastBackgroundColor === "#ffffff";
+  const headerDarkColor = calculateShadeColor(headerColor, contrastHeaderColor === "#ffffff" ? -35 : -15);
   const subTextColor = isDarkMode
     ? calculateShadeColor(backgroundColor, 100)
     : calculateShadeColor(backgroundColor, -120);
@@ -64,7 +66,7 @@ export const injectStyledCSS = (
     .gleap-frame-container {
       right: ${buttonX}px;
       bottom: ${75 + buttonY}px;
-      width: 100%;
+      width: calc(100% - 40px);
       max-width: 375px;
       position: fixed;
       z-index: ${zIndexBase + 31};
@@ -84,6 +86,42 @@ export const injectStyledCSS = (
       right: auto;
       left: ${buttonX}px;
       bottom: ${75 + buttonY}px;
+    }
+
+    .gleap-frame-container--loading iframe {
+      opacity: 0;
+    }
+
+    .gleap-frame-container--loading::before {
+      content: " ";
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      height: 100%;
+      max-height: 380px;
+      background: linear-gradient(
+        130deg,
+        ${headerDarkColor} 0%,
+        ${headerColor} 100%
+      );
+    }
+    
+    .gleap-frame-container--loading::after {
+      content: " ";
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      height: 100%;
+      height: 100%;
+      max-height: 380px;
+      background: linear-gradient(
+        180deg,
+        transparent 60%,
+        ${backgroundColor}1A 70%,
+        ${backgroundColor} 100%
+      );
     }
 
     .gleap-frame-container--survey {

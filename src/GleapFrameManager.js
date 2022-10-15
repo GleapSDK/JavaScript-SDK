@@ -96,6 +96,11 @@ export default class GleapFrameManager {
       this.gleapFrame = document.querySelector(".gleap-frame");
 
       this.updateFrameStyle();
+
+      // Show loading preview for widget app mode.
+      if (this.appMode === "widget") {
+        this.showFrameContainer(true);
+      }
     });
   };
 
@@ -154,7 +159,29 @@ export default class GleapFrameManager {
     this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
   }
 
-  showWidget() {
+  showFrameContainer(showLoader) {
+    if (!this.gleapFrameContainer) {
+      return;
+    }
+
+    const loadingClass = 'gleap-frame-container--loading';
+    if (this.gleapFrameContainer.classList) {
+      this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+      if (showLoader) {
+        this.gleapFrameContainer.classList.add(loadingClass);
+      } else {
+        this.gleapFrameContainer.classList.remove(loadingClass);
+      }
+
+      setTimeout(() => {
+        this.gleapFrameContainer.classList.add('gleap-frame-container--animate');
+      }, 500);
+    }
+
+    this.widgetOpened = true;
+  }
+
+  runWidgetShouldOpenCallback() {
     if (!this.gleapFrameContainer) {
       return;
     }
@@ -166,21 +193,22 @@ export default class GleapFrameManager {
       y: window.scrollY,
     });
 
-    if (this.gleapFrameContainer.classList) {
-      this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+    this.showFrameContainer(false);
 
-      setTimeout(() => {
-        this.gleapFrameContainer.classList.add('gleap-frame-container--animate');
-      }, 500);
-    }
-
-    this.widgetOpened = true;
     this.updateWidgetStatus();
     GleapNotificationManager.getInstance().clearAllNotifications();
     GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
     this.registerEscListener();
+  };
+
+  showWidget() {
+    if (this.gleapFrameContainer) {
+      this.runWidgetShouldOpenCallback();
+    } else {
+      GleapFrameManager.getInstance().injectFrame();
+    }
   }
 
   updateWidgetStatus() {
@@ -267,27 +295,23 @@ export default class GleapFrameManager {
   }
 
   workThroughQueue() {
-    for (let i = 0; i < this.queue.length; i++) {
-      this.sendMessage(this.queue[i]);
-    }
+    const workQueue = [...this.queue];
     this.queue = [];
+    for (let i = 0; i < workQueue.length; i++) {
+      this.sendMessage(workQueue[i], true);
+    }
   }
 
   startCommunication() {
     // Listen for messages.
     this.addMessageListener((data) => {
       if (data.name === "ping") {
-        GleapStreamedEvent.getInstance().start();
-
-        // Inject the widget buttons
-        GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
-
-        // Inject the notification container
-        GleapNotificationManager.getInstance().injectNotificationUI();
-
         this.sendConfigUpdate();
         this.sendSessionUpdate();
         this.workThroughQueue();
+        setTimeout(() => {
+          this.runWidgetShouldOpenCallback();
+        }, 300);
       }
 
       if (data.name === "play-ping") {
