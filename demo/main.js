@@ -7,9 +7,10 @@ Gleap.preFillForm({
 
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
-// Gleap.setLanguage("en");
+Gleap.setLanguage("de");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 //Gleap.setEnvironment("dev");
+
 
 Gleap.identify("user_1933333283", {
   name: "Luki",
