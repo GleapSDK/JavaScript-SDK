@@ -479,7 +479,7 @@ const prepareScreenshotData = (remote) => {
       baseElems[i].remove();
     }
 
-    // Fix base node
+    // Adjust the base node
     const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
     var newBaseUrl = baseUrl + "/";
     if (existingBasePath) {
@@ -494,8 +494,6 @@ const prepareScreenshotData = (remote) => {
         }
       }
     }
-
-    console.log("newBaseUrl", newBaseUrl);
 
     const baseNode = window.document.createElement("base");
     baseNode.href = newBaseUrl;
