@@ -5,9 +5,8 @@ Gleap.preFillForm({
   "userId": "1233"
 });
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.setLanguage("de");
+//Gleap.setFrameUrl("http://0.0.0.0:3001");
+//Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 //Gleap.setEnvironment("dev");
 

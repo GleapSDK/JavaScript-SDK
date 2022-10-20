@@ -470,17 +470,35 @@ const prepareScreenshotData = (remote) => {
     }
 
     // Cleanup base path
+    var existingBasePath = "";
     const baseElems = clone.querySelectorAll("base");
     for (var i = 0; i < baseElems.length; ++i) {
+      if (baseElems[i].href) {
+        existingBasePath = baseElems[i].href;
+      }
       baseElems[i].remove();
     }
 
     // Fix base node
-    const baseUrl =
-      window.location.href.substring(0, window.location.href.lastIndexOf("/")) +
-      "/";
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
+    var newBaseUrl = baseUrl + "/";
+    if (existingBasePath) {
+      if (existingBasePath.startsWith("http")) {
+        // Absolute path.
+        newBaseUrl = existingBasePath;
+      } else {
+        // Relative path.
+        newBaseUrl = baseUrl + existingBasePath;
+        if (!newBaseUrl.endsWith("/")) {
+          newBaseUrl += "/";
+        }
+      }
+    }
+
+    console.log("newBaseUrl", newBaseUrl);
+
     const baseNode = window.document.createElement("base");
-    baseNode.href = baseUrl;
+    baseNode.href = newBaseUrl;
     const head = clone.querySelector("head");
     head.insertBefore(baseNode, head.firstChild);
 
