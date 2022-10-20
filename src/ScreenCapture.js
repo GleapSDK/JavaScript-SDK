@@ -46,7 +46,7 @@ const replaceAsync = (str, regex, asyncFn) => {
   });
 };
 
-const loadCSSUrlResources = (data, basePath) => {
+const loadCSSUrlResources = (data, basePath, remote) => {
   return replaceAsync(
     data,
     /url\((.*?)\)/g,
@@ -55,7 +55,7 @@ const loadCSSUrlResources = (data, basePath) => {
         if (!matchedData) {
           return resolve(matchedData);
         }
-
+        
         var matchedUrl = matchedData
           .substr(4, matchedData.length - 5)
           .replaceAll("'", "")
@@ -76,9 +76,14 @@ const loadCSSUrlResources = (data, basePath) => {
             resourcePath = basePath + "/" + matchedUrl;
           }
 
-          return fetchCSSResource(resourcePath).then((resourceData) => {
-            return resolve("url(" + resourceData + ")");
-          });
+          // Try to fetch external resource.
+          if (!remote) {
+            return fetchCSSResource(resourcePath).then((resourceData) => {
+              return resolve("url(" + resourceData + ")");
+            });
+          } else {
+            return resolve("url(" + resourcePath + ")");
+          }
         } catch (exp) {
           return resolve(matchedData);
         }
@@ -238,9 +243,8 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   for (var i = 0; i < document.styleSheets.length; i++) {
     const styleSheet = document.styleSheets[i];
     const cssTextContent = getTextContentFromStyleSheet(styleSheet);
-
     if (styleSheet && styleSheet.ownerNode) {
-      if (cssTextContent != "" && !remote) {
+      if (cssTextContent != "") {
         // Resolve resources.
         const baseTags = document.getElementsByTagName("base");
         var basePathURL = baseTags.length
@@ -251,7 +255,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
         }
         const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
         promises.push(
-          loadCSSUrlResources(cssTextContent, basePath).then(
+          loadCSSUrlResources(cssTextContent, basePath, remote).then(
             (replacedStyle) => {
               return {
                 styletext: replacedStyle,

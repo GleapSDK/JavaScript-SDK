@@ -91,6 +91,11 @@ class Gleap {
     instance.offlineMode = offlineMode;
   }
 
+  static doFun() {
+    const feedback = new GleapFeedback("CRASH", "HIGH", {}, true, false);
+    return feedback.takeSnapshot();
+  }
+
   /**
    * Revert console log overwrite.
    */
