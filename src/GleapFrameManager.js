@@ -75,11 +75,19 @@ export default class GleapFrameManager {
     return this.widgetOpened;
   }
 
+  autoWhiteListCookieManager = () => {
+    if (window && window.cmp_block_ignoredomains) {
+      window.cmp_block_ignoredomains.concat(["messenger.gleap.io"]);
+    }
+  }
+
   injectFrame = () => {
     if (this.injectedFrame) {
       return;
     }
     this.injectedFrame = true;
+
+    this.autoWhiteListCookieManager();
 
     // Apply CSS.
     GleapConfigManager.getInstance().applyStylesFromConfig();

@@ -616,12 +616,19 @@ class Gleap {
 
   softReInitialize() {
     GleapFeedbackButtonManager.getInstance().injectedFeedbackButton = false;
-    GleapFrameManager.getInstance().injectedFrame = false;
+    GleapFrameManager.getInstance().destroy();
 
-    // Reload config.
-    GleapConfigManager.getInstance().start().then(() => {
-      GleapFrameManager.getInstance().injectFrame();
-    }).catch((exp) => { });
+    GleapConfigManager.getInstance().start()
+      .then(() => {
+        // Inject the widget buttons
+        GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
+
+        // Inject the notification container
+        GleapNotificationManager.getInstance().injectNotificationUI();
+      })
+      .catch(function (err) {
+        console.warn("Failed to initialize Gleap.");
+      });
   }
 
   /**
