@@ -72,7 +72,7 @@ export default class GleapFrameManager {
   }
 
   isOpened() {
-    return this.widgetOpened;
+    return this.widgetOpened || this.markerManager != null;
   }
 
   autoWhiteListCookieManager = () => {

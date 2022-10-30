@@ -1,21 +1,9 @@
 const Gleap = window.Gleap;
 
-Gleap.preFillForm({
-  "description": "This is a pre-fill test.",
-  "userId": "1233"
-});
-
-//Gleap.setFrameUrl("http://0.0.0.0:3001");
-//Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 //Gleap.setEnvironment("dev");
-
-
-Gleap.identify("user_1933333283", {
-  name: "Luki",
-  email: "lukas@gleap.io",
-  value: 199
-});
 
 Gleap.attachCustomData({
   mission: "Unicorn",
