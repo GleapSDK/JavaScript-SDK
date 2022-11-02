@@ -1,8 +1,8 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+//Gleap.setFrameUrl("http://0.0.0.0:3001");
+//Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
 //Gleap.setEnvironment("dev");
 
 Gleap.attachCustomData({
@@ -13,6 +13,13 @@ Gleap.attachCustomData({
     name: "Mission: Impossible - Ghost Protocol",
   },
 });
+
+Gleap.identify("123456789", {
+  name: "John Doe",
+});
+
+let userIdentified = Gleap.isUserIdentified();
+console.log("userIdentified", userIdentified);
 
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");
