@@ -417,6 +417,30 @@ export default class GleapMarkerManager {
     // Capture SVG ref
     const captureSVG = document.querySelector(".bb-capture-svg");
 
+    const chooseTool = function (type, toolbarItem) {
+      const toolbarTools = document.querySelectorAll(
+        ".bb-capture-toolbar-item-tool"
+      );
+      for (let j = 0; j < toolbarTools.length; j++) {
+        toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
+      }
+      toolbarItem.classList.add("bb-capture-toolbar-item--active");
+      self.screenDrawer.setTool(type);
+
+      self.dragCursor.innerHTML = "";
+      if (type === "pointer") {
+        captureSVG.style.pointerEvents = "none";
+      } else {
+        captureSVG.style.pointerEvents = "auto";
+        try {
+          var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+          if (svgClone && self.dragCursor) {
+            self.dragCursor.appendChild(svgClone);
+          }
+        } catch (exp) { }
+      }
+    }
+
     // Setup toolbar items
     var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
     for (var i = 0; i < toolbarItems.length; i++) {
@@ -436,6 +460,7 @@ export default class GleapMarkerManager {
             self.screenRecorder.stopScreenRecording();
           } else {
             self.screenRecorder.startScreenRecording();
+            chooseTool(type, document.querySelector(".bb-capture-toolbar-item[data-type='pointer']"));
           }
         }
 
@@ -450,27 +475,7 @@ export default class GleapMarkerManager {
           type === "rect" ||
           type === "pointer"
         ) {
-          const toolbarTools = document.querySelectorAll(
-            ".bb-capture-toolbar-item-tool"
-          );
-          for (let j = 0; j < toolbarTools.length; j++) {
-            toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
-          }
-          toolbarItem.classList.add("bb-capture-toolbar-item--active");
-          self.screenDrawer.setTool(type);
-
-          self.dragCursor.innerHTML = "";
-          if (type === "pointer") {
-            captureSVG.style.pointerEvents = "none";
-          } else {
-            captureSVG.style.pointerEvents = "auto";
-            try {
-              var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
-              if (svgClone && self.dragCursor) {
-                self.dragCursor.appendChild(svgClone);
-              }
-            } catch (exp) { }
-          }
+          chooseTool(type, toolbarItem);
         }
         if (type === "colorpicker") {
           if (colorpicker.style.display === "flex") {
