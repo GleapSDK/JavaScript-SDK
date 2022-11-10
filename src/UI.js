@@ -67,7 +67,7 @@ export const injectStyledCSS = (
       right: ${buttonX}px;
       bottom: ${75 + buttonY}px;
       width: calc(100% - 40px);
-      max-width: 375px;
+      max-width: 390px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
@@ -122,6 +122,15 @@ export const injectStyledCSS = (
         ${backgroundColor}1A 70%,
         ${backgroundColor} 100%
       );
+    }
+
+    .gleap-frame-container--loading-nogradient::before {
+      max-height: 340px;
+      background: ${headerColor} !important;
+    }
+
+    .gleap-frame-container--loading-nofade::after {
+      display: none !important;
     }
 
     .gleap-frame-container--survey {

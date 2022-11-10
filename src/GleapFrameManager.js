@@ -172,11 +172,19 @@ export default class GleapFrameManager {
       return;
     }
 
+    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     const loadingClass = 'gleap-frame-container--loading';
     if (this.gleapFrameContainer.classList) {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
+
+        if (flowConfig.disableBGFade) {
+          this.gleapFrameContainer.classList.add("gleap-frame-container--loading-nofade");
+        }
+        if (flowConfig.disableBGGradient) {
+          this.gleapFrameContainer.classList.add("gleap-frame-container--loading-nogradient");
+        }
       } else {
         this.gleapFrameContainer.classList.remove(loadingClass);
       }
