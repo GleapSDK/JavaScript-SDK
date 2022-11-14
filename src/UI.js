@@ -67,7 +67,7 @@ export const injectStyledCSS = (
       right: ${buttonX}px;
       bottom: ${75 + buttonY}px;
       width: calc(100% - 40px);
-      max-width: 390px;
+      max-width: 400px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
@@ -137,7 +137,7 @@ export const injectStyledCSS = (
       bottom: ${buttonY}px !important;
     }
 
-    .gleap-frame-container--news {
+    .gleap-frame-container--extended {
       max-width: 690px !important;
     }
 

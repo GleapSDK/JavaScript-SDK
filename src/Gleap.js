@@ -555,9 +555,68 @@ class Gleap {
   }
 
   /**
+   * Opens a help article
+   */
+  static openHelpArticle(collectionId, articleId, showBackButton = true) {
+    if (!collectionId) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-help-article",
+      data: {
+        collectionId,
+        articleId,
+        hideBackButton: !showBackButton,
+      }
+    }, true);
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Opens the help center.
+   */
+  static openHelpCenter(showBackButton = true) {
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-helpcenter",
+      data: {
+        hideBackButton: !showBackButton,
+      },
+    }, true);
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Search for news articles in the help center
+   */
+  static searchHelpCenter(term, showBackButton = true) {
+    if (!id) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage({
+      name: "open-helpcenter-search",
+      data: {
+        term,
+        hideBackButton: !showBackButton,
+      }
+    }, true);
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
    * Opens a news article
    */
-  static openNewsArticle(id) {
+  static openNewsArticle(id, showBackButton = true) {
     if (!id) {
       return;
     }
@@ -568,6 +627,7 @@ class Gleap {
       name: "open-news-article",
       data: {
         id,
+        hideBackButton: !showBackButton,
       }
     }, true);
 
@@ -577,11 +637,14 @@ class Gleap {
   /**
    * Opens the news overview.
    */
-  static openNews() {
+  static openNews(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
     GleapFrameManager.getInstance().sendMessage({
       name: "open-news",
+      data: {
+        hideBackButton: !showBackButton,
+      },
     }, true);
 
     GleapFrameManager.getInstance().showWidget();
@@ -590,11 +653,14 @@ class Gleap {
   /**
    * Opens the feature requests overview.
    */
-  static openFeatureRequests() {
+  static openFeatureRequests(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
     GleapFrameManager.getInstance().sendMessage({
       name: "open-feature-requests",
+      data: {
+        hideBackButton: !showBackButton,
+      },
     }, true);
 
     GleapFrameManager.getInstance().showWidget();

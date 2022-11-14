@@ -118,13 +118,13 @@ export default class GleapFrameManager {
     }
 
     const surveyStyle = "gleap-frame-container--survey";
-    const newsdetailsStyle = "gleap-frame-container--news";
+    const extendedStyle = "gleap-frame-container--extended";
     const surveyFullStyle = "gleap-frame-container--survey-full";
     const classicStyle = "gleap-frame-container--classic";
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
     const noButtonStyleLeft = "gleap-frame-container--no-button";
-    const allStyles = [classicStyle, classicStyleLeft, newsdetailsStyle, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
+    const allStyles = [classicStyle, classicStyleLeft, extendedStyle, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
@@ -160,8 +160,8 @@ export default class GleapFrameManager {
     if (this.appMode === "survey_full") {
       this.gleapFrameContainer.classList.add(surveyFullStyle);
     }
-    if (this.appMode === "newsdetails") {
-      this.gleapFrameContainer.classList.add(newsdetailsStyle);
+    if (this.appMode === "extended") {
+      this.gleapFrameContainer.classList.add(extendedStyle);
     }
 
     this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
@@ -335,10 +335,10 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "page-changed") {
-        if (data.data && data.data.name === "newsdetails") {
-          this.setAppMode("newsdetails");
+        if (data.data && (data.data.name === "newsdetails" || data.data.name === "appextended")) {
+          this.setAppMode("extended");
         } else {
-          if (this.appMode === "newsdetails") {
+          if (this.appMode === "extended") {
             this.setAppMode("widget");
           }
         }

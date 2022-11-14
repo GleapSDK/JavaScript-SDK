@@ -74,8 +74,12 @@ export namespace Gleap {
     userHash?: string
   ): void;
   function open(): void;
-  function openNews(): void;
-  function openFeatureRequests(): void;
+  function openNews(showBackButton?: boolean): void;
+  function openNewsArticle(collectionId: string, articleId?: string, showBackButton?: boolean): void;
+  function openHelpCenter(showBackButton?: boolean): void;
+  function openHelpArticle(id: string, showBackButton?: boolean): void;
+  function searchHelpCenter(term: string, showBackButton?: boolean): void;
+  function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;
   function hide(): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
