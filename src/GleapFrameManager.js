@@ -1,4 +1,16 @@
-import Gleap, { GleapStreamedEvent, GleapAudioManager, GleapNotificationManager, GleapCustomActionManager, GleapEventManager, GleapMarkerManager, GleapFeedback, GleapFeedbackButtonManager, GleapTranslationManager, GleapSession, GleapConfigManager } from "./Gleap";
+import Gleap, {
+  GleapStreamedEvent,
+  GleapAudioManager,
+  GleapNotificationManager,
+  GleapCustomActionManager,
+  GleapEventManager,
+  GleapMarkerManager,
+  GleapFeedback,
+  GleapFeedbackButtonManager,
+  GleapTranslationManager,
+  GleapSession,
+  GleapConfigManager,
+} from "./Gleap";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
 
@@ -32,7 +44,9 @@ export default class GleapFrameManager {
     this.appMode = appMode;
     this.updateFrameStyle();
 
-    const innerContainer = document.querySelector(".gleap-frame-container-inner");
+    const innerContainer = document.querySelector(
+      ".gleap-frame-container-inner"
+    );
     if ((appMode === "widget" || appMode === "survey_full") && innerContainer) {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
     }
@@ -79,7 +93,7 @@ export default class GleapFrameManager {
     if (window && window.cmp_block_ignoredomains) {
       window.cmp_block_ignoredomains.concat(["messenger.gleap.io"]);
     }
-  }
+  };
 
   injectFrame = () => {
     if (this.injectedFrame) {
@@ -96,7 +110,8 @@ export default class GleapFrameManager {
     runFunctionWhenDomIsReady(() => {
       // Inject widget HTML.
       var elem = document.createElement("div");
-      elem.className = "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
+      elem.className =
+        "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
       elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
       document.body.appendChild(elem);
 
@@ -124,25 +139,46 @@ export default class GleapFrameManager {
     const classicStyleLeft = "gleap-frame-container--classic-left";
     const modernStyleLeft = "gleap-frame-container--modern-left";
     const noButtonStyleLeft = "gleap-frame-container--no-button";
-    const allStyles = [classicStyle, classicStyleLeft, extendedStyle, modernStyleLeft, noButtonStyleLeft, surveyStyle, surveyFullStyle];
+    const allStyles = [
+      classicStyle,
+      classicStyleLeft,
+      extendedStyle,
+      modernStyleLeft,
+      noButtonStyleLeft,
+      surveyStyle,
+      surveyFullStyle,
+    ];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
     }
 
     var styleToApply = undefined;
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-    if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
+    if (
+      flowConfig.feedbackButtonPosition ===
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+      flowConfig.feedbackButtonPosition ===
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+    ) {
       styleToApply = classicStyle;
     }
-    if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT) {
+    if (
+      flowConfig.feedbackButtonPosition ===
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+    ) {
       styleToApply = classicStyleLeft;
     }
-    if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+    if (
+      flowConfig.feedbackButtonPosition ===
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+    ) {
       styleToApply = modernStyleLeft;
     }
     if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
-      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+      if (
+        flowConfig.feedbackButtonPosition ===
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE
+      ) {
         styleToApply = noButtonStyleLeft;
       }
     } else {
@@ -164,8 +200,11 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.classList.add(extendedStyle);
     }
 
-    this.gleapFrameContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
-  }
+    this.gleapFrameContainer.setAttribute(
+      "dir",
+      GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr"
+    );
+  };
 
   showFrameContainer(showLoader) {
     if (!this.gleapFrameContainer) {
@@ -173,24 +212,32 @@ export default class GleapFrameManager {
     }
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-    const loadingClass = 'gleap-frame-container--loading';
+    const loadingClass = "gleap-frame-container--loading";
     if (this.gleapFrameContainer.classList) {
-      this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
+      this.gleapFrameContainer.classList.remove(
+        "gleap-frame-container--hidden"
+      );
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
 
         if (flowConfig.disableBGFade) {
-          this.gleapFrameContainer.classList.add("gleap-frame-container--loading-nofade");
+          this.gleapFrameContainer.classList.add(
+            "gleap-frame-container--loading-nofade"
+          );
         }
         if (flowConfig.disableBGGradient) {
-          this.gleapFrameContainer.classList.add("gleap-frame-container--loading-nogradient");
+          this.gleapFrameContainer.classList.add(
+            "gleap-frame-container--loading-nogradient"
+          );
         }
       } else {
         this.gleapFrameContainer.classList.remove(loadingClass);
       }
 
       setTimeout(() => {
-        this.gleapFrameContainer.classList.add('gleap-frame-container--animate');
+        this.gleapFrameContainer.classList.add(
+          "gleap-frame-container--animate"
+        );
       }, 500);
     }
 
@@ -217,14 +264,16 @@ export default class GleapFrameManager {
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
     this.registerEscListener();
-  };
+  }
 
   showWidget() {
-    if (this.gleapFrameContainer) {
-      this.runWidgetShouldOpenCallback();
-    } else {
-      GleapFrameManager.getInstance().injectFrame();
-    }
+    setTimeout(() => {
+      if (this.gleapFrameContainer) {
+        this.runWidgetShouldOpenCallback();
+      } else {
+        GleapFrameManager.getInstance().injectFrame();
+      }
+    }, 0);
   }
 
   updateWidgetStatus() {
@@ -232,7 +281,7 @@ export default class GleapFrameManager {
       name: "widget-status-update",
       data: {
         isWidgetOpen: this.widgetOpened,
-      }
+      },
     });
   }
 
@@ -246,8 +295,10 @@ export default class GleapFrameManager {
   hideWidget() {
     this.hideMarkerManager();
     if (this.gleapFrameContainer) {
-      this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
-      this.gleapFrameContainer.classList.remove('gleap-frame-container--animate');
+      this.gleapFrameContainer.classList.add("gleap-frame-container--hidden");
+      this.gleapFrameContainer.classList.remove(
+        "gleap-frame-container--animate"
+      );
     }
     this.widgetOpened = false;
     this.updateWidgetStatus();
@@ -270,8 +321,8 @@ export default class GleapFrameManager {
           this.queue.push(data);
         }
       }
-    } catch (e) { }
-  };
+    } catch (e) {}
+  }
 
   sendSessionUpdate() {
     this.sendMessage({
@@ -280,7 +331,7 @@ export default class GleapFrameManager {
         sessionData: GleapSession.getInstance().getSession(),
         apiUrl: GleapSession.getInstance().apiUrl,
         sdkKey: GleapSession.getInstance().sdkKey,
-      }
+      },
     });
   }
 
@@ -290,8 +341,9 @@ export default class GleapFrameManager {
       data: {
         config: GleapConfigManager.getInstance().getFlowConfig(),
         actions: GleapConfigManager.getInstance().getProjectActions(),
-        overrideLanguage: GleapTranslationManager.getInstance().getOverrideLanguage(),
-      }
+        overrideLanguage:
+          GleapTranslationManager.getInstance().getOverrideLanguage(),
+      },
     });
 
     this.updateFrameStyle();
@@ -335,7 +387,10 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "page-changed") {
-        if (data.data && (data.data.name === "newsdetails" || data.data.name === "appextended")) {
+        if (
+          data.data &&
+          (data.data.name === "newsdetails" || data.data.name === "appextended")
+        ) {
           this.setAppMode("extended");
         } else {
           if (this.appMode === "extended") {
@@ -347,8 +402,13 @@ export default class GleapFrameManager {
       if (data.name === "height-update") {
         this.frameHeight = data.data;
 
-        const innerContainer = document.querySelector(".gleap-frame-container-inner");
-        if ((this.appMode === "survey" || this.appMode === "survey_full") && innerContainer) {
+        const innerContainer = document.querySelector(
+          ".gleap-frame-container-inner"
+        );
+        if (
+          (this.appMode === "survey" || this.appMode === "survey_full") &&
+          innerContainer
+        ) {
           innerContainer.style.maxHeight = `${this.frameHeight}px`;
         }
       }
@@ -364,7 +424,7 @@ export default class GleapFrameManager {
       if (data.name === "open-url") {
         const url = data.data;
         if (url && url.length > 0) {
-          window.open(url, '_blank').focus();
+          window.open(url, "_blank").focus();
         }
       }
 
@@ -382,20 +442,31 @@ export default class GleapFrameManager {
         const outboundId = data.data.outboundId;
         const spamToken = data.data.spamToken;
 
-        const feedback = new GleapFeedback(action.feedbackType, "MEDIUM", formData, false, action.excludeData, outboundId, spamToken);
-        feedback.sendFeedback().then((feedbackData) => {
-          this.sendMessage({
-            name: "feedback-sent",
-            data: feedbackData
+        const feedback = new GleapFeedback(
+          action.feedbackType,
+          "MEDIUM",
+          formData,
+          false,
+          action.excludeData,
+          outboundId,
+          spamToken
+        );
+        feedback
+          .sendFeedback()
+          .then((feedbackData) => {
+            this.sendMessage({
+              name: "feedback-sent",
+              data: feedbackData,
+            });
+            GleapEventManager.notifyEvent("feedback-sent", formData);
+          })
+          .catch((error) => {
+            this.sendMessage({
+              name: "feedback-sending-failed",
+              data: "Something went wrong, please try again.",
+            });
+            GleapEventManager.notifyEvent("error-while-sending");
           });
-          GleapEventManager.notifyEvent("feedback-sent", formData);
-        }).catch((error) => {
-          this.sendMessage({
-            name: "feedback-sending-failed",
-            data: "Something went wrong, please try again."
-          });
-          GleapEventManager.notifyEvent("error-while-sending");
-        });
       }
 
       if (data.name === "start-screen-drawing") {
@@ -416,7 +487,7 @@ export default class GleapFrameManager {
             this.listeners[i](data);
           }
         }
-      } catch (exp) { }
+      } catch (exp) {}
     });
   }
 

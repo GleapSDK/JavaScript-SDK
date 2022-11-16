@@ -125,7 +125,7 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, disablePing = false) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn("Gleap already initialized.");
@@ -142,8 +142,10 @@ class Gleap {
         GleapConfigManager.getInstance()
           .start()
           .then(() => {
-            // Inject the Gleap frame.
-            GleapStreamedEvent.getInstance().start();
+            if (!disablePing) {
+              // Inject the Gleap frame.
+              GleapStreamedEvent.getInstance().start();
+            }
 
             // Inject the widget buttons
             GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
@@ -501,11 +503,11 @@ class Gleap {
 
   /**
    * Shows a survey manually.
-   * @param {*} actionType 
-   * @param {*} outboundId 
-   * @param {*} format 
+   * @param {*} actionType
+   * @param {*} outboundId
+   * @param {*} format
    */
-   static showSurvey(actionType, outboundId, format) {
+  static showSurvey(actionType, outboundId, format) {
     Gleap.startFeedbackFlowWithOptions(
       actionType,
       {
@@ -525,7 +527,7 @@ class Gleap {
       hideBackButton: !showBackButton,
     });
   }
-  
+
   /**
    * Starts the bug reporting flow.
    */
@@ -645,7 +647,7 @@ class Gleap {
    * Search for news articles in the help center
    */
   static searchHelpCenter(term, showBackButton = true) {
-    if (!id) {
+    if (!term) {
       return;
     }
 
