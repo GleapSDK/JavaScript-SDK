@@ -46,7 +46,7 @@ class Gleap {
     snapshotPosition: {
       x: 0,
       y: 0,
-    }
+    },
   };
 
   // Gleap singleton
@@ -107,15 +107,16 @@ class Gleap {
    * Attaches external network logs.
    */
   static attachNetworkLogs(networkLogs) {
-    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
+    GleapNetworkIntercepter.getInstance().externalRequests =
+      gleapDataParser(networkLogs);
   }
 
   /**
-  * Add entry to logs.
-  * @param {*} message
-  * @param {*} logLevel
-  * @returns
-  */
+   * Add entry to logs.
+   * @param {*} message
+   * @param {*} logLevel
+   * @returns
+   */
   static log(message, logLevel = "INFO") {
     GleapConsoleLogManager.getInstance().addLog(message, logLevel);
   }
@@ -138,7 +139,8 @@ class Gleap {
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
       setTimeout(() => {
-        GleapConfigManager.getInstance().start()
+        GleapConfigManager.getInstance()
+          .start()
           .then(() => {
             // Inject the Gleap frame.
             GleapStreamedEvent.getInstance().start();
@@ -159,7 +161,7 @@ class Gleap {
 
   /**
    * Destroy
-   * @returns 
+   * @returns
    */
   static destroy() {
     GleapReplayRecorder.getInstance().stop();
@@ -266,16 +268,19 @@ class Gleap {
 
   /**
    * Prefills a specific form field.
-   * @param {*} key 
-   * @param {*} value 
+   * @param {*} key
+   * @param {*} value
    */
   static preFillForm(data) {
     const cleanedData = gleapDataParser(data);
     GleapPreFillManager.getInstance().formPreFill = cleanedData;
-    GleapFrameManager.getInstance().sendMessage({
-      name: "prefill-form-data",
-      data: cleanedData
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "prefill-form-data",
+        data: cleanedData,
+      },
+      true
+    );
   }
 
   /**
@@ -439,7 +444,7 @@ class Gleap {
   ) {
     return Gleap.sendSilentCrashReportWithFormData(
       {
-        description
+        description,
       },
       priority,
       excludeData
@@ -481,8 +486,35 @@ class Gleap {
       newFormData.reportedBy = sessionInstance.session.email;
     }
 
-    const feedback = new GleapFeedback("CRASH", priority, newFormData, true, excludeDataCleaned);
-    feedback.sendFeedback().then(() => { }).catch((error) => { });
+    const feedback = new GleapFeedback(
+      "CRASH",
+      priority,
+      newFormData,
+      true,
+      excludeDataCleaned
+    );
+    feedback
+      .sendFeedback()
+      .then(() => {})
+      .catch((error) => {});
+  }
+
+  /**
+   * Shows a survey manually.
+   * @param {*} actionType 
+   * @param {*} outboundId 
+   * @param {*} format 
+   */
+   static showSurvey(actionType, outboundId, format) {
+    Gleap.startFeedbackFlowWithOptions(
+      actionType,
+      {
+        actionOutboundId: outboundId,
+        hideBackButton: true,
+        format,
+      },
+      true
+    );
   }
 
   /**
@@ -493,12 +525,17 @@ class Gleap {
       hideBackButton: !showBackButton,
     });
   }
-
+  
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlowWithOptions(feedbackFlow, options = {}, isSurvey = false) {
-    const { actionOutboundId, autostartDrawing, hideBackButton, format } = options;
+  static startFeedbackFlowWithOptions(
+    feedbackFlow,
+    options = {},
+    isSurvey = false
+  ) {
+    const { actionOutboundId, autostartDrawing, hideBackButton, format } =
+      options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -517,15 +554,18 @@ class Gleap {
 
     GleapFrameManager.getInstance().setAppMode(isSurvey ? format : "widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: action,
-      data: {
-        flow: feedbackFlow,
-        actionOutboundId: actionOutboundId,
-        hideBackButton: hideBackButton,
-        format,
-      }
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: action,
+        data: {
+          flow: feedbackFlow,
+          actionOutboundId: actionOutboundId,
+          hideBackButton: hideBackButton,
+          format,
+        },
+      },
+      true
+    );
 
     if (autostartDrawing) {
       GleapFrameManager.getInstance().showDrawingScreen("screenshot");
@@ -544,12 +584,15 @@ class Gleap {
 
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-conversation",
-      data: {
-        shareToken,
-      }
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-conversation",
+        data: {
+          shareToken,
+        },
+      },
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -564,14 +607,17 @@ class Gleap {
 
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-help-article",
-      data: {
-        collectionId,
-        articleId,
-        hideBackButton: !showBackButton,
-      }
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-help-article",
+        data: {
+          collectionId,
+          articleId,
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -582,12 +628,15 @@ class Gleap {
   static openHelpCenter(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-helpcenter",
-      data: {
-        hideBackButton: !showBackButton,
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-helpcenter",
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
-    }, true);
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -602,13 +651,16 @@ class Gleap {
 
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-helpcenter-search",
-      data: {
-        term,
-        hideBackButton: !showBackButton,
-      }
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-helpcenter-search",
+        data: {
+          term,
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -623,13 +675,16 @@ class Gleap {
 
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-news-article",
-      data: {
-        id,
-        hideBackButton: !showBackButton,
-      }
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-news-article",
+        data: {
+          id,
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -640,12 +695,15 @@ class Gleap {
   static openNews(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-news",
-      data: {
-        hideBackButton: !showBackButton,
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-news",
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
-    }, true);
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -656,12 +714,15 @@ class Gleap {
   static openFeatureRequests(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "open-feature-requests",
-      data: {
-        hideBackButton: !showBackButton,
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-feature-requests",
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
-    }, true);
+      true
+    );
 
     GleapFrameManager.getInstance().showWidget();
   }
@@ -672,7 +733,8 @@ class Gleap {
     }
 
     var hostname = window.location.hostname;
-    const isLocalHost = ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
+    const isLocalHost =
+      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
       hostname.startsWith("192.168.") ||
       hostname.startsWith("10.0.") ||
       hostname.endsWith(".local") ||
@@ -684,7 +746,8 @@ class Gleap {
     GleapFeedbackButtonManager.getInstance().injectedFeedbackButton = false;
     GleapFrameManager.getInstance().destroy();
 
-    GleapConfigManager.getInstance().start()
+    GleapConfigManager.getInstance()
+      .start()
       .then(() => {
         // Inject the widget buttons
         GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
@@ -699,7 +762,7 @@ class Gleap {
 
   /**
    * Performs an action.
-   * @param {*} action 
+   * @param {*} action
    */
   performActions(actions) {
     for (let i = 0; i < actions.length; i++) {
@@ -708,11 +771,7 @@ class Gleap {
         if (action.actionType === "notification") {
           Gleap.showNotification(action);
         } else {
-          Gleap.startFeedbackFlowWithOptions(action.actionType, {
-            actionOutboundId: action.outbound,
-            hideBackButton: true,
-            format: action.format
-          }, true);
+          Gleap.showSurvey(action.actionType, action.outbound, action.format);
         }
       }
     }
@@ -728,8 +787,8 @@ class Gleap {
 
   /**
    * Sets a global data value
-   * @param {*} key 
-   * @param {*} value 
+   * @param {*} key
+   * @param {*} value
    */
   setGlobalDataItem(key, value) {
     this.globalData[key] = value;
@@ -737,8 +796,8 @@ class Gleap {
 
   /**
    * Gets a global data value
-   * @param {*} key 
-   * @returns 
+   * @param {*} key
+   * @returns
    */
   getGlobalDataItem(key) {
     return this.globalData[key];
@@ -748,11 +807,14 @@ class Gleap {
    * Takes the current replay and assigns it to the global data array.
    */
   takeCurrentReplay() {
-    GleapReplayRecorder.getInstance().getReplayData().then((replayData) => {
-      if (replayData) {
-        this.setGlobalDataItem("webReplay", replayData);
-      }
-    }).catch((exp) => { });
+    GleapReplayRecorder.getInstance()
+      .getReplayData()
+      .then((replayData) => {
+        if (replayData) {
+          this.setGlobalDataItem("webReplay", replayData);
+        }
+      })
+      .catch((exp) => {});
   }
 }
 
@@ -769,5 +831,28 @@ if (typeof window !== "undefined") {
   }
 }
 
-export { GleapNetworkIntercepter, GleapAudioManager, GleapNotificationManager, GleapPreFillManager, GleapShortcutListener, GleapMarkerManager, GleapTranslationManager, GleapReplayRecorder, GleapFeedback, GleapConsoleLogManager, GleapRageClickDetector, GleapCustomActionManager, GleapEventManager, GleapCustomDataManager, GleapFeedbackButtonManager, GleapCrashDetector, GleapClickListener, GleapSession, GleapStreamedEvent, GleapConfigManager, GleapFrameManager, GleapMetaDataManager };
+export {
+  GleapNetworkIntercepter,
+  GleapAudioManager,
+  GleapNotificationManager,
+  GleapPreFillManager,
+  GleapShortcutListener,
+  GleapMarkerManager,
+  GleapTranslationManager,
+  GleapReplayRecorder,
+  GleapFeedback,
+  GleapConsoleLogManager,
+  GleapRageClickDetector,
+  GleapCustomActionManager,
+  GleapEventManager,
+  GleapCustomDataManager,
+  GleapFeedbackButtonManager,
+  GleapCrashDetector,
+  GleapClickListener,
+  GleapSession,
+  GleapStreamedEvent,
+  GleapConfigManager,
+  GleapFrameManager,
+  GleapMetaDataManager,
+};
 export default Gleap;

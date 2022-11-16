@@ -85,6 +85,7 @@ export namespace Gleap {
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(feedbackFlow: string, showBackButton?: boolean): void;
+  function showSurvey(actionType: string, outboundId: string, format: string): void;
   function on(event: string, callback: (data?: any) => void): void;
   function getIdentity(): any;
   function isUserIdentified(): boolean;
