@@ -40,6 +40,10 @@ export default class GleapFrameManager {
     this.startCommunication();
   }
 
+  isSurvey() {
+    return this.appMode === "survey" || this.appMode === "survey_full";
+  }
+
   setAppMode(appMode) {
     this.appMode = appMode;
     this.updateFrameStyle();
@@ -47,7 +51,10 @@ export default class GleapFrameManager {
     const innerContainer = document.querySelector(
       ".gleap-frame-container-inner"
     );
-    if ((appMode === "widget" || appMode === "survey_full") && innerContainer) {
+    if (
+      (this.appMode === "widget" || this.appMode === "survey_full") &&
+      innerContainer
+    ) {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
     }
   }
@@ -259,7 +266,11 @@ export default class GleapFrameManager {
     this.showFrameContainer(false);
 
     this.updateWidgetStatus();
-    GleapNotificationManager.getInstance().clearAllNotifications();
+
+    // Clear notifications only when not opening a survey.
+    GleapNotificationManager.getInstance().clearAllNotifications(
+      this.isSurvey()
+    );
     GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("open");
@@ -304,6 +315,8 @@ export default class GleapFrameManager {
     this.updateWidgetStatus();
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapEventManager.notifyEvent("close");
+    GleapNotificationManager.getInstance().reloadNotificationsFromCache();
+
     this.unregisterEscListener();
 
     if (typeof window !== "undefined" && typeof window.focus !== "undefined") {
