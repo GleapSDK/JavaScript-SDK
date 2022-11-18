@@ -18,9 +18,6 @@ Gleap.identify("123456789", {
   name: "John Doe",
 });
 
-let userIdentified = Gleap.isUserIdentified();
-console.log("userIdentified", userIdentified);
-
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");
 Gleap.log("Test log warn", "WARNING");
