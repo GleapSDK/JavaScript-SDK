@@ -163,9 +163,9 @@ export default class GleapFrameManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     if (
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
     ) {
       styleToApply = classicStyle;
     }
@@ -249,6 +249,7 @@ export default class GleapFrameManager {
     }
 
     this.widgetOpened = true;
+    this.updateUI();
   }
 
   runWidgetShouldOpenCallback() {
@@ -264,17 +265,19 @@ export default class GleapFrameManager {
     });
 
     this.showFrameContainer(false);
-
     this.updateWidgetStatus();
 
+    GleapEventManager.notifyEvent("open");
+    this.registerEscListener();
+  }
+
+  updateUI() {
     // Clear notifications only when not opening a survey.
     GleapNotificationManager.getInstance().clearAllNotifications(
       this.isSurvey()
     );
     GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
-    GleapEventManager.notifyEvent("open");
-    this.registerEscListener();
   }
 
   showWidget() {
@@ -284,6 +287,7 @@ export default class GleapFrameManager {
       } else {
         GleapFrameManager.getInstance().injectFrame();
       }
+      this.updateUI();
     }, 0);
   }
 
@@ -334,7 +338,7 @@ export default class GleapFrameManager {
           this.queue.push(data);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   sendSessionUpdate() {
@@ -500,7 +504,7 @@ export default class GleapFrameManager {
             this.listeners[i](data);
           }
         }
-      } catch (exp) {}
+      } catch (exp) { }
     });
   }
 

@@ -58,14 +58,27 @@ export const injectStyledCSS = (
 
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
+  const chatRadius = Math.round(borderRadius * 0.6);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
   const zIndexBase = 2147483600;
 
   const colorStyleSheet = `
+    .gleap-font, .gleap-font * {
+      font-style: normal;
+      font-variant-caps: normal;
+      font-variant-ligatures: normal;
+      font-variant-numeric: normal;
+      font-variant-east-asian: normal;
+      font-weight: normal;
+      font-stretch: normal;
+      font-size: 100%;
+      line-height: 1;
+      font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    }
     .gleap-frame-container {
       right: ${buttonX}px;
-      bottom: ${75 + buttonY}px;
+      bottom: ${69 + buttonY}px;
       width: calc(100% - 40px);
       max-width: 400px;
       position: fixed;
@@ -85,7 +98,7 @@ export const injectStyledCSS = (
     [dir=rtl].gleap-frame-container {
       right: auto;
       left: ${buttonX}px;
-      bottom: ${75 + buttonY}px;
+      bottom: ${69 + buttonY}px;
     }
 
     .gleap-frame-container--loading iframe {
@@ -201,13 +214,13 @@ export const injectStyledCSS = (
     .gleap-frame-container--modern-left {
       right: auto;
       left: ${buttonX}px;
-      bottom: ${75 + buttonY}px;
+      bottom: ${69 + buttonY}px;
     }
 
     [dir=rtl].gleap-frame-container--modern-left {
       left: auto;
       right: ${buttonX}px;
-      bottom: ${75 + buttonY}px;
+      bottom: ${69 + buttonY}px;
     }
 
     .gleap-frame-container--animate {
@@ -238,7 +251,7 @@ export const injectStyledCSS = (
 
     .gleap-notification-container {
       position: fixed;
-      bottom: ${68 + buttonY}px;
+      bottom: ${62 + buttonY}px;
       right: ${4 + buttonX}px;
       z-index: ${zIndexBase + 30};
       display: flex;
@@ -307,9 +320,9 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-item img {
-      width: 30px;
-      height: 30px;
-      min-width: 30px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
       border-radius: 100%;
       object-fit: cover;
       margin-right: 8px;
@@ -319,28 +332,40 @@ export const injectStyledCSS = (
 
     .gleap-notification-item-container {
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      border-radius: ${formItemBorderRadius}px;
-      padding: 12px 16px;
+      border-radius: ${chatRadius}px;
+      border-bottom-left-radius: 0px;
+      padding: 20px;
       background-color: ${backgroundColor};
       margin-bottom: 12px;
       cursor: pointer;
       font-size: 15px;
-      font-family: sans-serif;
       line-height: 21px;
       color: ${contrastBackgroundColor};
+      position: relative;
+    }
+
+    .gleap-notification-item-container::after {
+      content: " ";
+      position: absolute;
+      bottom: 0px;
+      width: 0px;
+      height: 0px;
+      left: -6px;
+      border-style: solid;
+      border-width: 0px 0px 10px 6px;
+      border-color: transparent transparent white;
     }
 
     .gleap-notification-item-sender {
-      font-size: 13px;
-      font-family: sans-serif;
-      color: ${contrastBackgroundColor};
+      color: ${subTextColor};
+      line-height: 20px;
     }
 
     .gleap-notification-item-content {
-      font-size: 14px;
-      font-family: sans-serif;
       line-height: 20px;
-      color: ${subTextColor};
+      color: ${contrastBackgroundColor};
+      margin-top: 4px;
+      min-width: min(200px, 50vw);
     }
 
     .gleap-frame-container-inner {
@@ -470,8 +495,8 @@ export const injectStyledCSS = (
 
     .bb-notification-bubble {
       position: absolute;
-      top: -4px;
-      right: -4px;
+      top: -6px;
+      right: -6px;
       min-width: 22px;
       padding: 0px 4px;
       height: 22px;
@@ -489,11 +514,11 @@ export const injectStyledCSS = (
     }
     
     .bb-feedback-button-icon {
-      width: 60px;
-      height: 60px;
-      border-radius: 60px;
+      width: 54px;
+      height: 54px;
+      border-radius: 54px;
       background-color: #485bff;
-      transition: box-shadow 0.3s ease-in-out;
+      transition: box-shadow, transform 0.2s ease-in-out;
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
       position: relative;
     }
@@ -569,10 +594,10 @@ export const injectStyledCSS = (
     
     .bb-feedback-button .bb-logo-logo {
       position: absolute;
-      width: 38px;
-      height: 38px;
-      top: 11px;
-      left: 11px;
+      width: 34px;
+      height: 34px;
+      top: 10px;
+      left: 10px;
       object-fit: contain;
       animation-duration: 0.3s;
       animation-fill-mode: both;
@@ -581,10 +606,10 @@ export const injectStyledCSS = (
     
     .bb-feedback-button .bb-logo-arrowdown {
       position: absolute;
-      width: 18px;
-      height: 18px;
-      top: 23px;
-      left: 21px;
+      width: 16px;
+      height: 16px;
+      top: 19px;
+      left: 19px;
       object-fit: contain;
       animation-duration: 0.3s;
       animation-fill-mode: both;
@@ -604,6 +629,7 @@ export const injectStyledCSS = (
     
     .bb-feedback-button-icon:hover {
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
+      transform: scale(1.1);
     }
     
     .bb-feedback-button--open .bb-feedback-button-text {
