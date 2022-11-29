@@ -577,9 +577,28 @@ class Gleap {
   }
 
   /**
+   * Opens the conversations overview.
+   */
+  static openConversations(showBackButton = true) {
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-conversations",
+        data: {
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
    * Opens a conversation
    */
-  static openConversation(shareToken) {
+  static openConversation(shareToken, showBackButton = true) {
     if (!shareToken) {
       return;
     }
@@ -591,6 +610,7 @@ class Gleap {
         name: "open-conversation",
         data: {
           shareToken,
+          hideBackButton: !showBackButton,
         },
       },
       true

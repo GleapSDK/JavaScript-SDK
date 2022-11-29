@@ -78,6 +78,11 @@ export namespace Gleap {
     articleId?: string,
     showBackButton?: boolean
   ): void;
+  function openConversations(showBackButton?: boolean): void;
+  function openConversation(
+    shareToken?: string,
+    showBackButton?: boolean
+  ): void;
   function openHelpCenter(showBackButton?: boolean): void;
   function openHelpArticle(id: string, showBackButton?: boolean): void;
   function searchHelpCenter(term: string, showBackButton?: boolean): void;
