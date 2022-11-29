@@ -31,7 +31,7 @@ export default class GleapNotificationManager {
     }
 
     var elem = document.createElement("div");
-    elem.className = "gleap-notification-container";
+    elem.className = "gleap-notification-container gleap-font";
     document.body.appendChild(elem);
     this.notificationContainer = elem;
 
