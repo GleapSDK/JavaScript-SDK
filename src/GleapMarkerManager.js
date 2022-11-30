@@ -426,7 +426,6 @@ export default class GleapMarkerManager {
       }
       toolbarItem.classList.add("bb-capture-toolbar-item--active");
       self.screenDrawer.setTool(type);
-
       self.dragCursor.innerHTML = "";
       if (type === "pointer") {
         captureSVG.style.pointerEvents = "none";
@@ -460,7 +459,7 @@ export default class GleapMarkerManager {
             self.screenRecorder.stopScreenRecording();
           } else {
             self.screenRecorder.startScreenRecording();
-            chooseTool(type, document.querySelector(".bb-capture-toolbar-item[data-type='pointer']"));
+            chooseTool("pointer", document.querySelector(".bb-capture-toolbar-item[data-type='pointer']"));
           }
         }
 
