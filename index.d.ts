@@ -74,8 +74,7 @@ export namespace Gleap {
   function open(): void;
   function openNews(showBackButton?: boolean): void;
   function openNewsArticle(
-    collectionId: string,
-    articleId?: string,
+    id: string,
     showBackButton?: boolean
   ): void;
   function openConversations(showBackButton?: boolean): void;
@@ -84,7 +83,8 @@ export namespace Gleap {
     showBackButton?: boolean
   ): void;
   function openHelpCenter(showBackButton?: boolean): void;
-  function openHelpArticle(id: string, showBackButton?: boolean): void;
+  function openHelpCollection(collectionId: string, showBackButton?: boolean): void;
+  function openHelpArticle(articleId: string, showBackButton?: boolean): void;
   function searchHelpCenter(term: string, showBackButton?: boolean): void;
   function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;

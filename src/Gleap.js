@@ -497,8 +497,8 @@ class Gleap {
     );
     feedback
       .sendFeedback()
-      .then(() => {})
-      .catch((error) => {});
+      .then(() => { })
+      .catch((error) => { });
   }
 
   /**
@@ -620,10 +620,34 @@ class Gleap {
   }
 
   /**
+   * Opens a help center collection
+   */
+   static openHelpCollection(collectionId, showBackButton = true) {
+    if (!collectionId) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-help-collection",
+        data: {
+          collectionId,
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
    * Opens a help article
    */
-  static openHelpArticle(collectionId, articleId, showBackButton = true) {
-    if (!collectionId) {
+  static openHelpArticle(articleId, showBackButton = true) {
+    if (!articleId) {
       return;
     }
 
@@ -633,7 +657,6 @@ class Gleap {
       {
         name: "open-help-article",
         data: {
-          collectionId,
           articleId,
           hideBackButton: !showBackButton,
         },
@@ -836,7 +859,7 @@ class Gleap {
           this.setGlobalDataItem("webReplay", replayData);
         }
       })
-      .catch((exp) => {});
+      .catch((exp) => { });
   }
 }
 

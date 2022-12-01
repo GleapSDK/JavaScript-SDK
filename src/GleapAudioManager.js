@@ -6,8 +6,12 @@ export default class GleapAudioManager {
             if (!this.audio) {
                 this.audio = new Audio('https://js.gleap.io/res/ping.mp3');
             }
-            
-            this.audio.play();
+
+            const playPromise = this.audio.play();
+            if (playPromise !== undefined) {
+                playPromise.then(_ => { })
+                    .catch(error => { });
+            }
         } catch (exp) { }
     }
 }
