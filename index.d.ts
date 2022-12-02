@@ -83,8 +83,8 @@ export namespace Gleap {
     showBackButton?: boolean
   ): void;
   function openHelpCenter(showBackButton?: boolean): void;
-  function openHelpCollection(collectionId: string, showBackButton?: boolean): void;
-  function openHelpArticle(articleId: string, showBackButton?: boolean): void;
+  function openHelpCenterCollection(collectionId: string, showBackButton?: boolean): void;
+  function openHelpCenterArticle(articleId: string, showBackButton?: boolean): void;
   function searchHelpCenter(term: string, showBackButton?: boolean): void;
   function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;

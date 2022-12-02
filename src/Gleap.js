@@ -622,7 +622,7 @@ class Gleap {
   /**
    * Opens a help center collection
    */
-   static openHelpCollection(collectionId, showBackButton = true) {
+   static openHelpCenterCollection(collectionId, showBackButton = true) {
     if (!collectionId) {
       return;
     }
@@ -646,7 +646,7 @@ class Gleap {
   /**
    * Opens a help article
    */
-  static openHelpArticle(articleId, showBackButton = true) {
+  static openHelpCenterArticle(articleId, showBackButton = true) {
     if (!articleId) {
       return;
     }
