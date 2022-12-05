@@ -366,6 +366,8 @@ export const injectStyledCSS = (
       color: ${contrastBackgroundColor};
       margin-top: 4px;
       min-width: min(200px, 50vw);
+      word-wrap: break-word;
+      word-break: break-word;
     }
 
     .gleap-frame-container-inner {
