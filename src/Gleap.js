@@ -35,6 +35,7 @@ if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
 }
 
 class Gleap {
+  static invoked = true;
   static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
