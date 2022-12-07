@@ -425,24 +425,31 @@ class GleapNetworkIntercepter {
     const open = XMLHttpRequest.prototype.open;
     const send = XMLHttpRequest.prototype.send;
 
-    XMLHttpRequest.prototype.wrappedSetRequestHeader =
-      XMLHttpRequest.prototype.setRequestHeader;
-    XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
-      if (!this.requestHeaders) {
-        this.requestHeaders = {};
-      }
+    // Only override open and send if they haven't been overridden already.
+    if (XMLHttpRequest.prototype.gleapSetRequestHeader === undefined) {
+      XMLHttpRequest.prototype.gleapSetRequestHeader =
+        XMLHttpRequest.prototype.setRequestHeader;
+    }
+    
+    if (XMLHttpRequest.prototype.gleapSetRequestHeader) {
+      XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
+        if (!this.requestHeaders) {
+          this.requestHeaders = {};
+        }
 
-      if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
-        return;
-      }
+        if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
+          return;
+        }
 
-      if (!this.requestHeaders[header]) {
-        this.requestHeaders[header] = [];
-      }
+        if (!this.requestHeaders[header]) {
+          this.requestHeaders[header] = [];
+        }
 
-      this.requestHeaders[header].push(value);
-      this.wrappedSetRequestHeader(header, value);
-    };
+        this.requestHeaders[header].push(value);
+        this.gleapSetRequestHeader(header, value);
+      };
+    }
+
     XMLHttpRequest.prototype.open = function () {
       this["bbRequestId"] = ++self.requestId;
       callback.onOpen && callback.onOpen(this, arguments);

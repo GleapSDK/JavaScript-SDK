@@ -149,7 +149,7 @@ export default class GleapConfigManager {
       }
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   getFeedbackOptions(feedbackFlow) {

@@ -23,7 +23,7 @@ import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
 import GleapAudioManager from "./GleapAudioManager";
 
-if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
+if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
     HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
@@ -623,7 +623,7 @@ class Gleap {
   /**
    * Opens a help center collection
    */
-   static openHelpCenterCollection(collectionId, showBackButton = true) {
+  static openHelpCenterCollection(collectionId, showBackButton = true) {
     if (!collectionId) {
       return;
     }
