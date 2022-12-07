@@ -102,6 +102,39 @@ export const saveToGleapCache = (key, data) => {
   }
 };
 
+export const setGleapCookie = (name, value, days) => {
+  try {
+    var expires = "";
+    if (days) {
+      var date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
+    }
+    const host = window.location.host.split(":")[0];
+    document.cookie = name + "=" + (value || "") + expires + "; path=/; domain=" + host;
+  } catch (exp) { }
+}
+
+export const getGleapCookie = (name) => {
+  try {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+      if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+    }
+  } catch (exp) { }
+  return null;
+}
+
+export const eraseGleapCookie = (name) => {
+  try {
+    const host = window.location.host.split(":")[0];
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + host;
+  } catch (exp) { }
+}
+
 export const getDOMElementDescription = (element, html = true) => {
   var innerText = truncateString(element.innerText || '', 40).replace(/(\r\n|\n|\r)/gm, "").replace(/ +(?= )/g, '');
   var elementId = "";

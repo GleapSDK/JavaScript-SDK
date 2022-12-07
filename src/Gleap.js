@@ -176,6 +176,14 @@ class Gleap {
   }
 
   /**
+   * Enable or disable Gleap session tracking through cookies.
+   * @param {*} useCookies 
+   */
+  static setUseCookies(useCookies) {
+    GleapSession.getInstance().useCookies = useCookies;
+  }
+
+  /**
    * Indentifies the user session
    * @param {string} userId
    * @param {*} userData

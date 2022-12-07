@@ -89,6 +89,7 @@ export namespace Gleap {
   function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;
   function hide(): void;
+  function setUseCookies(useCookies: boolean): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(
