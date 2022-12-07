@@ -80,6 +80,20 @@ export const truncateString = (str, num) => {
   }
 }
 
+const removeSubDomain = (v) => {
+  try {
+    var parts = v.split('.');
+    var is2ndLevelDomain = false;
+    const secondLevel = parts[parts.length - 2];
+    if (secondLevel === "co" || secondLevel === "com" || secondLevel === "gv" || secondLevel === "ac" || secondLevel === "edu" || secondLevel === "gov" || secondLevel === "mil" || secondLevel === "net" || secondLevel === "org") {
+      is2ndLevelDomain = true;
+    }
+    parts = parts.slice(is2ndLevelDomain ? -3 : -2);
+    return parts.join('.');
+  } catch (exp) { }
+  return v;
+}
+
 export const loadFromGleapCache = (key) => {
   try {
     const cachedData = localStorage.getItem(`gleap-widget-${key}`);
@@ -110,7 +124,7 @@ export const setGleapCookie = (name, value, days) => {
       date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
       expires = "; expires=" + date.toUTCString();
     }
-    const host = window.location.host.split(":")[0];
+    const host = removeSubDomain(window.location.host.split(":")[0]);
     document.cookie = name + "=" + (value || "") + expires + "; path=/; domain=" + host;
   } catch (exp) { }
 }
@@ -130,7 +144,7 @@ export const getGleapCookie = (name) => {
 
 export const eraseGleapCookie = (name) => {
   try {
-    const host = window.location.host.split(":")[0];
+    const host = removeSubDomain(window.location.host.split(":")[0]);
     document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + host;
   } catch (exp) { }
 }
