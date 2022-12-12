@@ -60,7 +60,7 @@ export namespace Gleap {
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
-  function preFillForm(data: string): void;
+  function preFillForm(data: object): void;
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function identify(
