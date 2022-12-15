@@ -68,6 +68,9 @@ export namespace Gleap {
     customerData: {
       name?: string;
       email?: string;
+      phone?: string;
+      value?: number;
+      customData?: object;
     },
     userHash?: string
   ): void;

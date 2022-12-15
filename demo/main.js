@@ -21,6 +21,15 @@ Gleap.log("Test log err", "ERROR");
 
 Gleap.trackEvent("Master Event");
 
+Gleap.identify("123456789", {
+  name: "John Doe",
+  email: "john@doe.com",
+  customData: {
+    yyy: "xxx",
+    penis: true
+  }
+});
+
 // Register custom action.
 Gleap.registerCustomAction((customAction) => {
   console.log("Custom action called:");

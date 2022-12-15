@@ -221,7 +221,7 @@ export default class GleapSession {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
         var userDataKey = userDataKeys[i];
-        if (this.session[userDataKey] !== userData[userDataKey]) {
+        if (JSON.stringify(this.session[userDataKey]) !== JSON.stringify(userData[userDataKey])) {
           return true;
         }
       }
@@ -232,6 +232,7 @@ export default class GleapSession {
 
   identifySession = (userId, userData, userHash) => {
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
+    console.log("sessionNeedsUpdate", sessionNeedsUpdate);
     if (!sessionNeedsUpdate) {
       return;
     }
@@ -273,9 +274,24 @@ export default class GleapSession {
             }
           }
         };
+
+        var dataToSend = {
+          ...userData
+        };
+
+        if (userData.customData) {
+          delete dataToSend['customData'];
+          dataToSend = {
+            ...dataToSend,
+            ...userData.customData,
+          }
+        }
+
+        console.log("dataToSend", dataToSend);
+
         http.send(
           JSON.stringify({
-            ...userData,
+            ...dataToSend,
             userId,
             userHash,
           })
