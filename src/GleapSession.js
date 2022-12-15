@@ -232,7 +232,6 @@ export default class GleapSession {
 
   identifySession = (userId, userData, userHash) => {
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
-    console.log("sessionNeedsUpdate", sessionNeedsUpdate);
     if (!sessionNeedsUpdate) {
       return;
     }
@@ -286,9 +285,7 @@ export default class GleapSession {
             ...userData.customData,
           }
         }
-
-        console.log("dataToSend", dataToSend);
-
+        
         http.send(
           JSON.stringify({
             ...dataToSend,
