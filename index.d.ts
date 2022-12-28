@@ -61,6 +61,7 @@ export namespace Gleap {
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
   function preFillForm(data: object): void;
+  function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function identify(

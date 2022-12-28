@@ -389,6 +389,17 @@ class Gleap {
   }
 
   /**
+   * Show or hide the notification badge count.
+   * @param {boolean} showNotificationBadge show or hide the notification badge
+   *
+   */
+  static showTabNotificationBadge(showNotificationBadge) {
+    const notificationInstance = GleapNotificationManager.getInstance();
+    notificationInstance.showNotificationBadge = showNotificationBadge;
+    notificationInstance.updateTabBarNotificationCount();
+  }
+
+  /**
    * Override the browser language.
    * @param {string} language country code with two letters
    */
