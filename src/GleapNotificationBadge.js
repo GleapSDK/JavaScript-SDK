@@ -60,7 +60,9 @@ export default class GleapNotificationBadge {
     }
 
     _drawFavicon() {
-        this.faviconEL.setAttribute("href", this.dataURL);
+        try {
+            this.faviconEL.setAttribute("href", this.dataURL);
+        } catch (e) { }
     }
 
     _draw() {
@@ -116,7 +118,9 @@ export default class GleapNotificationBadge {
     }
 
     set value(val) {
-        this._value = val;
-        this.update();
+        try {
+            this._value = val;
+            this.update();
+        } catch (e) { }
     }
 }
