@@ -29,10 +29,9 @@ export default class GleapNotificationManager {
   constructor() {
     if (typeof window !== "undefined") {
       try {
-        this.badgeManager = new GleapNotificationBadge({});
+        this.badgeManager = new GleapNotificationBadge();
         this.badgeManager.value = 0;
       } catch (exp) {
-        console.log(exp);
         this.badgeManager = null;
       }
     }
