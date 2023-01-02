@@ -32,6 +32,7 @@ export default class GleapNotificationManager {
         this.badgeManager = new GleapNotificationBadge({});
         this.badgeManager.value = 0;
       } catch (exp) {
+        console.log(exp);
         this.badgeManager = null;
       }
     }

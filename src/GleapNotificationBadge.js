@@ -62,7 +62,9 @@ export default class GleapNotificationBadge {
     _drawFavicon() {
         try {
             this.faviconEL.setAttribute("href", this.dataURL);
-        } catch (e) { }
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     _draw() {
@@ -92,7 +94,6 @@ export default class GleapNotificationBadge {
     }
 
     // Public functions / methods:
-
     update() {
         this._value = Math.min(99, parseInt(this._value, 10));
         if (this.img) {
@@ -121,6 +122,8 @@ export default class GleapNotificationBadge {
         try {
             this._value = val;
             this.update();
-        } catch (e) { }
+        } catch (e) {
+            console.log(e);
+        }
     }
 }
