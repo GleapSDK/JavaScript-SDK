@@ -19,9 +19,7 @@ export default class GleapNotificationBadge {
                 title = title.substring(title.indexOf(") ") + 2, title.length);
             }
         } catch (e) { }
-
-        console.log("title", title);
-
+        
         return title;
     }
 
