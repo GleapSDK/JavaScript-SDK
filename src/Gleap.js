@@ -23,7 +23,7 @@ import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
 import GleapAudioManager from "./GleapAudioManager";
 
-if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype) {
+if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
     HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
@@ -173,6 +173,14 @@ class Gleap {
     GleapFeedbackButtonManager.getInstance().toggleFeedbackButton(false);
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
+  }
+
+  /**
+   * Enable or disable Gleap session tracking through cookies.
+   * @param {*} useCookies 
+   */
+  static setUseCookies(useCookies) {
+    GleapSession.getInstance().useCookies = useCookies;
   }
 
   /**
@@ -378,6 +386,17 @@ class Gleap {
    */
   static clearCustomData() {
     GleapCustomDataManager.getInstance().clearCustomData();
+  }
+
+  /**
+   * Show or hide the notification badge count.
+   * @param {boolean} showNotificationBadge show or hide the notification badge
+   *
+   */
+  static showTabNotificationBadge(showNotificationBadge) {
+    const notificationInstance = GleapNotificationManager.getInstance();
+    notificationInstance.showNotificationBadge = showNotificationBadge;
+    notificationInstance.updateTabBarNotificationCount();
   }
 
   /**
@@ -623,7 +642,7 @@ class Gleap {
   /**
    * Opens a help center collection
    */
-   static openHelpCenterCollection(collectionId, showBackButton = true) {
+  static openHelpCenterCollection(collectionId, showBackButton = true) {
     if (!collectionId) {
       return;
     }

@@ -1,10 +1,11 @@
 import { GleapFrameManager, GleapNotificationManager } from "./Gleap";
-import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
 
 export default class GleapSession {
   apiUrl = "https://api.gleap.io";
   sdkKey = null;
   updatingSession = false;
+  useCookies = true;
   session = {
     gleapId: null,
     gleapHash: null,
@@ -94,6 +95,12 @@ export default class GleapSession {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
 
+    if (this.useCookies) {
+      try {
+        eraseGleapCookie(`session-${this.sdkKey}`);
+      } catch (exp) { }
+    }
+
     this.ready = false;
     this.session = {
       id: null,
@@ -128,6 +135,9 @@ export default class GleapSession {
     }
 
     saveToGleapCache(`session-${this.sdkKey}`, session);
+    if (this.useCookies) {
+      setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
+    }
 
     this.session = session;
     this.ready = true;
@@ -136,10 +146,24 @@ export default class GleapSession {
   };
 
   startSession = (attemp = 0) => {
-    // Check if session is already ready.
-    const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
-    if (cachedSession) {
-      this.validateSession(cachedSession);
+    // Check if we already have a session cookie.
+    try {
+      if (this.useCookies) {
+        const sessionCookie = getGleapCookie(`session-${this.sdkKey}`);
+        if (sessionCookie) {
+          const sessionData = JSON.parse(decodeURIComponent(sessionCookie));
+
+          this.validateSession(sessionData);
+        }
+      }
+    } catch (exp) { }
+
+    if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
+      // Check if session is cached.
+      const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
+      if (cachedSession) {
+        this.validateSession(cachedSession);
+      }
     }
 
     const self = this;
@@ -197,7 +221,7 @@ export default class GleapSession {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
         var userDataKey = userDataKeys[i];
-        if (this.session[userDataKey] !== userData[userDataKey]) {
+        if (JSON.stringify(this.session[userDataKey]) !== JSON.stringify(userData[userDataKey])) {
           return true;
         }
       }
@@ -249,9 +273,22 @@ export default class GleapSession {
             }
           }
         };
+
+        var dataToSend = {
+          ...userData
+        };
+
+        if (userData.customData) {
+          delete dataToSend['customData'];
+          dataToSend = {
+            ...dataToSend,
+            ...userData.customData,
+          }
+        }
+        
         http.send(
           JSON.stringify({
-            ...userData,
+            ...dataToSend,
             userId,
             userHash,
           })

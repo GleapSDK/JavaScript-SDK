@@ -4,6 +4,7 @@ import Gleap, {
   GleapFrameManager,
   GleapSession,
 } from "./Gleap";
+import GleapNotificationBadge from './GleapNotificationBadge';
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { loadIcon } from "./UI";
 
@@ -12,6 +13,9 @@ export default class GleapNotificationManager {
   notifications = [];
   unreadCount = 0;
   unreadNotificationsKey = "unread-notifications";
+  badgeManager = null;
+  isTabActive = true;
+  showNotificationBadge = true;
 
   // GleapNotificationManager singleton
   static instance;
@@ -20,6 +24,27 @@ export default class GleapNotificationManager {
       this.instance = new GleapNotificationManager();
     }
     return this.instance;
+  }
+
+  constructor() {
+    if (typeof window !== "undefined") {
+      try {
+        this.badgeManager = new GleapNotificationBadge();
+        this.badgeManager.value = 0;
+      } catch (exp) {
+        this.badgeManager = null;
+      }
+    }
+  }
+
+  updateTabBarNotificationCount() {
+    if (this.badgeManager) {
+      if (this.showNotificationBadge) {
+        this.badgeManager.value = this.unreadCount;
+      } else {
+        this.badgeManager.value = 0;
+      }
+    }
   }
 
   /**
@@ -53,10 +78,13 @@ export default class GleapNotificationManager {
   setNotificationCount(unreadCount) {
     if (GleapFrameManager.getInstance().isOpened()) {
       this.unreadCount = 0;
+      this.updateTabBarNotificationCount();
       return;
     } else {
       this.unreadCount = unreadCount;
     }
+
+    this.updateTabBarNotificationCount();
 
     // Update the badge counter.
     GleapFeedbackButtonManager.getInstance().updateNotificationBadge(
@@ -126,17 +154,15 @@ export default class GleapNotificationManager {
       };
       elem.className = "gleap-notification-item";
       elem.innerHTML = `
-            ${
-              notification.data.sender &&
-              notification.data.sender.profileImageUrl &&
-              `<img src="${notification.data.sender.profileImageUrl}" />`
-            }
+            ${notification.data.sender &&
+        notification.data.sender.profileImageUrl &&
+        `<img src="${notification.data.sender.profileImageUrl}" />`
+        }
             <div class="gleap-notification-item-container">
-                ${
-                  notification.data.sender
-                    ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>`
-                    : ""
-                }
+                ${notification.data.sender
+          ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>`
+          : ""
+        }
                 <div class="gleap-notification-item-content">${content}</div>
             </div>`;
       this.notificationContainer.appendChild(elem);
@@ -172,9 +198,9 @@ export default class GleapNotificationManager {
     this.notificationContainer.classList.remove(classNoButton);
     if (
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
     ) {
       this.notificationContainer.classList.add(classLeft);
     }

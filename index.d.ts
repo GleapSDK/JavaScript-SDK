@@ -60,7 +60,8 @@ export namespace Gleap {
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
-  function preFillForm(data: string): void;
+  function preFillForm(data: object): void;
+  function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function identify(
@@ -68,6 +69,9 @@ export namespace Gleap {
     customerData: {
       name?: string;
       email?: string;
+      phone?: string;
+      value?: number;
+      customData?: object;
     },
     userHash?: string
   ): void;
@@ -89,6 +93,7 @@ export namespace Gleap {
   function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;
   function hide(): void;
+  function setUseCookies(useCookies: boolean): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(
