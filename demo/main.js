@@ -2,7 +2,7 @@ const Gleap = window.Gleap;
 
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 //Gleap.setEnvironment("dev");
 
 Gleap.attachCustomData({
@@ -30,15 +30,6 @@ Gleap.log("Test log warn", "WARNING");
 Gleap.log("Test log err", "ERROR");
 
 Gleap.trackEvent("Master Event");
-
-Gleap.identify("9292929292", {
-  name: "John Doe",
-  email: "johaaan@doe.com",
-  customData: {
-    yyy: "xxx",
-    penis: true
-  }
-});
 
 // Register custom action.
 Gleap.registerCustomAction((customAction) => {
