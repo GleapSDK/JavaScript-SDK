@@ -174,7 +174,7 @@ export const injectStyledCSS = (
     }
 
     .gleap-frame-container--survey-full .gleap-frame-container-inner {
-      max-width: 540px !important;
+      max-width: 640px !important;
       width: calc(100% - 24px);
       border-radius: ${borderRadius}px;
       overflow: hidden;
