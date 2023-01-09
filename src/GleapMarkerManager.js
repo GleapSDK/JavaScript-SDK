@@ -121,14 +121,14 @@ export default class GleapMarkerManager {
   }
 
   mouseMoveEventHandler(e) {
-    const x = e.pageX - document.documentElement.scrollLeft;
-    const y = e.pageY - document.documentElement.scrollTop;
+    const x = e.clientX;
+    const y = e.clientY;
     this.setMouseMove(x, y);
   }
 
   touchMoveEventHandler(e) {
-    const x = e.touches[0].pageX - document.documentElement.scrollLeft;
-    const y = e.touches[0].pageY - document.documentElement.scrollTop;
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
     this.setMouseMove(x, y);
   }
 
