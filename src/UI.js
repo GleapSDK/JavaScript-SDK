@@ -643,7 +643,7 @@ export const injectStyledCSS = (
     }
     
     .bb-capture-svg {
-      position: absolute;
+      position: fixed;
       z-index: ${zIndexBase + 14};
       top: 0px;
       left: 0px;

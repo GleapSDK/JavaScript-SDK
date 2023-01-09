@@ -184,14 +184,14 @@ export class ScreenDrawer {
   getMousePosition(e) {
     if (e.touches && e.touches.length > 0) {
       return {
-        x: e.touches[0].pageX,
-        y: e.touches[0].pageY,
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
       };
     }
 
     return {
-      x: e.pageX,
-      y: e.pageY,
+      x: e.clientX,
+      y: e.clientY,
     };
   }
 
