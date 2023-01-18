@@ -1,4 +1,4 @@
-import { GleapFrameManager, GleapNotificationManager } from "./Gleap";
+import { GleapEventManager, GleapFrameManager, GleapNotificationManager } from "./Gleap";
 import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
 
 export default class GleapSession {
@@ -91,6 +91,10 @@ export default class GleapSession {
   };
 
   clearSession = (attemp = 0, retry = true) => {
+    if (this.session && this.session.gleapHash) {
+      GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+    }
+
     try {
       saveToGleapCache(`session-${this.sdkKey}`, null);
     } catch (exp) { }
@@ -103,13 +107,13 @@ export default class GleapSession {
 
     this.ready = false;
     this.session = {
-      id: null,
-      hash: null,
-      type: null,
+      gleapId: null,
+      gleapHash: null,
       name: "",
       email: "",
+      userId: "",
       phone: "",
-      value: 0,
+      value: 0
     };
 
     GleapFrameManager.getInstance().sendMessage({
@@ -134,6 +138,16 @@ export default class GleapSession {
       return;
     }
 
+    var sessionChanged = true;
+    if (this.session && this.session.gleapHash && this.session.gleapHash === session.gleapHash) {
+      sessionChanged = false;
+    }
+
+    // Unregister previous group.
+    if (this.session && this.session.gleapHash && sessionChanged) {
+      GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+    }
+
     saveToGleapCache(`session-${this.sdkKey}`, session);
     if (this.useCookies) {
       setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
@@ -141,6 +155,11 @@ export default class GleapSession {
 
     this.session = session;
     this.ready = true;
+
+    // Register new push group.
+    if (this.session && this.session.gleapHash && sessionChanged) {
+      GleapEventManager.notifyEvent("register-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+    }
 
     this.notifySessionReady();
   };
@@ -285,7 +304,7 @@ export default class GleapSession {
             ...userData.customData,
           }
         }
-        
+
         http.send(
           JSON.stringify({
             ...dataToSend,

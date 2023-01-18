@@ -31,6 +31,14 @@ Gleap.log("Test log err", "ERROR");
 
 Gleap.trackEvent("Master Event");
 
+Gleap.on("unregister-pushmessage-group", (data) => {
+  console.log("unreg", data);
+});
+
+Gleap.on("register-pushmessage-group", (data) => {
+  console.log("reg", data);
+});
+
 // Register custom action.
 Gleap.registerCustomAction((customAction) => {
   console.log("Custom action called:");
