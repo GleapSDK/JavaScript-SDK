@@ -4,7 +4,6 @@ import Gleap, {
   GleapFrameManager,
   GleapSession,
 } from "./Gleap";
-import GleapNotificationBadge from './GleapNotificationBadge';
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { loadIcon } from "./UI";
 
@@ -13,7 +12,6 @@ export default class GleapNotificationManager {
   notifications = [];
   unreadCount = 0;
   unreadNotificationsKey = "unread-notifications";
-  badgeManager = null;
   isTabActive = true;
   showNotificationBadge = true;
 
@@ -27,24 +25,11 @@ export default class GleapNotificationManager {
   }
 
   constructor() {
-    if (typeof window !== "undefined") {
-      try {
-        this.badgeManager = new GleapNotificationBadge();
-        this.badgeManager.value = 0;
-      } catch (exp) {
-        this.badgeManager = null;
-      }
-    }
+
   }
 
   updateTabBarNotificationCount() {
-    if (this.badgeManager) {
-      if (this.showNotificationBadge) {
-        this.badgeManager.value = this.unreadCount;
-      } else {
-        this.badgeManager.value = 0;
-      }
-    }
+
   }
 
   /**
