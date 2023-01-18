@@ -137,14 +137,9 @@ export default class GleapSession {
     if (!session || !session.gleapId) {
       return;
     }
-
-    var sessionChanged = true;
-    if (this.session && this.session.gleapHash && this.session.gleapHash === session.gleapHash) {
-      sessionChanged = false;
-    }
-
+    
     // Unregister previous group.
-    if (this.session && this.session.gleapHash && sessionChanged) {
+    if (this.session && this.session.gleapHash) {
       GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
     }
 
@@ -157,7 +152,7 @@ export default class GleapSession {
     this.ready = true;
 
     // Register new push group.
-    if (this.session && this.session.gleapHash && sessionChanged) {
+    if (this.session && this.session.gleapHash) {
       GleapEventManager.notifyEvent("register-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
     }
 
