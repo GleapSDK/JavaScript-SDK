@@ -28,7 +28,9 @@ export default class GleapConsoleLogManager {
    */
   stop() {
     this.disabled = true;
-    window.console = this.originalConsoleLog;
+    if (this.originalConsoleLog) {
+      window.console = this.originalConsoleLog;
+    }
   }
 
   /**
@@ -69,7 +71,7 @@ export default class GleapConsoleLogManager {
       for (var i = 0; i < args.length; i++) {
         log += args[i] + " ";
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
     this.addLog(log, logLevel);
   }

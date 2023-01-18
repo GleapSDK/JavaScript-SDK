@@ -392,6 +392,7 @@ export const injectStyledCSS = (
       width: 100% !important;
       max-width: 100% !important;
       display: block;
+      pointer-events: auto;
     }
     
     .gleap-frame-container--hidden {

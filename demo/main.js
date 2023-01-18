@@ -1,7 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.disableConsoleLogOverwrite();
+
 Gleap.initialize("DUPaIr7s689BBblcFI4pc5aBgYJTm7Sc");
 //Gleap.setEnvironment("dev");
 
