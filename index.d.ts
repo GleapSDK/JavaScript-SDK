@@ -102,8 +102,7 @@ export namespace Gleap {
   ): void;
   function showSurvey(
     actionType: string,
-    outboundId: string,
-    format: string
+    format?: string
   ): void;
   function on(event: string, callback: (data?: any) => void): void;
   function getIdentity(): any;

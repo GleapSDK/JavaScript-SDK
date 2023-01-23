@@ -153,6 +153,9 @@ class Gleap {
 
             // Inject the notification container
             GleapNotificationManager.getInstance().injectNotificationUI();
+
+            // Check for URL params.
+            Gleap.checkForUrlParams();
           })
           .catch(function (err) {
             console.warn("Failed to initialize Gleap.");
@@ -160,6 +163,27 @@ class Gleap {
       }, 0);
     });
     sessionInstance.startSession();
+  }
+
+  static checkForUrlParams() {
+    if (typeof window === "undefined" || !window.location.search) {
+      return;
+    }
+
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const feedbackFlow = urlParams.get('gleap_feedback');
+      if (feedbackFlow && feedbackFlow.length > 0) {
+        Gleap.startFeedbackFlow(feedbackFlow);
+      }
+      const surveyFlow = urlParams.get('gleap_survey');
+      const surveyFlowFormat = urlParams.get('gleap_survey_format');
+      if (surveyFlow && surveyFlow.length > 0) {
+        Gleap.showSurvey(surveyFlow, surveyFlowFormat === "survey_full" ? "survey_full" : "survey");
+      }
+    } catch (exp) {
+      console.log(exp);
+    }
   }
 
   /**
@@ -524,14 +548,12 @@ class Gleap {
   /**
    * Shows a survey manually.
    * @param {*} actionType
-   * @param {*} outboundId
    * @param {*} format
    */
-  static showSurvey(actionType, outboundId, format) {
+  static showSurvey(actionType, format = "survey") {
     Gleap.startFeedbackFlowWithOptions(
       actionType,
       {
-        actionOutboundId: outboundId,
         hideBackButton: true,
         format,
       },
@@ -556,7 +578,7 @@ class Gleap {
     options = {},
     isSurvey = false
   ) {
-    const { actionOutboundId, autostartDrawing, hideBackButton, format } =
+    const { autostartDrawing, hideBackButton, format } =
       options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
@@ -581,7 +603,6 @@ class Gleap {
         name: action,
         data: {
           flow: feedbackFlow,
-          actionOutboundId: actionOutboundId,
           hideBackButton: hideBackButton,
           format,
         },
@@ -832,11 +853,11 @@ class Gleap {
   performActions(actions) {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
-      if (action && action.outbound && action.actionType) {
+      if (action && action.actionType) {
         if (action.actionType === "notification") {
           Gleap.showNotification(action);
         } else {
-          Gleap.showSurvey(action.actionType, action.outbound, action.format);
+          Gleap.showSurvey(action.actionType, action.format);
         }
       }
     }
