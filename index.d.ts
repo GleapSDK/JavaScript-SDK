@@ -101,7 +101,7 @@ export namespace Gleap {
     showBackButton?: boolean
   ): void;
   function showSurvey(
-    actionType: string,
+    surveyId: string,
     format?: string
   ): void;
   function on(event: string, callback: (data?: any) => void): void;
