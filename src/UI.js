@@ -257,7 +257,8 @@ export const injectStyledCSS = (
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      max-width: min(300px, 80vw);
+      width: 100%;
+      max-width: min(340px, 80vw);
     }
 
     .gleap-notification-container--left {
@@ -314,9 +315,76 @@ export const injectStyledCSS = (
       fill: ${backgroundColor};
     }
 
+    .gleap-notification-item-news {
+      width: 100%;
+      cursor: pointer;
+    }
+
+    .gleap-notification-item-news-content {
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+    }
+
+    .gleap-notification-item-news-sender {
+      display: flex;
+      align-items: center;
+      color: ${subTextColor};
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .gleap-notification-item-news-content-title {
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 18px;
+      margin-bottom: 6px;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: ${contrastBackgroundColor};
+    }
+
+    .gleap-notification-item-news-sender img {
+      border-radius: 100%;
+      height: 20px;
+      margin-right: 8px;
+      object-fit: cover;
+      width: 20px;
+    }
+
+    .gleap-notification-item-news-container {
+      display: flex;
+      animation: fadeIn;
+      animation-duration: .45s;
+      background-color: ${backgroundColor};
+      border-radius: ${subTextColor};
+      box-sizing: border-box;
+      cursor: pointer;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
+      border-radius: ${chatRadius}px;
+      margin-bottom: 12px;
+    }
+
+    .gleap-notification-item-news-image {
+      background-color: ${subTextColor};
+      height: 170px;
+      object-fit: cover;
+      width: 100%;
+    }
+
+    .gleap-notification-item-news:hover .gleap-notification-item-news-content-title {
+      color: ${primaryColor};
+    }
+
     .gleap-notification-item {
       display: flex;
       align-items: flex-end;
+      cursor: pointer;
     }
 
     .gleap-notification-item img {
@@ -353,7 +421,7 @@ export const injectStyledCSS = (
       left: -6px;
       border-style: solid;
       border-width: 0px 0px 10px 6px;
-      border-color: transparent transparent white;
+      border-color: transparent transparent ${backgroundColor};
     }
 
     .gleap-notification-item-sender {

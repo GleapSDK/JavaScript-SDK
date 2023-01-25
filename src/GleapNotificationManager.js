@@ -137,19 +137,41 @@ export default class GleapNotificationManager {
           Gleap.open();
         }
       };
-      elem.className = "gleap-notification-item";
-      elem.innerHTML = `
+
+      if (notification.data.news) {
+        // News preview
+        elem.className = "gleap-notification-item-news";
+        elem.innerHTML = `
+        <div class="gleap-notification-item-news-container">
+          ${notification.data.coverImageUrl ? `<img class="gleap-notification-item-news-image" src="${notification.data.coverImageUrl}" />` : ''}
+          <div class="gleap-notification-item-news-content">
+          <div class="gleap-notification-item-news-content-title">${content}</div>
+            ${notification.data.sender ? `
+            <div  class="gleap-notification-item-news-sender">
+              ${notification.data.sender.profileImageUrl &&
+            `<img src="${notification.data.sender.profileImageUrl}" />`
+            } ${notification.data.sender.name}</div>`
+            : ""
+          }
+          </div>
+        </div>`;
+      } else {
+        // Notification item.
+        elem.className = "gleap-notification-item";
+        elem.innerHTML = `
             ${notification.data.sender &&
-        notification.data.sender.profileImageUrl &&
-        `<img src="${notification.data.sender.profileImageUrl}" />`
-        }
+          notification.data.sender.profileImageUrl &&
+          `<img src="${notification.data.sender.profileImageUrl}" />`
+          }
             <div class="gleap-notification-item-container">
                 ${notification.data.sender
-          ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>`
-          : ""
-        }
+            ? `<div  class="gleap-notification-item-sender">${notification.data.sender.name}</div>`
+            : ""
+          }
                 <div class="gleap-notification-item-content">${content}</div>
             </div>`;
+      }
+
       this.notificationContainer.appendChild(elem);
     }
   }
