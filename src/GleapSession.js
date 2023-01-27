@@ -1,4 +1,4 @@
-import { GleapEventManager, GleapFrameManager, GleapNotificationManager } from "./Gleap";
+import { GleapEventManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent } from "./Gleap";
 import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
 
 export default class GleapSession {
@@ -137,7 +137,7 @@ export default class GleapSession {
     if (!session || !session.gleapId) {
       return;
     }
-    
+
     // Unregister previous group.
     if (this.session && this.session.gleapHash) {
       GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
@@ -197,6 +197,9 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
+
+            // Initially track.
+            GleapStreamedEvent.getInstance().restart();
           } catch (exp) { }
         } else {
           if (http.status !== 429) {

@@ -1,3 +1,5 @@
+import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
+
 const calculateShadeColor = function (col, amt) {
   col = col.replace(/^#/, "");
   if (col.length === 3)
@@ -38,7 +40,8 @@ export const injectStyledCSS = (
   borderRadius,
   backgroundColor,
   buttonX,
-  buttonY
+  buttonY,
+  buttonStyle,
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
@@ -62,6 +65,15 @@ export const injectStyledCSS = (
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
   const zIndexBase = 2147483600;
+
+  var bottomInfoOffset = 57 + buttonY;
+  if (buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
+    bottomInfoOffset = buttonY + 15;
+  } else if (buttonStyle && buttonStyle.includes("CLASSIC")) {
+    bottomInfoOffset = buttonY;
+  } else if (buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
+    bottomInfoOffset = buttonY;
+  }
 
   const colorStyleSheet = `
     .gleap-font, .gleap-font * {
@@ -251,8 +263,8 @@ export const injectStyledCSS = (
 
     .gleap-notification-container {
       position: fixed;
-      bottom: ${62 + buttonY}px;
-      right: ${4 + buttonX}px;
+      bottom: ${bottomInfoOffset}px;
+      right: ${buttonX}px;
       z-index: ${zIndexBase + 30};
       display: flex;
       flex-direction: column;

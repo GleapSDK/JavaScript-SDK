@@ -458,7 +458,8 @@ class Gleap {
     backgroundColor = "#ffffff",
     borderRadius = 20,
     buttonX = 20,
-    buttonY = 20
+    buttonY = 20,
+    buttonStyle = GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
   ) {
     runFunctionWhenDomIsReady(() => {
       injectStyledCSS(
@@ -468,7 +469,8 @@ class Gleap {
         borderRadius,
         backgroundColor,
         buttonX,
-        buttonY
+        buttonY,
+        buttonStyle
       );
     });
   }

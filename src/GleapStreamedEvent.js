@@ -10,6 +10,7 @@ export default class GleapStreamedEvent {
   streamingEvents = false;
   lastUrl = undefined;
   stopped = false;
+  mainLoopTimeout = null;
 
   // GleapStreamedEvent singleton
   static instance;
@@ -38,10 +39,25 @@ export default class GleapStreamedEvent {
     }, 60000);
   }
 
+  restart() {
+    if (this.mainLoopTimeout) {
+      clearInterval(this.mainLoopTimeout);
+      this.mainLoopTimeout = null;
+    }
+    this.skippedCount = 1;
+
+    this.trackInitialEvents();
+    this.runEventStreamLoop();
+  }
+
   start() {
     this.startPageListener();
-    this.runEventStreamLoop();
     this.resetErrorCountLoop();
+  }
+
+  trackInitialEvents() {
+    GleapStreamedEvent.getInstance().logEvent("sessionStarted");
+    GleapStreamedEvent.getInstance().logCurrentPage();
   }
 
   logCurrentPage() {
@@ -55,9 +71,6 @@ export default class GleapStreamedEvent {
   }
 
   startPageListener() {
-    this.logEvent("sessionStarted");
-    this.logCurrentPage();
-
     const self = this;
     setInterval(function () {
       if (self.stopped) {
@@ -96,8 +109,8 @@ export default class GleapStreamedEvent {
 
     const self = this;
     this.streamEvents();
-
-    setTimeout(function () {
+    
+    this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
     }, 10000);
   };

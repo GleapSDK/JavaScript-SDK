@@ -54,7 +54,11 @@ export namespace Gleap {
     primaryColor: string;
     headerColor: string;
     buttonColor: string;
-    cornerRadius: string;
+    backgroundColor: string;
+    borderRadius?: number;
+    buttonX?: number;
+    buttonY?: number;
+    buttonStyle?: string;
   }): void;
   function disableConsoleLogOverwrite(): void;
   function setLiveSite(isLiveSite: boolean): void;
@@ -77,18 +81,21 @@ export namespace Gleap {
   ): void;
   function open(): void;
   function openNews(showBackButton?: boolean): void;
-  function openNewsArticle(
-    id: string,
-    showBackButton?: boolean
-  ): void;
+  function openNewsArticle(id: string, showBackButton?: boolean): void;
   function openConversations(showBackButton?: boolean): void;
   function openConversation(
     shareToken?: string,
     showBackButton?: boolean
   ): void;
   function openHelpCenter(showBackButton?: boolean): void;
-  function openHelpCenterCollection(collectionId: string, showBackButton?: boolean): void;
-  function openHelpCenterArticle(articleId: string, showBackButton?: boolean): void;
+  function openHelpCenterCollection(
+    collectionId: string,
+    showBackButton?: boolean
+  ): void;
+  function openHelpCenterArticle(
+    articleId: string,
+    showBackButton?: boolean
+  ): void;
   function searchHelpCenter(term: string, showBackButton?: boolean): void;
   function openFeatureRequests(showBackButton?: boolean): void;
   function close(): void;
@@ -100,10 +107,7 @@ export namespace Gleap {
     feedbackFlow: string,
     showBackButton?: boolean
   ): void;
-  function showSurvey(
-    surveyId: string,
-    format?: string
-  ): void;
+  function showSurvey(surveyId: string, format?: string): void;
   function on(event: string, callback: (data?: any) => void): void;
   function getIdentity(): any;
   function isUserIdentified(): boolean;
