@@ -5,6 +5,7 @@ export default class GleapFeedbackButtonManager {
     feedbackButton = null;
     injectedFeedbackButton = false;
     buttonHidden = null;
+    lastButtonIcon = null;
 
     // Feedback button types
     static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -105,6 +106,8 @@ export default class GleapFeedbackButtonManager {
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
             flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
         ) {
+            this.feedbackButton.classList.add("bb-feedback-button--classic-button-style");
+
             this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
                 ? "bb-feedback-button-classic--left"
                 : ""
@@ -115,11 +118,16 @@ export default class GleapFeedbackButtonManager {
                     flowConfig.widgetButtonText
                 )}</div>`;
         } else {
-            this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
-                "arrowdown",
-                "#fff"
-            )}</div><div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
+            if (buttonIcon !== this.lastButtonIcon) {
+                this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
+                    "arrowdown",
+                    "#fff"
+                )}</div><div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
+            }
         }
+
+        // Prevent dom update if not needed.
+        this.lastButtonIcon = buttonIcon;
 
         var hideButton = false;
         if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {

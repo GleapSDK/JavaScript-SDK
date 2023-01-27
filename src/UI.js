@@ -623,9 +623,6 @@ export const injectStyledCSS = (
       font-size: 16px;
       color: #fff;
       box-shadow: 0px 0px 14px 0px rgba(0, 0, 0, 0.25);
-      animation-duration: 0.2s;
-      animation-fill-mode: both;
-      animation-name: bbFadeInOpacity;
     }
 
     [dir=rtl].bb-feedback-button .bb-feedback-button-classic {
@@ -667,9 +664,14 @@ export const injectStyledCSS = (
       left: ${buttonX}px;
       right: auto;
     }
+
+    .bb-feedback-button--classic-button-style {
+      animation-duration: 0.2s;
+      animation-fill-mode: both;
+      animation-name: bbFadeInOpacity;
+    }
     
-    .bb-feedback-button--open.bb-feedback-button--survey,
-    .bb-feedback-button--open .bb-feedback-button-classic {
+    .bb-feedback-button--open.bb-feedback-button--classic-button-style {
       animation-duration: 0.2s;
       animation-fill-mode: both;
       animation-name: bbFadeOutRight;
