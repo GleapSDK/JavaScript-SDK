@@ -107,7 +107,7 @@ export default class GleapMetaDataManager {
     return {
       browserName: browserName + "(" + fullVersion + ")",
       userAgent: nAgt,
-      browser: navigator.appName,
+      browser: browserName,
       systemName: OSName,
       buildVersionNumber: this.appBuildNumber,
       releaseVersionNumber: this.appVersionCode,
