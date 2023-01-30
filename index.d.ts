@@ -68,6 +68,7 @@ export namespace Gleap {
   function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
+  function setTags(tags: string[]): void;
   function identify(
     userId: string,
     customerData: {

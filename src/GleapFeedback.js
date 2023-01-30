@@ -1,6 +1,6 @@
 import { startScreenCapture } from "./ScreenCapture";
 import { GleapScreenRecorder } from "./GleapScreenRecorder";
-import Gleap, { GleapConsoleLogManager, GleapStreamedEvent, GleapSession, GleapReplayRecorder, GleapCustomDataManager, GleapMetaDataManager, GleapNetworkIntercepter } from "./Gleap";
+import Gleap, { GleapConsoleLogManager, GleapStreamedEvent, GleapSession, GleapCustomDataManager, GleapMetaDataManager, GleapNetworkIntercepter, GleapTagManager } from "./Gleap";
 
 export default class GleapFeedback {
     excludeData = {};
@@ -89,6 +89,11 @@ export default class GleapFeedback {
             screenRecordingUrl: this.screenRecordingUrl,
             spamToken: this.spamToken,
         };
+
+        const tags = GleapTagManager.getInstance().getTags();
+        if (tags && tags.length > 0) {
+            feedbackData.tags = tags;
+        }
 
         const keysToExclude = Object.keys(this.excludeData);
         for (let i = 0; i < keysToExclude.length; i++) {

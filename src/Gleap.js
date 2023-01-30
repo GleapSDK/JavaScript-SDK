@@ -22,6 +22,7 @@ import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
 import GleapAudioManager from "./GleapAudioManager";
+import GleapTagManager from "./GleapTagManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -81,6 +82,14 @@ class Gleap {
    */
   static setEnvironment(environment) {
     GleapMetaDataManager.getInstance().environment = environment;
+  }
+
+  /**
+   * Set tags to be submitted with each ticket.
+   * @param {*} tags 
+   */
+  static setTags(tags) {
+    GleapTagManager.getInstance().setTags(tags);
   }
 
   /**
@@ -942,5 +951,6 @@ export {
   GleapConfigManager,
   GleapFrameManager,
   GleapMetaDataManager,
+  GleapTagManager,
 };
 export default Gleap;
