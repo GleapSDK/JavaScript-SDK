@@ -440,8 +440,13 @@ export default class GleapFrameManager {
 
       if (data.name === "open-url") {
         const url = data.data;
+        const newTab = data.newTab ? true : false;
         if (url && url.length > 0) {
-          window.open(url, "_blank").focus();
+          if (newTab) {
+            window.open(url, "_blank").focus();
+          } else {
+            window.location.href = url;
+          }
         }
       }
 
