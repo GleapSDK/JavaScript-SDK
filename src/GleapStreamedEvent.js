@@ -6,7 +6,6 @@ export default class GleapStreamedEvent {
   streamedEventArray = [];
   eventMaxLength = 500;
   errorCount = 0;
-  skippedCount = 1;
   streamingEvents = false;
   lastUrl = undefined;
   stopped = false;
@@ -44,8 +43,7 @@ export default class GleapStreamedEvent {
       clearInterval(this.mainLoopTimeout);
       this.mainLoopTimeout = null;
     }
-    this.skippedCount = 1;
-
+    
     this.trackInitialEvents();
     this.runEventStreamLoop();
   }
@@ -119,11 +117,6 @@ export default class GleapStreamedEvent {
     if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 2) {
       return;
     }
-
-    if ((!this.streamedEventArray || this.streamedEventArray.length === 0) && this.skippedCount < 1) {
-      this.skippedCount++;
-      return;
-    }
     
     const self = this;
     this.streamingEvents = true;
@@ -142,7 +135,6 @@ export default class GleapStreamedEvent {
       if (http.readyState === 4) {
         if (http.status === 200 || http.status === 201) {
           self.errorCount = 0;
-          self.skippedCount = 0;
 
           // Only perform actions if gleapId was not changed.
           if (GleapSession.getInstance().getGleapId() === preGleapId) {
