@@ -19,7 +19,6 @@ Gleap.identify("123456789", {
   email: "lukas@gleap.io",
   value: 1234,
   phone: "+49123456789",
-  "penis": "true",
   testing: { "fun": 1123 },
   luki: 19283
 });
