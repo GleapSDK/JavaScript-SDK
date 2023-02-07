@@ -40,6 +40,7 @@ class Gleap {
   static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
+  disableInAppNotifications = false;
 
   // Global data
   globalData = {
@@ -99,6 +100,15 @@ class Gleap {
   static setOfflineMode(offlineMode) {
     const instance = this.getInstance();
     instance.offlineMode = offlineMode;
+  }
+
+  /**
+   * Disable the in-app notifications.
+   * @param {*} disableInAppNotifications 
+   */
+  static setDisableInAppNotifications(disableInAppNotifications) {
+    const instance = this.getInstance();
+    instance.disableInAppNotifications = disableInAppNotifications;
   }
 
   static doFun() {
@@ -866,7 +876,9 @@ class Gleap {
       const action = actions[i];
       if (action && action.actionType) {
         if (action.actionType === "notification") {
-          Gleap.showNotification(action);
+          if (!this.disableInAppNotifications) {
+            Gleap.showNotification(action);
+          }
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }

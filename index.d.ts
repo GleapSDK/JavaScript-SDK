@@ -69,6 +69,7 @@ export namespace Gleap {
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function setTags(tags: string[]): void;
+  function setDisableInAppNotifications(disableInAppNotifications: boolean): void;
   function identify(
     userId: string,
     customerData: {
