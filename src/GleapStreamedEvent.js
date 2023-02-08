@@ -43,7 +43,7 @@ export default class GleapStreamedEvent {
       clearInterval(this.mainLoopTimeout);
       this.mainLoopTimeout = null;
     }
-    
+
     this.trackInitialEvents();
     this.runEventStreamLoop();
   }
@@ -107,17 +107,17 @@ export default class GleapStreamedEvent {
 
     const self = this;
     this.streamEvents();
-    
+
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
-    }, 20000);
+    }, 10000);
   };
 
   streamEvents = () => {
     if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 2) {
       return;
     }
-    
+
     const self = this;
     this.streamingEvents = true;
 
