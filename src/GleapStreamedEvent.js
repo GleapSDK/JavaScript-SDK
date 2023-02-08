@@ -110,7 +110,7 @@ export default class GleapStreamedEvent {
     
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
-    }, 10000);
+    }, 20000);
   };
 
   streamEvents = () => {
