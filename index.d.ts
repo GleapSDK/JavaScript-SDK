@@ -4,14 +4,14 @@ export namespace Gleap {
     description: string,
     priority?: "LOW" | "MEDIUM" | "HIGH",
     excludeData?: {
-      customData: Boolean;
-      metaData: Boolean;
-      attachments: Boolean;
-      consoleLog: Boolean;
-      networkLogs: Boolean;
-      customEventLog: Boolean;
-      screenshot: Boolean;
-      replays: Boolean;
+      customData?: Boolean;
+      metaData?: Boolean;
+      attachments?: Boolean;
+      consoleLog?: Boolean;
+      networkLogs?: Boolean;
+      customEventLog?: Boolean;
+      screenshot?: Boolean;
+      replays?: Boolean;
     }
   ): void;
   function sendSilentCrashReportWithFormData(
