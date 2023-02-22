@@ -457,6 +457,10 @@ export const injectStyledCSS = (
       max-height: ${widgetMaxHeight}px;
     }
 
+    .gleap-frame-container--survey .gleap-frame-container-inner {
+      height: calc(100vh - 40px);
+    }
+    
     .gleap-frame-container-inner:before {
       content: " ";
       position: absolute;
