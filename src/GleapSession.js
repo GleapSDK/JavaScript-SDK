@@ -281,6 +281,10 @@ export default class GleapSession {
                 self.validateSession(sessionData);
 
                 GleapNotificationManager.getInstance().clearAllNotifications(false);
+                
+                // Initially track.
+                GleapStreamedEvent.getInstance().restart();
+
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
