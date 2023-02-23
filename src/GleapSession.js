@@ -239,7 +239,10 @@ export default class GleapSession {
       for (var i = 0; i < userDataKeys.length; i++) {
         var userDataKey = userDataKeys[i];
         if (JSON.stringify(this.session[userDataKey]) !== JSON.stringify(userData[userDataKey])) {
-          return true;
+          // Check custom data for a match.
+          if (!(this.session.customData && JSON.stringify(this.session.customData[userDataKey]) === JSON.stringify(userData[userDataKey]))) {
+            return true;
+          }
         }
       }
     }
@@ -281,7 +284,7 @@ export default class GleapSession {
                 self.validateSession(sessionData);
 
                 // GleapNotificationManager.getInstance().clearAllNotifications(false);
-                
+
                 // Initially track.
                 GleapStreamedEvent.getInstance().restart();
 
