@@ -3,6 +3,7 @@ import Gleap, {
   GleapConfigManager,
   GleapFrameManager,
   GleapSession,
+  GleapAudioManager,
 } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { loadIcon } from "./UI";
@@ -87,6 +88,11 @@ export default class GleapNotificationManager {
     );
     if (!notificationsForOutbound) {
       this.notifications.push(notification);
+
+      // Play sound only when no existing already.
+      if (notification.sound) {
+        GleapAudioManager.ping();
+      }
     }
     if (this.notifications.length > 3) {
       this.notifications.shift();

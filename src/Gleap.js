@@ -888,10 +888,6 @@ class Gleap {
 
   static showNotification(data) {
     GleapNotificationManager.getInstance().showNotification(data);
-
-    if (data && data.sound) {
-      GleapAudioManager.ping();
-    }
   }
 
   /**

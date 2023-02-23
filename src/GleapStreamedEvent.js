@@ -52,7 +52,7 @@ export default class GleapStreamedEvent {
     this.startPageListener();
     this.resetErrorCountLoop();
   }
-
+  
   trackInitialEvents() {
     GleapStreamedEvent.getInstance().logEvent("sessionStarted");
     GleapStreamedEvent.getInstance().logCurrentPage();

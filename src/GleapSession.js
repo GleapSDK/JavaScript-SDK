@@ -280,7 +280,7 @@ export default class GleapSession {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
 
-                GleapNotificationManager.getInstance().clearAllNotifications(false);
+                // GleapNotificationManager.getInstance().clearAllNotifications(false);
                 
                 // Initially track.
                 GleapStreamedEvent.getInstance().restart();
