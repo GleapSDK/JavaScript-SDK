@@ -5,7 +5,7 @@ Gleap.setApiUrl("https://api.gleap.io");
 Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 //Gleap.setEnvironment("dev");
 
-Gleap.playSound(true);
+Gleap.playSound(false);
 
 Gleap.on("unread-count-changed", (data) => {
   console.log("unread-count-changed", data);
