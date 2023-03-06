@@ -4,6 +4,7 @@ import Gleap, {
   GleapFrameManager,
   GleapSession,
   GleapAudioManager,
+  GleapEventManager,
 } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
 import { loadIcon } from "./UI";
@@ -30,7 +31,7 @@ export default class GleapNotificationManager {
   }
 
   updateTabBarNotificationCount() {
-
+    GleapEventManager.notifyEvent("unread-count-changed", this.unreadCount);
   }
 
   /**
@@ -65,7 +66,6 @@ export default class GleapNotificationManager {
     if (GleapFrameManager.getInstance().isOpened()) {
       this.unreadCount = 0;
       this.updateTabBarNotificationCount();
-      return;
     } else {
       this.unreadCount = unreadCount;
     }

@@ -430,6 +430,14 @@ class Gleap {
   static clearCustomData() {
     GleapCustomDataManager.getInstance().clearCustomData();
   }
+  
+  /**
+   * Play or mute the sound.
+   * @param {*} play
+   */
+  static playSound(play) {
+    GleapAudioManager.playSound(play);
+  }
 
   /**
    * Show or hide the notification badge count.
