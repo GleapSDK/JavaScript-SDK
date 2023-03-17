@@ -82,6 +82,7 @@ export namespace Gleap {
     },
     userHash?: string
   ): void;
+  function getInstance(): any;
   function open(): void;
   function openNews(showBackButton?: boolean): void;
   function openNewsArticle(id: string, showBackButton?: boolean): void;
