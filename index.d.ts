@@ -91,6 +91,7 @@ export namespace Gleap {
     shareToken?: string,
     showBackButton?: boolean
   ): void;
+  function setUrlHandler(urlHandler: (url: string, newTab?: boolean) => void): void;
   function openHelpCenter(showBackButton?: boolean): void;
   function openHelpCenterCollection(
     collectionId: string,

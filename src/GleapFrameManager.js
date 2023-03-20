@@ -26,6 +26,15 @@ export default class GleapFrameManager {
   escListener = undefined;
   frameHeight = 0;
   queue = [];
+  urlHandler = function (url, newTab) {
+    if (url && url.length > 0) {
+      if (newTab) {
+        window.open(url, "_blank").focus();
+      } else {
+        window.location.href = url;
+      }
+    }
+  };
 
   // GleapFrameManager singleton
   static instance;
@@ -38,6 +47,10 @@ export default class GleapFrameManager {
 
   constructor() {
     this.startCommunication();
+  }
+
+  setUrlHandler(handler) {
+    this.urlHandler = handler;
   }
 
   isSurvey() {
@@ -441,13 +454,7 @@ export default class GleapFrameManager {
       if (data.name === "open-url") {
         const url = data.data;
         const newTab = data.newTab ? true : false;
-        if (url && url.length > 0) {
-          if (newTab) {
-            window.open(url, "_blank").focus();
-          } else {
-            window.location.href = url;
-          }
-        }
+        this.urlHandler(url, newTab);
       }
 
       if (data.name === "run-custom-action") {

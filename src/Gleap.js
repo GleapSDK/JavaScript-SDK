@@ -94,6 +94,14 @@ class Gleap {
   }
 
   /**
+   * Sets a custom URL handler.
+   * @param {*} urlHandler 
+   */
+  static setUrlHandler(urlHandler) {
+    GleapFrameManager.getInstance().setUrlHandler(urlHandler);
+  }
+
+  /**
    * Active the Gleap offline mode.
    * @param {*} offlineMode
    */
