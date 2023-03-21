@@ -2,7 +2,7 @@ const Gleap = window.Gleap;
 
 //Gleap.setFrameUrl("http://0.0.0.0:3001");
 //Gleap.setApiUrl("https://api.gleap.io");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV", false);
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {

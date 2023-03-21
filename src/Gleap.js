@@ -161,6 +161,11 @@ class Gleap {
     }
     instance.initialized = true;
 
+    // Stop the ping if needed.
+    if (disablePing) {
+      GleapStreamedEvent.getInstance().stop();
+    }
+
     // Start session
     const sessionInstance = GleapSession.getInstance();
     sessionInstance.sdkKey = sdkKey;
@@ -438,7 +443,7 @@ class Gleap {
   static clearCustomData() {
     GleapCustomDataManager.getInstance().clearCustomData();
   }
-  
+
   /**
    * Play or mute the sound.
    * @param {*} play

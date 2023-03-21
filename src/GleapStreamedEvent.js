@@ -49,6 +49,7 @@ export default class GleapStreamedEvent {
   }
 
   start() {
+    this.stopped = false;
     this.startPageListener();
     this.resetErrorCountLoop();
   }
