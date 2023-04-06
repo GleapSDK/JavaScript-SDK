@@ -9,12 +9,10 @@ import GleapFrameManager from "./GleapFrameManager";
 import GleapMetaDataManager from "./GleapMetaDataManager";
 import GleapConsoleLogManager from "./GleapConsoleLogManager";
 import GleapClickListener from "./GleapClickListener";
-import GleapCrashDetector from "./GleapCrashDetector";
 import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
 import GleapCustomDataManager from "./GleapCustomDataManager";
 import GleapEventManager from "./GleapEventManager";
 import GleapCustomActionManager from "./GleapCustomActionManager";
-import GleapRageClickDetector from "./GleapRageClickDetector";
 import GleapReplayRecorder from "./GleapReplayRecorder";
 import GleapMarkerManager from "./GleapMarkerManager";
 import GleapTranslationManager from "./GleapTranslationManager";
@@ -72,8 +70,6 @@ class Gleap {
       GleapMetaDataManager.getInstance();
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
-      GleapCrashDetector.getInstance().start();
-      GleapRageClickDetector.getInstance().start();
     }
   }
 
@@ -117,11 +113,6 @@ class Gleap {
   static setDisableInAppNotifications(disableInAppNotifications) {
     const instance = this.getInstance();
     instance.disableInAppNotifications = disableInAppNotifications;
-  }
-
-  static doFun() {
-    const feedback = new GleapFeedback("CRASH", "HIGH", {}, true, false);
-    return feedback.takeSnapshot();
   }
 
   /**
@@ -968,12 +959,10 @@ export {
   GleapReplayRecorder,
   GleapFeedback,
   GleapConsoleLogManager,
-  GleapRageClickDetector,
   GleapCustomActionManager,
   GleapEventManager,
   GleapCustomDataManager,
   GleapFeedbackButtonManager,
-  GleapCrashDetector,
   GleapClickListener,
   GleapSession,
   GleapStreamedEvent,

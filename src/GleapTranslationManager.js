@@ -47,6 +47,18 @@ export default class GleapTranslationManager {
     this.customTranslation = customTranslation;
   }
 
+  getActiveLanguage() {
+    var language = "en";
+    if (typeof navigator !== "undefined") {
+      language = navigator.language.substring(0, 2).toLowerCase();
+    }
+    if (this.overrideLanguage && this.overrideLanguage !== "") {
+      language = this.overrideLanguage.toLowerCase();
+    }
+
+    return language;
+  }
+
   static translateText(key) {
     if (!key) {
       return "";
@@ -54,13 +66,7 @@ export default class GleapTranslationManager {
 
     const instance = GleapTranslationManager.getInstance();
 
-    var language = "en";
-    if (typeof navigator !== "undefined") {
-      language = navigator.language.substring(0, 2).toLowerCase();
-    }
-    if (instance.overrideLanguage && instance.overrideLanguage !== "") {
-      language = instance.overrideLanguage.toLowerCase();
-    }
+    var language = instance.getActiveLanguage();
 
     const searchForTranslationTable = (langKey) => {
       var customTranslation = null;

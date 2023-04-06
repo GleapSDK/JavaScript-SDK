@@ -1,8 +1,8 @@
 const Gleap = window.Gleap;
 
-//Gleap.setFrameUrl("http://0.0.0.0:3001");
-//Gleap.setApiUrl("https://api.gleap.io");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV", false);
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {
@@ -26,14 +26,14 @@ Gleap.attachCustomData({
 
 Gleap.setDisableInAppNotifications(false);
 
-Gleap.identify("123456789", {
+/*Gleap.identify("123456789", {
   name: "John Doe",
   email: "lukas@gleap.io",
   value: 1234,
   phone: "+49123456789",
   testing: { "fun": 1123 },
   luki: 19283
-});
+});*/
 
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");

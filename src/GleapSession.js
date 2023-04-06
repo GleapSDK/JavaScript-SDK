@@ -1,4 +1,4 @@
-import { GleapEventManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent } from "./Gleap";
+import { GleapEventManager, GleapTranslationManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent } from "./Gleap";
 import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
 
 export default class GleapSession {
@@ -208,7 +208,9 @@ export default class GleapSession {
         }
       }
     };
-    http.send(JSON.stringify({}));
+    http.send(JSON.stringify({
+      lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+    }));
   };
 
   notifySessionReady() {
@@ -315,6 +317,7 @@ export default class GleapSession {
             ...dataToSend,
             userId,
             userHash,
+            lang: GleapTranslationManager.getInstance().getActiveLanguage(),
           })
         );
       });
