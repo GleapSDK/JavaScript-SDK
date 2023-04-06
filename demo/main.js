@@ -22,14 +22,14 @@ Gleap.attachCustomData({
 
 Gleap.setDisableInAppNotifications(false);
 
-Gleap.identify("123456789", {
+/*Gleap.identify("123456789", {
   name: "John Doe",
   email: "lukas@gleap.io",
   value: 1234,
   phone: "+49123456789",
   testing: { "fun": 1123 },
   luki: 19283
-});
+});*/
 
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");
