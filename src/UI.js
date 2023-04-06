@@ -90,7 +90,7 @@ export const injectStyledCSS = (
     }
     .gleap-frame-container {
       right: ${buttonX}px;
-      bottom: ${69 + buttonY}px;
+      bottom: ${61 + buttonY}px;
       width: calc(100% - 40px);
       max-width: 400px;
       position: fixed;
@@ -110,7 +110,7 @@ export const injectStyledCSS = (
     [dir=rtl].gleap-frame-container {
       right: auto;
       left: ${buttonX}px;
-      bottom: ${69 + buttonY}px;
+      bottom: ${61 + buttonY}px;
     }
 
     .gleap-frame-container--loading iframe {
@@ -226,13 +226,13 @@ export const injectStyledCSS = (
     .gleap-frame-container--modern-left {
       right: auto;
       left: ${buttonX}px;
-      bottom: ${69 + buttonY}px;
+      bottom: ${61 + buttonY}px;
     }
 
     [dir=rtl].gleap-frame-container--modern-left {
       left: auto;
       right: ${buttonX}px;
-      bottom: ${69 + buttonY}px;
+      bottom: ${61 + buttonY}px;
     }
 
     .gleap-frame-container--animate {
@@ -601,9 +601,9 @@ export const injectStyledCSS = (
     }
     
     .bb-feedback-button-icon {
-      width: 54px;
-      height: 54px;
-      border-radius: 54px;
+      width: 48px;
+      height: 48px;
+      border-radius: 48px;
       background-color: #485bff;
       transition: box-shadow, transform 0.2s ease-in-out;
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
@@ -683,10 +683,10 @@ export const injectStyledCSS = (
     
     .bb-feedback-button .bb-logo-logo {
       position: absolute;
-      width: 34px;
-      height: 34px;
-      top: 10px;
-      left: 10px;
+      width: 30px;
+      height: 30px;
+      top: 9px;
+      left: 9px;
       object-fit: contain;
       animation-duration: 0.3s;
       animation-fill-mode: both;
@@ -695,10 +695,10 @@ export const injectStyledCSS = (
     
     .bb-feedback-button .bb-logo-arrowdown {
       position: absolute;
-      width: 16px;
-      height: 16px;
-      top: 19px;
-      left: 19px;
+      width: 14px;
+      height: 14px;
+      top: 17px;
+      left: 17px;
       object-fit: contain;
       animation-duration: 0.3s;
       animation-fill-mode: both;
