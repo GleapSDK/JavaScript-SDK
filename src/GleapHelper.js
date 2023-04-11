@@ -183,6 +183,8 @@ export const runFunctionWhenDomIsReady = (callback) => {
   ) {
     callback();
   } else {
-    document.addEventListener("DOMContentLoaded", callback);
+    document.addEventListener("DOMContentLoaded", () => {
+      callback();
+    });
   }
 }

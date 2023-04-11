@@ -171,14 +171,16 @@ class Gleap {
               GleapStreamedEvent.getInstance().start();
             }
 
-            // Inject the widget buttons
-            GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
+            runFunctionWhenDomIsReady(() => {
+              // Inject the widget buttons
+              GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
 
-            // Inject the notification container
-            GleapNotificationManager.getInstance().injectNotificationUI();
+              // Inject the notification container
+              GleapNotificationManager.getInstance().injectNotificationUI();
 
-            // Check for URL params.
-            Gleap.checkForUrlParams();
+              // Check for URL params.
+              Gleap.checkForUrlParams();
+            });
           })
           .catch(function (err) {
             console.warn("Failed to initialize Gleap.");
