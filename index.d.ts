@@ -30,6 +30,7 @@ export namespace Gleap {
       replays: Boolean;
     }
   ): void;
+  function startBot(botId: string, showBackButton?: boolean): void;
   function attachCustomData(customData: any): void;
   function setCustomData(key: string, value: string): void;
   function removeCustomData(key: string): void;
@@ -70,7 +71,9 @@ export namespace Gleap {
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function setTags(tags: string[]): void;
-  function setDisableInAppNotifications(disableInAppNotifications: boolean): void;
+  function setDisableInAppNotifications(
+    disableInAppNotifications: boolean
+  ): void;
   function identify(
     userId: string,
     customerData: {
@@ -91,7 +94,9 @@ export namespace Gleap {
     shareToken?: string,
     showBackButton?: boolean
   ): void;
-  function setUrlHandler(urlHandler: (url: string, newTab?: boolean) => void): void;
+  function setUrlHandler(
+    urlHandler: (url: string, newTab?: boolean) => void
+  ): void;
   function openHelpCenter(showBackButton?: boolean): void;
   function openHelpCenterCollection(
     collectionId: string,
