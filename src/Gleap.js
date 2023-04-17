@@ -699,17 +699,12 @@ class Gleap {
    * Starts a new conversation and attaches the bot with the given id.
    */
   static startBot(botId, showBackButton = true) {
-    if (!botId) {
-      return;
-    }
-
     GleapFrameManager.getInstance().setAppMode("widget");
-
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "start-bot",
         data: {
-          botId,
+          botId: botId ? botId : "",
           hideBackButton: !showBackButton,
         },
       },
