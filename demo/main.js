@@ -1,8 +1,8 @@
 const Gleap = window.Gleap;
 
-//Gleap.setFrameUrl("http://0.0.0.0:3001");
-//Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.initialize("KProDXhMS0V3UUku2iNnrZ4XsBnAYzxt");
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.initialize("M2qZRr3P1LaahwUJ1LdNB2ZPOVmNs0cR");
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {
@@ -24,16 +24,14 @@ Gleap.attachCustomData({
   },
 });
 
-/*Gleap.identify("123456789", {
-  name: "John Doe",
-  email: "lukas+atest@gleap.io",
+Gleap.identify("@testinglukasaa", {
+  name: "Max Doe",
+  email: "lukas+atestaaa@gleap.io",
   value: 1234,
   phone: "+49123456789",
   testing: { "fun": 1123 },
   luki: 19283
-});*/
-
-Gleap.clearIdentity();
+});
 
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");

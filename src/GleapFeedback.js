@@ -95,20 +95,22 @@ export default class GleapFeedback {
             feedbackData.tags = tags;
         }
 
-        const keysToExclude = Object.keys(this.excludeData);
-        for (let i = 0; i < keysToExclude.length; i++) {
-            const keyToExclude = keysToExclude[i];
-            if (this.excludeData[keyToExclude] === true) {
-                if (feedbackData[keyToExclude]) {
-                    delete feedbackData[keyToExclude];
-                }
+        if (this.excludeData) {
+            const keysToExclude = Object.keys(this.excludeData);
+            for (let i = 0; i < keysToExclude.length; i++) {
+                const keyToExclude = keysToExclude[i];
+                if (this.excludeData[keyToExclude] === true) {
+                    if (feedbackData[keyToExclude]) {
+                        delete feedbackData[keyToExclude];
+                    }
 
-                if (keyToExclude === "screenshot") {
-                    delete feedbackData.screenshotData;
-                }
+                    if (keyToExclude === "screenshot") {
+                        delete feedbackData.screenshotData;
+                    }
 
-                if (keyToExclude === "replays") {
-                    delete feedbackData.webReplay;
+                    if (keyToExclude === "replays") {
+                        delete feedbackData.webReplay;
+                    }
                 }
             }
         }
