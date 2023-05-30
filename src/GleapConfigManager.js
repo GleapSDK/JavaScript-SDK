@@ -124,7 +124,7 @@ export default class GleapConfigManager {
       GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
       GleapNotificationManager.getInstance().updateContainerStyle();
 
-      if (flowConfig.enableReplays) {
+      if (flowConfig.enableWebReplays) {
         GleapReplayRecorder.getInstance().start();
       } else {
         GleapReplayRecorder.getInstance().stop();

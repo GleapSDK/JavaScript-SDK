@@ -945,14 +945,8 @@ class Gleap {
    * Takes the current replay and assigns it to the global data array.
    */
   takeCurrentReplay() {
-    GleapReplayRecorder.getInstance()
-      .getReplayData()
-      .then((replayData) => {
-        if (replayData) {
-          this.setGlobalDataItem("webReplay", replayData);
-        }
-      })
-      .catch((exp) => { });
+    const replayData = GleapReplayRecorder.getInstance();
+    this.setGlobalDataItem("webReplay", replayData);
   }
 }
 

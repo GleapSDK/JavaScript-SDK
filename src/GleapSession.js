@@ -172,8 +172,8 @@ export default class GleapSession {
       }
     } catch (exp) { }
 
+    // Try to load session from local storage, if not already loaded.
     if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
-      // Check if session is cached.
       const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
       if (cachedSession) {
         this.validateSession(cachedSession);
