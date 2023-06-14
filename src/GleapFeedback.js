@@ -118,6 +118,17 @@ export default class GleapFeedback {
         return feedbackData;
     }
 
+    getTicketData() {
+        return new Promise((resolve, reject) => {
+            this.takeSnapshot().then(() => {
+                const dataToSend = this.getData();
+                resolve(dataToSend);
+            }).catch((exp) => {
+                reject();
+            });
+        });
+    }
+
     sendFeedback() {
         return new Promise((resolve, reject) => {
             this.takeSnapshot().then(() => {

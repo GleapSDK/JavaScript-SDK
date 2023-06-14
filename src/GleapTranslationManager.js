@@ -1,4 +1,4 @@
-import { GleapFrameManager, GleapFeedbackButtonManager } from "./Gleap";
+import { GleapFrameManager, GleapFeedbackButtonManager, GleapSession } from "./Gleap";
 
 export default class GleapTranslationManager {
   customTranslation = {};
@@ -28,8 +28,9 @@ export default class GleapTranslationManager {
    */
   setOverrideLanguage(language) {
     this.overrideLanguage = language;
-    GleapFrameManager.getInstance().sendConfigUpdate();
-    this.updateRTLSupport();
+    
+    //GleapFrameManager.getInstance().sendConfigUpdate();
+    //this.updateRTLSupport();
   }
 
   updateRTLSupport() {
@@ -60,6 +61,8 @@ export default class GleapTranslationManager {
   }
 
   static translateText(key) {
+    return key;
+
     if (!key) {
       return "";
     }

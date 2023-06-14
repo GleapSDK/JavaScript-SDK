@@ -44,7 +44,7 @@ export default class GleapConfigManager {
    */
   start = () => {
     const session = GleapSession.getInstance();
-    const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}`);
+    const cachedConfig = loadFromGleapCache(`config-${session.sdkKey}-${GleapTranslationManager.getInstance().getActiveLanguage()}`);
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
       this.loadConfigFromServer().catch(function (e) { });
@@ -59,9 +59,10 @@ export default class GleapConfigManager {
     return new Promise(function (resolve, reject) {
       const session = GleapSession.getInstance();
       const http = new XMLHttpRequest();
+      const lang = GleapTranslationManager.getInstance().getActiveLanguage();
       http.open(
         "GET",
-        session.apiUrl + "/config/" + session.sdkKey
+        session.apiUrl + "/config/" + session.sdkKey + "?lang=" + lang,
       );
       http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
       session.injectSession(http);
@@ -74,7 +75,7 @@ export default class GleapConfigManager {
             try {
               const config = JSON.parse(http.responseText);
               try {
-                saveToGleapCache(`config-${session.sdkKey}`, config);
+                saveToGleapCache(`config-${session.sdkKey}-lang`, config);
               } catch (exp) { }
               self.applyConfig(config);
               return resolve();

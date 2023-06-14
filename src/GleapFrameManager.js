@@ -10,6 +10,11 @@ import Gleap, {
   GleapTranslationManager,
   GleapSession,
   GleapConfigManager,
+  GleapCustomDataManager,
+  GleapMetaDataManager,
+  GleapConsoleLogManager,
+  GleapNetworkIntercepter,
+  GleapTagManager,
 } from "./Gleap";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
@@ -427,6 +432,27 @@ export default class GleapFrameManager {
             this.setAppMode("widget");
           }
         }
+      }
+
+      if (data.name === "collect-ticket-data") {
+        var ticketData = {
+          customData: GleapCustomDataManager.getInstance().getCustomData(),
+          metaData: GleapMetaDataManager.getInstance().getMetaData(),
+          consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
+          networkLogs: GleapNetworkIntercepter.getInstance().getRequests(),
+          customEventLog: GleapStreamedEvent.getInstance().getEventArray()
+        };
+
+        // Add tags
+        const tags = GleapTagManager.getInstance().getTags();
+        if (tags && tags.length > 0) {
+          ticketData.tags = tags;
+        }
+
+        this.sendMessage({
+          name: "collect-ticket-data",
+          data: ticketData,
+        });
       }
 
       if (data.name === "height-update") {

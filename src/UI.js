@@ -61,6 +61,7 @@ export const injectStyledCSS = (
 
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
+  const containerRadius = Math.round(borderRadius * 0.8);
   const chatRadius = Math.round(borderRadius * 0.6);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
@@ -97,7 +98,7 @@ export const injectStyledCSS = (
       z-index: ${zIndexBase + 31};
       visibility: visible;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
-      border-radius: ${borderRadius}px;
+      border-radius: ${containerRadius}px;
       overflow: hidden;
       animation-duration: .3s;
       animation-fill-mode: both;
@@ -188,7 +189,7 @@ export const injectStyledCSS = (
     .gleap-frame-container--survey-full .gleap-frame-container-inner {
       max-width: 640px !important;
       width: calc(100% - 24px);
-      border-radius: ${borderRadius}px;
+      border-radius: ${containerRadius}px;
       overflow: hidden;
     }
 
@@ -465,8 +466,8 @@ export const injectStyledCSS = (
       content: " ";
       position: absolute;
       width: 100%;
-      height: calc(100% - ${borderRadius}px);
-      top: ${borderRadius}px;
+      height: calc(100% - ${containerRadius}px);
+      top: ${containerRadius}px;
       background-color: ${backgroundColor};
       z-index: -1;
     }

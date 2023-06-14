@@ -461,6 +461,10 @@ class Gleap {
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
+    if (Gleap.getInstance().initialized) {
+      console.warn("You must not change the language after Gleap is initialized. Please call this method before Gleap.initialize()");
+    }
+
     GleapTranslationManager.getInstance().setOverrideLanguage(language);
   }
 

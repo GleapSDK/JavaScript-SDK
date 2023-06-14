@@ -1,8 +1,11 @@
 const Gleap = window.Gleap;
 
-//Gleap.setFrameUrl("http://0.0.0.0:3001");
-//Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+
+Gleap.setLanguage("de");
+
+Gleap.initialize("zhkMPoY1k41yhOus4BRwVKE7Qas5zbyA");
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {
