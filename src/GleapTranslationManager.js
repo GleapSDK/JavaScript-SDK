@@ -1,7 +1,6 @@
-import { GleapFrameManager, GleapFeedbackButtonManager, GleapSession } from "./Gleap";
+import { GleapFrameManager, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
 
 export default class GleapTranslationManager {
-  customTranslation = {};
   overrideLanguage = "";
   isRTLLayout = false;
 
@@ -28,26 +27,21 @@ export default class GleapTranslationManager {
    */
   setOverrideLanguage(language) {
     this.overrideLanguage = language;
-    
-    //GleapFrameManager.getInstance().sendConfigUpdate();
-    //this.updateRTLSupport();
   }
 
   updateRTLSupport() {
     // Update RTL support.
-    this.isRTLLayout = GleapTranslationManager.translateText("rtlLang") === "true";
+    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+
+    this.isRTLLayout = false;
+    if (flowConfig && flowConfig.localizationOptions && flowConfig.localizationOptions.rtl) {
+      this.isRTLLayout = true;
+    }
+
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapFrameManager.getInstance().updateFrameStyle();
   }
-
-  /**
-   * Sets the custom translations.
-   * @param {*} customTranslation 
-   */
-  setCustomTranslation(customTranslation) {
-    this.customTranslation = customTranslation;
-  }
-
+  
   getActiveLanguage() {
     var language = "en";
     if (typeof navigator !== "undefined") {
@@ -61,43 +55,15 @@ export default class GleapTranslationManager {
   }
 
   static translateText(key) {
-    return key;
-
     if (!key) {
       return "";
     }
 
-    const instance = GleapTranslationManager.getInstance();
+    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+    const staticTranslation = flowConfig.staticTranslations;
 
-    var language = instance.getActiveLanguage();
-
-    const searchForTranslationTable = (langKey) => {
-      var customTranslation = null;
-      const translationKeys = Object.keys(instance.customTranslation);
-      for (var i = 0; i < translationKeys.length; i++) {
-        const translationKey = translationKeys[i];
-        if (langKey && translationKey && langKey === translationKey.toLowerCase()) {
-          if (instance.customTranslation[translationKey]) {
-            customTranslation = instance.customTranslation[translationKey];
-          }
-        }
-      }
-
-      return customTranslation;
-    }
-
-    var customTranslation = searchForTranslationTable(language);
-
-    // Extended search for language match only.
-    if (!customTranslation && language) {
-      const langKeys = language.split("-");
-      if (langKeys && langKeys.length > 1) {
-        customTranslation = searchForTranslationTable(langKeys[0]);
-      }
-    }
-
-    if (customTranslation && customTranslation[key]) {
-      return customTranslation[key];
+    if (staticTranslation && staticTranslation[key]) {
+      return staticTranslation[key];
     }
 
     return key;

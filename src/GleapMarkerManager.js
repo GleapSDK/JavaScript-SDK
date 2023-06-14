@@ -208,18 +208,18 @@ export default class GleapMarkerManager {
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
               <span class="bb-tooltip">${GleapTranslationManager.translateText(
-        `Pick a color`
+        `pickAColor`
       )}</span>
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
               ${loadIcon("undo")}
               <span class="bb-tooltip">${GleapTranslationManager.translateText(
-        `Undo`
+        `undo`
       )}</span>
             </div>
             ${this.type !== "capture"
         ? `<div class="bb-capture-button-next">${GleapTranslationManager.translateText(
-          `Next`
+          `next`
         )}</div>`
         : ""
       }
@@ -238,10 +238,10 @@ export default class GleapMarkerManager {
               <video controls muted autoplay></video>
               <div class="bb-capture-preview-buttons">
                 <div class="bb-capture-preview-retrybutton">${GleapTranslationManager.translateText(
-        `Retry`
+        `retry`
       )}</div>
                 <div class="bb-capture-preview-sendbutton">${GleapTranslationManager.translateText(
-        `Next`
+        `next`
       )}</div>
               </div>
             </div>
@@ -569,21 +569,21 @@ export default class GleapMarkerManager {
                 "bb-capture-toolbar-item--inactivecross"
               );
               audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "Mute"
+                "mute"
               );
             } else {
               toolbarItem.classList.add(
                 "bb-capture-toolbar-item--inactivecross"
               );
               audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "Unmute"
+                "unmute"
               );
             }
           } else {
             toolbarItem.classList.add(itemInactiveClass);
             toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
             audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-              "Browser not supported"
+              "browserNotSupported"
             );
           }
           break;
@@ -594,13 +594,13 @@ export default class GleapMarkerManager {
             if (this.screenRecorder.isRecording) {
               toolbarItem.setAttribute("data-active", "true");
               screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "Stop recording"
+                "stopRecording"
               );
               timerLabel.style.display = "block";
             } else {
               toolbarItem.setAttribute("data-active", "false");
               screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "Start recording"
+                "stopRecording"
               );
               timerLabel.style.display = "none";
             }
@@ -608,7 +608,7 @@ export default class GleapMarkerManager {
             // Recording is not available.
             toolbarItem.classList.add(itemInactiveClass);
             screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-              "Browser not supported"
+              "browserNotSupported"
             );
           }
           break;
@@ -643,7 +643,7 @@ export default class GleapMarkerManager {
     this.screenRecorder = new GleapScreenRecorder(
       this.captureRenderer.bind(this),
       GleapTranslationManager.translateText(
-        "You denied access to screen sharing. Please turn it on in your browser settings."
+        "accessToScreenSharingDenied"
       )
     );
   }

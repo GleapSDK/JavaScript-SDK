@@ -145,10 +145,7 @@ export default class GleapConfigManager {
         GleapNetworkIntercepter.getInstance().setBlacklist(flowConfig.networkLogBlacklist);
       }
 
-      if (flowConfig.customTranslations) {
-        GleapTranslationManager.getInstance().setCustomTranslation(flowConfig.customTranslations);
-        GleapTranslationManager.getInstance().updateRTLSupport();
-      }
+      GleapTranslationManager.getInstance().updateRTLSupport();
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
     } catch (e) { }

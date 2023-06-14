@@ -114,9 +114,7 @@ export default class GleapFeedbackButtonManager {
                 }${flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
                     ? "bb-feedback-button-classic--bottom"
                     : ""
-                }">${GleapTranslationManager.translateText(
-                    flowConfig.widgetButtonText
-                )}</div>`;
+                }">${flowConfig.widgetButtonText}</div>`;
         } else {
             if (buttonIcon !== this.lastButtonIcon) {
                 this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
