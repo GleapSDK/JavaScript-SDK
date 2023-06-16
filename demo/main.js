@@ -5,7 +5,7 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.setLanguage("de");
 
-Gleap.initialize("zhkMPoY1k41yhOus4BRwVKE7Qas5zbyA");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {
@@ -27,14 +27,14 @@ Gleap.attachCustomData({
   },
 });
 
-Gleap.identify("@testinglukasaa", {
+/*Gleap.identify("@testinglukasaa", {
   name: "Max Doe",
   email: "lukas+atestaaa@gleap.io",
   value: 1234,
   phone: "+49123456789",
   testing: { "fun": 1123 },
   luki: 19283
-});
+});*/
 
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");

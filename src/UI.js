@@ -340,24 +340,39 @@ export const injectStyledCSS = (
       padding: 15px;
     }
 
+    .gleap-notification-item-news-preview {
+      color: ${subTextColor};
+      font-size: 15px;
+      line-height: 21px;
+      font-weight: 400;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      display: block;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
     .gleap-notification-item-news-sender {
       display: flex;
       align-items: center;
       color: ${subTextColor};
-      font-size: 14px;
+      font-size: 15px;
+      line-height: 21px;
       font-weight: 400;
     }
 
     .gleap-notification-item-news-content-title {
-      font-size: 14px;
+      color: ${contrastBackgroundColor};
+      font-size: 15px;
       font-weight: 500;
-      line-height: 18px;
+      line-height: 21px;
       margin-bottom: 6px;
       max-width: 100%;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: ${contrastBackgroundColor};
     }
 
     .gleap-notification-item-news-sender img {

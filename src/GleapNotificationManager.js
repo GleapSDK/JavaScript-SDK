@@ -145,20 +145,28 @@ export default class GleapNotificationManager {
       };
 
       if (notification.data.news) {
+        const renderDescription = () => {
+          if (notification.data.previewText && notification.data.previewText.length > 0) {
+            return `<div class="gleap-notification-item-news-preview">${notification.data.previewText}</div>`;
+          }
+
+          return `${notification.data.sender ? `
+          <div class="gleap-notification-item-news-sender">
+            ${notification.data.sender.profileImageUrl &&
+          `<img src="${notification.data.sender.profileImageUrl}" />`
+          } ${notification.data.sender.name}</div>`
+          : ""
+        }`;
+        };
+
         // News preview
         elem.className = "gleap-notification-item-news";
         elem.innerHTML = `
         <div class="gleap-notification-item-news-container">
-          ${notification.data.coverImageUrl ? `<img class="gleap-notification-item-news-image" src="${notification.data.coverImageUrl}" />` : ''}
+          ${notification.data.coverImageUrl && notification.data.coverImageUrl !== "" && !notification.data.coverImageUrl.includes("NewsImagePlaceholder") ? `<img class="gleap-notification-item-news-image" src="${notification.data.coverImageUrl}" />` : ''}
           <div class="gleap-notification-item-news-content">
           <div class="gleap-notification-item-news-content-title">${content}</div>
-            ${notification.data.sender ? `
-            <div  class="gleap-notification-item-news-sender">
-              ${notification.data.sender.profileImageUrl &&
-            `<img src="${notification.data.sender.profileImageUrl}" />`
-            } ${notification.data.sender.name}</div>`
-            : ""
-          }
+          ${renderDescription()}
           </div>
         </div>`;
       } else {

@@ -20,7 +20,7 @@ import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
 
 export default class GleapFrameManager {
-  frameUrl = "https://messenger.gleap.io";
+  frameUrl = "https://messenger-app.gleap.io";
   gleapFrameContainer = null;
   gleapFrame = null;
   injectedFrame = false;
@@ -116,7 +116,7 @@ export default class GleapFrameManager {
 
   autoWhiteListCookieManager = () => {
     if (window && window.cmp_block_ignoredomains) {
-      window.cmp_block_ignoredomains.concat(["messenger.gleap.io"]);
+      window.cmp_block_ignoredomains.concat(["messenger-app.gleap.io"]);
     }
   };
 
