@@ -1,7 +1,7 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
+//Gleap.setFrameUrl("http://0.0.0.0:3001");
+//Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.setLanguage("de");
 
@@ -60,7 +60,7 @@ Gleap.registerCustomAction((customAction) => {
 // Network logs test.
 setTimeout(() => {
   console.log("Loading place infos");
-
+  
   var xmlhttp = new XMLHttpRequest();
   var url = "https://jsonplaceholder.typicode.com/todos/1";
   xmlhttp.onreadystatechange = function () {
