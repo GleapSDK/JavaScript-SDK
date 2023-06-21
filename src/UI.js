@@ -108,6 +108,47 @@ export const injectStyledCSS = (
       transition: max-width 0.3s ease-out;
     }
 
+    .gleap-image-view {
+      position: fixed;
+      top: 0px;
+      left: 0px;
+      width: 100vw;
+      height: 100vh;
+      z-index: ${zIndexBase + 99};
+      background-color: ${contrastBackgroundColor}cc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gleap-image-view-image {
+      width: 90%;
+      height: auto;
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+
+    .gleap-image-view-close {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      opacity: 0.8;
+      z-index: ${zIndexBase + 140};
+      box-shadow: 0px 5px 18px rgba(0, 0, 0, 0.16);
+      cursor: pointer;
+    }
+
+    .gleap-image-view-close:hover {
+      opacity: 1;
+    }
+
+    .gleap-image-view-close svg path {
+      fill: ${backgroundColor};
+    }
+
     [dir=rtl].gleap-frame-container {
       right: auto;
       left: ${buttonX}px;

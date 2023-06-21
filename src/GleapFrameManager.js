@@ -152,6 +152,33 @@ export default class GleapFrameManager {
     });
   };
 
+  showImage = (url) => {
+    runFunctionWhenDomIsReady(() => {
+      var elem = document.createElement("div");
+      elem.className =
+        "gleap-image-view";
+      elem.innerHTML = `<div class="gleap-image-view-close">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm97.9-320l-17 17-47 47 47 47 17 17L320 353.9l-17-17-47-47-47 47-17 17L158.1 320l17-17 47-47-47-47-17-17L192 158.1l17 17 47 47 47-47 17-17L353.9 192z"/></svg>
+      </div><img class="gleap-image-view-image" src="${url}" />`;
+      document.body.appendChild(elem);
+
+      const closeElement = () => {
+        elem.remove();
+      };
+
+      const close = elem.querySelector(".gleap-image-view-close");
+      close.addEventListener("click", () => {
+        closeElement();
+      });
+
+      elem.addEventListener("click", (e) => {
+        if (e.target === elem) {
+          closeElement();
+        }
+      });
+    });
+  };
+
   updateFrameStyle = () => {
     if (!this.gleapFrameContainer) {
       return;
@@ -419,6 +446,10 @@ export default class GleapFrameManager {
 
       if (data.name === "play-ping") {
         GleapAudioManager.ping();
+      }
+
+      if (data.name === "open-image") {
+        this.showImage(data.data.url);
       }
 
       if (data.name === "page-changed") {
