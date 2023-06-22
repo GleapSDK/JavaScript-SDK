@@ -80,6 +80,36 @@ export default class GleapFeedbackButtonManager {
         }
     }
 
+    refresh() {
+        const feedbackButton = document.querySelector(".bb-feedback-button");
+        if (feedbackButton) {
+            this.updateFeedbackButtonText();
+            this.updateFeedbackButtonState();
+        } else {
+            this.injectedFeedbackButton = false;
+            this.injectFeedbackButton();
+        }
+    }
+
+    updateFeedbackButtonText() {
+        const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+
+        if (
+            !(flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+                flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+                flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT)
+        ) {
+            return;
+        }
+
+        const feedbackButton = document.querySelector(".bb-feedback-button-classic");
+        if (!feedbackButton) {
+            return;
+        }
+
+        feedbackButton.innerText = flowConfig.widgetButtonText;
+    }
+
     /**
      * Updates the feedback button state
      * @returns 

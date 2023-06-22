@@ -106,6 +106,8 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.remove();
     }
     this.injectedFrame = false;
+    this.widgetOpened = false;
+    this.markerManager = undefined;
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
   }

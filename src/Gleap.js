@@ -461,11 +461,13 @@ class Gleap {
    * @param {string} language country code with two letters
    */
   static setLanguage(language) {
-    if (Gleap.getInstance().initialized) {
-      console.warn("You must not change the language after Gleap is initialized. Please call this method before Gleap.initialize()");
-    }
-
     GleapTranslationManager.getInstance().setOverrideLanguage(language);
+
+    if (Gleap.getInstance().initialized) {
+      setTimeout(() => {
+        Gleap.getInstance().softReInitialize();
+      }, 1000);
+    }
   }
 
   /**
@@ -887,14 +889,12 @@ class Gleap {
   }
 
   softReInitialize() {
-    GleapFeedbackButtonManager.getInstance().injectedFeedbackButton = false;
     GleapFrameManager.getInstance().destroy();
-
     GleapConfigManager.getInstance()
       .start()
       .then(() => {
-        // Inject the widget buttons
-        GleapFeedbackButtonManager.getInstance().injectFeedbackButton();
+        // Update the feedback button.
+        GleapFeedbackButtonManager.getInstance().refresh();
 
         // Inject the notification container
         GleapNotificationManager.getInstance().injectNotificationUI();
