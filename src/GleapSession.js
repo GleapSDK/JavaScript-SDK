@@ -158,11 +158,7 @@ export default class GleapSession {
 
     this.notifySessionReady();
   };
-
-  updateSessionLanguage = (language) => {
-    console.log("Updating session language to: " + language);
-  };
-
+  
   startSession = (attemp = 0) => {
     // Check if we already have a session cookie.
     try {
