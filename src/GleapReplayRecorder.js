@@ -4,6 +4,7 @@ import { rrwebRecord } from "./RRWebRecorder.js";
 export default class GleapReplayRecorder {
   startDate = undefined;
   events = [];
+  bufferSize = 0;
   stopFunction = undefined;
 
   // GleapReplayRecorder singleton
@@ -31,10 +32,31 @@ export default class GleapReplayRecorder {
 
     try {
       this.stopFunction = rrwebRecord({
-        emit(event) {
+        emit(rrwebEvent) {
+          const { event } = ensureMaxMessageSize(rrwebEvent);
           events.push(event);
         },
-        recordCanvas: true,
+        recordCanvas: false,
+        dataURLOptions: {
+          quality: 0.7,
+        },
+        sampling: {
+          scroll: 150,
+          mouseInteraction: {
+            MouseUp: false,
+            MouseDown: false,
+            Click: true,
+            ContextMenu: true,
+            DblClick: true,
+            Focus: true,
+            Blur: true,
+            TouchStart: true,
+            TouchEnd: false,
+          },
+        },
+        collectFonts: false,
+        inlineStylesheet: true,
+        recordCrossOriginIframes: false,
         blockClass: "gl-block",
         ignoreClass: "gl-ignore",
         maskTextClass: "gl-mask",
@@ -53,6 +75,7 @@ export default class GleapReplayRecorder {
 
     this.startDate = undefined;
     this.events = [];
+    this.bufferSize = 0;
   }
 
   /**
@@ -72,4 +95,20 @@ export default class GleapReplayRecorder {
 
     return replayResult;
   }
+}
+
+export function ensureMaxMessageSize(data) {
+  let stringifiedData = JSON.stringify(data);
+  if (stringifiedData.length > 5000000) {
+    const dataURIRegex = /data:([\w\/\-\.]+);(\w+),([^)"]*)/gim
+    const matches = stringifiedData.matchAll(dataURIRegex)
+    for (const match of matches) {
+      if (match[1].toLocaleLowerCase().slice(0, 6) === 'image/') {
+        stringifiedData = stringifiedData.replace(match[0], 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8ABRg5/wHSAVZN1mnaAAAAAElFTkSuQmCC')
+      } else {
+        stringifiedData = stringifiedData.replace(match[0], '')
+      }
+    }
+  }
+  return { event: JSON.parse(stringifiedData), size: stringifiedData.length }
 }

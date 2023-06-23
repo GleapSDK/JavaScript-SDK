@@ -27,15 +27,6 @@ Gleap.attachCustomData({
   },
 });
 
-/*Gleap.identify("@testinglukasaa", {
-  name: "Max Doe",
-  email: "lukas+atestaaa@gleap.io",
-  value: 1234,
-  phone: "+49123456789",
-  testing: { "fun": 1123 },
-  luki: 19283
-});*/
-
 Gleap.log("Test log");
 Gleap.log("Test log info", "INFO");
 Gleap.log("Test log warn", "WARNING");
@@ -73,4 +64,4 @@ setTimeout(() => {
   xmlhttp.setRequestHeader("asdfasdf1", "wertwertwert1");
   xmlhttp.setRequestHeader("asdfasdf2", "wertwertwert2");
   xmlhttp.send();
-}, 1000);
+}, 5000);

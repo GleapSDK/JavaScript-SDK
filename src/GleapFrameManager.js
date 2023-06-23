@@ -138,7 +138,7 @@ export default class GleapFrameManager {
       // Inject widget HTML.
       var elem = document.createElement("div");
       elem.className =
-        "gleap-frame-container gleap-frame-container--hidden gleap-hidden";
+        "gleap-frame-container gleap-frame-container--hidden gl-block";
       elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
       document.body.appendChild(elem);
 

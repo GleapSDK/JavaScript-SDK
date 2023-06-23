@@ -55,7 +55,7 @@ const loadCSSUrlResources = (data, basePath, remote) => {
         if (!matchedData) {
           return resolve(matchedData);
         }
-        
+
         var matchedUrl = matchedData
           .substr(4, matchedData.length - 5)
           .replaceAll("'", "")
@@ -399,9 +399,13 @@ const deepClone = (host) => {
         tagName === "INPUT"
       ) {
         var val = node.value;
-        if (node.getAttribute("gleap-ignore") === "value") {
+        if (
+          node.getAttribute("gleap-ignore") === "value" ||
+          node.classList.contains('gl-mask')
+        ) {
           val = new Array(val.length + 1).join("*");
         }
+        
         clone.setAttribute("bb-data-value", val);
         if (
           (node.type === "checkbox" || node.type === "radio") &&

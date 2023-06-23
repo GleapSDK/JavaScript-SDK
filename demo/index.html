@@ -1,244 +1,281 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <script src="/htmlimports.js"></script>
-    <title>Gleap Demo</title>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/x-icon" href="fav.png">
-    <script
-      src="https://kit.fontawesome.com/0a1af2edbf.js"
-      crossorigin="anonymous"
-    ></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
-    <!-- index.js as found in build/index.js -->
-    <script src="index.js"></script>
-    <script src="main.js"></script>
-    <style>
-      * {
-        box-sizing: border-box;
-        border: none;
-        padding: 0px;
-        margin: 0px;
-        font-family: "Montserrat", sans-serif;
-      }
 
-      body,
-      html {
-        background-color: #fff;
-        margin: 0;
-      }
+<head>
+  <script src="/htmlimports.js"></script>
+  <title>Gleap Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" type="image/x-icon" href="fav.png">
+  <script src="https://kit.fontawesome.com/0a1af2edbf.js" crossorigin="anonymous"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+  <!-- index.js as found in build/index.js -->
+  <script src="index.js"></script>
+  <script src="main.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      border: none;
+      padding: 0px;
+      margin: 0px;
+      font-family: "Montserrat", sans-serif;
+    }
 
-      .header {
-        width: 100%;
-        min-height: 500px;
-        background-color: #485bff;
-      }
+    body,
+    html {
+      background-color: #fff;
+      margin: 0;
+    }
 
+    .header {
+      width: 100%;
+      min-height: 500px;
+      background-color: #485bff;
+    }
+
+    .header-container {
+      max-width: 650px;
+      margin: auto;
+      padding-top: 200px;
+    }
+
+    .header-container-image {
+      max-width: 850px;
+      margin: auto;
+      margin-top: -200px;
+    }
+
+    h1 {
+      color: #fff;
+      font-size: 32px;
+      font-weight: 900;
+    }
+
+    .sub-headline {
+      font-size: 16px;
+      color: #ffffff88;
+      font-weight: 500;
+      margin-top: 5px;
+    }
+
+    .sub-headline i {
+      color: red;
+    }
+
+    .sub-headline a {
+      color: #ffffff88;
+      display: inline;
+      text-decoration: underline;
+    }
+
+    .logo {
+      position: fixed;
+      top: 40px;
+      left: 40px;
+    }
+
+    .logo i {
+      font-size: 40px;
+      color: #fff;
+    }
+
+    .head-image {
+      margin-top: 0px;
+      width: 100%;
+      height: auto;
+      max-height: 450px;
+      border-radius: 10px;
+      object-fit: cover;
+    }
+
+    .content {
+      max-width: 650px;
+      margin: auto;
+      margin-top: 40px;
+      margin-bottom: 40px;
+      color: #333;
+      font-size: 18px;
+      line-height: 26px;
+      font-weight: 300;
+    }
+
+    .content img {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+    }
+
+    a {
+      color: rgb(57, 140, 254);
+      text-decoration: none;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .buttonlink {
+      display: inline-block;
+      width: fit-content;
+      font-size: 16px;
+      font-weight: 600;
+      color: rgb(255, 255, 255);
+      background-color: #485bff;
+      border-style: solid;
+      border-width: 0px;
+      border-radius: 10px;
+      padding: 15px 40px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    @media only screen and (max-width: 600px) {
       .header-container {
-        max-width: 650px;
-        margin: auto;
-        padding-top: 200px;
-      }
-
-      .header-container-image {
-        max-width: 850px;
-        margin: auto;
-        margin-top: -200px;
-      }
-
-      h1 {
-        color: #fff;
-        font-size: 32px;
-        font-weight: 900;
-      }
-
-      .sub-headline {
-        font-size: 16px;
-        color: #ffffff88;
-        font-weight: 500;
-        margin-top: 5px;
-      }
-
-      .sub-headline i {
-        color: red;
-      }
-
-      .sub-headline a {
-        color: #ffffff88;
-        display: inline;
-        text-decoration: underline;
-      }
-
-      .logo {
-        position: fixed;
-        top: 40px;
-        left: 40px;
-      }
-
-      .logo i {
-        font-size: 40px;
-        color: #fff;
+        padding-left: 40px;
+        padding-right: 40px;
+        padding-top: 150px;
       }
 
       .head-image {
-        margin-top: 0px;
-        width: 100%;
-        height: auto;
-        max-height: 450px;
-        border-radius: 10px;
-        object-fit: cover;
+        border-radius: 0px;
+      }
+
+      .header {
+        min-height: initial;
       }
 
       .content {
-        max-width: 650px;
-        margin: auto;
-        margin-top: 40px;
-        margin-bottom: 40px;
-        color: #333;
-        font-size: 18px;
-        line-height: 26px;
-        font-weight: 300;
+        margin-top: 0px;
+        padding: 40px;
       }
+    }
 
-      .content img {
-        width: 100%;
-        max-width: 100%;
-        height: auto;
-      }
+    video {
+      border: 1px solid lightgray;
+      width: 100%;
+      background-color: #eee;
+    }
+  </style>
+</head>
 
-      a {
-        color: rgb(57, 140, 254);
-        text-decoration: none;
-        display: block;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        cursor: pointer;
-      }
-
-      .buttonlink {
-        display: inline-block;
-        width: fit-content;
-        font-size: 16px;
-        font-weight: 600;
-        color: rgb(255, 255, 255);
-        background-color: #485bff;
-        border-style: solid;
-        border-width: 0px;
-        border-radius: 10px;
-        padding: 15px 40px;
-        text-decoration: none;
-        cursor: pointer;
-      }
-
-      @media only screen and (max-width: 600px) {
-        .header-container {
-          padding-left: 40px;
-          padding-right: 40px;
-          padding-top: 150px;
-        }
-        .head-image {
-          border-radius: 0px;
-        }
-        .header {
-          min-height: initial;
-        }
-        .content {
-          margin-top: 0px;
-          padding: 40px;
-        }
-      }
-      video {
-        border: 1px solid lightgray;
-        width: 100%;
-        background-color: #eee;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="logo"><i class="fa-solid fa-earth-africa"></i></div>
-    <div class="header">
-      <div class="header-container">
-        <h1>Off-Grid-it-Haus</h1>
-        <h2 class="sub-headline">
-          <i class="fa-solid fa-star"></i> 4,93 · 308 ratings ·
-          <a href="#">Pioneertown, Kalifornien, USA</a>
-        </h2>
-      </div>
+<body>
+  <div class="logo"><i class="fa-solid fa-earth-africa"></i></div>
+  <div class="header">
+    <div class="header-container">
+      <h1>Off-Grid-it-Haus</h1>
+      <h2 class="sub-headline">
+        <i class="fa-solid fa-star"></i> 4,93 · 308 ratings ·
+        <a href="#">Pioneertown, Kalifornien, USA</a>
+      </h2>
     </div>
-    <div class="header-container-image">
-      <img class="head-image" src="./pexels-clayton-bunn-5524336.jpg" />
+  </div>
+  <div class="header-container-image">
+    <img class="head-image" src="./pexels-clayton-bunn-5524336.jpg" />
+  </div>
+  <div class="content" id="haha">
+    The Off-grid itHouse is an architecturally significant house, recently
+    noted by Dwell as one of the 'Best Homes in America' and in the Los
+    Angeles Times as one of the best houses of all time in Southern
+    California. The Off-grid itHouse is one of 10 IT Houses built in
+    California, which have received much acclaim such as the Western Home
+    award sponsored by Sunset magazine. Also noted as one of the top 10 airbnb
+    rentals worldwide. This is the prototype for the pre-engineered system
+    known as the IT House.
+    <br /><br />
+    <div class="buttonlink" onclick='console.error("Failt to book...");'>
+      Book now
     </div>
-    <div class="content" id="haha">
-      The Off-grid itHouse is an architecturally significant house, recently
-      noted by Dwell as one of the 'Best Homes in America' and in the Los
-      Angeles Times as one of the best houses of all time in Southern
-      California. The Off-grid itHouse is one of 10 IT Houses built in
-      California, which have received much acclaim such as the Western Home
-      award sponsored by Sunset magazine. Also noted as one of the top 10 airbnb
-      rentals worldwide. This is the prototype for the pre-engineered system
-      known as the IT House.
-      <br /><br />
-      <div class="buttonlink" onclick='console.error("Failt to book...");'>
-        Book now
-      </div>
-      <br /><br />
-      The house is 100% off-grid, powered by solar panels for energy and hot
-      water, and is located in a pristine remote valley in the beautiful
-      California high desert. The house observes key green principals of smaller
-      footprint, minimal disturbance to the natural beauty of the surrounding
-      landscape, use of renewable resources, and living simply and minimally.
-      <br /><br />
-      The setting of the house is remote and serene, a quiet refuge from
-      everything, free from distractions. Amazing views and vistas in all
-      directions.
-      <br /><br />
-      Perfect for design or green aficionados, writers or those needing a
-      secluded quiet getaway.
-      <br /><br />
-      <video width="320" height="240" controls>
-        <source src="movie.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-      <br />
-      <br />
-      <b>Access for guests</b><br />
-      <br />
-      Intentionally there is no television and only satellite wifi for emergency
-      communication so that one can truly experience being in a place of extreme
-      natural beauty, and take note of the play of light and shadow, and other
-      natural phenomena.
-      <br /><br />
-      The house is 100% off grid with no municipal services. All the water is
-      brought to the site and powered by the sun. Please expect that due to the
-      off grid nature of the home you should be prepared that power may not
-      always be available. Please plan meals to not use excessive energy.
-      <br /><br />
-      The house has two new Casper mattresses and pillows for ultimate comfort
-      and relaxation during your stay (queen and king).
-      <br /><br />
-      It is recommended that guests arrive before sundown in order to find the
-      house. The house is in a remote location.
-      <br /><br />
-      <b>More information</b><br />
-      <br />
-      Holiday weekend 3 day minimum applies to Presidents Day weekend,
-      Valentines Day, Memorial Day Weekend, Independence Day weekend, Labor Day
-      Weekend, Thanksgiving, Christmas and New Years. WE DO NOT ALLOW EVENTS OR
-      SHOOTS OF ANY KIND TO BE BOOKED THROUGH AIRBNB. WE ARE NO LONGER ALLOWING
-      WEDDINGS. FOR INQUIRIES BEYOND VACATION RENTAL PLEASE CONTACT LOCATIONS
-      UNLIMITED.
-    </div>
-  </body>
+    <canvas id="animationCanvas" style="border:1px solid #d3d3d3; width: 100%; height: 600px;">
+      Your browser does not support the HTML5 canvas tag.
+    </canvas>
+    <script>
+      var canvas = document.getElementById("animationCanvas");
+      var ctx = canvas.getContext("2d");
+
+      var x = canvas.width / 2;
+      var y = canvas.height / 2;
+      var dx = 2;
+      var dy = -2;
+      var radius = 20;
+
+      function drawCircle() {
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawCircle();
+        x += dx;
+        y += dy;
+
+        // Bounce the ball off the edges
+        if (x + dx > canvas.width - radius || x + dx < radius) {
+          dx = -dx;
+        }
+
+        if (y + dy > canvas.height - radius || y + dy < radius) {
+          dy = -dy;
+        }
+      }
+
+      setInterval(draw, 10);
+    </script>
+    <br /><br />
+    The house is 100% off-grid, powered by solar panels for energy and hot
+    water, and is located in a pristine remote valley in the beautiful
+    California high desert. The house observes key green principals of smaller
+    footprint, minimal disturbance to the natural beauty of the surrounding
+    landscape, use of renewable resources, and living simply and minimally.
+    <br /><br />
+    The setting of the house is remote and serene, a quiet refuge from
+    everything, free from distractions. Amazing views and vistas in all
+    directions.
+    <br /><br />
+    Perfect for design or green aficionados, writers or those needing a
+    secluded quiet getaway.
+    <br /><br />
+    <video width="320" height="240" controls>
+      <source src="movie.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <br />
+    <br />
+    <b>Access for guests</b><br />
+    <br />
+    Intentionally there is no television and only satellite wifi for emergency
+    communication so that one can truly experience being in a place of extreme
+    natural beauty, and take note of the play of light and shadow, and other
+    natural phenomena.
+    <br /><br />
+    The house is 100% off grid with no municipal services. All the water is
+    brought to the site and powered by the sun. Please expect that due to the
+    off grid nature of the home you should be prepared that power may not
+    always be available. Please plan meals to not use excessive energy.
+    <br /><br />
+    The house has two new Casper mattresses and pillows for ultimate comfort
+    and relaxation during your stay (queen and king).
+    <br /><br />
+    It is recommended that guests arrive before sundown in order to find the
+    house. The house is in a remote location.
+    <br /><br />
+    <b>More information</b><br />
+    <br />
+    Holiday weekend 3 day minimum applies to Presidents Day weekend,
+    Valentines Day, Memorial Day Weekend, Independence Day weekend, Labor Day
+    Weekend, Thanksgiving, Christmas and New Years. WE DO NOT ALLOW EVENTS OR
+    SHOOTS OF ANY KIND TO BE BOOKED THROUGH AIRBNB. WE ARE NO LONGER ALLOWING
+    WEDDINGS. FOR INQUIRIES BEYOND VACATION RENTAL PLEASE CONTACT LOCATIONS
+    UNLIMITED.
+  </div>
+</body>
+
 </html>
