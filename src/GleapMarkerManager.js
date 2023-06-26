@@ -545,7 +545,7 @@ export default class GleapMarkerManager {
       captureEditor.classList.add(notRecordingClass);
       captureEditor.classList.remove(recordingClass);
     }
-
+    
     // Update UI.
     const dialog = document.querySelector(".bb-capture-toolbar");
     const videoPreviewContainer = document.querySelector(".bb-capture-preview");

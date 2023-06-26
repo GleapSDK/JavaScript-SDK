@@ -846,6 +846,10 @@ export const injectStyledCSS = (
     .bb-capture-editor-notrecording .bb-capture-editor-borderlayer {
       background-color: rgba(0, 0, 0, 0.8);
     }
+
+    .bb-capture-editor-recording .bb-capture-editor-borderlayer {
+      border: 4px solid #eb144c !important;
+    }
     
     .bb-capture-editor-recording .bb-capture-dismiss {
       display: none;
