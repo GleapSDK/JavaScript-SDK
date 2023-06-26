@@ -52,8 +52,17 @@ export class GleapScreenRecorder {
       return;
     }
 
+    const max_width = 3072;
+    const max_height = 1728;
+
     navigator.mediaDevices
-      .getDisplayMedia({ video: { width: 1280 }, audio: true })
+      .getDisplayMedia({
+        video: {
+          width: { ideal: Math.min(window.screen.width, max_width), max: max_width },
+          height: { ideal: Math.min(window.screen.height, max_height), max: max_height },
+          frameRate: { ideal: 15, max: 24 },
+        }, audio: true
+      })
       .then(function (displayStream) {
         self.stream = displayStream;
 

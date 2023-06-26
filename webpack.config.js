@@ -2,8 +2,6 @@ const path = require("path");
 const webpack = require("webpack");
 const exec = require("child_process").exec;
 const TerserPlugin = require("terser-webpack-plugin");
-const minify = require("@node-minify/core");
-const cleanCSS = require("@node-minify/clean-css");
 
 module.exports = {
   mode: "production",
@@ -25,7 +23,7 @@ module.exports = {
       new TerserPlugin({
         terserOptions: {
           mangle: true,
-          sourceMap: false,
+          sourceMap: true,
           safari10: true,
           output: {
             comments: false,
