@@ -58,9 +58,10 @@ export class GleapScreenRecorder {
     navigator.mediaDevices
       .getDisplayMedia({
         video: {
-          width: { ideal: Math.min(window.screen.width, max_width), max: max_width },
-          height: { ideal: Math.min(window.screen.height, max_height), max: max_height },
+          width: { ideal: Math.min(window.screen.width, max_width) },
+          height: { ideal: Math.min(window.screen.height, max_height) },
           frameRate: { ideal: 15, max: 24 },
+          displaySurface: "monitor",
         }, audio: true
       })
       .then(function (displayStream) {
