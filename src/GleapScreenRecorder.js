@@ -60,7 +60,7 @@ export class GleapScreenRecorder {
         video: {
           width: { ideal: Math.min(window.screen.width, max_width) },
           height: { ideal: Math.min(window.screen.height, max_height) },
-          frameRate: { ideal: 15, max: 24 },
+          frameRate: { ideal: 7, max: 15 },
           displaySurface: "monitor",
         }, audio: true
       })
