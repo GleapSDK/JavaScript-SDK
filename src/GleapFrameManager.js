@@ -130,27 +130,29 @@ export default class GleapFrameManager {
 
     this.autoWhiteListCookieManager();
 
-    // Apply CSS.
-    GleapConfigManager.getInstance().applyStylesFromConfig();
-
     // Inject the frame manager after it has been loaded.
     runFunctionWhenDomIsReady(() => {
-      // Inject widget HTML.
-      var elem = document.createElement("div");
-      elem.className =
-        "gleap-frame-container gleap-frame-container--hidden gl-block";
-      elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
-      document.body.appendChild(elem);
+      GleapConfigManager.getInstance().onConfigLoaded(() => {
+        // Apply CSS.
+        GleapConfigManager.getInstance().applyStylesFromConfig();
 
-      this.gleapFrameContainer = elem;
-      this.gleapFrame = document.querySelector(".gleap-frame");
+        // Inject widget HTML.
+        var elem = document.createElement("div");
+        elem.className =
+          "gleap-frame-container gleap-frame-container--hidden gl-block";
+        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" title="Gleap Widget Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe></div>`;
+        document.body.appendChild(elem);
 
-      this.updateFrameStyle();
+        this.gleapFrameContainer = elem;
+        this.gleapFrame = document.querySelector(".gleap-frame");
 
-      // Show loading preview for widget app mode.
-      if (this.appMode === "widget") {
-        this.showFrameContainer(true);
-      }
+        this.updateFrameStyle();
+
+        // Show loading preview for widget app mode.
+        if (this.appMode === "widget") {
+          this.showFrameContainer(true);
+        }
+      });
     });
   };
 

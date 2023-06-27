@@ -180,6 +180,9 @@ class Gleap {
 
               // Check for URL params.
               Gleap.checkForUrlParams();
+
+              // Notify event.
+              GleapEventManager.notifyEvent("initialized");
             });
           })
           .catch(function (err) {

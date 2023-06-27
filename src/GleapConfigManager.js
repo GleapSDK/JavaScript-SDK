@@ -12,6 +12,15 @@ const parseIntWithDefault = (val, def) => {
 export default class GleapConfigManager {
   flowConfig = null;
   projectActions = null;
+  onConfigLoadedListener = [];
+
+  onConfigLoaded = (onConfigLoaded) => {
+    if (this.flowConfig !== null) {
+      onSessionReady();
+    } else {
+      this.onConfigLoadedListener.push(onConfigLoaded);
+    }
+  };
 
   // GleapConfigManager singleton
   static instance;
@@ -105,6 +114,15 @@ export default class GleapConfigManager {
     );
   }
 
+  notifyConfigLoaded() {
+    if (this.onConfigLoadedListener.length > 0) {
+      for (var i = 0; i < this.onConfigLoadedListener.length; i++) {
+        this.onConfigLoadedListener[i]();
+      }
+    }
+    this.onConfigLoadedListener = [];
+  }
+
   /**
    * Applies the Gleap config.
    * @param {*} config
@@ -148,6 +166,8 @@ export default class GleapConfigManager {
       GleapTranslationManager.getInstance().updateRTLSupport();
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
+
+      this.notifyConfigLoaded();
     } catch (e) { }
   }
 

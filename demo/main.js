@@ -5,7 +5,8 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.setLanguage("de");
 
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("hQ6xS3YZoQ69XV6CYYmyVSav1RDM5TIv");
+Gleap.open();
 //Gleap.setEnvironment("dev");
 
 /*Gleap.setUrlHandler((url, newTab) => {
@@ -14,8 +15,8 @@ Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 Gleap.playSound(false);
 
-Gleap.on("unread-count-changed", (data) => {
-  console.log("unread-count-changed", data);
+Gleap.on("initialized", (data) => {
+  console.log("initialized", data);
 });
 
 Gleap.attachCustomData({
