@@ -16,7 +16,7 @@ export default class GleapConfigManager {
 
   onConfigLoaded = (onConfigLoaded) => {
     if (this.flowConfig !== null) {
-      onSessionReady();
+      onConfigLoaded();
     } else {
       this.onConfigLoadedListener.push(onConfigLoaded);
     }

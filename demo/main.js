@@ -5,7 +5,7 @@ Gleap.setApiUrl("http://0.0.0.0:9000");
 
 Gleap.setLanguage("de");
 
-Gleap.initialize("hQ6xS3YZoQ69XV6CYYmyVSav1RDM5TIv");
+Gleap.initialize("__");
 Gleap.open();
 //Gleap.setEnvironment("dev");
 
