@@ -53,13 +53,17 @@ export default class GleapStreamedEvent {
     this.startPageListener();
     this.resetErrorCountLoop();
   }
-  
+
   trackInitialEvents() {
     GleapStreamedEvent.getInstance().logEvent("sessionStarted");
     GleapStreamedEvent.getInstance().logCurrentPage();
   }
 
   logCurrentPage() {
+    if (Gleap.getInstance().disablePageTracking) {
+      return;
+    }
+
     const currentUrl = window.location.href;
     if (currentUrl && currentUrl !== this.lastUrl) {
       this.lastUrl = currentUrl;

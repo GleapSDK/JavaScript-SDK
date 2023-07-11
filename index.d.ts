@@ -74,6 +74,9 @@ export namespace Gleap {
   function setDisableInAppNotifications(
     disableInAppNotifications: boolean
   ): void;
+  function setDisablePageTracking(
+    disablePageTracking: boolean
+  ): void;
   function identify(
     userId: string,
     customerData: {

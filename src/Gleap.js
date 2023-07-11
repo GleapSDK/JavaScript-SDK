@@ -38,6 +38,7 @@ class Gleap {
   static silentCrashReportSent = false;
   initialized = false;
   offlineMode = false;
+  disablePageTracking = false;
   disableInAppNotifications = false;
 
   // Global data
@@ -113,6 +114,15 @@ class Gleap {
   static setDisableInAppNotifications(disableInAppNotifications) {
     const instance = this.getInstance();
     instance.disableInAppNotifications = disableInAppNotifications;
+  }
+
+  /**
+   * Disable the default page tracking.
+   * @param {*} disablePageTracking 
+   */
+  static setDisablePageTracking(disablePageTracking) {
+    const instance = this.getInstance();
+    instance.disablePageTracking = disablePageTracking;
   }
 
   /**
