@@ -7,7 +7,7 @@ Gleap.setDisablePageTracking(true);
 
 Gleap.setLanguage("de");
 
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("XNWIMPYahK8tJcJCp7RrqtoxZo1MMV7n");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);

@@ -242,6 +242,12 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
   for (var i = 0; i < document.styleSheets.length; i++) {
     const styleSheet = document.styleSheets[i];
+
+    // Skip if the stylesheet is meant for print
+    if (styleSheet.media && styleSheet.media.mediaText === 'print') {
+      continue;
+    }
+
     const cssTextContent = getTextContentFromStyleSheet(styleSheet);
     if (styleSheet && styleSheet.ownerNode) {
       if (cssTextContent != "") {
@@ -405,7 +411,7 @@ const deepClone = (host) => {
         ) {
           val = new Array(val.length + 1).join("*");
         }
-        
+
         clone.setAttribute("bb-data-value", val);
         if (
           (node.type === "checkbox" || node.type === "radio") &&
