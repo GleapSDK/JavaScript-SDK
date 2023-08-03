@@ -15,6 +15,7 @@ import Gleap, {
   GleapConsoleLogManager,
   GleapNetworkIntercepter,
   GleapTagManager,
+  GleapBannerManager,
 } from "./Gleap";
 import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
@@ -566,7 +567,7 @@ export default class GleapFrameManager {
 
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if (event.origin !== this.frameUrl) {
+      if ((event.origin !== this.frameUrl && event.origin !== GleapBannerManager.getInstance().bannerUrl)) {
         return;
       }
 

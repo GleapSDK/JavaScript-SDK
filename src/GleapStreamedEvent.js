@@ -169,7 +169,8 @@ export default class GleapStreamedEvent {
       JSON.stringify({
         time: sessionDuration,
         events: this.streamedEventArray,
-        opened: GleapFrameManager.getInstance().isOpened()
+        opened: GleapFrameManager.getInstance().isOpened(),
+        sdkVersion: SDK_VERSION,
       })
     );
 

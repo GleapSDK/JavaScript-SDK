@@ -108,6 +108,65 @@ export const injectStyledCSS = (
       transition: max-width 0.3s ease-out;
     }
 
+    :root {
+      --gleap-margin-top: 50px;
+    }
+
+    .gleap-b-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: auto;
+      padding: 0px;
+      margin: 0px;
+    }
+
+    .gleap-b-shown {
+      transition: margin 0.3s ease-out;
+      margin-top: var(--gleap-margin-top);
+      position: relative;
+    }
+
+    .gleap-b-f {
+      margin-top: 0px;
+    }
+
+    .gleap-b {
+      display: none;
+      position: absolute;
+      top: calc(-1 * var(--gleap-margin-top));
+      left: 0px;
+      width: 100vw;
+      height: var(--gleap-margin-top);
+    }
+
+    @keyframes gleapSlideIn {
+      from {
+          top: calc(-1 * var(--gleap-margin-top));
+      }
+      to {
+          top: 10px;
+      }
+    }
+
+    .gleap-b-f .gleap-b {
+      position: fixed;
+      top: 10px;
+      animation: gleapSlideIn .5s ease-in forwards;
+      max-width: 800px;
+      width: calc(100% - 20px);
+      left: 50%;
+      z-index: ${zIndexBase + 99};
+      transform: translateX(-50%);
+      border-radius: ${formItemBorderRadius}px;
+      overflow: hidden;
+      box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15), 0px 5px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .gleap-b-shown .gleap-b {
+      display: block;
+    }
+
     .gleap-image-view {
       position: fixed;
       top: 0px;

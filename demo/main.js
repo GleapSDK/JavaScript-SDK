@@ -7,13 +7,13 @@ Gleap.setDisablePageTracking(true);
 
 Gleap.setLanguage("de");
 
-Gleap.initialize("XNWIMPYahK8tJcJCp7RrqtoxZo1MMV7n");
+Gleap.initialize("hciNpT8z64tsHATINYZjWBvbirVWCKWt");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);
 });*/
 
-Gleap.identify("12345", {
-  name: "John Doe",
-  email: "franzi@gleap.io"
+Gleap.identify("613b5dc530aed737108f87a8", {
+  name: "Lukas",
+  email: "lukas@gleap.io"
 });

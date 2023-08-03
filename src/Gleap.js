@@ -19,6 +19,7 @@ import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
+import GleapBannerManager from "./GleapBannerManager";
 import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
 
@@ -929,10 +930,20 @@ class Gleap {
           if (!this.disableInAppNotifications) {
             Gleap.showNotification(action);
           }
+        } else if (action.actionType === "banner") {
+          Gleap.showBanner(action);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }
       }
+    }
+  }
+
+  static showBanner(data) {
+    try {
+      GleapBannerManager.getInstance().showBanner(data);
+    } catch (e) {
+      console.log(e);
     }
   }
 
@@ -984,6 +995,7 @@ export {
   GleapNetworkIntercepter,
   GleapAudioManager,
   GleapNotificationManager,
+  GleapBannerManager,
   GleapPreFillManager,
   GleapShortcutListener,
   GleapMarkerManager,
