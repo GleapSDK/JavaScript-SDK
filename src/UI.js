@@ -152,7 +152,7 @@ export const injectStyledCSS = (
     .gleap-b-f .gleap-b {
       position: fixed;
       top: 10px;
-      animation: gleapSlideIn .5s ease-in forwards;
+      animation: gleapSlideIn .25s ease-out forwards;
       max-width: 800px;
       width: calc(100% - 20px);
       left: 50%;
