@@ -58,6 +58,12 @@ export default class GleapBannerManager {
         if (data.name === "show-survey") {
           Gleap.showSurvey(data.data?.formId, data.data?.surveyFormat);
         }
+        if (data.name === "show-news-article") {
+          Gleap.openNewsArticle(data.data?.articleId);
+        }
+        if (data.name === "show-help-article") {
+          Gleap.openHelpCenterArticle(data.data?.articleId);
+        }
       } catch (exp) { }
     });
   }
