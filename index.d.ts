@@ -40,6 +40,7 @@ export namespace Gleap {
   function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;
   function setFrameUrl(frameUrl: string): void;
+  function setBannerUrl(bannerUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function registerCustomAction(
     customAction: (action: { name: string }) => void

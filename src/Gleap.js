@@ -412,6 +412,14 @@ class Gleap {
   }
 
   /**
+   * Set a custom banner url.
+   * @param {string} bannerUrl
+   */
+  static setBannerUrl(bannerUrl) {
+    GleapBannerManager.getInstance().setBannerUrl(bannerUrl);
+  }
+
+  /**
    * Set a custom frame api url.
    * @param {string} frameUrl
    */

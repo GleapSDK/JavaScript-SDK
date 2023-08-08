@@ -1,7 +1,7 @@
 import Gleap from "./Gleap";
 
 export default class GleapBannerManager {
-  bannerUrl = "http://localhost:5173";
+  bannerUrl = "https://outboundmedia.gleap.io";
   bannerContainer = null;
   bannerData = null;
 
@@ -16,6 +16,10 @@ export default class GleapBannerManager {
 
   constructor() {
     this.startCommunication();
+  }
+
+  setBannerUrl(url) {
+    this.bannerUrl = url;
   }
 
   startCommunication() {
