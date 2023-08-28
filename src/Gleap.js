@@ -236,6 +236,7 @@ class Gleap {
     GleapFeedbackButtonManager.getInstance().toggleFeedbackButton(false);
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
+    GleapBannerManager.getInstance().removeBannerUI();
   }
 
   /**

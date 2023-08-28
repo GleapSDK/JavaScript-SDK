@@ -1,4 +1,4 @@
-import { GleapEventManager, GleapTranslationManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent } from "./Gleap";
+import { GleapEventManager, GleapTranslationManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent, GleapBannerManager } from "./Gleap";
 import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
 
 export default class GleapSession {
@@ -121,6 +121,7 @@ export default class GleapSession {
     }, true);
     GleapNotificationManager.getInstance().clearAllNotifications(false);
     GleapNotificationManager.getInstance().setNotificationCount(0);
+    GleapBannerManager.getInstance().removeBannerUI();
 
     if (retry) {
       if (!isNaN(attemp)) {
@@ -283,9 +284,7 @@ export default class GleapSession {
               try {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
-
-                // GleapNotificationManager.getInstance().clearAllNotifications(false);
-
+                
                 // Initially track.
                 GleapStreamedEvent.getInstance().restart();
 

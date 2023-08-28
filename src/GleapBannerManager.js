@@ -77,7 +77,7 @@ export default class GleapBannerManager {
       document.body.removeChild(this.bannerContainer);
       this.bannerContainer = null;
     }
-
+    
     document.body.classList.remove("gleap-b-shown");
     document.body.classList.remove("gleap-b-f");
   }
