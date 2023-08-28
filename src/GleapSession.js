@@ -5,7 +5,7 @@ export default class GleapSession {
   apiUrl = "https://api.gleap.io";
   sdkKey = null;
   updatingSession = false;
-  useCookies = true;
+  useCookies = false;
   session = {
     gleapId: null,
     gleapHash: null,
@@ -166,7 +166,6 @@ export default class GleapSession {
         const sessionCookie = getGleapCookie(`session-${this.sdkKey}`);
         if (sessionCookie) {
           const sessionData = JSON.parse(decodeURIComponent(sessionCookie));
-
           this.validateSession(sessionData);
         }
       }
