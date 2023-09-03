@@ -1,6 +1,6 @@
 # Gleap JavaScript SDK
 
-![Gleap JavaScript SDK Intro](https://raw.githubusercontent.com/GleapSDK/Gleap-JavaScript-SDK/main/resources/banner.png)
+![Gleap JavaScript SDK Intro](https://github.com/GleapSDK/JavaScript-SDK/blob/master/resources/banner.png?raw=true)
 
 Welcome to the Gleap JavaScript SDK. Enhance your platform with features like Kai, our advanced GPT-4 AI chatbot, intuitive outbound messaging tools, and a comprehensive Help Center. Explore our toolkit designed for efficient and engaging customer interactions. Join us in setting new standards for user experience in the digital age. Let's code, innovate, and grow together!
 
