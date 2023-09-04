@@ -600,7 +600,7 @@ export default class GleapMarkerManager {
             } else {
               toolbarItem.setAttribute("data-active", "false");
               screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "stopRecording"
+                "startRecording"
               );
               timerLabel.style.display = "none";
             }
