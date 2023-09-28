@@ -1,7 +1,7 @@
 import Gleap, { GleapFrameManager, GleapMetaDataManager, GleapSession } from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
 
-const serverUrl = 'ws://localhost:8080';
+const serverUrl = 'wss://ws.gleap.io';
 
 export default class GleapStreamedEvent {
   eventArray = [];
