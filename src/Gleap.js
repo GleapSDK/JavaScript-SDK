@@ -155,18 +155,13 @@ class Gleap {
    * Initializes the SDK
    * @param {*} sdkKey
    */
-  static initialize(sdkKey, disablePing = false) {
+  static initialize(sdkKey) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn("Gleap already initialized.");
       return;
     }
     instance.initialized = true;
-
-    // Stop the ping if needed.
-    if (disablePing) {
-      GleapStreamedEvent.getInstance().stop();
-    }
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
@@ -177,10 +172,7 @@ class Gleap {
         GleapConfigManager.getInstance()
           .start()
           .then(() => {
-            if (!disablePing) {
-              // Inject the Gleap frame.
-              GleapStreamedEvent.getInstance().start();
-            }
+            GleapStreamedEvent.getInstance().start();
 
             runFunctionWhenDomIsReady(() => {
               // Inject the widget buttons
