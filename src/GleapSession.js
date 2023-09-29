@@ -3,6 +3,7 @@ import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache,
 
 export default class GleapSession {
   apiUrl = "https://api.gleap.io";
+  wsApiUrl = "wss://ws.gleap.io";
   sdkKey = null;
   updatingSession = false;
   useCookies = false;

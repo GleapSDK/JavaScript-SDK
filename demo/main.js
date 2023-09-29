@@ -1,13 +1,12 @@
 const Gleap = window.Gleap;
 
-// Gleap.setFrameUrl("http://0.0.0.0:3001");
-// Gleap.setApiUrl("http://0.0.0.0:9000");
+// Gleap.setFrameUrl("http://localhost:3001");
+// Gleap.setApiUrl("http://localhost:9000");
+// Gleap.setWSApiUrl("ws://localhost:8080");
 
-Gleap.setDisablePageTracking(true);
+// Gleap.setLanguage("en");
 
-Gleap.setLanguage("en");
-
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.initialize("X5C0grjFCjUMbZKi131MjZLaGRwg2iKH");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);

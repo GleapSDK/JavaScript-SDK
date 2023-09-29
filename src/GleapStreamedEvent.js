@@ -1,5 +1,5 @@
+import Gleap, { GleapFrameManager, GleapMetaDataManager, GleapSession } from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
-import Gleap, { GleapSession, GleapNotificationManager, GleapMetaDataManager, GleapFrameManager } from "./Gleap";
 
 export default class GleapStreamedEvent {
   eventArray = [];
@@ -8,8 +8,15 @@ export default class GleapStreamedEvent {
   errorCount = 0;
   streamingEvents = false;
   lastUrl = undefined;
-  stopped = false;
   mainLoopTimeout = null;
+  socket = null;
+  connectedWebSocketGleapId = null;
+  connectionTimeout = null;
+  pingWS = null;
+  handleOpenBound = null;
+  handleErrorBound = null;
+  handleMessageBound = null;
+  handleCloseBound = null;
 
   // GleapStreamedEvent singleton
   static instance;
@@ -22,14 +29,99 @@ export default class GleapStreamedEvent {
     }
   }
 
-  constructor() { }
+  constructor() {
+    this.handleOpenBound = this.handleOpen.bind(this);
+    this.handleErrorBound = this.handleError.bind(this);
+    this.handleMessageBound = this.handleMessage.bind(this);
+    this.handleCloseBound = this.handleClose.bind(this);
+  }
+
+  cleanupWebSocket() {
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+
+    if (this.pingWS) {
+      clearInterval(this.pingWS);
+    }
+
+    if (this.socket) {
+      this.socket.removeEventListener('open', this.handleOpenBound);
+      this.socket.removeEventListener('error', this.handleErrorBound);
+      this.socket.removeEventListener('message', this.handleMessageBound);
+      this.socket.removeEventListener('close', this.handleCloseBound);
+      this.socket.close();
+      this.socket = null;
+    }
+  }
+
+  initWebSocket() {
+    this.cleanupWebSocket();
+
+    this.connectedWebSocketGleapId = GleapSession.getInstance().session.gleapId;
+
+    if (!GleapSession.getInstance().session || !GleapSession.getInstance().sdkKey) {
+      return;
+    }
+
+    this.socket = new WebSocket(`${GleapSession.getInstance().wsApiUrl}?gleapId=${GleapSession.getInstance().session.gleapId}&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${GleapSession.getInstance().sdkKey}&sdkVersion=${SDK_VERSION}`);
+    this.socket.addEventListener('open', this.handleOpenBound);
+    this.socket.addEventListener('message', this.handleMessageBound);
+    this.socket.addEventListener('error', this.handleErrorBound);
+    this.socket.addEventListener('close', this.handleCloseBound);
+  }
+
+  handleOpen(event) {
+    this.pingWS = setInterval(() => {
+      if (this.socket.readyState === this.socket.OPEN) {
+        this.socket.send(JSON.stringify({
+          name: 'ping',
+          data: {},
+        }));
+      }
+    }, 30000);
+
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+  }
+
+  handleMessage(event) {
+    this.processMessage(JSON.parse(event.data));
+  }
+
+  handleError(error) { }
+
+  handleClose(event) {
+    setTimeout(() => {
+      this.initWebSocket();
+    }, 5000);
+  }
+
+  processMessage(message) {
+    try {
+      if (message.name === 'update') {
+        const { a, u } = message.data;
+        if (!GleapFrameManager.getInstance().isOpened()) {
+          if (a) {
+            Gleap.getInstance().performActions(a);
+          }
+          if (u != null) {
+            GleapNotificationManager.getInstance().setNotificationCount(u);
+          }
+        }
+      }
+    } catch (exp) { }
+  }
 
   getEventArray() {
     return this.eventArray;
   }
 
   stop() {
-    this.stopped = true;
+    this.cleanupMainLoop();
   }
 
   resetErrorCountLoop() {
@@ -38,18 +130,25 @@ export default class GleapStreamedEvent {
     }, 60000);
   }
 
-  restart() {
+  cleanupMainLoop() {
     if (this.mainLoopTimeout) {
       clearInterval(this.mainLoopTimeout);
       this.mainLoopTimeout = null;
     }
+  }
 
+  restart() {
+    // Only reconnect websockets when needed.
+    if (this.connectedWebSocketGleapId !== GleapSession.getInstance().session.gleapId) {
+      this.initWebSocket();
+    }
+
+    this.cleanupMainLoop();
     this.trackInitialEvents();
     this.runEventStreamLoop();
   }
 
   start() {
-    this.stopped = false;
     this.startPageListener();
     this.resetErrorCountLoop();
   }
@@ -76,9 +175,6 @@ export default class GleapStreamedEvent {
   startPageListener() {
     const self = this;
     setInterval(function () {
-      if (self.stopped) {
-        return;
-      }
       self.logCurrentPage();
     }, 1000);
   }
@@ -106,16 +202,12 @@ export default class GleapStreamedEvent {
   }
 
   runEventStreamLoop = () => {
-    if (this.stopped) {
-      return;
-    }
-
     const self = this;
     this.streamEvents();
 
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
-    }, 10000);
+    }, 2000);
   };
 
   streamEvents = () => {
@@ -123,10 +215,18 @@ export default class GleapStreamedEvent {
       return;
     }
 
+    // Nothing to stream.
+    if (this.streamedEventArray.length === 0) {
+      return;
+    }
+
+    // Sockets not connected.
+    if (!this.socket || this.socket.readyState !== this.socket.OPEN) {
+      return;
+    }
+
     const self = this;
     this.streamingEvents = true;
-
-    const preGleapId = GleapSession.getInstance().getGleapId();
 
     const http = new XMLHttpRequest();
     http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/ping");
@@ -140,22 +240,6 @@ export default class GleapStreamedEvent {
       if (http.readyState === 4) {
         if (http.status === 200 || http.status === 201) {
           self.errorCount = 0;
-
-          // Only perform actions if gleapId was not changed.
-          if (GleapSession.getInstance().getGleapId() === preGleapId) {
-            try {
-              const response = JSON.parse(http.responseText);
-              const { a, u } = response;
-              if (!GleapFrameManager.getInstance().isOpened()) {
-                if (a) {
-                  Gleap.getInstance().performActions(a);
-                }
-                if (u != null) {
-                  GleapNotificationManager.getInstance().setNotificationCount(u);
-                }
-              }
-            } catch (exp) { }
-          }
         } else {
           self.errorCount++;
         }
@@ -171,6 +255,7 @@ export default class GleapStreamedEvent {
         events: this.streamedEventArray,
         opened: GleapFrameManager.getInstance().isOpened(),
         sdkVersion: SDK_VERSION,
+        ws: true,
       })
     );
 
