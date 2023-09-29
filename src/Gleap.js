@@ -397,6 +397,14 @@ class Gleap {
   }
 
   /**
+   * Set a custom ws api url.
+   * @param {string} wsApiUrl
+   */
+  static setWSApiUrl(wsApiUrl) {
+    GleapSession.getInstance().wsApiUrl = wsApiUrl;
+  }
+
+  /**
    * Set a custom api url.
    * @param {string} apiUrl
    */
