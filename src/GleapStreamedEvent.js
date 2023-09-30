@@ -75,12 +75,10 @@ export default class GleapStreamedEvent {
   handleOpen(event) {
     this.pingWS = setInterval(() => {
       if (this.socket.readyState === this.socket.OPEN) {
-        this.socket.send(JSON.stringify({
-          name: 'ping',
-          data: {},
-        }));
+        this.socket.send("PING");
+        this.socket.send(0x9);
       }
-    }, 30000);
+    }, 10000);
 
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
@@ -207,7 +205,7 @@ export default class GleapStreamedEvent {
 
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
-    }, 2000);
+    }, 3000);
   };
 
   streamEvents = () => {
