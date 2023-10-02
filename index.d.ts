@@ -41,6 +41,7 @@ export namespace Gleap {
   function setApiUrl(apiUrl: string): void;
   function setWSApiUrl(wsApiUrl: string): void;
   function setFrameUrl(frameUrl: string): void;
+  function closeBanner(): void;
   function setBannerUrl(bannerUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function registerCustomAction(

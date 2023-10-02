@@ -232,6 +232,13 @@ class Gleap {
   }
 
   /**
+   * Close any open banner.
+   */
+  static closeBanner() {
+    GleapBannerManager.getInstance().removeBannerUI();
+  }
+
+  /**
    * Enable or disable Gleap session tracking through cookies.
    * @param {*} useCookies 
    */
