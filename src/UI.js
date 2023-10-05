@@ -41,14 +41,17 @@ export const injectStyledCSS = (
   backgroundColor,
   buttonX,
   buttonY,
-  buttonStyle,
+  buttonStyle
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
   const contrastHeaderColor = calculateContrast(headerColor);
   const isDarkMode = contrastBackgroundColor === "#ffffff";
-  const headerDarkColor = calculateShadeColor(headerColor, contrastHeaderColor === "#ffffff" ? -35 : -15);
+  const headerDarkColor = calculateShadeColor(
+    headerColor,
+    contrastHeaderColor === "#ffffff" ? -35 : -15
+  );
   const subTextColor = isDarkMode
     ? calculateShadeColor(backgroundColor, 100)
     : calculateShadeColor(backgroundColor, -120);
@@ -68,7 +71,9 @@ export const injectStyledCSS = (
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
-  if (buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
+  if (
+    buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+  ) {
     bottomInfoOffset = buttonY + 15;
   } else if (buttonStyle && buttonStyle.includes("CLASSIC")) {
     bottomInfoOffset = buttonY;
@@ -125,6 +130,7 @@ export const injectStyledCSS = (
       transition: margin 0.3s ease-out;
       margin-top: var(--gleap-margin-top);
       position: relative;
+      z-index: 10000;
     }
 
     .gleap-b-f {
