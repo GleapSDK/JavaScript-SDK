@@ -87,6 +87,7 @@ export namespace Gleap {
       email?: string;
       phone?: string;
       value?: number;
+      companyId?: string;
       customData?: object;
     },
     userHash?: string

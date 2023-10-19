@@ -866,6 +866,71 @@ class Gleap {
   }
 
   /**
+   * Open the checklists overview.
+   */
+  static openChecklists() {
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-checklists",
+        data: {},
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Starts a new checklist and opens it.
+   */
+  static startChecklist(outboundId) {
+    if (!outboundId) {
+      return false;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "start-checklist",
+        data: {
+          outboundId: outboundId,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+
+    return true;
+  }
+
+  /**
+   * Open an existing checklist.
+   */
+  static openChecklist(id) {
+    if (!id) {
+      return;
+    }
+
+    GleapFrameManager.getInstance().setAppMode("widget");
+
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "open-checklist",
+        data: {
+          id,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
    * Opens the news overview.
    */
   static openNews(showBackButton = true) {

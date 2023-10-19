@@ -139,6 +139,8 @@ export default class GleapNotificationManager {
           Gleap.openConversation(notification.data.conversation.shareToken);
         } else if (notification.data.news) {
           Gleap.openNewsArticle(notification.data.news.id);
+        } else if (notification.data.checklist) {
+          Gleap.openChecklist(notification.data.checklist.id);
         } else {
           Gleap.open();
         }
