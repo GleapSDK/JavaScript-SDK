@@ -868,13 +868,15 @@ class Gleap {
   /**
    * Open the checklists overview.
    */
-  static openChecklists() {
+  static openChecklists(showBackButton = true) {
     GleapFrameManager.getInstance().setAppMode("widget");
 
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "open-checklists",
-        data: {},
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
       true
     );
@@ -885,7 +887,7 @@ class Gleap {
   /**
    * Starts a new checklist and opens it.
    */
-  static startChecklist(outboundId) {
+  static startChecklist(outboundId, showBackButton = true) {
     if (!outboundId) {
       return false;
     }
@@ -897,6 +899,7 @@ class Gleap {
         name: "start-checklist",
         data: {
           outboundId: outboundId,
+          hideBackButton: !showBackButton,
         },
       },
       true
@@ -910,8 +913,8 @@ class Gleap {
   /**
    * Open an existing checklist.
    */
-  static openChecklist(id) {
-    if (!id) {
+  static openChecklist(checklistId, showBackButton = true) {
+    if (!checklistId) {
       return;
     }
 
@@ -921,7 +924,8 @@ class Gleap {
       {
         name: "open-checklist",
         data: {
-          id,
+          id: checklistId,
+          hideBackButton: !showBackButton,
         },
       },
       true
