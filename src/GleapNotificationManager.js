@@ -155,10 +155,10 @@ export default class GleapNotificationManager {
           return `${notification.data.sender ? `
           <div class="gleap-notification-item-news-sender">
             ${notification.data.sender.profileImageUrl &&
-          `<img src="${notification.data.sender.profileImageUrl}" />`
-          } ${notification.data.sender.name}</div>`
-          : ""
-        }`;
+            `<img src="${notification.data.sender.profileImageUrl}" />`
+            } ${notification.data.sender.name}</div>`
+            : ""
+            }`;
         };
 
         // News preview
@@ -169,6 +169,29 @@ export default class GleapNotificationManager {
           <div class="gleap-notification-item-news-content">
           <div class="gleap-notification-item-news-content-title">${content}</div>
           ${renderDescription()}
+          </div>
+        </div>`;
+      } else if (notification.data.checklist) {
+        var progress = Math.round(notification.data.currentStep / notification.data.totalSteps * 100);
+        if (progress < 100) {
+          progress += 4;
+        }
+
+        // News preview
+        elem.className = "gleap-notification-item-checklist";
+        elem.innerHTML = `
+        <div class="gleap-notification-item-checklist-container">
+          <div class="gleap-notification-item-checklist-content">
+            <div class="gleap-notification-item-checklist-content-title">${notification.data.text}</div>
+            <div class="gleap-notification-item-checklist-content-progress">
+              <div class="gleap-notification-item-checklist-content-progress-inner" style="width: ${progress}%;"></div>
+            </div>
+            <div class="gleap-notification-item-checklist-content-next">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 12H20M20 12L14 6M20 12L14 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              ${notification.data.nextStepTitle}
+            </div>
           </div>
         </div>`;
       } else {

@@ -434,6 +434,82 @@ export const injectStyledCSS = (
       fill: ${backgroundColor};
     }
 
+    .gleap-notification-item-checklist-container {
+      display: flex;
+      animation: fadeIn;
+      animation-duration: .45s;
+      background-color: ${backgroundColor};
+      border-radius: ${subTextColor};
+      box-sizing: border-box;
+      cursor: pointer;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
+      border-radius: ${chatRadius}px;
+      margin-bottom: 12px;
+    }
+
+    .gleap-notification-item-checklist-content {
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      width: 100%;
+      width: min(310px, 70vw);
+      max-width: min(310px, 70vw);
+    }
+
+    .gleap-notification-item-checklist-content-title {
+      color: ${contrastBackgroundColor};
+      font-size: 15px;
+      font-weight: 500;
+      line-height: 21px;
+      margin-bottom: 10px;
+      max-width: 100%;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .gleap-notification-item-checklist-content-progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 8px;
+      background-color: ${backgroundColorHover};
+    }
+
+    .gleap-notification-item-checklist-content-progress-inner {
+      height: 100%;
+      border-radius: 8px;
+      background-color: ${primaryColor};
+    }
+
+    .gleap-notification-item-checklist-content-next {
+      color: ${subTextColor};
+      font-size: 15px;
+      font-weight: normal;
+      line-height: 21px;
+      margin-top: 10px;
+      max-width: 100%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+    }
+
+    .gleap-notification-item-checklist-content-next svg {
+      height: 18px;
+      margin-right: 5px;
+      width: auto;
+    }
+
+    .gleap-notification-item-checklist-content-next b {
+      font-size: 15px;
+      font-weight: normal;
+      color: ${contrastBackgroundColor};
+    }
+
     .gleap-notification-item-news {
       width: 100%;
       cursor: pointer;
