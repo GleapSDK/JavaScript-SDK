@@ -6,7 +6,18 @@ const Gleap = window.Gleap;
 
 // Gleap.setLanguage("en");
 
-Gleap.initialize("X5C0grjFCjUMbZKi131MjZLaGRwg2iKH");
+Gleap.setReplayOptions({
+  recordCanvas: true,
+  sampling: {
+    canvas: 15,
+  },
+  dataURLOptions: {
+    type: 'image/webp',
+    quality: 0.6,
+  },
+});
+
+Gleap.initialize("U7alA97Vzu15arf4XFpPyxNOdNAv4u0H");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);

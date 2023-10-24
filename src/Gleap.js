@@ -307,6 +307,14 @@ class Gleap {
   }
 
   /**
+   * Set custom replay options.
+   * @param {*} options 
+   */
+  static setReplayOptions(options) {
+    GleapReplayRecorder.getInstance().setOptions(options);
+  }
+
+  /**
    * Closes any open Gleap dialogs.
    */
   static close() {

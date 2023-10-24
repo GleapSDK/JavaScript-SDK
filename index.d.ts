@@ -131,5 +131,42 @@ export namespace Gleap {
   function on(event: string, callback: (data?: any) => void): void;
   function getIdentity(): any;
   function isUserIdentified(): boolean;
+  function setReplayOptions(options: {
+    blockClass?: string | RegExp;
+    blockSelector?: string;
+    ignoreClass?: string | RegExp;
+    ignoreSelector?: string;
+    ignoreCSSAttributes?: string[];
+    maskTextClass?: string | RegExp;
+    maskTextSelector?: string;
+    maskAllInputs?: boolean;
+    maskInputOptions?: {
+      password?: boolean;
+      [key: string]: any;
+    };
+    maskInputFn?: (text: string) => string;
+    maskTextFn?: (text: string) => string;
+    slimDOMOptions?: {
+      [key: string]: any;
+    };
+    dataURLOptions?: {
+      [key: string]: any;
+    };
+    hooks?: {
+      [key: string]: any;
+    };
+    packFn?: (events: any) => any;
+    sampling?: any;
+    recordCanvas?: boolean;
+    recordCrossOriginIframes?: boolean;
+    recordAfter?: 'DOMContentLoaded' | 'load';
+    inlineImages?: boolean;
+    collectFonts?: boolean;
+    userTriggeredOnInput?: boolean;
+    plugins?: {
+      [key: string]: any;
+    }[];
+    errorHandler?: (error: Error) => void;
+  }): void;
 }
 export default Gleap;

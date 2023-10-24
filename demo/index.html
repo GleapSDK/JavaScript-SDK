@@ -208,6 +208,21 @@
   <div class="header-container-image">
     <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
   </div>
+  <canvas id="myCanvas" width="200" height="200" style="border:1px solid #000000;"></canvas>
+
+  <script>
+    var canvas = document.getElementById('myCanvas');
+    var ctx = canvas.getContext('2d');
+    var centerX = canvas.width / 2;
+    var centerY = canvas.height / 2;
+    var radius = 70;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.fillStyle = 'blue';
+    ctx.fill();
+    ctx.stroke();
+  </script>
   <div class="content" id="haha">
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
@@ -217,6 +232,7 @@
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
   </div>
+
 </body>
 
 </html>

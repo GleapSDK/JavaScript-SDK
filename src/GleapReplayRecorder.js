@@ -6,6 +6,7 @@ export default class GleapReplayRecorder {
   events = [];
   bufferSize = 0;
   stopFunction = undefined;
+  customOptions = {};
 
   // GleapReplayRecorder singleton
   static instance;
@@ -20,6 +21,10 @@ export default class GleapReplayRecorder {
 
   constructor() { }
 
+  setOptions(options) {
+    this.customOptions = options;
+  }
+
   /**
    * Start replays
    * @returns 
@@ -30,38 +35,45 @@ export default class GleapReplayRecorder {
     this.startDate = Date.now();
     var events = this.events;
 
+    var options = {
+      inlineStylesheet: true,
+      blockClass: "gl-block",
+      ignoreClass: "gl-ignore",
+      maskTextClass: "gl-mask",
+      dataURLOptions: {
+        quality: 0.7,
+      },
+      recordCanvas: false,
+      sampling: {
+        scroll: 150,
+        mouseInteraction: {
+          MouseUp: false,
+          MouseDown: false,
+          Click: true,
+          ContextMenu: true,
+          DblClick: true,
+          Focus: true,
+          Blur: true,
+          TouchStart: true,
+          TouchEnd: false,
+        },
+      },
+      collectFonts: false,
+      recordCrossOriginIframes: false,
+    };
+
     try {
       this.stopFunction = rrwebRecord({
+        ...options,
+        ...this.customOptions,
         emit(rrwebEvent) {
           const { event } = ensureMaxMessageSize(rrwebEvent);
           events.push(event);
         },
-        recordCanvas: false,
-        dataURLOptions: {
-          quality: 0.7,
-        },
-        sampling: {
-          scroll: 150,
-          mouseInteraction: {
-            MouseUp: false,
-            MouseDown: false,
-            Click: true,
-            ContextMenu: true,
-            DblClick: true,
-            Focus: true,
-            Blur: true,
-            TouchStart: true,
-            TouchEnd: false,
-          },
-        },
-        collectFonts: false,
-        inlineStylesheet: true,
-        recordCrossOriginIframes: false,
-        blockClass: "gl-block",
-        ignoreClass: "gl-ignore",
-        maskTextClass: "gl-mask",
       });
-    } catch (e) { }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   /**
