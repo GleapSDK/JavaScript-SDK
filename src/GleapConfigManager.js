@@ -40,14 +40,6 @@ export default class GleapConfigManager {
   }
 
   /**
-   * Returns the loaded project actions.
-   * @returns 
-   */
-  getProjectActions() {
-    return this.projectActions;
-  }
-
-  /**
    * Load config.
    * @returns {string}
    */
@@ -130,10 +122,7 @@ export default class GleapConfigManager {
   applyConfig(config) {
     try {
       const flowConfig = config.flowConfig;
-      const projectActions = config.projectActions;
-
       this.flowConfig = flowConfig;
-      this.projectActions = projectActions;
 
       // Update styles.
       this.applyStylesFromConfig();
@@ -169,26 +158,5 @@ export default class GleapConfigManager {
 
       this.notifyConfigLoaded();
     } catch (e) { }
-  }
-
-  getFeedbackOptions(feedbackFlow) {
-    var feedbackOptions = null;
-
-    // Try to load the specific feedback flow.
-    if (feedbackFlow) {
-      feedbackOptions = this.projectActions[feedbackFlow];
-    }
-
-    // Fallback
-    if (!feedbackOptions) {
-      feedbackOptions = this.projectActions.bugreporting;
-    }
-
-    // Deep copy to prevent changes.
-    try {
-      feedbackOptions = JSON.parse(JSON.stringify(feedbackOptions));
-    } catch (e) { }
-
-    return feedbackOptions;
   }
 }

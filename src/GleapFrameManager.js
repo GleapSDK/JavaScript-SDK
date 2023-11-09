@@ -407,7 +407,6 @@ export default class GleapFrameManager {
       name: "config-update",
       data: {
         config: GleapConfigManager.getInstance().getFlowConfig(),
-        actions: GleapConfigManager.getInstance().getProjectActions(),
         overrideLanguage:
           GleapTranslationManager.getInstance().getOverrideLanguage(),
       },

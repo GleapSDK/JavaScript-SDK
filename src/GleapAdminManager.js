@@ -33,7 +33,6 @@ export default class GleapAdminManager {
 
   loadAdminScript() {
     var self = this;
-    console.log("LOAD SCRIPT!");
     this.loadScript('https://jsadminhelper.gleap.io/index.js', function () {
       if (window.GleapHelper) {
         self.libraryInstance = new window.GleapHelper.default();
