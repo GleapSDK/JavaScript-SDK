@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Listener Example</title>
+    <script>
+        // This function runs once the DOM is ready to be manipulated
+        document.addEventListener('DOMContentLoaded', function () {
+            // Access the iframe element
+            var iframe = document.getElementById('example-iframe');
+
+            // This function handles received messages
+            function receiveMessage(event) {
+                // Check the origin to ensure the message is from a trusted source
+                if (event.origin !== "http://0.0.0.0:4444") {
+                    console.error('Received message from unauthorized source');
+                    return; // Stop if the origin is not as expected
+                }
+
+                // Log the message data for demonstration purposes
+                const data = JSON.parse(event.data);
+
+                console.log(data);
+
+                // Respond with a 'pong' message
+                if (data.type === 'admin' && data.name === 'init') {
+                    iframe.contentWindow.postMessage(JSON.stringify({
+                        type: "admin",
+                        name: "load"
+                    }), "*");
+
+                    setTimeout(() => {
+                        iframe.contentWindow.postMessage(JSON.stringify({
+                            type: "admin",
+                            name: "pick"
+                        }), "*");
+                    }, 2500);
+                }
+            }
+
+            // Listen for message events
+            window.addEventListener('message', receiveMessage, false);
+        });
+    </script>
+</head>
+
+<body>
+    <h1>Iframe Message Communication Example</h1>
+    <!-- The iframe from where we will receive messages -->
+    <iframe id="example-iframe" src="http://0.0.0.0:4444/" style="width: 600px; height: 400px;"></iframe>
+</body>
+
+</html>

@@ -22,6 +22,7 @@ import GleapNotificationManager from "./GleapNotificationManager";
 import GleapBannerManager from "./GleapBannerManager";
 import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
+import GleapAdminManager from "./GleapAdminManager";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -72,6 +73,7 @@ class Gleap {
       GleapMetaDataManager.getInstance();
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
+      GleapAdminManager.getInstance().start();
     }
   }
 
