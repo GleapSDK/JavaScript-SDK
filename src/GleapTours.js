@@ -1,4 +1,4 @@
-const DriverJS = function () {
+const GleapTours = function () {
     "use strict";
     let currentConfig = {};
     function configure(config = {}) {
@@ -158,7 +158,7 @@ const DriverJS = function () {
         const windowX = window.innerWidth;
         const windowY = window.innerHeight;
         const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.classList.add("driver-overlay", "driver-overlay-animated");
+        svg.classList.add("gleap-tour-overlay", "gleap-tour-overlay-animated");
         svg.setAttribute("viewBox", `0 0 ${windowX} ${windowY}`);
         svg.setAttribute("xmlSpace", "preserve");
         svg.setAttribute("xmlnsXlink", "http://www.w3.org/1999/xlink");
@@ -206,12 +206,12 @@ const DriverJS = function () {
         }
     }
     function mountDummyElement() {
-        const existingDummy = document.getElementById("driver-dummy-element");
+        const existingDummy = document.getElementById("gleap-tour-dummy-element");
         if (existingDummy) {
             return existingDummy;
         }
         let element = document.createElement("div");
-        element.id = "driver-dummy-element";
+        element.id = "gleap-tour-dummy-element";
         element.style.width = "0";
         element.style.height = "0";
         element.style.pointerEvents = "none";
@@ -246,8 +246,8 @@ const DriverJS = function () {
         const fromStep = getState("__activeStep");
         const fromElement = getState("__activeElement") || toElement;
         const isFirstHighlight = !fromElement || fromElement === toElement;
-        const isToDummyElement = toElement.id === "driver-dummy-element";
-        const isFromDummyElement = fromElement.id === "driver-dummy-element";
+        const isToDummyElement = toElement.id === "gleap-tour-dummy-element";
+        const isFromDummyElement = fromElement.id === "gleap-tour-dummy-element";
         const isAnimatedTour = getConfig("animate");
         const highlightStartedHook = toStep.onHighlightStarted || getConfig("onHighlightStarted");
         const highlightedHook = (toStep == null ? void 0 : toStep.onHighlighted) || getConfig("onHighlighted");
@@ -309,24 +309,24 @@ const DriverJS = function () {
         if (!hasDelayedPopover && toStep.popover) {
             renderPopover(toElement, toStep);
         }
-        fromElement.classList.remove("driver-active-element", "driver-no-interaction");
+        fromElement.classList.remove("gleap-tour-active-element", "gleap-tour-no-interaction");
         fromElement.removeAttribute("aria-haspopup");
         fromElement.removeAttribute("aria-expanded");
         fromElement.removeAttribute("aria-controls");
         const disableActiveInteraction = getConfig("disableActiveInteraction");
         if (disableActiveInteraction) {
-            toElement.classList.add("driver-no-interaction");
+            toElement.classList.add("gleap-tour-no-interaction");
         }
-        toElement.classList.add("driver-active-element");
+        toElement.classList.add("gleap-tour-active-element");
         toElement.setAttribute("aria-haspopup", "dialog");
         toElement.setAttribute("aria-expanded", "true");
-        toElement.setAttribute("aria-controls", "driver-popover-content");
+        toElement.setAttribute("aria-controls", "gleap-tour-popover-content");
     }
     function destroyHighlight() {
         var _a;
-        (_a = document.getElementById("driver-dummy-element")) == null ? void 0 : _a.remove();
-        document.querySelectorAll(".driver-active-element").forEach((element) => {
-            element.classList.remove("driver-active-element", "driver-no-interaction");
+        (_a = document.getElementById("gleap-tour-dummy-element")) == null ? void 0 : _a.remove();
+        document.querySelectorAll(".gleap-tour-active-element").forEach((element) => {
+            element.classList.remove("gleap-tour-active-element", "gleap-tour-no-interaction");
             element.removeAttribute("aria-haspopup");
             element.removeAttribute("aria-expanded");
             element.removeAttribute("aria-controls");
@@ -472,15 +472,15 @@ const DriverJS = function () {
         const disabledButtonsConfig = disableButtons || getConfig("disableButtons") || [];
         if (disabledButtonsConfig == null ? void 0 : disabledButtonsConfig.includes("next")) {
             popover.nextButton.disabled = true;
-            popover.nextButton.classList.add("driver-popover-btn-disabled");
+            popover.nextButton.classList.add("gleap-tour-popover-btn-disabled");
         }
         if (disabledButtonsConfig == null ? void 0 : disabledButtonsConfig.includes("previous")) {
             popover.previousButton.disabled = true;
-            popover.previousButton.classList.add("driver-popover-btn-disabled");
+            popover.previousButton.classList.add("gleap-tour-popover-btn-disabled");
         }
         if (disabledButtonsConfig == null ? void 0 : disabledButtonsConfig.includes("close")) {
             popover.closeButton.disabled = true;
-            popover.closeButton.classList.add("driver-popover-btn-disabled");
+            popover.closeButton.classList.add("gleap-tour-popover-btn-disabled");
         }
         const popoverWrapper = popover.wrapper;
         popoverWrapper.style.display = "block";
@@ -488,14 +488,14 @@ const DriverJS = function () {
         popoverWrapper.style.top = "";
         popoverWrapper.style.bottom = "";
         popoverWrapper.style.right = "";
-        popoverWrapper.id = "driver-popover-content";
+        popoverWrapper.id = "gleap-tour-popover-content";
         popoverWrapper.setAttribute("role", "dialog");
-        popoverWrapper.setAttribute("aria-labelledby", "driver-popover-title");
-        popoverWrapper.setAttribute("aria-describedby", "driver-popover-description");
+        popoverWrapper.setAttribute("aria-labelledby", "gleap-tour-popover-title");
+        popoverWrapper.setAttribute("aria-describedby", "gleap-tour-popover-description");
         const popoverArrow = popover.arrow;
-        popoverArrow.className = "driver-popover-arrow";
+        popoverArrow.className = "gleap-tour-popover-arrow";
         const customPopoverClass = ((_a = step.popover) == null ? void 0 : _a.popoverClass) || getConfig("popoverClass") || "";
-        popoverWrapper.className = `driver-popover ${customPopoverClass}`.trim();
+        popoverWrapper.className = `gleap-tour-popover ${customPopoverClass}`.trim();
         onDriverClick(
             popover.wrapper,
             (e) => {
@@ -504,7 +504,7 @@ const DriverJS = function () {
                 const onNextClick = ((_a2 = step.popover) == null ? void 0 : _a2.onNextClick) || getConfig("onNextClick");
                 const onPrevClick = ((_b2 = step.popover) == null ? void 0 : _b2.onPrevClick) || getConfig("onPrevClick");
                 const onCloseClick = ((_c = step.popover) == null ? void 0 : _c.onCloseClick) || getConfig("onCloseClick");
-                if (target.classList.contains("driver-popover-next-btn")) {
+                if (target.classList.contains("gleap-tour-popover-next-btn")) {
                     if (onNextClick) {
                         return onNextClick(element, step, {
                             config: getConfig(),
@@ -514,7 +514,7 @@ const DriverJS = function () {
                         return emit("nextClick");
                     }
                 }
-                if (target.classList.contains("driver-popover-prev-btn")) {
+                if (target.classList.contains("gleap-tour-popover-prev-btn")) {
                     if (onPrevClick) {
                         return onPrevClick(element, step, {
                             config: getConfig(),
@@ -524,7 +524,7 @@ const DriverJS = function () {
                         return emit("prevClick");
                     }
                 }
-                if (target.classList.contains("driver-popover-close-btn")) {
+                if (target.classList.contains("gleap-tour-popover-close-btn")) {
                     if (onCloseClick) {
                         return onCloseClick(element, step, {
                             config: getConfig(),
@@ -537,7 +537,7 @@ const DriverJS = function () {
                 return void 0;
             },
             (target) => {
-                return !(popover == null ? void 0 : popover.description.contains(target)) && !(popover == null ? void 0 : popover.title.contains(target)) && typeof target.className === "string" && target.className.includes("driver-popover");
+                return !(popover == null ? void 0 : popover.description.contains(target)) && !(popover == null ? void 0 : popover.title.contains(target)) && typeof target.className === "string" && target.className.includes("gleap-tour-popover");
             }
         );
         setState("popover", popover);
@@ -550,7 +550,7 @@ const DriverJS = function () {
         }
         repositionPopover(element, step);
         bringInView(popoverWrapper);
-        const isToDummyElement = element.classList.contains("driver-dummy-element");
+        const isToDummyElement = element.classList.contains("gleap-tour-dummy-element");
         const focusableElement = getFocusableElements([popoverWrapper, ...isToDummyElement ? [] : [element]]);
         if (focusableElement.length > 0) {
             focusableElement[0].focus();
@@ -640,7 +640,7 @@ const DriverJS = function () {
         }
         const { align = "start", side = "left" } = (step == null ? void 0 : step.popover) || {};
         const requiredAlignment = align;
-        const requiredSide = element.id === "driver-dummy-element" ? "over" : side;
+        const requiredSide = element.id === "gleap-tour-dummy-element" ? "over" : side;
         const popoverPadding = getConfig("stagePadding") || 0;
         const popoverDimensions = getPopoverDimensions();
         const popoverArrowDimensions = popover.arrow.getBoundingClientRect();
@@ -746,7 +746,7 @@ const DriverJS = function () {
         if (!noneOptimal) {
             renderPopoverArrow(requiredAlignment, popoverRenderedSide, element);
         } else {
-            popover.arrow.classList.add("driver-popover-arrow-none");
+            popover.arrow.classList.add("gleap-tour-popover-arrow-none");
         }
     }
     function renderPopoverArrow(alignment, side, element) {
@@ -765,7 +765,7 @@ const DriverJS = function () {
         const windowHeight = window.innerHeight;
         const elementTop = elementDimensions.top;
         const elementHeight = elementDimensions.height;
-        popoverArrow.className = "driver-popover-arrow";
+        popoverArrow.className = "gleap-tour-popover-arrow";
         let arrowSide = side;
         let arrowAlignment = alignment;
         if (side === "top") {
@@ -831,46 +831,46 @@ const DriverJS = function () {
         } else
             ;
         if (!arrowSide) {
-            popoverArrow.classList.add("driver-popover-arrow-none");
+            popoverArrow.classList.add("gleap-tour-popover-arrow-none");
         } else {
-            popoverArrow.classList.add(`driver-popover-arrow-side-${arrowSide}`);
-            popoverArrow.classList.add(`driver-popover-arrow-align-${arrowAlignment}`);
+            popoverArrow.classList.add(`gleap-tour-popover-arrow-side-${arrowSide}`);
+            popoverArrow.classList.add(`gleap-tour-popover-arrow-align-${arrowAlignment}`);
         }
     }
     function createPopover() {
         const wrapper = document.createElement("div");
-        wrapper.classList.add("driver-popover");
+        wrapper.classList.add("gleap-tour-popover");
         const arrow = document.createElement("div");
-        arrow.classList.add("driver-popover-arrow");
+        arrow.classList.add("gleap-tour-popover-arrow");
         const title = document.createElement("header");
-        title.id = "driver-popover-title";
-        title.classList.add("driver-popover-title");
+        title.id = "gleap-tour-popover-title";
+        title.classList.add("gleap-tour-popover-title");
         title.style.display = "none";
         title.innerText = "Popover Title";
         const description = document.createElement("div");
-        description.id = "driver-popover-description";
-        description.classList.add("driver-popover-description");
+        description.id = "gleap-tour-popover-description";
+        description.classList.add("gleap-tour-popover-description");
         description.style.display = "none";
         description.innerText = "Popover description is here";
         const closeButton = document.createElement("button");
         closeButton.type = "button";
-        closeButton.classList.add("driver-popover-close-btn");
+        closeButton.classList.add("gleap-tour-popover-close-btn");
         closeButton.setAttribute("aria-label", "Close");
         closeButton.innerHTML = "&times;";
         const footer = document.createElement("footer");
-        footer.classList.add("driver-popover-footer");
+        footer.classList.add("gleap-tour-popover-footer");
         const progress = document.createElement("span");
-        progress.classList.add("driver-popover-progress-text");
+        progress.classList.add("gleap-tour-popover-progress-text");
         progress.innerText = "";
         const footerButtons = document.createElement("span");
-        footerButtons.classList.add("driver-popover-navigation-btns");
+        footerButtons.classList.add("gleap-tour-popover-navigation-btns");
         const previousButton = document.createElement("button");
         previousButton.type = "button";
-        previousButton.classList.add("driver-popover-prev-btn");
+        previousButton.classList.add("gleap-tour-popover-prev-btn");
         previousButton.innerHTML = "&larr; Previous";
         const nextButton = document.createElement("button");
         nextButton.type = "button";
-        nextButton.classList.add("driver-popover-next-btn");
+        nextButton.classList.add("gleap-tour-popover-next-btn");
         nextButton.innerHTML = "Next &rarr;";
         footerButtons.appendChild(previousButton);
         footerButtons.appendChild(nextButton);
@@ -995,7 +995,7 @@ const DriverJS = function () {
                 return;
             }
             setState("isInitialized", true);
-            document.body.classList.add("driver-active", getConfig("animate") ? "driver-fade" : "driver-simple");
+            document.body.classList.add("gleap-tour-active", getConfig("animate") ? "gleap-tour-fade" : "gleap-tour-simple");
             initEvents();
             listen("overlayClick", handleClose);
             listen("escapePress", handleClose);
@@ -1066,7 +1066,7 @@ const DriverJS = function () {
             const activeOnDestroyed = getState("__activeOnDestroyed");
             const onDestroyStarted = getConfig("onDestroyStarted");
             if (withOnDestroyStartedHook && onDestroyStarted) {
-                const isActiveDummyElement = !activeElement || (activeElement == null ? void 0 : activeElement.id) === "driver-dummy-element";
+                const isActiveDummyElement = !activeElement || (activeElement == null ? void 0 : activeElement.id) === "gleap-tour-dummy-element";
                 onDestroyStarted(isActiveDummyElement ? void 0 : activeElement, activeStep, {
                     config: getConfig(),
                     state: getState()
@@ -1075,7 +1075,7 @@ const DriverJS = function () {
             }
             const onDeselected = (activeStep == null ? void 0 : activeStep.onDeselected) || getConfig("onDeselected");
             const onDestroyed = getConfig("onDestroyed");
-            document.body.classList.remove("driver-active", "driver-fade", "driver-simple");
+            document.body.classList.remove("gleap-tour-active", "gleap-tour-fade", "gleap-tour-simple");
             destroyEvents();
             destroyPopover();
             destroyHighlight();
@@ -1083,7 +1083,7 @@ const DriverJS = function () {
             destroyEmitter();
             resetState();
             if (activeElement && activeStep) {
-                const isActiveDummyElement = activeElement.id === "driver-dummy-element";
+                const isActiveDummyElement = activeElement.id === "gleap-tour-dummy-element";
                 if (onDeselected) {
                     onDeselected(isActiveDummyElement ? void 0 : activeElement, activeStep, {
                         config: getConfig(),
@@ -1162,4 +1162,4 @@ const DriverJS = function () {
     return driver;
 }({});
 
-export default DriverJS;
+export default GleapTours;

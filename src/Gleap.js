@@ -23,7 +23,7 @@ import GleapBannerManager from "./GleapBannerManager";
 import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
-import DriverJS from "./Driver";
+import GleapProductTours from "./GleapProductTours";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -1019,7 +1019,6 @@ class Gleap {
    * @param {*} action
    */
   performActions(actions) {
-    console.log(actions);
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       if (action && action.actionType) {
@@ -1039,36 +1038,8 @@ class Gleap {
   }
 
   static startProductTour(tourId, config) {
-    const steps = config.steps;
 
-    var driverSteps = [];
-
-    for (let i = 0; i < steps.length; i++) {
-      const step = steps[i];
-
-      var driverStep = {
-        popover: {
-          description: step.message
-        },
-      }
-      if (step.selector && step.selector.length > 0) {
-        driverStep.element = step.selector;
-      }
-      driverSteps.push(driverStep);
-    }
-
-    const driverObj = DriverJS({
-      showProgress: true,
-      steps: driverSteps,
-      allowClose: config.allowClose,
-      nextBtnText: config.nextText,
-      doneBtnText: config.doneText,
-      showButtons: [
-        'next',
-        'close'
-      ],
-    });
-    driverObj.drive();
+    GleapProductTours.getInstance().startWithConfig(tourId, config);
   }
 
   static showBanner(data) {
