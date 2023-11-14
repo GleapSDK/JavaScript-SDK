@@ -1038,8 +1038,14 @@ class Gleap {
   }
 
   static startProductTour(tourId, config) {
+    GleapProductTours.getInstance().startWithConfig(tourId, config, (data) => {
+      const comData = {
+        tourId: data.tourId,
+      };
 
-    GleapProductTours.getInstance().startWithConfig(tourId, config);
+      GleapEventManager.notifyEvent("productTourCompleted", comData);
+      Gleap.trackEvent(`tour-${data.tourId}-completed`, comData);
+    });
   }
 
   static showBanner(data) {

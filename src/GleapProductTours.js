@@ -4,6 +4,7 @@ import GleapTours from "./GleapTours";
 export default class GleapProductTours {
     productTourData = undefined;
     productTourId = undefined;
+    onCompletion = undefined;
 
     // GleapReplayRecorder singleton
     static instance;
@@ -18,9 +19,10 @@ export default class GleapProductTours {
 
     constructor() { }
 
-    startWithConfig(tourId, config) {
+    startWithConfig(tourId, config, onCompletion) {
         this.productTourId = tourId;
         this.productTourData = config;
+        this.onCompletion = onCompletion;
 
         return this.start();
     }
@@ -32,6 +34,7 @@ export default class GleapProductTours {
         }
 
         const steps = config.steps;
+        const self = this;
 
         var driverSteps = [];
 
@@ -71,7 +74,7 @@ export default class GleapProductTours {
             driverSteps.push(driverStep);
         }
 
-        const driverObj = GleapTours({
+        const gleapTourObj = GleapTours({
             showProgress: true,
             steps: driverSteps,
             allowClose: config.allowClose,
@@ -81,25 +84,26 @@ export default class GleapProductTours {
                 'next',
                 'close'
             ],
+            onDestroyStarted: () => {
+                if (!gleapTourObj.hasNextStep()) {
+                    gleapTourObj.destroy();
+
+                    if (self.onCompletion) {
+                        self.onCompletion({
+                            tourId: self.productTourId
+                        });
+                    }
+                }
+            },
             onPopoverRender: (popoverElement) => {
                 // Fix for images and videos.
                 if (popoverElement) {
                     const mediaElements = document.querySelectorAll('.gleap-tour-popover-description img, .gleap-tour-popover-description video');
 
                     const performRequentialRefresh = () => {
-                        driverObj.refresh();
-
                         setTimeout(() => {
-                            driverObj.refresh();
-                        }, 250);
-
-                        setTimeout(() => {
-                            driverObj.refresh();
-                        }, 500);
-
-                        setTimeout(() => {
-                            driverObj.refresh();
-                        }, 1000);
+                            gleapTourObj.refresh();
+                        }, 750);
                     };
 
                     for (let i = 0; i < mediaElements.length; i++) {
@@ -154,6 +158,6 @@ export default class GleapProductTours {
                 }
             }
         });
-        driverObj.drive();
+        gleapTourObj.drive();
     }
 }
