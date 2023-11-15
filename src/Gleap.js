@@ -1029,7 +1029,7 @@ class Gleap {
         } else if (action.actionType === "banner") {
           Gleap.showBanner(action);
         } else if (action.actionType === "tour") {
-          Gleap.startProductTour(action.id, action.data);
+          Gleap.startProductTourWithConfig(action.id, action.data);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }
@@ -1037,7 +1037,7 @@ class Gleap {
     }
   }
 
-  static startProductTour(tourId, config) {
+  static startProductTourWithConfig(tourId, config) {
     GleapProductTours.getInstance().startWithConfig(tourId, config, (data) => {
       const comData = {
         tourId: data.tourId,
