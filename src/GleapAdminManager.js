@@ -1,6 +1,7 @@
 
 export default class GleapAdminManager {
   libraryInstance = null;
+  lastUrl = undefined;
 
   // GleapAdminManager singleton
   static instance;
@@ -9,6 +10,27 @@ export default class GleapAdminManager {
       this.instance = new GleapAdminManager();
     }
     return this.instance;
+  }
+
+  logCurrentPage() {
+    const currentUrl = window.location.href;
+    if (currentUrl && currentUrl !== this.lastUrl) {
+      this.lastUrl = currentUrl;
+
+      this.sendMessage({
+        name: "page-changed",
+        data: {
+          page: currentUrl,
+        }
+      });
+    }
+  }
+
+  startPageListener() {
+    const self = this;
+    setInterval(function () {
+      self.logCurrentPage();
+    }, 1000);
   }
 
   loadScript(url, callback) {
@@ -76,14 +98,14 @@ export default class GleapAdminManager {
         if (data.name === "navigate") {
           self.libraryInstance.stopPicker();
         }
-      } catch (exp) {
-        console.log(exp);
-      }
+      } catch (exp) { }
     });
 
     this.sendMessage({
       name: "init",
     });
+
+    this.startPageListener();
   }
 
   sendMessage(data) {

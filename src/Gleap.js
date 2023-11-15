@@ -23,6 +23,7 @@ import GleapBannerManager from "./GleapBannerManager";
 import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
+import GleapProductTours from "./GleapProductTours";
 
 if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
   HTMLCanvasElement.prototype.__originalGetContext =
@@ -1027,11 +1028,24 @@ class Gleap {
           }
         } else if (action.actionType === "banner") {
           Gleap.showBanner(action);
+        } else if (action.actionType === "tour") {
+          Gleap.startProductTourWithConfig(action.id, action.data);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }
       }
     }
+  }
+
+  static startProductTourWithConfig(tourId, config) {
+    GleapProductTours.getInstance().startWithConfig(tourId, config, (data) => {
+      const comData = {
+        tourId: data.tourId,
+      };
+
+      GleapEventManager.notifyEvent("productTourCompleted", comData);
+      Gleap.trackEvent(`tour-${data.tourId}-completed`, comData);
+    });
   }
 
   static showBanner(data) {

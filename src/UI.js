@@ -1559,7 +1559,7 @@ export const injectStyledCSS = (
         width: auto;
         transform: none;
       }
-    
+
       .bb-capture-editor-drag-info {
         display: none;
       }
@@ -1578,6 +1578,398 @@ export const injectStyledCSS = (
         display: none !important;
       }
     }
+
+    .gleap-tour-sender {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .gleap-tour-sender-image {
+      width: 32px;
+      height: 32px;
+      border-radius: 32px;
+      margin-right: 10px;
+      background-size: cover;
+      background-repeat: no-repeat;
+    }
+
+    .gleap-tour-popover.gleap-tour-popover-post {
+      min-width: 550px;
+      max-width: 550px;
+    }
+
+    @media only screen and (max-width: 450px) {
+      .gleap-tour-popover.gleap-tour-popover-post {
+        min-width: calc(100vw - 40px);
+        max-width: calc(100vw - 40px);
+      }
+    }
+
+    .gleap-tour-message p {
+      line-height: 1.3;
+    }
+
+    .gleap-tour-message ul {
+      line-height: 1.3;
+      padding-left: 20px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
+    .gleap-tour-message {
+      max-height: calc(80vh - 100px) !important;
+      overflow-y: auto;
+    }
+
+    .gleap-tour-sender-name {
+      font-size: 15px;
+    }
+
+    .gleap-tour-video {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .gleap-tour-video--playing .gleap-tour-video-playpause {
+      opacity: 0;
+    }
+    
+    .gleap-tour-video--playing:hover .gleap-tour-video-playpause {
+      opacity: 1;
+    }
+
+    .gleap-tour-popover-video-pointer {
+      padding: 0px !important;
+      border-radius: 8px;
+      position: relative;
+      background-color: transparent !important;
+    }
+
+    .gleap-tour-popover-video-pointer .gleap-tour-popover-footer {
+      position: absolute;
+      top: 0px;
+      left: 20px;
+      right: 20px;
+      opacity: 0;
+      transition: opacity 200ms ease-in-out;
+    }
+
+    .gleap-tour-popover-video-pointer .gleap-tour-popover-footer button {
+      padding: 5px 12px;
+    }
+
+    .gleap-tour-popover-video-pointer:hover .gleap-tour-popover-footer {
+      opacity: 1;
+    }
+
+    .gleap-tour-video video {
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      border: none;
+      outline: none;
+      display: block;
+      border-radius: 8px;
+    }
+    
+    .gleap-tour-message .linktype-link {
+      display: inline-block !important;
+      background-color: transparent !important;
+      color: ${buttonColor} !important;
+    }
+
+    .gleap-tour-message .linktype-button {
+      display: inline-block !important;
+      border-radius: 5px;
+      box-sizing: border-box;
+      padding: 10px 20px;
+      background-color: ${buttonColor} !important;
+      color: ${contrastButtonColor} !important;
+    }
+
+    .gleap-tour-message img {
+      width: 100%;
+      max-width: 100%;
+      min-height: 260px;
+      height: auto;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      object-fit: cover;
+    }
+
+    .gleap-tour-active .gleap-tour-overlay {
+      pointer-events: none;
+    }
+    
+    .gleap-tour-active * {
+      pointer-events: none;
+    }
+    
+    .gleap-tour-active .gleap-tour-active-element,
+    .gleap-tour-active .gleap-tour-active-element *,
+    .gleap-tour-popover,
+    .gleap-tour-popover * {
+      pointer-events: auto;
+    }
+    
+    @keyframes animate-fade-in {
+      0% {
+        opacity: 0;
+      }
+    
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .gleap-tour-fade .gleap-tour-overlay {
+      animation: animate-fade-in 200ms ease-in-out;
+    }
+    
+    .gleap-tour-fade .gleap-tour-popover {
+      animation: animate-fade-in 200ms;
+    }
+
+    .gleap-tour-video-playpause {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: opacity 200ms ease-in-out;
+    }
+
+    .gleap-tour-popover-video-pointer .gleap-tour-popover-arrow {
+      display: none !important;
+    }
+
+    .gleap-tour-video-playpause svg {
+      width: 24px;
+      height: auto;
+      fill: #fff;
+    }
+    
+    /* Popover styles */
+    .gleap-tour-popover {
+      all: unset;
+      box-sizing: border-box;
+      color: #2d2d2d;
+      margin: 0;
+      padding: 15px;
+      border-radius: ${formItemBorderRadius}px;
+      min-width: 250px;
+      max-width: 300px;
+      box-shadow: 0 1px 10px #0006;
+      z-index: 1000000000;
+      position: fixed;
+      top: 0;
+      right: 0;
+      background-color: #fff;
+    }
+    
+    .gleap-tour-popover * {
+      font-family: "Helvetica Neue", Inter, ui-sans-serif, "Apple Color Emoji", Helvetica, Arial, sans-serif;
+    }
+    
+    .gleap-tour-popover-title {
+      font: 19px / normal sans-serif;
+      font-weight: 700;
+      display: block;
+      position: relative;
+      line-height: 1.5;
+      zoom: 1;
+      margin: 0;
+    }
+    
+    .gleap-tour-popover-close-btn {
+      all: unset;
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 30px;
+      font-weight: 500;
+      line-height: 32px;
+      color: #d2d2d2;
+      z-index: 1;
+      text-align: center;
+      transition: color;
+      transition-duration: 200ms;
+    }
+    
+    .gleap-tour-popover-close-btn:hover,
+    .gleap-tour-popover-close-btn:focus {
+      color: #2d2d2d;
+    }
+    
+    .gleap-tour-popover-title[style*="block"] + .gleap-tour-popover-description {
+      margin-top: 5px;
+    }
+    
+    .gleap-tour-popover-description {
+      margin-bottom: 0;
+      font: 15px / normal sans-serif;
+      line-height: 1.5;
+      font-weight: 400;
+      zoom: 1;
+    }
+    
+    .gleap-tour-popover-footer {
+      margin-top: 15px;
+      text-align: right;
+      zoom: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .gleap-tour-popover-progress-text {
+      font-size: 13px;
+      font-weight: 400;
+      color: #727272;
+      zoom: 1;
+    }
+    
+    .gleap-tour-popover-footer button {
+      background-color: ${primaryColor};
+      color: ${contrastColor};
+      border-radius: ${formItemSmallBorderRadius}px;
+      box-sizing: border-box;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 21px;
+      border: none;
+      text-align: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none !important;
+      outline: none !important;
+    }
+    
+    .gleap-tour-popover-footer .gleap-tour-popover-btn-disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    
+    /* Disable the scrolling of parent element if it has an active element*/
+    :not(body):has(> .gleap-tour-active-element) {
+      overflow: hidden !important;
+    }
+    
+    .gleap-tour-no-interaction, .gleap-tour-no-interaction * {
+      pointer-events: none !important;
+    }
+    
+    .gleap-tour-popover-navigation-btns {
+      display: flex;
+      flex-grow: 1;
+      justify-content: flex-end;
+    }
+    
+    .gleap-tour-popover-navigation-btns button + button {
+      margin-left: 4px;
+    }
+    
+    .gleap-tour-popover-arrow {
+      content: "";
+      position: absolute;
+      border: 5px solid #fff;
+    }
+    
+    .gleap-tour-popover-arrow-side-over {
+      display: none;
+    }
+    
+    /** Popover Arrow Sides **/
+    .gleap-tour-popover-arrow-side-left {
+      left: 100%;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-top-color: transparent;
+    }
+    
+    .gleap-tour-popover-arrow-side-right {
+      right: 100%;
+      border-left-color: transparent;
+      border-bottom-color: transparent;
+      border-top-color: transparent;
+    }
+    
+    .gleap-tour-popover-arrow-side-top {
+      top: 100%;
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+      border-left-color: transparent;
+    }
+    
+    .gleap-tour-popover-arrow-side-bottom {
+      bottom: 100%;
+      border-left-color: transparent;
+      border-top-color: transparent;
+      border-right-color: transparent;
+    }
+    
+    .gleap-tour-popover-arrow-side-center {
+      display: none;
+    }
+    
+    /* Left/Start + Right/Start */
+    .gleap-tour-popover-arrow-side-left.gleap-tour-popover-arrow-align-start,
+    .gleap-tour-popover-arrow-side-right.gleap-tour-popover-arrow-align-start {
+      top: 15px;
+    }
+    
+    /* Top/Start + Bottom/Start */
+    .gleap-tour-popover-arrow-side-top.gleap-tour-popover-arrow-align-start,
+    .gleap-tour-popover-arrow-side-bottom.gleap-tour-popover-arrow-align-start {
+      left: 15px;
+    }
+    
+    /* End/Left + End/Right */
+    .gleap-tour-popover-arrow-align-end.gleap-tour-popover-arrow-side-left,
+    .gleap-tour-popover-arrow-align-end.gleap-tour-popover-arrow-side-right {
+      bottom: 15px;
+    }
+    
+    /* Top/End + Bottom/End */
+    .gleap-tour-popover-arrow-side-top.gleap-tour-popover-arrow-align-end,
+    .gleap-tour-popover-arrow-side-bottom.gleap-tour-popover-arrow-align-end {
+      right: 15px;
+    }
+    
+    /* Left/Center + Right/Center */
+    .gleap-tour-popover-arrow-side-left.gleap-tour-popover-arrow-align-center,
+    .gleap-tour-popover-arrow-side-right.gleap-tour-popover-arrow-align-center {
+      top: 50%;
+      margin-top: -5px;
+    }
+    
+    /* Top/Center + Bottom/Center */
+    .gleap-tour-popover-arrow-side-top.gleap-tour-popover-arrow-align-center,
+    .gleap-tour-popover-arrow-side-bottom.gleap-tour-popover-arrow-align-center {
+      left: 50%;
+      margin-left: -5px;
+    }
+    
+    /* No arrow */
+    .gleap-tour-popover-arrow-none {
+      display: none;
+    }    
     `;
 
   const oldNode = document.querySelector(".gleap-styles");
@@ -1599,6 +1991,14 @@ export const loadIcon = function (name, color) {
         </g>
     </g>
 </svg>`;
+  }
+
+  if (name === "play") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg>`;
+  }
+
+  if (name === "pause") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></svg>`;
   }
 
   if (name === "dismiss") {
