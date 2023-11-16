@@ -96,6 +96,8 @@ export default class GleapProductTours {
                             tourId: self.productTourId
                         });
                     }
+                } else {
+                    gleapTourObj.destroy();
                 }
             },
             onPopoverRender: (popoverElement) => {
