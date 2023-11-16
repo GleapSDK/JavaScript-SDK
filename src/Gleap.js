@@ -906,7 +906,6 @@ class Gleap {
     }
 
     GleapFrameManager.getInstance().setAppMode("widget");
-
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "start-checklist",
@@ -932,7 +931,6 @@ class Gleap {
     }
 
     GleapFrameManager.getInstance().setAppMode("widget");
-
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "open-checklist",
