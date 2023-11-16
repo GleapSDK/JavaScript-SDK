@@ -5,6 +5,7 @@ export default class GleapProductTours {
     productTourData = undefined;
     productTourId = undefined;
     onCompletion = undefined;
+    unmuted = false;
 
     // GleapReplayRecorder singleton
     static instance;
@@ -33,6 +34,7 @@ export default class GleapProductTours {
             return;
         }
 
+        this.unmuted = false;
         const steps = config.steps;
         const self = this;
 
@@ -45,10 +47,10 @@ export default class GleapProductTours {
 
             if (step.type === "video-pointer") {
                 message = `<div class="gleap-tour-video">
-              <video class="gleap-tour-video-obj">
+              <video class="gleap-tour-video-obj" muted autoplay>
                 <source src="${step.videoUrl}" type="video/mp4">
               </video>
-              <div class="gleap-tour-video-playpause">${loadIcon("play")}</div>
+              <div class="gleap-tour-video-playpause">${loadIcon("unmute")}</div>
             </div>`;
             } else {
                 var senderHTML = ``;
@@ -63,6 +65,7 @@ export default class GleapProductTours {
             }
 
             var driverStep = {
+                disableActiveInteraction: !(step.allowClick ?? true),
                 popover: {
                     description: message,
                     popoverClass: `gleap-tour-popover-${step.type} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
@@ -129,35 +132,53 @@ export default class GleapProductTours {
                     }
                 }
 
-                // Video player controller.
-                const playButtonElem = document.querySelector('.gleap-tour-video-playpause');
-                if (playButtonElem) {
-                    playButtonElem.addEventListener('click', () => {
-                        const playingClass = 'gleap-tour-video--playing';
-                        const videoElement = playButtonElem.previousElementSibling;
-                        const videoContainer = playButtonElem.closest('.gleap-tour-video');
+                const playingClass = 'gleap-tour-video--playing';
 
-                        const onVideoEnded = () => {
-                            videoElem.innerHTML = loadIcon("play");
-                            videoContainer.classList.remove(playingClass);
-                        };
+                const videoElement = document.querySelector('.gleap-tour-video-obj');
+                if (videoElement) {
+                    const videoContainer = videoElement.closest('.gleap-tour-video');
 
-                        if (videoElement.paused) {
-                            videoElement.play();
-                            playButtonElem.innerHTML = loadIcon("pause");
-                            videoContainer.classList.add(playingClass);
-
-                            // Add event listener for video ended
-                            videoElement.addEventListener('ended', onVideoEnded);
-                        } else {
+                    if (self.unmuted) {
+                        if (videoElement) {
                             videoElement.pause();
-                            playButtonElem.innerHTML = loadIcon("play");
-                            videoContainer.classList.remove(playingClass);
-
-                            // Remove event listener for video ended
-                            videoElement.removeEventListener('ended', onVideoEnded);
+                            videoElement.muted = false;
+                            videoElement.play();
+                            videoContainer.classList.add(playingClass);
                         }
+                    }
+
+                    videoElement.addEventListener('ended', function () {
+                        playButtonElem.innerHTML = loadIcon("replay");
+                        videoContainer.classList.remove(playingClass);
                     });
+
+                    // Video player controller.
+                    const playButtonElem = document.querySelector('.gleap-tour-video-playpause');
+                    if (playButtonElem) {
+                        playButtonElem.addEventListener('click', () => {
+                            if (videoElement.muted) {
+                                self.unmuted = true;
+
+                                videoElement.pause();
+                                videoElement.currentTime = 0;
+                                videoElement.muted = false;
+                                videoElement.play();
+
+                                playButtonElem.innerHTML = loadIcon("mute");
+                                videoContainer.classList.add(playingClass);
+                            } else if (videoElement.paused) {
+                                videoElement.muted = false;
+                                videoElement.play();
+
+                                playButtonElem.innerHTML = loadIcon("mute");
+                                videoContainer.classList.add(playingClass);
+                            } else {
+                                videoElement.pause();
+                                playButtonElem.innerHTML = loadIcon("unmute");
+                                videoContainer.classList.remove(playingClass);
+                            }
+                        });
+                    }
                 }
             }
         });

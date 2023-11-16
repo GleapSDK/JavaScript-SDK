@@ -217,7 +217,14 @@ class Gleap {
       }
       const tourId = urlParams.get('gleap_tour');
       if (tourId && tourId.length > 0) {
-        Gleap.startProductTour(tourId);
+        var tourDelay = parseInt(urlParams.get('gleap_tour_delay'));
+        if (isNaN(tourDelay)) {
+          tourDelay = 4;
+        }
+
+        setTimeout(() => {
+          Gleap.startProductTour(tourId);
+        }, tourDelay * 1000);
       }
     } catch (exp) { }
   }
@@ -1058,9 +1065,7 @@ class Gleap {
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) { }
   }
 
   static showNotification(data) {

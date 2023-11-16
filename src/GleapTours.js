@@ -313,7 +313,7 @@ const GleapTours = function () {
         fromElement.removeAttribute("aria-haspopup");
         fromElement.removeAttribute("aria-expanded");
         fromElement.removeAttribute("aria-controls");
-        const disableActiveInteraction = getConfig("disableActiveInteraction");
+        const disableActiveInteraction = toStep.disableActiveInteraction ?? getConfig("disableActiveInteraction") ?? false;
         if (disableActiveInteraction) {
             toElement.classList.add("gleap-tour-no-interaction");
         }
