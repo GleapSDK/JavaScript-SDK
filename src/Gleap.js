@@ -215,9 +215,11 @@ class Gleap {
       if (surveyFlow && surveyFlow.length > 0) {
         Gleap.showSurvey(surveyFlow, surveyFlowFormat === "survey_full" ? "survey_full" : "survey");
       }
-    } catch (exp) {
-      console.log(exp);
-    }
+      const tourId = urlParams.get('gleap_tour');
+      if (tourId && tourId.length > 0) {
+        Gleap.startProductTour(tourId);
+      }
+    } catch (exp) { }
   }
 
   /**
@@ -1029,12 +1031,19 @@ class Gleap {
         } else if (action.actionType === "banner") {
           Gleap.showBanner(action);
         } else if (action.actionType === "tour") {
-          Gleap.startProductTourWithConfig(action.id, action.data);
+          Gleap.startProductTourWithConfig(action.outbound, action.data);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }
       }
     }
+  }
+
+  static startProductTour(tourId) {
+    const self = this;
+    GleapSession.getInstance().startProductTourConfig(tourId).then((config) => {
+      self.startProductTourWithConfig(tourId, config);
+    }).catch((error) => { });
   }
 
   static startProductTourWithConfig(tourId, config) {

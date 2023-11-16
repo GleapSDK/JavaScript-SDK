@@ -1661,6 +1661,10 @@ export const injectStyledCSS = (
       padding: 5px 12px;
     }
 
+    .gleap-tour-popover-video-pointer.gleap-tour-popover-can-close .gleap-tour-popover-footer {
+      right: 40px !important;
+    }
+
     .gleap-tour-popover-video-pointer:hover .gleap-tour-popover-footer {
       opacity: 1;
     }

@@ -65,7 +65,7 @@ export default class GleapProductTours {
             var driverStep = {
                 popover: {
                     description: message,
-                    popoverClass: `gleap-tour-popover-${step.type}`,
+                    popoverClass: `gleap-tour-popover-${step.type} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
                 },
             }
             if (step.selector && step.selector.length > 0) {
@@ -101,6 +101,9 @@ export default class GleapProductTours {
                     const mediaElements = document.querySelectorAll('.gleap-tour-popover-description img, .gleap-tour-popover-description video');
 
                     const performRequentialRefresh = () => {
+                        setTimeout(() => {
+                            gleapTourObj.refresh();
+                        }, 500);
                         setTimeout(() => {
                             gleapTourObj.refresh();
                         }, 750);

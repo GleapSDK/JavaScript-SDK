@@ -160,7 +160,7 @@ export default class GleapSession {
 
     this.notifySessionReady();
   };
-  
+
   startSession = (attemp = 0) => {
     // Check if we already have a session cookie.
     try {
@@ -285,7 +285,7 @@ export default class GleapSession {
               try {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
-                
+
                 // Initially track.
                 GleapStreamedEvent.getInstance().restart();
 
@@ -319,6 +319,49 @@ export default class GleapSession {
             lang: GleapTranslationManager.getInstance().getActiveLanguage(),
           })
         );
+      });
+    });
+  };
+
+  startProductTourConfig = (tourId) => {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      this.setOnSessionReady(function () {
+        if (!self.session.gleapId || !self.session.gleapHash) {
+          return reject("Session not ready yet.");
+        }
+
+        const http = new XMLHttpRequest();
+        http.open("POST", self.apiUrl + "/outbound/producttours");
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http.setRequestHeader("Api-Token", self.sdkKey);
+        try {
+          http.setRequestHeader("Gleap-Id", self.session.gleapId);
+          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+        } catch (exp) { }
+
+        http.onerror = () => {
+          reject();
+        };
+        http.onreadystatechange = function (e) {
+          if (http.readyState === 4) {
+            if (http.status === 200 || http.status === 201) {
+              try {
+                const tourData = JSON.parse(http.responseText);
+                if (tourData && tourData.config) {
+                  resolve(tourData.config);
+                }
+              } catch (exp) {
+                reject(exp);
+              }
+            } else {
+              reject();
+            }
+          }
+        };
+        http.send(JSON.stringify({
+          outboundId: tourId
+        }));
       });
     });
   };
