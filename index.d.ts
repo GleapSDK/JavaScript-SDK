@@ -100,6 +100,7 @@ export namespace Gleap {
   function openNews(showBackButton?: boolean): void;
   function openNewsArticle(id: string, showBackButton?: boolean): void;
   function openConversations(showBackButton?: boolean): void;
+  function startProductTour(tourId: string): void;
   function openConversation(
     shareToken?: string,
     showBackButton?: boolean

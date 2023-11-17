@@ -34,7 +34,7 @@ export default class GleapShortcutListener {
       const char = charForEvent(e);
       if (
         e.ctrlKey &&
-        (char === "i" || char === "I" || char === 73)
+        (char === "u" || char === "U" || char === 85)
       ) {
         Gleap.startFeedbackFlowWithOptions("bugreporting", {
           autostartDrawing: true
