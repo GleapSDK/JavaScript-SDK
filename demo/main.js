@@ -6,7 +6,7 @@ Gleap.setWSApiUrl("ws://0.0.0.0:8080");
 
 // Gleap.setLanguage("en");
 
-Gleap.initialize("kqHBGdyxG0qq6gcfHDqgNkxg5r0Ut0Le");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);
