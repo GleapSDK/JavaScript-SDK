@@ -1,6 +1,6 @@
 {
   "name": "gleap",
-  "version": "12.8.1",
+  "version": "13.0.0",
   "main": "build/index.js",
   "scripts": {
     "start": "NODE_OPTIONS=--openssl-legacy-provider webpack serve",

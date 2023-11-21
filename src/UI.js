@@ -1678,6 +1678,23 @@ export const injectStyledCSS = (
       display: block;
       border-radius: 8px;
     }
+
+    .gleap-admin-frame-container {
+      position: fixed;
+      bottom: 0px;
+      left: 0px;
+      right: 0px;
+      width: 100vw;
+      z-index: 2147483730;
+    }
+
+    .gleap-admin-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: none;
+      display: block;
+    }
     
     .gleap-tour-message .linktype-link {
       display: inline-block !important;

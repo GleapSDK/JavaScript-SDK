@@ -54,10 +54,11 @@ export default class GleapProductTours {
             </div>`;
             } else {
                 var senderHTML = ``;
-                if (step.sender && step.sender.name) {
+
+                if (config.sender && config.sender.firstName) {
                     senderHTML = `<div class="gleap-tour-sender">
-                <div class="gleap-tour-sender-image" style="background-image: url('${step.sender.profileImageUrl}');"></div>
-                <div class="gleap-tour-sender-name">${step.sender.name}</div>
+                <div class="gleap-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
+                <div class="gleap-tour-sender-name">${config.sender.firstName}</div>
               </div>`;
                 }
 
