@@ -94,6 +94,14 @@ export default class GleapAdminManager {
   }
 
   start() {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (window.gleapAdminDisabled) {
+      return;
+    }
+
     var self = this;
 
     // Add window message listener.
