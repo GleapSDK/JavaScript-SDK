@@ -3,11 +3,11 @@
   "version": "13.0.1",
   "main": "build/index.js",
   "scripts": {
-    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack serve",
-    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack",
-    "test": "NODE_OPTIONS=--openssl-legacy-provider jest",
-    "prepare": "NODE_OPTIONS=--openssl-legacy-provider npm run build",
-    "trypublish": "NODE_OPTIONS=--openssl-legacy-provider npm publish || true"
+    "start": "webpack serve",
+    "build": "webpack",
+    "test": "jest",
+    "prepare": "npm run build",
+    "trypublish": "npm publish || true"
   },
   "repository": {
     "type": "git",
