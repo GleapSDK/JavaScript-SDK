@@ -1621,7 +1621,7 @@ export const injectStyledCSS = (
     .gleap-tour-message {
       max-height: calc(80vh - 100px) !important;
       overflow-y: auto;
-      min-width: 280px;
+      min-width: 270px;
     }
 
     .gleap-tour-sender-name {
