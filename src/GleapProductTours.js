@@ -44,6 +44,7 @@ export default class GleapProductTours {
             const step = steps[i];
 
             var message = "";
+            var hasSender = false;
 
             if (step.type === "video-pointer") {
                 message = `<div class="gleap-tour-video">
@@ -56,6 +57,7 @@ export default class GleapProductTours {
                 var senderHTML = ``;
 
                 if (config.sender && config.sender.firstName) {
+                    hasSender = true;
                     senderHTML = `<div class="gleap-tour-sender">
                 <div class="gleap-tour-sender-image" style="background-image: url('${config.sender.profileImageUrl}');"></div>
                 <div class="gleap-tour-sender-name">${config.sender.firstName}</div>
@@ -69,7 +71,7 @@ export default class GleapProductTours {
                 disableActiveInteraction: !(step.allowClick ?? true),
                 popover: {
                     description: message,
-                    popoverClass: `gleap-tour-popover-${step.type} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
+                    popoverClass: `gleap-tour-popover-${step.type} ${!hasSender && 'gleap-tour-popover-no-sender'} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
                 },
             }
             if (step.selector && step.selector.length > 0) {
@@ -81,6 +83,7 @@ export default class GleapProductTours {
         const gleapTourObj = GleapTours({
             showProgress: true,
             steps: driverSteps,
+            showProgress: steps.length > 1,
             allowClose: config.allowClose,
             nextBtnText: config.nextText,
             doneBtnText: config.doneText,

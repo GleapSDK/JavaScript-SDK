@@ -1624,6 +1624,13 @@ export const injectStyledCSS = (
       min-width: 270px;
     }
 
+    .gleap-tour-message iframe {
+      width: 100%;
+      height: 300px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
     .gleap-tour-sender-name {
       font-size: 15px;
     }
@@ -1667,6 +1674,10 @@ export const injectStyledCSS = (
 
     .gleap-tour-popover-video-pointer:hover .gleap-tour-popover-footer {
       opacity: 1;
+    }
+
+    .gleap-tour-popover-pointer.gleap-tour-popover-no-sender .gleap-tour-message {
+      padding-right: 20px;
     }
 
     .gleap-tour-video video {
