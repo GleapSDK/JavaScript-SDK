@@ -88,7 +88,10 @@ export namespace Gleap {
       phone?: string;
       value?: number;
       companyId?: string;
+      companyName?: string;
+      plan?: string;
       customData?: object;
+      createdAt?: Date;
     },
     userHash?: string
   ): void;
