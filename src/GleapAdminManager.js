@@ -1,8 +1,12 @@
+import { loadIcon } from "./UI";
+
 export default class GleapAdminManager {
   libraryInstance = null;
   lastUrl = undefined;
   injectedFrame = false;
   gleapFrameContainer = null;
+  gleapCollapseUI = null;
+  injectedCollapseUI = false;
   gleapFrame = null;
   configData = null;
   status = "navigate";
@@ -64,6 +68,7 @@ export default class GleapAdminManager {
         self.libraryInstance = new window.GleapHelper.default();
         if (self.libraryInstance) {
           self.libraryInstance.onElementPicked = (selector) => {
+            self.toggleCollapseUI(true);
             self.sendMessageToTourBuilder({
               name: "element-picked",
               data: {
@@ -73,6 +78,7 @@ export default class GleapAdminManager {
           };
 
           self.injectFrame();
+          self.injectCollapseUI();
           self.setFrameHeight("loading");
         }
       }
@@ -174,6 +180,49 @@ export default class GleapAdminManager {
         }), "*");
       }
     } catch (e) { }
+  }
+
+  toggleCollapseUI = (onlyIfActive = false) => {
+    const COLLAPSE_UI_ACTIVE_CLASS = "gleap-admin-collapse-ui-active";
+    const FRAME_CONTAINER_ACTIVE_CLASS = "gleap-admin-frame-container-active";
+
+    // Helper function to check if an element has an active class
+    const isActive = (element, activeClass) => element && element.classList.contains(activeClass);
+
+    // Check if onlyIfActive is true and if the UI elements are already inactive
+    if (onlyIfActive && (!isActive(this.gleapCollapseUI, COLLAPSE_UI_ACTIVE_CLASS) || !isActive(this.gleapFrameContainer, FRAME_CONTAINER_ACTIVE_CLASS))) {
+      return; // Return early without toggling the UI
+    }
+
+    // Toggle the UI elements
+    if (this.gleapCollapseUI) {
+      this.gleapCollapseUI.classList.toggle(COLLAPSE_UI_ACTIVE_CLASS);
+    }
+    if (this.gleapFrameContainer) {
+      this.gleapFrameContainer.classList.toggle(FRAME_CONTAINER_ACTIVE_CLASS);
+    }
+  }
+
+  injectCollapseUI = () => {
+    if (this.injectedCollapseUI) {
+      return;
+    }
+    this.injectedCollapseUI = true;
+
+    // Inject widget HTML.
+    var elem = document.createElement("div");
+    elem.className =
+      "gleap-admin-collapse-ui";
+    elem.innerHTML = `<div class="gleap-admin-collapse-ui-icon">
+    ${loadIcon("arrowdown")}
+    </div>`;
+    document.body.appendChild(elem);
+
+    this.gleapCollapseUI = elem;
+
+    elem.addEventListener("click", () => {
+      this.toggleCollapseUI();
+    });
   }
 
   injectFrame = () => {

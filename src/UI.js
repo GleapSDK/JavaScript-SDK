@@ -1690,13 +1690,48 @@ export const injectStyledCSS = (
       border-radius: 8px;
     }
 
+    .gleap-admin-collapse-ui {
+      z-index: ${zIndexBase + 35};
+      cursor: pointer;
+      position: fixed;
+      bottom: 75px;
+      right: 20px;
+      width: 32px;
+      height: 32px;
+      border-radius: 100%;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px, rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+    }
+
+    .gleap-admin-collapse-ui svg {
+      width: 20px;
+      height: 14px;
+      margin-top: 6px;
+      fill: #000 !important;
+    }
+
+    .gleap-admin-collapse-ui-active {
+      bottom: 20px !important;
+    }
+
+    .gleap-admin-collapse-ui-active svg {
+      transform: rotate(180deg);
+    }
+
+    .gleap-admin-frame-container-active {
+      display: none !important;
+    }
+
     .gleap-admin-frame-container {
       position: fixed;
       bottom: 0px;
       left: 0px;
       right: 0px;
       width: 100vw;
-      z-index: 2147483730;
+      z-index: ${zIndexBase + 40};
     }
 
     .gleap-admin-frame {
