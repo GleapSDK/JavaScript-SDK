@@ -1607,6 +1607,12 @@ export const injectStyledCSS = (
       }
     }
 
+    .gleap-tour-message,
+    .gleap-tour-message p,
+    .gleap-tour-message ul {
+      color: ${contrastBackgroundColor};
+    }
+
     .gleap-tour-message p {
       line-height: 1.3;
     }
@@ -1927,6 +1933,17 @@ export const injectStyledCSS = (
       align-items: center;
       box-shadow: none !important;
       outline: none !important;
+    }
+
+    .gleap-tour-popover-prev-btn {
+      color: ${contrastBackgroundColor} !important;
+      background-color: ${backgroundColorHover} !important;
+      margin-right: 3px;
+    }
+
+    .gleap-tour-popover-prev-btn:hover {
+      background-color: ${primaryColor}22 !important;
+      color: ${primaryColor} !important;
     }
     
     .gleap-tour-popover-footer .gleap-tour-popover-btn-disabled {

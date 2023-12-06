@@ -80,6 +80,16 @@ export default class GleapProductTours {
             driverSteps.push(driverStep);
         }
 
+        var buttons = [
+            'next',
+            'close'
+        ];
+
+        console.log("config.backButton", config);
+        if (config.backButton) {
+            buttons.push('previous');
+        }
+
         const gleapTourObj = GleapTours({
             showProgress: true,
             steps: driverSteps,
@@ -87,10 +97,8 @@ export default class GleapProductTours {
             allowClose: config.allowClose,
             nextBtnText: config.nextText,
             doneBtnText: config.doneText,
-            showButtons: [
-                'next',
-                'close'
-            ],
+            prevBtnText: config.prevText,
+            showButtons: buttons,
             onDestroyStarted: () => {
                 if (!gleapTourObj.hasNextStep()) {
                     gleapTourObj.destroy();
