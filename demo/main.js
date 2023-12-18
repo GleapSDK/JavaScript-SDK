@@ -1,12 +1,12 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
+/*Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.setWSApiUrl("ws://0.0.0.0:8080");
+Gleap.setWSApiUrl("ws://0.0.0.0:8080");*/
 
-// Gleap.setLanguage("en");
+Gleap.setLanguage("en");
 
-Gleap.initialize("rinrKZAvjqOheSjpdUjFnp01tSOF3WTd");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);
@@ -14,4 +14,8 @@ Gleap.initialize("rinrKZAvjqOheSjpdUjFnp01tSOF3WTd");
 
 Gleap.registerCustomAction((customAction) => {
   console.log("Custom action: ", customAction);
+});
+
+Gleap.on("unread-count-changed", (unreadCount) => {
+  console.log("Unread count changed: ", unreadCount);
 });

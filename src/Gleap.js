@@ -653,6 +653,15 @@ class Gleap {
   }
 
   /**
+   * Starts a classic feedback form.
+   */
+  static startClassicForm(formId, showBackButton) {
+    Gleap.startFeedbackFlowWithOptions(formId, {
+      hideBackButton: !showBackButton,
+    });
+  }
+
+  /**
    * Starts the bug reporting flow.
    */
   static startFeedbackFlow(feedbackFlow, showBackButton) {
@@ -749,6 +758,13 @@ class Gleap {
     );
 
     GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Starts a new conversation
+   */
+  static startConversation(showBackButton = true) {
+    Gleap.startBot("", showBackButton);
   }
 
   /**
