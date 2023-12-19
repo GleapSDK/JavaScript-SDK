@@ -1,4 +1,4 @@
-import Gleap, { GleapFrameManager, GleapMetaDataManager, GleapSession } from "./Gleap";
+import Gleap, { GleapFrameManager, GleapMetaDataManager, GleapNotificationManager, GleapSession } from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
 
 export default class GleapStreamedEvent {
@@ -102,6 +102,7 @@ export default class GleapStreamedEvent {
     try {
       if (message.name === 'update') {
         const { a, u } = message.data;
+
         if (!GleapFrameManager.getInstance().isOpened()) {
           if (a) {
             Gleap.getInstance().performActions(a);

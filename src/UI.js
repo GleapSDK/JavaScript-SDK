@@ -780,18 +780,18 @@ export const injectStyledCSS = (
 
     .bb-notification-bubble {
       position: absolute;
-      top: -6px;
-      right: -6px;
-      min-width: 22px;
+      top: -5px;
+      right: -5px;
+      min-width: 20px;
       padding: 0px 4px;
-      height: 22px;
-      border-radius: 22px;
+      height: 20px;
+      border-radius: 20px;
       background-color: red;
       color: #fff;
-      font-size: 12px;
+      font-size: 11px;
       font-family: sans-serif;
       text-align: center;
-      line-height: 22px;
+      line-height: 20px;
     }
 
     .bb-notification-bubble--hidden {
