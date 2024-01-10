@@ -31,7 +31,7 @@ const calculateContrast = (hex) => {
   return yiq >= 160 ? "#000000" : "#ffffff";
 };
 
-export const widgetMaxHeight = 660;
+export const widgetMaxHeight = 700;
 
 export const injectStyledCSS = (
   primaryColor,
