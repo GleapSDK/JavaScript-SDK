@@ -171,7 +171,21 @@ class GleapNetworkIntercepter {
   }
 
   getTextContentSize(text) {
-    const size = new TextEncoder().encode(text).length;
+    var size = 0;
+    try {
+      size = new TextEncoder().encode(text).length;
+    } catch (exp) {
+      try {
+        size = encodeURI(s).split(/%..|./).length - 1;
+      } catch (exp) {
+        try {
+          size = new Blob([text]).size;
+        } catch (exp) {
+          size = text.length;
+        }
+      }
+    }
+
     const kiloBytes = size / 1024;
     const megaBytes = kiloBytes / 1024;
     return megaBytes;
@@ -430,7 +444,7 @@ class GleapNetworkIntercepter {
       XMLHttpRequest.prototype.gleapSetRequestHeader =
         XMLHttpRequest.prototype.setRequestHeader;
     }
-    
+
     if (XMLHttpRequest.prototype.gleapSetRequestHeader) {
       XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
         if (!this.requestHeaders) {
