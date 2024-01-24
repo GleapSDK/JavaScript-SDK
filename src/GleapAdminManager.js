@@ -140,6 +140,14 @@ export default class GleapAdminManager {
             });
           }
 
+          if (data.name === "click") {
+            try {
+              document.querySelector(data.data.selector).click();
+            } catch (e) {
+              console.log(e);
+            }
+          }
+
           if (data.name === "status-changed") {
             self.status = data.data;
             this.setFrameHeight(self.status);

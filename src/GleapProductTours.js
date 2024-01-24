@@ -43,6 +43,8 @@ export default class GleapProductTours {
         for (let i = 0; i < steps.length; i++) {
             const step = steps[i];
 
+            const isClickMode = step.mode === "CLICK";
+
             var message = "";
             var hasSender = false;
 
@@ -68,10 +70,13 @@ export default class GleapProductTours {
             }
 
             var driverStep = {
-                disableActiveInteraction: !(step.allowClick ?? true),
+                disableActiveInteraction: !isClickMode,
                 popover: {
                     description: message,
                     popoverClass: `gleap-tour-popover-${step.type} ${!hasSender && 'gleap-tour-popover-no-sender'} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
+                    ...(isClickMode ? {
+                        showButtons: [],
+                    } : {})
                 },
             }
             if (step.selector && step.selector.length > 0) {
@@ -85,9 +90,15 @@ export default class GleapProductTours {
             'close'
         ];
 
-        console.log("config.backButton", config);
         if (config.backButton) {
             buttons.push('previous');
+        }
+
+        function onDocumentClick(evnt) {
+            var gleapTourPopover = document.querySelector('.gleap-tour-popover');
+            if (!gleapTourPopover.contains(evnt.target)) {
+                gleapTourObj.moveNext();
+            }
         }
 
         const gleapTourObj = GleapTours({
@@ -111,6 +122,8 @@ export default class GleapProductTours {
                 } else {
                     gleapTourObj.destroy();
                 }
+
+                document.removeEventListener("click", onDocumentClick);
             },
             onPopoverRender: (popoverElement) => {
                 // Fix for images and videos.
@@ -197,5 +210,7 @@ export default class GleapProductTours {
             }
         });
         gleapTourObj.drive();
+
+        document.addEventListener("click", onDocumentClick);
     }
 }
