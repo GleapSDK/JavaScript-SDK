@@ -272,6 +272,16 @@ class Gleap {
   }
 
   /**
+   * Indentifies the user session
+   * @param {*} userData
+   */
+  static updateContact(userData) {
+    return GleapSession.getInstance().updateSession(
+      gleapDataParser(userData),
+    );
+  }
+
+  /**
    * Clears the current user session
    */
   static clearIdentity() {
@@ -516,6 +526,11 @@ class Gleap {
     if (Gleap.getInstance().initialized) {
       setTimeout(() => {
         Gleap.getInstance().softReInitialize();
+
+        // Update language for contact.
+        Gleap.updateContact({
+          lang: language,
+        });
       }, 1000);
     }
   }

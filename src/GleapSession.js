@@ -253,6 +253,58 @@ export default class GleapSession {
     return false;
   };
 
+  updateSession = (userData) => {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      // Wait for gleap session to be ready.
+      this.setOnSessionReady(function () {
+        if (!self.session.gleapId || !self.session.gleapHash) {
+          return reject("Session not ready yet.");
+        }
+
+        const http = new XMLHttpRequest();
+        http.open("POST", self.apiUrl + "/sessions/partialupdate");
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http.setRequestHeader("Api-Token", self.sdkKey);
+        try {
+          http.setRequestHeader("Gleap-Id", self.session.gleapId);
+          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+        } catch (exp) { }
+
+        http.onerror = () => {
+          reject();
+        };
+        http.onreadystatechange = function (e) {
+          if (http.readyState === 4) {
+            if (http.status === 200 || http.status === 201) {
+              try {
+                const sessionData = JSON.parse(http.responseText);
+                self.validateSession(sessionData);
+                resolve(sessionData);
+              } catch (exp) {
+                reject(exp);
+              }
+            } else {
+              reject();
+            }
+          }
+        };
+
+        http.send(
+          JSON.stringify({
+            data: {
+              ...userData,
+              lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+            },
+            type: 'js',
+            sdkVersion: SDK_VERSION,
+            ws: true,
+          })
+        );
+      });
+    });
+  };
+
   identifySession = (userId, userData, userHash) => {
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
     if (!sessionNeedsUpdate) {

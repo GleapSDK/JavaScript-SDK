@@ -87,18 +87,11 @@ export namespace Gleap {
   ): void;
   function identify(
     userId: string,
-    customerData: {
-      name?: string;
-      email?: string;
-      phone?: string;
-      value?: number;
-      companyId?: string;
-      companyName?: string;
-      plan?: string;
-      customData?: object;
-      createdAt?: Date;
-    },
+    customerData: any,
     userHash?: string
+  ): void;
+  function updateContact(
+    customerData: any,
   ): void;
   function getInstance(): any;
   function open(): void;
