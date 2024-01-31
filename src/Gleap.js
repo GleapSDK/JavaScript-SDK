@@ -329,6 +329,29 @@ class Gleap {
   }
 
   /**
+   * Sets the maximum network request count.
+   */
+  static startNetworkLogger() {
+    GleapNetworkIntercepter.getInstance().start();
+  }
+
+  /**
+   * Sets the network logger blacklist.
+   * @param {Array} networkLogBlacklist
+   */
+  static setNetworkLoggerBlacklist(networkLogBlacklist) {
+    GleapNetworkIntercepter.getInstance().setBlacklist(networkLogBlacklist);
+  }
+
+  /**
+   * Sets the network logger props to ignore.
+   * @param {Array} filters
+   */
+  static setNetworkLoggerFilters(filters) {
+    GleapNetworkIntercepter.getInstance().setFilters(filters);
+  }
+
+  /**
    * Set custom replay options.
    * @param {*} options 
    */

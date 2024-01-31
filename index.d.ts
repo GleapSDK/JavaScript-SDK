@@ -49,6 +49,9 @@ export namespace Gleap {
   function closeBanner(): void;
   function setBannerUrl(bannerUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
+  function startNetworkLogger(): void;
+  function setNetworkLoggerBlacklist(networkLogBlacklist: string[]): void;
+  function setNetworkLoggerFilters(filters: string[]): void;
   function registerCustomAction(
     customAction: (action: { name: string }) => void
   ): void;
