@@ -272,7 +272,20 @@ class Gleap {
   }
 
   /**
-   * Indentifies the user session
+   * Indentifies the contact with data.
+   * @param {string} userId
+   * @param {*} userData
+   */
+  static identifyContact(userId, userData, userHash) {
+    return GleapSession.getInstance().identifySession(
+      userId,
+      gleapDataParser(userData),
+      userHash
+    );
+  }
+
+  /**
+   * Updates the contact data.
    * @param {*} userData
    */
   static updateContact(userData) {
@@ -282,7 +295,7 @@ class Gleap {
   }
 
   /**
-   * Clears the current user session
+   * Clears the current contact.
    */
   static clearIdentity() {
     GleapSession.getInstance().clearSession();
@@ -339,7 +352,7 @@ class Gleap {
    * Sets the network logger blacklist.
    * @param {Array} networkLogBlacklist
    */
-  static setNetworkLoggerBlacklist(networkLogBlacklist) {
+  static setNetworkLogsBlacklist(networkLogBlacklist) {
     GleapNetworkIntercepter.getInstance().setBlacklist(networkLogBlacklist);
   }
 
@@ -347,7 +360,7 @@ class Gleap {
    * Sets the network logger props to ignore.
    * @param {Array} filters
    */
-  static setNetworkLoggerFilters(filters) {
+  static setNetworkLogPropsToIgnore(filters) {
     GleapNetworkIntercepter.getInstance().setFilters(filters);
   }
 

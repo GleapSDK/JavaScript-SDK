@@ -50,8 +50,8 @@ export namespace Gleap {
   function setBannerUrl(bannerUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;
-  function setNetworkLoggerBlacklist(networkLogBlacklist: string[]): void;
-  function setNetworkLoggerFilters(filters: string[]): void;
+  function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
+  function setNetworkLogPropsToIgnore(filters: string[]): void;
   function registerCustomAction(
     customAction: (action: { name: string }) => void
   ): void;
@@ -89,6 +89,21 @@ export namespace Gleap {
     disablePageTracking: boolean
   ): void;
   function identify(
+    userId: string,
+    customerData: {
+      name?: string;
+      email?: string;
+      phone?: string;
+      value?: number;
+      companyId?: string;
+      companyName?: string;
+      plan?: string;
+      customData?: object;
+      createdAt?: Date;
+    },
+    userHash?: string
+  ): void;
+  function identifyContact(
     userId: string,
     customerData: {
       name?: string;
