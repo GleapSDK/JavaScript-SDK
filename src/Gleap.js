@@ -272,19 +272,6 @@ class Gleap {
   }
 
   /**
-   * Indentifies the contact with data.
-   * @param {string} userId
-   * @param {*} userData
-   */
-  static identifyContact(userId, userData, userHash) {
-    return GleapSession.getInstance().identifySession(
-      userId,
-      gleapDataParser(userData),
-      userHash
-    );
-  }
-
-  /**
    * Updates the contact data.
    * @param {*} userData
    */

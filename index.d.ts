@@ -103,21 +103,6 @@ export namespace Gleap {
     },
     userHash?: string
   ): void;
-  function identifyContact(
-    userId: string,
-    customerData: {
-      name?: string;
-      email?: string;
-      phone?: string;
-      value?: number;
-      companyId?: string;
-      companyName?: string;
-      plan?: string;
-      customData?: object;
-      createdAt?: Date;
-    },
-    userHash?: string
-  ): void;
   function updateContact(
     customerData: {
       name?: string;
