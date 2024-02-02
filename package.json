@@ -7,7 +7,8 @@
     "build": "webpack",
     "test": "jest",
     "prepare": "npm run build",
-    "trypublish": "npm publish || true"
+    "trypublish": "npm publish || true",
+    "deploy": "curl -X POST \"https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/e1f9e34c-3bc4-4e63-8c58-54ea6a9bc2a7\""
   },
   "repository": {
     "type": "git",
