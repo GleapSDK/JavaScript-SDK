@@ -1510,6 +1510,7 @@ export const injectStyledCSS = (
         max-width: 100vw;
         min-height: 100vh;
         min-height: -webkit-fill-available;
+        max-height: -webkit-fill-available;
         top: 0px;
         bottom: 0px;
         border-radius: 0px;
@@ -1522,7 +1523,7 @@ export const injectStyledCSS = (
       }
 
       .gleap-frame-container:not(.gleap-frame-container--survey):not(.gleap-frame-container--survey-full) .gleap-frame-container-inner {
-        max-height: initial !important;
+        max-height: calc(var(--glvh, 1vh) * 100) !important;
       }
 
       .gleap-frame-container--survey {

@@ -1,6 +1,6 @@
 {
   "name": "gleap",
-  "version": "13.2.4",
+  "version": "13.2.5",
   "main": "build/index.js",
   "scripts": {
     "start": "webpack serve",

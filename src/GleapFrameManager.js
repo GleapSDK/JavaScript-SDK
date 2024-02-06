@@ -53,6 +53,19 @@ export default class GleapFrameManager {
 
   constructor() {
     this.startCommunication();
+    if (typeof window !== "undefined") {
+      function appHeight() {
+        try {
+          const doc = document.documentElement;
+          doc.style.setProperty('--glvh', (window.innerHeight * .01) + 'px');
+        } catch (e) { }
+      }
+
+      try {
+        window.addEventListener('resize', appHeight);
+        appHeight();
+      } catch (e) { }
+    }
   }
 
   setUrlHandler(handler) {
