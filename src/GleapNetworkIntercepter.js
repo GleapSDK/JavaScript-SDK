@@ -145,7 +145,7 @@ class GleapNetworkIntercepter {
   }
 
   setBlacklist(blacklist) {
-    this.blacklist = blacklist ? blacklist : [];
+    this.blacklist = this.blacklist.concat(blacklist ? blacklist : []);
   }
 
   cleanRequests() {
