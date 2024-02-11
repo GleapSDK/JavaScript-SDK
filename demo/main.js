@@ -4,11 +4,13 @@ Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:8080");
 
-Gleap.initialize("vcxExo94dQQv7KIXd1BnMgN2bzpwZnoj");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 /*Gleap.setUrlHandler((url, newTab) => {
   alert("URL: " + url + " newTab: " + newTab);
 });*/
+
+Gleap.setNetworkLogPropsToIgnore(["password", "token"]);
 
 Gleap.registerCustomAction((customAction) => {
   console.log("Custom action: ", customAction);

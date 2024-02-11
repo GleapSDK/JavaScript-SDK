@@ -52,7 +52,7 @@ class GleapNetworkIntercepter {
     if (this.externalRequests && this.externalRequests.length > 0) {
       requests = requests.concat(this.externalRequests);
     }
-
+    
     if (this.filters && this.filters.length > 0) {
       // Perform network log filtering.
       for (var i = 0; i < requests.length; i++) {
@@ -141,7 +141,7 @@ class GleapNetworkIntercepter {
   }
 
   setFilters(filters) {
-    this.filters = filters ? filters : [];
+    this.filters = this.filters.concat(filters ? filters : []);
   }
 
   setBlacklist(blacklist) {
