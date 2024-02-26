@@ -1,11 +1,12 @@
 {
   "name": "gleap",
-  "version": "13.2.7",
+  "version": "13.2.8",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.mjs",
   "exports": {
     "import": "./build/esm/index.mjs",
-    "require": "./build/cjs/index.js"
+    "require": "./build/cjs/index.js",
+    "types": "./index.d.ts"
   },
   "types": "index.d.ts",
   "scripts": {
