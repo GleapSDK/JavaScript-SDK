@@ -7,6 +7,7 @@ export default class GleapFeedback {
     type = "BUG";
     priority = "LOW";
     customData = {};
+    ticketAttributes = {};
     metaData = {};
     consoleLog = [];
     networkLogs = [];
@@ -36,6 +37,7 @@ export default class GleapFeedback {
         this.consoleLog = GleapConsoleLogManager.getInstance().getLogs();
         this.networkLogs = GleapNetworkIntercepter.getInstance().getRequests();
         this.customEventLog = GleapStreamedEvent.getInstance().getEventArray();
+        this.ticketAttributes = GleapCustomDataManager.getInstance().getTicketAttributes();
 
         var dataPromises = [];
 
@@ -81,7 +83,11 @@ export default class GleapFeedback {
             consoleLog: this.consoleLog,
             networkLogs: this.networkLogs,
             customEventLog: this.customEventLog,
-            formData: this.formData,
+            // Merge ticket attributes and form data.
+            formData: {
+                ...this.ticketAttributes,
+                ...this.formData
+            },
             isSilent: this.isSilent,
             outbound: this.outboundId,
             screenshotData: this.screenshotData,

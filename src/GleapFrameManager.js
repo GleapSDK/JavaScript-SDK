@@ -420,6 +420,7 @@ export default class GleapFrameManager {
       name: "config-update",
       data: {
         config: GleapConfigManager.getInstance().getFlowConfig(),
+        aiTools: GleapConfigManager.getInstance().getAiTools(),
         overrideLanguage:
           GleapTranslationManager.getInstance().getOverrideLanguage(),
       },
@@ -488,7 +489,8 @@ export default class GleapFrameManager {
           metaData: GleapMetaDataManager.getInstance().getMetaData(),
           consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
           networkLogs: GleapNetworkIntercepter.getInstance().getRequests(),
-          customEventLog: GleapStreamedEvent.getInstance().getEventArray()
+          customEventLog: GleapStreamedEvent.getInstance().getEventArray(),
+          formData: GleapCustomDataManager.getInstance().getTicketAttributes(),
         };
 
         // Add tags
@@ -537,6 +539,10 @@ export default class GleapFrameManager {
 
       if (data.name === "close-widget") {
         this.hideWidget();
+      }
+
+      if (data.name === "tool-execution") {
+        GleapEventManager.notifyEvent("tool-execution", data.data);
       }
 
       if (data.name === "send-feedback") {

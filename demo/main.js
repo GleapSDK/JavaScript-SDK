@@ -1,21 +1,37 @@
 const Gleap = window.Gleap;
 
+Gleap.setLanguage("en");
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:8080");
 
-Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
+Gleap.setAiTools([{
+    name: 'send-money',
+    description: 'Send money to a given contact.',
+    response: 'The transfer got initiated but not completed yet. The user must confirm the transfer in the banking app.',
+    parameters: [{
+        name: 'amount',
+        description: 'The amount of money to send. Must be positive and provided by the user.',
+        type: 'number',
+        required: true
+    }, {
+        name: 'contact',
+        description: 'The contact to send money to.',
+        type: 'string',
+        enum: ["Alice", "Bob"],
+        required: true
+    }]
+}]);
 
-/*Gleap.setUrlHandler((url, newTab) => {
-  alert("URL: " + url + " newTab: " + newTab);
-});*/
+Gleap.on("tool-execution", (tool) => {
+    if (tool.name === "send-money") {
+        const amount = tool.params.amount;
+        const contact = tool.params.contact;
 
-Gleap.setNetworkLogPropsToIgnore(["password", "token"]);
-
-Gleap.registerCustomAction((customAction) => {
-  console.log("Custom action: ", customAction);
+        // Initiate the transfer here.
+    }
 });
 
-Gleap.on("unread-count-changed", (unreadCount) => {
-  console.log("Unread count changed: ", unreadCount);
-});
+Gleap.setTicketAttribute("notes", "This is a test value.");
+
+Gleap.initialize("ixFtcUWCFjENqupXkb39Ca7uncprVfjA");

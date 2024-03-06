@@ -2,6 +2,7 @@ import { gleapDataParser } from "./GleapHelper";
 
 export default class GleapCustomDataManager {
   customData = {};
+  ticketAttributes = {};
 
   // GleapCustomDataManager singleton
   static instance;
@@ -19,7 +20,6 @@ export default class GleapCustomDataManager {
   getCustomData() {
     return this.customData;
   }
-
 
   /**
    * Set custom data that will be attached to the bug-report.
@@ -54,5 +54,18 @@ export default class GleapCustomDataManager {
    */
   clearCustomData() {
     this.customData = {};
+  }
+
+  /**
+   * This method is used to set ticket attributes programmatically.
+   * @param {*} key The key of the attribute you want to add.
+   * @param {*} value The value to set.
+   */
+  setTicketAttribute(key, value) {
+    this.ticketAttributes[key] = value;
+  }
+
+  getTicketAttributes() {
+    return this.ticketAttributes;
   }
 }

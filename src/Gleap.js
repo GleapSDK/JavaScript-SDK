@@ -137,6 +137,14 @@ class Gleap {
   }
 
   /**
+   * Set the AI tools.
+   * @param {*} tools
+   */
+  static setAiTools(tools) {
+    GleapConfigManager.getInstance().setAiTools(tools);
+  }
+
+  /**
    * Attaches external network logs.
    */
   static attachNetworkLogs(networkLogs) {
@@ -486,6 +494,15 @@ class Gleap {
    */
   static setFrameUrl(frameUrl) {
     GleapFrameManager.getInstance().frameUrl = frameUrl;
+  }
+
+  /**
+   * This method is used to set ticket attributes programmatically.
+   * @param {*} key The key of the attribute you want to add.
+   * @param {*} value The value to set.
+   */
+  static setTicketAttribute(key, value) {
+    GleapCustomDataManager.getInstance().setTicketAttribute(key, value);
   }
 
   /**

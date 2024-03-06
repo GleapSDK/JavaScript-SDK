@@ -13,6 +13,7 @@ export default class GleapConfigManager {
   flowConfig = null;
   projectActions = null;
   onConfigLoadedListener = [];
+  aiTools = [];
 
   onConfigLoaded = (onConfigLoaded) => {
     if (this.flowConfig !== null) {
@@ -37,6 +38,14 @@ export default class GleapConfigManager {
    */
   getFlowConfig() {
     return this.flowConfig;
+  }
+
+  setAiTools = (aiTools) => {
+    this.aiTools = aiTools;
+  };
+
+  getAiTools = () => {
+    return this.aiTools;
   }
 
   /**

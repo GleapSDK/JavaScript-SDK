@@ -37,6 +37,7 @@ export namespace Gleap {
   function startBot(botId: string, showBackButton?: boolean): void;
   function startConversation(showBackButton?: boolean): void;
   function attachCustomData(customData: any): void;
+  function setTicketAttribute(key: string, value: string): void;
   function setCustomData(key: string, value: string): void;
   function removeCustomData(key: string): void;
   function clearCustomData(): void;
@@ -78,6 +79,18 @@ export namespace Gleap {
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
   function preFillForm(data: object): void;
+  function setAiTools(tools: {
+    name: string;
+    description: string;
+    response: string;
+    parameters: {
+      name: string;
+      description: string;
+      type: "string" | "number" | "boolean";
+      required: boolean;
+      enums?: string[];
+    }[];
+  }[]): void;
   function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
