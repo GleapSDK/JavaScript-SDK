@@ -2070,13 +2070,10 @@ export const injectStyledCSS = (
 
 export const loadIcon = function (name, color) {
   if (name === "button") {
-    return `<svg class="bb-logo-logo bb-logo-logo--default" width="700px" height="700px" viewBox="0 0 700 700" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g transform="translate(77.000000, 119.000000)" fill="#FFFFFF" fill-rule="nonzero">
-            <path d="M476.856373,0 L68.122339,0 C30.601832,0 0,30.5935323 0,67.1461527 L0,372.655827 C0,410.166158 30.601832,439.80198 68.122339,439.80198 L170.305847,439.80198 L170.305847,528.23059 C170.305847,538.605788 182.280477,544.671288 190.657396,538.552581 L323.602398,438.844269 L476.877661,438.844269 C514.398168,438.844269 545,408.250737 545,371.698116 L545,67.1461527 C544.978712,30.5935323 515.28163,0 476.856373,0 Z"></path>
-        </g>
-    </g>
-</svg>`;
+    return `<svg class="bb-logo-logo bb-logo-logo--default" width="145" height="144" viewBox="0 0 145 144" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="23" y="13" width="98" height="96.9684" rx="15.9534" fill="white"/>
+    <path d="M110.422 106.035L121 87.5238V127.216C121 128.876 119.14 129.856 117.771 128.918L84.3789 106.035H110.422Z" fill="white"/>
+    </svg>`;
   }
 
   if (name === "unmute") {
