@@ -2071,8 +2071,8 @@ export const injectStyledCSS = (
 export const loadIcon = function (name, color) {
   if (name === "button") {
     return `<svg class="bb-logo-logo bb-logo-logo--default" width="145" height="144" viewBox="0 0 145 144" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="23" y="13" width="98" height="96.9684" rx="15.9534" fill="white"/>
-    <path d="M110.422 106.035L121 87.5238V127.216C121 128.876 119.14 129.856 117.771 128.918L84.3789 106.035H110.422Z" fill="white"/>
+    <rect x="23" y="15" width="98" height="96.9684" rx="15.9534" fill="white"/>
+    <path d="M110.422 108.035L121 89.5238V125.541C121 128.759 117.393 130.66 114.739 128.84L84.3789 108.035H110.422Z" fill="white"/>
     </svg>`;
   }
 
