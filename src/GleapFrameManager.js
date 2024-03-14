@@ -570,7 +570,6 @@ export default class GleapFrameManager {
             GleapEventManager.notifyEvent("feedback-sent", formData);
           })
           .catch((error) => {
-            console.error("Feedback sending failed", error);
             this.sendMessage({
               name: "feedback-sending-failed",
               data: "Something went wrong, please try again.",
