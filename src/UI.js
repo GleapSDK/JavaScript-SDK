@@ -385,6 +385,17 @@ export const injectStyledCSS = (
       right: initial !important;
     }
 
+    [dir=rtl].gleap-notification-container {
+      left: ${4 + buttonX}px;
+      right: initial !important;
+    }
+
+    [dir=rtl].gleap-notification-container--left {
+      left: initial !important;
+      right: ${buttonX}px !important;
+      align-items: flex-start !important;
+    }
+
     .gleap-notification-container--no-button {
       bottom: ${buttonY}px;
     }
@@ -544,7 +555,7 @@ export const injectStyledCSS = (
       line-height: 21px;
       font-weight: 400;
     }
-
+    
     .gleap-notification-item-news-content-title {
       color: ${contrastBackgroundColor};
       font-size: 15px;
@@ -563,6 +574,11 @@ export const injectStyledCSS = (
       margin-right: 8px;
       object-fit: cover;
       width: 20px;
+    }
+
+    [dir=rtl] .gleap-notification-item-news-sender img {
+      margin-left: 8px;
+      margin-right: 0px !important;
     }
 
     .gleap-notification-item-news-container {
@@ -606,6 +622,11 @@ export const injectStyledCSS = (
       margin-right: 8px;
       margin-bottom: 12px;
       cursor: pointer;
+    }
+
+    [dir=rtl] .gleap-notification-item img {
+      margin-left: 8px;
+      margin-right: 0px !important;
     }
 
     .gleap-notification-item-container {
@@ -1503,6 +1524,7 @@ export const injectStyledCSS = (
     }
 
     @media only screen and (max-width: 450px) {
+      [dir=rtl].gleap-frame-container,
       .gleap-frame-container {
         left: 0px;
         right: 0px;

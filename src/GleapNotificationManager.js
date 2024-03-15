@@ -4,6 +4,7 @@ import Gleap, {
   GleapFrameManager,
   GleapSession,
   GleapAudioManager,
+  GleapTranslationManager,
   GleapEventManager,
 } from "./Gleap";
 import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
@@ -263,5 +264,7 @@ export default class GleapNotificationManager {
         this.notificationContainer.classList.add(classNoButton);
       }
     }
+
+    this.notificationContainer.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
   }
 }
