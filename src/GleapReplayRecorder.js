@@ -111,7 +111,7 @@ export default class GleapReplayRecorder {
 
 export function ensureMaxMessageSize(data) {
   let stringifiedData = JSON.stringify(data);
-  if (stringifiedData.length > 5000000) {
+  if (stringifiedData.length > 4000000) {
     const dataURIRegex = /data:([\w\/\-\.]+);(\w+),([^)"]*)/gim
     const matches = stringifiedData.matchAll(dataURIRegex)
     for (const match of matches) {
