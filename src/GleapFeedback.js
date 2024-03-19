@@ -130,6 +130,7 @@ export default class GleapFeedback {
                 const dataToSend = this.getData();
                 resolve(dataToSend);
             }).catch((exp) => {
+                console.log("Failed to take snapshot", exp);
                 reject();
             });
         });
@@ -163,6 +164,7 @@ export default class GleapFeedback {
                 };
                 http.send(JSON.stringify(dataToSend));
             }).catch((exp) => {
+                console.log("Failed to take snapshot", exp);
                 reject();
             });
         });
