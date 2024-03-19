@@ -222,12 +222,23 @@ const GleapTours = function () {
         document.body.appendChild(element);
         return element;
     }
-    function highlight(step) {
+    function highlight(step, attemptTime = 2000) {
         const { element } = step;
         let elemObj = typeof element === "string" ? document.querySelector(element) : element;
+
+        if (element && !elemObj && attemptTime >= 0) {
+            setTimeout(() => {
+                hidePopover();
+                highlight(step, attemptTime - 100);
+            }, 100);
+
+            return;
+        }
+
         if (!elemObj) {
             elemObj = mountDummyElement();
         }
+
         transferHighlight(elemObj, step);
     }
     function refreshActiveHighlight() {

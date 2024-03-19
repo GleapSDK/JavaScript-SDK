@@ -34,4 +34,4 @@ Gleap.on("tool-execution", (tool) => {
 
 Gleap.setTicketAttribute("notes", "This is a test value.");
 
-Gleap.initialize("QTJpSeGQXMQPXxKqaXB8ZSBmZ57idbgS");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
