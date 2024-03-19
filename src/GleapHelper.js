@@ -38,6 +38,7 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       canvas.height = height;
       var ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
+      
       if (isJPEG) {
         resolve(canvas.toDataURL("image/jpeg", 0.7));
       } else {
