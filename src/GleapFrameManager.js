@@ -73,7 +73,7 @@ export default class GleapFrameManager {
   }
 
   isSurvey() {
-    return this.appMode === "survey" || this.appMode === "survey_full";
+    return this.appMode === "survey" || this.appMode === "survey_full" || this.appMode === "survey_web";
   }
 
   setAppMode(appMode) {
@@ -84,7 +84,7 @@ export default class GleapFrameManager {
       ".gleap-frame-container-inner"
     );
     if (
-      (this.appMode === "widget" || this.appMode === "survey_full") &&
+      (this.appMode === "widget" || this.appMode === "survey_full" || this.appMode === "survey_web") &&
       innerContainer
     ) {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
@@ -263,7 +263,7 @@ export default class GleapFrameManager {
     if (this.appMode === "survey") {
       this.gleapFrameContainer.classList.add(surveyStyle);
     }
-    if (this.appMode === "survey_full") {
+    if (this.appMode === "survey_full" || this.appMode === "survey_web") {
       this.gleapFrameContainer.classList.add(surveyFullStyle);
     }
     if (this.appMode === "extended") {
@@ -371,6 +371,11 @@ export default class GleapFrameManager {
   }
 
   hideWidget() {
+    // Prevent for survey web.
+    if (this.appMode === "survey_web") {
+      return;
+    }
+
     this.hideMarkerManager();
     if (this.gleapFrameContainer) {
       this.gleapFrameContainer.classList.add("gleap-frame-container--hidden");
@@ -512,7 +517,7 @@ export default class GleapFrameManager {
           ".gleap-frame-container-inner"
         );
         if (
-          (this.appMode === "survey" || this.appMode === "survey_full") &&
+          (this.appMode === "survey" || this.appMode === "survey_full" || this.appMode === "survey_web") &&
           innerContainer
         ) {
           innerContainer.style.maxHeight = `${this.frameHeight}px`;

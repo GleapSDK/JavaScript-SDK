@@ -180,7 +180,7 @@ export default class GleapFeedbackButtonManager {
         }
 
         const appMode = GleapFrameManager.getInstance().appMode;
-        if (appMode === "survey" || appMode === "survey_full") {
+        if (appMode === "survey" || appMode === "survey_full" || appMode === "survey_web") {
             this.feedbackButton.classList.add("bb-feedback-button--survey");
         }
 
