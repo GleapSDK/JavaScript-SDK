@@ -1,6 +1,6 @@
 const Gleap = window.Gleap;
 
-Gleap.setLanguage("en");
+/*Gleap.setLanguage("en");
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:8080");
@@ -32,6 +32,6 @@ Gleap.on("tool-execution", (tool) => {
     }
 });
 
-Gleap.setTicketAttribute("notes", "This is a test value.");
+Gleap.setTicketAttribute("notes", "This is a test value.");*/
 
 Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
