@@ -62,8 +62,9 @@ export class GleapScreenRecorder {
           height: { ideal: Math.min(window.screen.height, max_height) },
           frameRate: { ideal: 10, max: 24 },
           displaySurface: "monitor",
-          selfBrowserSurface: true,
-        }, audio: true
+        },
+        selfBrowserSurface: "include",
+        audio: true
       })
       .then(function (displayStream) {
         self.stream = displayStream;
