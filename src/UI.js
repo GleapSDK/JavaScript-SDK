@@ -1658,6 +1658,9 @@ export const injectStyledCSS = (
       height: 300px;
       margin-top: 10px;
       margin-bottom: 10px;
+      border: none;
+      outline: none;
+      display: block;
     }
 
     .gleap-tour-sender-name {
