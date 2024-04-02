@@ -206,7 +206,7 @@ export default class GleapStreamedEvent {
 
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
-    }, 1500);
+    }, 2500);
   };
 
   streamEvents = () => {
