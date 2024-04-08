@@ -56,7 +56,9 @@ export default class GleapAdminManager {
           }
         });
       };
-    } catch (e) { }
+    } catch (e) {
+      console.log(e);
+    }
 
     self.injectFrame();
     self.injectCollapseUI();
