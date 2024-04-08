@@ -1,5 +1,5 @@
 import { loadIcon } from "./UI";
-import { GleapHelper } from "gleap-admin-helper";
+import GleapAdminHelper from "./GleapAdminHelper";
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -18,6 +18,7 @@ export default class GleapAdminManager {
     if (!this.instance) {
       this.instance = new GleapAdminManager();
     }
+
     return this.instance;
   }
 
@@ -45,15 +46,17 @@ export default class GleapAdminManager {
   initAdminHelper() {
     const self = this;
 
-    GleapHelper.onElementPicked = (selector) => {
-      self.toggleCollapseUI(true);
-      self.sendMessageToTourBuilder({
-        name: "element-picked",
-        data: {
-          selector
-        }
-      });
-    };
+    try {
+      GleapAdminHelper.onElementPicked = (selector) => {
+        self.toggleCollapseUI(true);
+        self.sendMessageToTourBuilder({
+          name: "element-picked",
+          data: {
+            selector
+          }
+        });
+      };
+    } catch (e) { }
 
     self.injectFrame();
     self.injectCollapseUI();
@@ -126,14 +129,16 @@ export default class GleapAdminManager {
           if (data.name === "status-changed") {
             self.status = data.data;
             this.setFrameHeight(self.status);
-            self.libraryInstance.stopPicker();
+            GleapAdminHelper.stopPicker();
 
             if (self.status === "picker") {
-              self.libraryInstance.startPicker();
+              GleapAdminHelper.startPicker();
             }
           }
         }
-      } catch (exp) { }
+      } catch (exp) {
+        console.log(exp);
+      }
     });
 
     this.sendMessage({

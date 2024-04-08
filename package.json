@@ -1,6 +1,6 @@
 {
   "name": "gleap",
-  "version": "13.5.14",
+  "version": "13.5.15",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.mjs",
   "exports": {
@@ -70,6 +70,7 @@
     }
   },
   "dependencies": {
-    "gleap-admin-helper": "^1.0.3"
+    "pick-dom-element": "^0.2.3",
+    "unique-selector": "^0.5.0"
   }
 }
