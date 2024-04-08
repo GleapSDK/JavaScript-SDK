@@ -10,6 +10,7 @@ export default class GleapAdminManager {
   injectedCollapseUI = false;
   gleapFrame = null;
   configData = null;
+  adminHelper = null;
   status = "navigate";
 
   // GleapAdminManager singleton
@@ -46,8 +47,10 @@ export default class GleapAdminManager {
   initAdminHelper() {
     const self = this;
 
+    self.adminHelper = new GleapAdminHelper();
+
     try {
-      GleapAdminHelper.onElementPicked = (selector) => {
+      self.adminHelper.onElementPicked = (selector) => {
         self.toggleCollapseUI(true);
         self.sendMessageToTourBuilder({
           name: "element-picked",
@@ -131,10 +134,10 @@ export default class GleapAdminManager {
           if (data.name === "status-changed") {
             self.status = data.data;
             this.setFrameHeight(self.status);
-            GleapAdminHelper.stopPicker();
+            self.adminHelper.stopPicker();
 
             if (self.status === "picker") {
-              GleapAdminHelper.startPicker();
+              self.adminHelper.startPicker();
             }
           }
         }
