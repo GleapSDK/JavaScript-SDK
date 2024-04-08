@@ -1,4 +1,5 @@
 import { loadIcon } from "./UI";
+import { GleapHelper } from "gleap-admin-helper";
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -41,48 +42,22 @@ export default class GleapAdminManager {
     }, 1000);
   }
 
-  loadScript(url, callback) {
-    var script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = url;
+  initAdminHelper() {
+    const self = this;
 
-    script.onload = function () {
-      if (typeof callback === 'function') {
-        callback();
-      }
-    };
-
-    script.onreadystatechange = function () {
-      if (this.readyState === 'complete' || this.readyState === 'loaded') {
-        script.onload();
-      }
-    };
-
-    document.head.appendChild(script);
-  }
-
-  loadAdminScript() {
-    var self = this;
-    this.loadScript('https://jsadminhelper.gleap.io/index.js', function () {
-      if (window.GleapHelper) {
-        self.libraryInstance = new window.GleapHelper.default();
-        if (self.libraryInstance) {
-          self.libraryInstance.onElementPicked = (selector) => {
-            self.toggleCollapseUI(true);
-            self.sendMessageToTourBuilder({
-              name: "element-picked",
-              data: {
-                selector
-              }
-            });
-          };
-
-          self.injectFrame();
-          self.injectCollapseUI();
-          self.setFrameHeight("loading");
+    GleapHelper.onElementPicked = (selector) => {
+      self.toggleCollapseUI(true);
+      self.sendMessageToTourBuilder({
+        name: "element-picked",
+        data: {
+          selector
         }
-      }
-    });
+      });
+    };
+
+    self.injectFrame();
+    self.injectCollapseUI();
+    self.setFrameHeight("loading");
   }
 
   setFrameHeight(state) {
@@ -121,7 +96,7 @@ export default class GleapAdminManager {
         if (data.type === "admin") {
           if (data.name === "load") {
             self.configData = data.data;
-            self.loadAdminScript();
+            self.initAdminHelper();
           }
         }
 
