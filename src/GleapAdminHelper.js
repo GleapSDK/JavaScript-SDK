@@ -23,8 +23,13 @@ class GleapAdminHelper {
       onClick: (el) => {
         try {
           var selector = unique(el);
+
+          console.log('Element picked:', selector, self.onElementPicked);
+
           self.onElementPicked && self.onElementPicked(selector);
-        } catch (e) { }
+        } catch (e) {
+          console.error('Error while getting unique selector', e);
+        }
       },
       elementFilter: (el) => {
         if (el.classList.contains('gleap-admin-collapse-ui') || el.closest('.gleap-admin-collapse-ui')) {
