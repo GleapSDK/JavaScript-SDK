@@ -20,12 +20,10 @@ class GleapAdminHelper {
     const style = { borderColor: "#2142E7", background: "transparent", borderWidth: "4px", borderRadius: "5px" };
     this.picker = new ElementPicker({ style });
     this.picker.start({
+      useShadowDOM: false,
       onClick: (el) => {
         try {
           var selector = unique(el);
-
-          console.log('Element picked:', selector, self.onElementPicked);
-
           self.onElementPicked && self.onElementPicked(selector);
         } catch (e) {
           console.error('Error while getting unique selector', e);
