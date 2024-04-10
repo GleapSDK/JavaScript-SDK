@@ -141,9 +141,7 @@ export default class GleapAdminManager {
             }
           }
         }
-      } catch (exp) {
-        console.log(exp);
-      }
+      } catch (exp) {}
     });
 
     this.sendMessage({
