@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "pick-dom-element": "^0.2.3",
+    "tippy.js": "^6.3.7",
     "unique-selector": "^0.5.0"
   }
 }

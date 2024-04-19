@@ -1,5 +1,6 @@
 import { GleapEventManager, GleapTranslationManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent, GleapBannerManager } from "./Gleap";
 import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
+import GleapTooltipManager from "./GleapTooltipManager";
 
 export default class GleapSession {
   apiUrl = "https://api.gleap.io";
@@ -201,6 +202,9 @@ export default class GleapSession {
 
             // Initially track.
             GleapStreamedEvent.getInstance().restart();
+
+            // Load tooltips.
+            GleapTooltipManager.getInstance().load();
           } catch (exp) { }
         } else {
           if (http.status !== 429) {
@@ -341,6 +345,8 @@ export default class GleapSession {
                 // Initially track.
                 GleapStreamedEvent.getInstance().restart();
 
+                // Load tooltips.
+                GleapTooltipManager.getInstance().load();
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
