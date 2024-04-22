@@ -106,6 +106,13 @@ export default class GleapAdminManager {
             self.configData = data.data;
             self.initAdminHelper();
           }
+
+          if (data.name === "smartlink-search-result") {
+            this.sendMessageToTourBuilder({
+              name: "smartlink-search-result",
+              data: data.data,
+            });
+          }
         }
 
         if (data.type === "tourbuilder") {
@@ -113,6 +120,13 @@ export default class GleapAdminManager {
             this.sendMessageToTourBuilder({
               name: "data",
               data: self.configData,
+            });
+          }
+
+          if (data.name === "smartlink-search") {
+            this.sendMessage({
+              name: "smartlink-search",
+              data: data.data,
             });
           }
 
@@ -141,7 +155,7 @@ export default class GleapAdminManager {
             }
           }
         }
-      } catch (exp) {}
+      } catch (exp) { }
     });
 
     this.sendMessage({
@@ -226,7 +240,7 @@ export default class GleapAdminManager {
     var elem = document.createElement("div");
     elem.className =
       "gleap-admin-frame-container";
-    elem.innerHTML = `<iframe src="https://app.gleap.io/producttourbuilder" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
+    elem.innerHTML = `<iframe src="https://app.gleap.io/${this?.configData?.type === 'tooltips' ? 'tooltipbuilder' : 'producttourbuilder'}" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;

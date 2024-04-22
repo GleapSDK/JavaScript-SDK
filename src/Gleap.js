@@ -1183,6 +1183,50 @@ if (typeof window !== "undefined") {
   }
 }
 
+const handleGleapLink = (href) => {
+  try {
+    // gleap://article/123
+    const urlParts = href.split('/');
+    const type = urlParts[2];
+    if (type === 'article') {
+      const identifier = urlParts[3];
+      Gleap.openHelpCenterArticle(identifier);
+    }
+
+    if (type === 'collection') {
+      const identifier = urlParts[3];
+      Gleap.openHelpCenterCollection(identifier);
+    }
+
+    if (type === 'survey') {
+      const identifier = urlParts[3];
+      Gleap.showSurvey(identifier);
+    }
+
+    if (type === 'bot') {
+      const identifier = urlParts[3];
+      Gleap.startBot(identifier);
+    }
+
+    if (type === 'news') {
+      const identifier = urlParts[3];
+      Gleap.openNews(identifier);
+    }
+
+    if (type === 'checklist') {
+      const identifier = urlParts[3];
+      Gleap.startChecklist(identifier);
+    }
+
+    if (type === 'tour') {
+      const identifier = urlParts[3];
+      Gleap.startProductTour(identifier);
+    }
+  } catch (e) {
+    console.error("Failed to handle Gleap link: ", href);
+  }
+}
+
 export {
   GleapNetworkIntercepter,
   GleapAudioManager,
@@ -1206,5 +1250,6 @@ export {
   GleapFrameManager,
   GleapMetaDataManager,
   GleapTagManager,
+  handleGleapLink,
 };
 export default Gleap;
