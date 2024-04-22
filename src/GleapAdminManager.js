@@ -240,7 +240,7 @@ export default class GleapAdminManager {
     var elem = document.createElement("div");
     elem.className =
       "gleap-admin-frame-container";
-    elem.innerHTML = `<iframe src="http://localhost:4200/${this?.configData?.type === 'tooltips' ? 'tooltipbuilder' : 'producttourbuilder'}" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
+    elem.innerHTML = `<iframe src="https://app.gleap.io/${this?.configData?.type === 'tooltips' ? 'tooltipbuilder' : 'producttourbuilder'}" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;
