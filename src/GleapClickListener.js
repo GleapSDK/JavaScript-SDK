@@ -1,4 +1,4 @@
-import { GleapConsoleLogManager, GleapFrameManager } from "./Gleap";
+import { GleapConsoleLogManager, GleapFrameManager, handleGleapLink } from "./Gleap";
 import { getDOMElementDescription } from "./GleapHelper";
 
 export default class GleapClickListener {
@@ -11,14 +11,21 @@ export default class GleapClickListener {
   }
 
   start() {
-    document.addEventListener("click", (event) => {
-      if (!event.target) {
+    document.addEventListener("click", (e) => {
+      if (!e.target) {
         return;
+      }
+
+      if (e.target.tagName === 'A' && e.target.protocol === 'gleap:') {
+        e.preventDefault();
+
+        const href = e.target.href;
+        handleGleapLink(href);
       }
 
       if (!GleapFrameManager.getInstance().isOpened()) {
         GleapConsoleLogManager.getInstance().addLog(
-          getDOMElementDescription(event.target),
+          getDOMElementDescription(e.target),
           "CLICK"
         );
       }

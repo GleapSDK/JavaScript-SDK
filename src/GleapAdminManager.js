@@ -106,6 +106,13 @@ export default class GleapAdminManager {
             self.configData = data.data;
             self.initAdminHelper();
           }
+
+          if (data.name === "smartlink-search-result") {
+            this.sendMessageToTourBuilder({
+              name: "smartlink-search-result",
+              data: data.data,
+            });
+          }
         }
 
         if (data.type === "tourbuilder") {
@@ -113,6 +120,13 @@ export default class GleapAdminManager {
             this.sendMessageToTourBuilder({
               name: "data",
               data: self.configData,
+            });
+          }
+
+          if (data.name === "smartlink-search") {
+            this.sendMessage({
+              name: "smartlink-search",
+              data: data.data,
             });
           }
 
@@ -141,7 +155,7 @@ export default class GleapAdminManager {
             }
           }
         }
-      } catch (exp) {}
+      } catch (exp) { }
     });
 
     this.sendMessage({

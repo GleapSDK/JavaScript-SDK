@@ -117,6 +117,162 @@ export const injectStyledCSS = (
       --gleap-margin-top: 50px;
     }
 
+    .gleap-tooltip-anchor {
+      position: relative;
+      display: inline-block;
+      float: left;
+      max-width: 0px;
+      width: 17px;
+    }
+
+    .gleap-tooltip-hotspot {
+      position: absolute;
+      display: block;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      top: 0px;
+      left: 0px;
+    }
+
+    @keyframes gleap-pulse {
+      0% {
+        transform: scale(0);
+        opacity: 0.25;
+      }
+      45% {
+        transform: scale(2.5);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(0);
+        opacity: 0;
+      }
+    }
+
+    .gleap-tooltip-hotspot-animation {
+      position: absolute;
+      border-radius: 17px;
+      opacity: 0.25;
+      display: block;
+      width: 17px;
+      height: 17px;
+      cursor: pointer;
+      top: 0px;
+      left: 0px;
+      animation: gleap-pulse 5s infinite;
+    }
+
+    .gleap-tooltip-hotspot svg {
+      width: 17px;
+      height: 17px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .gleap-tooltip-inner {
+      position: relative;
+      overflow: visible;
+      font-size: 14px;
+      font-weight: normal;
+      color: #000;
+      line-height: 1.3;
+    }
+
+    .gleap-tooltip {
+      position: absolute;
+      background-color: #fff;
+      color: #000;
+      font-size: 15px;
+      line-height: 18px;
+      padding: 16px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+      border-radius: 4px;
+      max-width: min(350px, 80vw);
+      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s, visibility 0.4s;
+      z-index: ${zIndexBase + 100};
+    }
+
+    .gleap-tooltip a {
+      color: ${primaryColor};
+      text-decoration: underline;
+      display: inline !important;
+      margin: 0px !important;
+      padding: 0px !important;
+    }
+
+    .gleap-tooltip ul {
+      padding-left: 16px;
+    }
+
+    .gleap-tooltip b {
+      font-weight: 600;
+    }
+
+    .gleap-tooltip h2 {
+      font-size: 18px;
+      line-height: 20px;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .gleap-tooltip h3 {
+      font-size: 16px;
+      line-height: 18px;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .gleap-tooltip p {
+      padding: 0px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .gleap-tooltip img {
+      max-width: 100%;
+      max-height: 300px;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .gleap-tooltip iframe,
+    .gleap-tooltip video {
+      max-width: 100%;
+      width: 100%;
+      height: auto;
+      min-height: 200px;
+      display: block;
+      border: none;
+      outline: none;
+      padding: 0px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border-radius: 4px;
+    }
+
+    .gleap-tooltip-arrow {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+    }
+
+    .gleap-tooltip-arrow svg {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
     .gleap-b-frame {
       width: 100%;
       height: 100%;
@@ -2269,6 +2425,30 @@ export const loadIcon = function (name, color) {
       </g>
     </g>
   </svg>`;
+  }
+
+  if (name === "circle-dot") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256-96a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>`;
+  }
+
+  if (name === "circle-question") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>`;
+  }
+
+  if (name === "circle-info") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216 192V224h24 48 24v24 88h8 24v48H296 216 192V336h24zm72-144H224V128h64v64z"/></svg>`;
+  }
+
+  if (name === "circle-exclamation") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm24-384v24V264v24H232V264 152 128h48zM232 368V320h48v48H232z"/></svg>`;
+  }
+
+  if (name === "circle-up") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM384 256H304V384H208V256H128V224L256 96 384 224v32z"/></svg>`;
+  }
+
+  if (name === "circle-right") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM256 384l0-80-128 0 0-96 128 0 0-80 32 0L416 256 288 384l-32 0z"/></svg>`;
   }
 
   return "";
