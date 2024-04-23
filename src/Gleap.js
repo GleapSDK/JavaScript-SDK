@@ -1185,17 +1185,21 @@ if (typeof window !== "undefined") {
 
 const handleGleapLink = (href) => {
   try {
-    // gleap://article/123
     const urlParts = href.split('/');
     const type = urlParts[2];
     if (type === 'article') {
       const identifier = urlParts[3];
-      Gleap.openHelpCenterArticle(identifier);
+      Gleap.openHelpCenterArticle(identifier, true);
     }
 
     if (type === 'collection') {
       const identifier = urlParts[3];
-      Gleap.openHelpCenterCollection(identifier);
+      Gleap.openHelpCenterCollection(identifier, true);
+    }
+
+    if (type === 'flow') {
+      const identifier = urlParts[3];
+      Gleap.startFeedbackFlow(identifier, true);
     }
 
     if (type === 'survey') {
@@ -1205,17 +1209,17 @@ const handleGleapLink = (href) => {
 
     if (type === 'bot') {
       const identifier = urlParts[3];
-      Gleap.startBot(identifier);
+      Gleap.startBot(identifier, true);
     }
 
     if (type === 'news') {
       const identifier = urlParts[3];
-      Gleap.openNews(identifier);
+      Gleap.openNewsArticle(identifier, true);
     }
 
     if (type === 'checklist') {
       const identifier = urlParts[3];
-      Gleap.startChecklist(identifier);
+      Gleap.startChecklist(identifier, true);
     }
 
     if (type === 'tour') {
