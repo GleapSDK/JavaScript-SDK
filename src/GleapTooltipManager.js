@@ -70,7 +70,11 @@ export default class GleapTooltipManager {
                     if (node.nodeType === Node.ELEMENT_NODE && this.elementToFloatingUIMap.has(node)) {
                         const floatingUI = this.elementToFloatingUIMap.get(node);
                         if (floatingUI) {
-                            floatingUI();
+                            if (floatingUI.tooltip) {
+                                floatingUI.tooltip.remove();
+                            }
+                            floatingUI.cleanup();
+
                             this.elementToFloatingUIMap.delete(node);
                         }
                     }
@@ -99,7 +103,7 @@ export default class GleapTooltipManager {
         });
     }
 
-    createTooltip(element, tooltipText) {
+    createTooltip(element, tooltipText, tooltipData) {
         // Create tooltip element
         const tooltip = document.createElement('div');
         tooltip.className = 'gleap-tooltip';
@@ -118,7 +122,8 @@ export default class GleapTooltipManager {
         const arrowEl = tooltip.querySelector('.gleap-tooltip-arrow');
         const cleanup = autoUpdate(element, tooltip, () => {
             computePosition(element, tooltip, {
-                middleware: [autoPlacement(), offset(10), flip(), shift(), arrow({ element: arrowEl })],
+                placement: tooltipData.posX === 'left' ? 'left' : 'right',
+                middleware: [offset(10), flip(), shift(), arrow({ element: arrowEl })],
             }).then(({ x, y, middlewareData, placement }) => {
                 try {
                     Object.assign(tooltip.style, {
@@ -183,7 +188,10 @@ export default class GleapTooltipManager {
         tooltip.addEventListener('mouseenter', show);
         tooltip.addEventListener('mouseleave', hide);
 
-        return cleanup;
+        return {
+            cleanup,
+            tooltip,
+        };
     }
 
     canEmbed(element) {
@@ -212,7 +220,11 @@ export default class GleapTooltipManager {
                 element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
 
                 if (this.canEmbed(element)) {
-                    element.appendChild(hotspotContainer);
+                    if (element.firstChild) {
+                        element.insertBefore(hotspotContainer, element.firstChild);
+                    } else {
+                        element.appendChild(hotspotContainer);
+                    }
                 } else {
                     element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
                 }
@@ -234,7 +246,7 @@ export default class GleapTooltipManager {
                 tooltipElem = element;
             }
 
-            const floatingUIInstance = this.createTooltip(tooltipElem, tooltip.html);
+            const floatingUIInstance = this.createTooltip(tooltipElem, tooltip.html, tooltip);
 
             this.elementToFloatingUIMap.set(element, floatingUIInstance);
         }
@@ -242,6 +254,16 @@ export default class GleapTooltipManager {
 
     repositionHotspot(element, tooltip) {
         if (!element || !tooltip) {
+            return;
+        }
+
+        const tooltipId = element.getAttribute('data-gleap-tooltip');
+        if (!tooltipId) {
+            return;
+        }
+
+        const hotspot = document.querySelector(`[data-gleap-tooltip-hotspot="${tooltipId}"]`);
+        if (!hotspot) {
             return;
         }
 
@@ -259,6 +281,12 @@ export default class GleapTooltipManager {
         }
 
         const elementRect = element.getBoundingClientRect();
+        const anchorElement = document.querySelector(`[data-gleap-tooltip-anchor="${tooltipId}"]`);
+        const anchorRect = anchorElement.getBoundingClientRect();
+
+        // Offset calculation for hotspot position.
+        const offsetX = anchorRect.left - elementRect.left;
+        const offsetY = anchorRect.top - elementRect.top;
 
         let top = 0;
         let left = 0;
@@ -285,14 +313,10 @@ export default class GleapTooltipManager {
                 break;
         }
 
-        const tooltipId = element.getAttribute('data-gleap-tooltip');
-        if (tooltipId) {
-            const hotspot = document.querySelector(`[data-gleap-tooltip-hotspot="${tooltipId}"]`);
-            if (hotspot) {
-                hotspot.style.position = 'absolute';
-                hotspot.style.top = top + 'px';
-                hotspot.style.left = left + 'px';
-            }
+        if (hotspot) {
+            hotspot.style.position = 'absolute';
+            hotspot.style.top = (top - offsetY) + 'px';
+            hotspot.style.left = (left - offsetX) + 'px';
         }
     }
 
@@ -315,7 +339,7 @@ export default class GleapTooltipManager {
 
             const filterType = tooltip.pageType;
             const filterValue = tooltip.page;
-            
+
             switch (filterType) {
                 case 'is':
                     return currentUrl === filterValue;
