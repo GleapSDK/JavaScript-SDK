@@ -193,7 +193,7 @@ export const injectStyledCSS = (
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
       opacity: 0;
       visibility: hidden;
-      transition: opacity 0.4s, visibility 0.4s;
+      transition: opacity 0.2s, visibility 0.2s;
       z-index: ${zIndexBase + 100};
     }
 

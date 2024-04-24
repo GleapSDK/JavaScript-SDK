@@ -1,4 +1,4 @@
-import { arrow, autoPlacement, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { GleapSession } from './Gleap';
 import { loadIcon } from './UI';
 
@@ -33,6 +33,32 @@ export default class GleapTooltipManager {
         return this.instance;
     }
 
+    // Recursive function to process each node and its children
+    processNodeInsertion(node) {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            // Check the node itself
+            this.checkNodeTooltip(node);
+
+            // Check all children of the node recursively
+            if (node.childNodes) {
+                node.childNodes.forEach(childNode => {
+                    this.processNodeInsertion(childNode);
+                });
+            }
+        }
+    }
+
+    // Function to check a single node against the filtered tooltips
+    checkNodeTooltip(node) {
+        if (this.filteredTooltips.length > 0) {
+            this.filteredTooltips.forEach(tooltip => {
+                if (tooltip.selector && node.matches(tooltip.selector)) {
+                    this.linkTooltip(node, tooltip);
+                }
+            });
+        }
+    }
+
     start() {
         const self = this;
 
@@ -51,17 +77,10 @@ export default class GleapTooltipManager {
 
         this.observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
+                // Check for added nodes
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
-                        if (self.filteredTooltips.length > 0) {
-                            self.filteredTooltips.forEach(tooltip => {
-                                if (tooltip.selector) {
-                                    if (node.matches(tooltip.selector)) {
-                                        self.linkTooltip(node, tooltip);
-                                    }
-                                }
-                            });
-                        }
+                        self.processNodeInsertion(node);
                     }
                 });
 
@@ -178,7 +197,7 @@ export default class GleapTooltipManager {
                 setTimeout(() => {
                     tooltip.style.visibility = 'hidden';
                     tooltip.style.pointerEvents = 'none';
-                }, 400);
+                }, 200);
             }, 500);
         }
 
