@@ -19,6 +19,7 @@ function throttle(fn, time) {
 export default class GleapTooltipManager {
     tooltips = [];
     filteredTooltips = [];
+    lastUrl = null;
     elementToFloatingUIMap = new WeakMap();
     elementToTooltipMap = new WeakMap();
     nextId = 0;
@@ -66,16 +67,15 @@ export default class GleapTooltipManager {
             return;
         }
 
-        if (window.navigation) {
-            window.navigation.addEventListener("navigate", (event) => {
-                self.updateFilteredTooltips();
-            });
-        }
-
         const handleResizeThrottled = throttle(self.updateHotspotPositions.bind(self), 250);
         window.addEventListener('resize', handleResizeThrottled);
 
         this.observer = new MutationObserver((mutations) => {
+            if (self.lastUrl !== window.location.href) {
+                self.lastUrl = window.location.href;
+                self.filteredTooltips = self.getFilteredTooltips();
+            }
+
             mutations.forEach((mutation) => {
                 // Check for added nodes
                 mutation.addedNodes.forEach((node) => {
