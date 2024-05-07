@@ -85,7 +85,7 @@ export default class GleapConfigManager {
             try {
               const config = JSON.parse(http.responseText);
               try {
-                saveToGleapCache(`config-${session.sdkKey}-lang`, config);
+                saveToGleapCache(`config-${session.sdkKey}-${lang}`, config);
               } catch (exp) { }
               self.applyConfig(config);
               return resolve();

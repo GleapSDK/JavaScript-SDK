@@ -299,7 +299,16 @@ export default class GleapTooltipManager {
             tooltip.offsetY = 0;
         }
 
-        const elementRect = element.getBoundingClientRect();
+        var elementRect = element.getBoundingClientRect();
+
+        try {
+            // Improve width calculation for text elements.
+            var range = document.createRange();
+            range.selectNodeContents(element);
+            const style = window.getComputedStyle(element);
+            elementRect.width = range.getBoundingClientRect().width + parseFloat(style.paddingLeft);
+        } catch (exp) { }
+
         const anchorElement = document.querySelector(`[data-gleap-tooltip-anchor="${tooltipId}"]`);
         const anchorRect = anchorElement.getBoundingClientRect();
 
