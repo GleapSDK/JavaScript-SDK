@@ -82,8 +82,8 @@ export namespace Gleap {
   function setAiTools(tools: {
     name: string;
     description: string;
-    response: string;
-    executionType: 'button' | 'auto';
+    executionType?: 'button' | 'auto';
+    response?: string;
     parameters: {
       name: string;
       description: string;
