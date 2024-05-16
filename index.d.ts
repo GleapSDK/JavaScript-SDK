@@ -83,6 +83,7 @@ export namespace Gleap {
     name: string;
     description: string;
     response: string;
+    executionType: 'button' | 'auto';
     parameters: {
       name: string;
       description: string;
