@@ -390,15 +390,18 @@ export default class GleapTooltipManager {
     checkForTooltips = () => {
         for (let i = 0; i < this.filteredTooltips.length; i++) {
             const tooltip = this.filteredTooltips[i];
-            const elements = document.querySelectorAll(tooltip.selector);
 
-            for (let j = 0; j < elements.length; j++) {
-                const element = elements[j];
+            try {
+                const elements = document.querySelectorAll(tooltip.selector);
 
-                if (element) {
-                    this.linkTooltip(element, tooltip);
+                for (let j = 0; j < elements.length; j++) {
+                    const element = elements[j];
+
+                    if (element) {
+                        this.linkTooltip(element, tooltip);
+                    }
                 }
-            }
+            } catch (exp) { }
         }
     }
 
