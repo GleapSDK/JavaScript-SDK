@@ -100,8 +100,11 @@ export default class GleapProductTours {
         function onDocumentClick(evnt) {
             var gleapTourPopover = document.querySelector('.gleap-tour-popover');
             if (!gleapTourPopover.contains(evnt.target)) {
+                const stepIndex = gleapTourObj.getActiveIndex();
+                const step = steps[stepIndex];
+
                 const element = gleapTourObj.getActiveElement();
-                if (element && element.tagName === 'INPUT') {
+                if ((element && element.tagName === 'INPUT') || step.mode === "INPUT") {
                     // Prevent.
                 } else {
                     gleapTourObj.moveNext();
