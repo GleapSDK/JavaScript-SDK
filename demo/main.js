@@ -3,7 +3,7 @@ const Gleap = window.Gleap;
 Gleap.setLanguage("en");
 Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.setWSApiUrl("ws://0.0.0.0:9000");
+Gleap.setWSApiUrl("ws://0.0.0.0:8080");
 
 Gleap.setAiTools([{
     name: 'send-money',
@@ -29,4 +29,4 @@ Gleap.on("tool-execution", (tool) => {
 
 Gleap.setTicketAttribute("notes", "This is a test value.");
 
-Gleap.initialize("Vx0SXWPHGU7Af54CabNL07k6HRELKTxu");
+Gleap.initialize("H8QbaS3TITXLADKZTZuBGxmmYNdySQH4");

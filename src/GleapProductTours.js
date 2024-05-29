@@ -44,6 +44,7 @@ export default class GleapProductTours {
             const step = steps[i];
 
             const isClickMode = step.mode === "CLICK";
+            const isInputMode = step.mode === "INPUT";
 
             var message = "";
             var hasSender = false;
@@ -69,8 +70,10 @@ export default class GleapProductTours {
                 message = `${senderHTML}<div class="gleap-tour-message">${step.message}</div>`;
             }
 
+            const disableInteraction = !isClickMode && !isInputMode;
+
             var driverStep = {
-                disableActiveInteraction: !isClickMode,
+                disableActiveInteraction: disableInteraction,
                 popover: {
                     description: message,
                     popoverClass: `gleap-tour-popover-${step.type} ${!hasSender && 'gleap-tour-popover-no-sender'} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
@@ -97,7 +100,12 @@ export default class GleapProductTours {
         function onDocumentClick(evnt) {
             var gleapTourPopover = document.querySelector('.gleap-tour-popover');
             if (!gleapTourPopover.contains(evnt.target)) {
-                gleapTourObj.moveNext();
+                const element = gleapTourObj.getActiveElement();
+                if (element && element.tagName === 'INPUT') {
+                    // Prevent.
+                } else {
+                    gleapTourObj.moveNext();
+                }
             }
         }
 
