@@ -56,9 +56,9 @@ export default class GleapFeedbackButtonManager {
         this.injectedFeedbackButton = true;
 
         var elem = document.createElement("div");
-        elem.onclick = () => {
+        elem.addEventListener("click", () => {
             this.feedbackButtonPressed();
-        };
+        });
         document.body.appendChild(elem);
         this.feedbackButton = elem;
 
