@@ -371,15 +371,7 @@ const deepClone = (host) => {
 
       if (node instanceof HTMLCanvasElement) {
         try {
-          clone.setAttribute("bb-canvas-data", node.toDataURL());
-        } catch (exp) {
-          console.warn("Gleap: Failed to clone canvas data.", exp);
-        }
-      }
-
-      if (node instanceof HTMLCanvasElement) {
-        try {
-          clone.setAttribute("bb-canvas-data", node.toDataURL());
+          clone.setAttribute("bb-canvas-data", resizeImage(node.toDataURL(), 500, 500));
         } catch (exp) {
           console.warn("Gleap: Failed to clone canvas data.", exp);
         }
