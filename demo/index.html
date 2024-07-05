@@ -259,20 +259,34 @@
   <div class="header-container-image">
     <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
   </div>
-  <canvas id="myCanvas" width="200" height="200" style="border:1px solid #000000;"></canvas>
+  <canvas id="myCanvas" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
+  <canvas id="myCanvas2" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
+  <canvas id="myCanvas3" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
+  <canvas id="myCanvas4" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
+  <canvas id="myCanvas5" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
+
 
   <script>
-    var canvas = document.getElementById('myCanvas');
-    var ctx = canvas.getContext('2d');
-    var centerX = canvas.width / 2;
-    var centerY = canvas.height / 2;
-    var radius = 70;
+ const canvases = [
+      document.getElementById('myCanvas'),
+      document.getElementById('myCanvas2'),
+      document.getElementById('myCanvas3'),
+      document.getElementById('myCanvas4'),
+      document.getElementById('myCanvas5')
+    ];
 
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.fillStyle = 'blue';
-    ctx.fill();
-    ctx.stroke();
+    canvases.forEach(canvas => {
+      const ctx = canvas.getContext('2d');
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+      const radius = 1500;
+
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = 'blue';
+      ctx.fill();
+      ctx.stroke();
+    });
   </script>
 
   <!-- The Modal -->

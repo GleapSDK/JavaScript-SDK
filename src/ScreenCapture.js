@@ -351,10 +351,38 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
   }
 }
 
+
+const resizeCanvas = (canvas, pct) => {
+  return new Promise((resolve, reject) => {
+    const cw = canvas.width;
+    const ch = canvas.height;
+
+    // Create a copy of the original canvas
+    const originalCanvas = document.createElement("canvas");
+    originalCanvas.width = cw;
+    originalCanvas.height = ch;
+    const originalCtx = originalCanvas.getContext("2d");
+    originalCtx.drawImage(canvas, 0, 0);
+
+    // Create an off-screen canvas for resizing
+    const resizedCanvas = document.createElement("canvas");
+    resizedCanvas.width = cw * pct;
+    resizedCanvas.height = ch * pct;
+    const rctx = resizedCanvas.getContext("2d");
+
+    // Draw the image from the original canvas onto the off-screen resized canvas
+    rctx.drawImage(originalCanvas, 0, 0, cw, ch, 0, 0, cw * pct, ch * pct);
+
+    // Get the resized image data
+    const resizedCanvasData = resizedCanvas.toDataURL();
+    resolve(resizedCanvasData);
+  });
+};
+
 const deepClone = (host) => {
   let shadowNodeId = 1;
 
-  const cloneNode = (node, parent, shadowRoot) => {
+  const cloneNode = async (node, parent, shadowRoot) => {
     const walkTree = (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
         cloneNode(nextn, nextp, innerShadowRoot);
@@ -371,7 +399,12 @@ const deepClone = (host) => {
 
       if (node instanceof HTMLCanvasElement) {
         try {
-          clone.setAttribute("bb-canvas-data", resizeImage(node.toDataURL(), 750, 750));
+          const resizedCanvasData = await resizeCanvas(node, 0.50); // Scale down by 50%
+
+          // const resizedImage = await resizeImage(node.toDataURL(), 3500, 3500);
+          // const originalCanvas = resizeTo(node, 0.50);
+
+          clone.setAttribute("bb-canvas-data", resizedCanvasData);
         } catch (exp) {
           console.warn("Gleap: Failed to clone canvas data.", exp);
         }
