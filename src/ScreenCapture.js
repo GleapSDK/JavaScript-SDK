@@ -212,7 +212,7 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
           cloneTargetNode.remove();
         }
       }
-    } catch (exp) { }
+    } catch (exp) {}
   }
 };
 
@@ -224,7 +224,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
     } else if (styleSheet.rules) {
       cssRules = styleSheet.rules;
     }
-  } catch (exp) { }
+  } catch (exp) {}
 
   var cssTextContent = "";
   if (cssRules) {
@@ -236,7 +236,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
   }
 
   return cssTextContent;
-}
+};
 
 const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
@@ -244,7 +244,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
     const styleSheet = document.styleSheets[i];
 
     // Skip if the stylesheet is meant for print
-    if (styleSheet.media && styleSheet.media.mediaText === 'print') {
+    if (styleSheet.media && styleSheet.media.mediaText === "print") {
       continue;
     }
 
@@ -349,34 +349,6 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
       clone.insertBefore(shadowStyleNode, clone.firstElementChild);
     }
   }
-}
-
-
-const resizeCanvas = (canvas, pct) => {
-  return new Promise((resolve, reject) => {
-    const cw = canvas.width;
-    const ch = canvas.height;
-
-    // Create a copy of the original canvas
-    const originalCanvas = document.createElement("canvas");
-    originalCanvas.width = cw;
-    originalCanvas.height = ch;
-    const originalCtx = originalCanvas.getContext("2d");
-    originalCtx.drawImage(canvas, 0, 0);
-
-    // Create an off-screen canvas for resizing
-    const resizedCanvas = document.createElement("canvas");
-    resizedCanvas.width = cw * pct;
-    resizedCanvas.height = ch * pct;
-    const rctx = resizedCanvas.getContext("2d");
-
-    // Draw the image from the original canvas onto the off-screen resized canvas
-    rctx.drawImage(originalCanvas, 0, 0, cw, ch, 0, 0, cw * pct, ch * pct);
-
-    // Get the resized image data
-    const resizedCanvasData = resizedCanvas.toDataURL();
-    resolve(resizedCanvasData);
-  });
 };
 
 const deepClone = (host) => {
@@ -399,12 +371,12 @@ const deepClone = (host) => {
 
       if (node instanceof HTMLCanvasElement) {
         try {
-          const resizedCanvasData = await resizeCanvas(node, 0.50); // Scale down by 50%
-
-          // const resizedImage = await resizeImage(node.toDataURL(), 3500, 3500);
-          // const originalCanvas = resizeTo(node, 0.50);
-
-          clone.setAttribute("bb-canvas-data", resizedCanvasData);
+          const boundingRect = node.getBoundingClientRect();
+          const resizedImage = await resizeImage(node.toDataURL(), 900, 900);
+          
+          clone.setAttribute("bb-canvas-data", resizedImage);
+          clone.setAttribute("bb-canvas-height", boundingRect.height);
+          clone.setAttribute("bb-canvas-width", boundingRect.width);
         } catch (exp) {
           console.warn("Gleap: Failed to clone canvas data.", exp);
         }
@@ -426,7 +398,7 @@ const deepClone = (host) => {
         clone.setAttribute("bb-width", boundingRect.width);
       }
 
-      if ((node.scrollTop > 0 || node.scrollLeft > 0)) {
+      if (node.scrollTop > 0 || node.scrollLeft > 0) {
         clone.setAttribute("bb-scrollpos", true);
         clone.setAttribute("bb-scrolltop", node.scrollTop);
         clone.setAttribute("bb-scrollleft", node.scrollLeft);
@@ -440,7 +412,7 @@ const deepClone = (host) => {
         var val = node.value;
         if (
           node.getAttribute("gleap-ignore") === "value" ||
-          node.classList.contains('gl-mask')
+          node.classList.contains("gl-mask")
         ) {
           val = new Array(val.length + 1).join("*");
         }
@@ -527,7 +499,10 @@ const prepareScreenshotData = (remote) => {
     }
 
     // Adjust the base node
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
+    const baseUrl = window.location.href.substring(
+      0,
+      window.location.href.lastIndexOf("/")
+    );
     var newBaseUrl = baseUrl + "/";
     if (existingBasePath) {
       if (existingBasePath.startsWith("http")) {
