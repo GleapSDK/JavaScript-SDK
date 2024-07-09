@@ -212,7 +212,7 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
           cloneTargetNode.remove();
         }
       }
-    } catch (exp) { }
+    } catch (exp) {}
   }
 };
 
@@ -224,7 +224,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
     } else if (styleSheet.rules) {
       cssRules = styleSheet.rules;
     }
-  } catch (exp) { }
+  } catch (exp) {}
 
   var cssTextContent = "";
   if (cssRules) {
@@ -236,7 +236,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
   }
 
   return cssTextContent;
-}
+};
 
 const downloadAllCSSUrlResources = (clone, remote) => {
   var promises = [];
@@ -244,7 +244,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
     const styleSheet = document.styleSheets[i];
 
     // Skip if the stylesheet is meant for print
-    if (styleSheet.media && styleSheet.media.mediaText === 'print') {
+    if (styleSheet.media && styleSheet.media.mediaText === "print") {
       continue;
     }
 
@@ -349,12 +349,12 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
       clone.insertBefore(shadowStyleNode, clone.firstElementChild);
     }
   }
-}
+};
 
 const deepClone = (host) => {
   let shadowNodeId = 1;
 
-  const cloneNode = (node, parent, shadowRoot) => {
+  const cloneNode = async (node, parent, shadowRoot) => {
     const walkTree = (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
         cloneNode(nextn, nextp, innerShadowRoot);
@@ -371,7 +371,12 @@ const deepClone = (host) => {
 
       if (node instanceof HTMLCanvasElement) {
         try {
-          clone.setAttribute("bb-canvas-data", resizeImage(node.toDataURL(), 750, 750));
+          const boundingRect = node.getBoundingClientRect();
+          const resizedImage = await resizeImage(node.toDataURL(), 900, 900);
+          
+          clone.setAttribute("bb-canvas-data", resizedImage);
+          clone.setAttribute("bb-canvas-height", boundingRect.height);
+          clone.setAttribute("bb-canvas-width", boundingRect.width);
         } catch (exp) {
           console.warn("Gleap: Failed to clone canvas data.", exp);
         }
@@ -393,7 +398,7 @@ const deepClone = (host) => {
         clone.setAttribute("bb-width", boundingRect.width);
       }
 
-      if ((node.scrollTop > 0 || node.scrollLeft > 0)) {
+      if (node.scrollTop > 0 || node.scrollLeft > 0) {
         clone.setAttribute("bb-scrollpos", true);
         clone.setAttribute("bb-scrolltop", node.scrollTop);
         clone.setAttribute("bb-scrollleft", node.scrollLeft);
@@ -407,7 +412,7 @@ const deepClone = (host) => {
         var val = node.value;
         if (
           node.getAttribute("gleap-ignore") === "value" ||
-          node.classList.contains('gl-mask')
+          node.classList.contains("gl-mask")
         ) {
           val = new Array(val.length + 1).join("*");
         }
@@ -494,7 +499,10 @@ const prepareScreenshotData = (remote) => {
     }
 
     // Adjust the base node
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/"));
+    const baseUrl = window.location.href.substring(
+      0,
+      window.location.href.lastIndexOf("/")
+    );
     var newBaseUrl = baseUrl + "/";
     if (existingBasePath) {
       if (existingBasePath.startsWith("http")) {
