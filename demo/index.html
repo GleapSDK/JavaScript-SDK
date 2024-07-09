@@ -259,50 +259,7 @@
   <div class="header-container-image">
     <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
   </div>
-  <canvas id="myCanvas" width="1000" height="500" style="border:1px solid #000000;"></canvas>
-  <canvas id="myCanvas2" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
-  <canvas id="myCanvas3" width="200" height="200" style="border:1px solid #000000;"></canvas>
-  <canvas id="myCanvas4" width="400" height="200" style="border:1px solid #000000;"></canvas>
-  <canvas id="myCanvas5" width="5000" height="5000" style="border:1px solid #000000;"></canvas>
-
-
-  <script>
- const canvases = [
-      document.getElementById('myCanvas'),
-      document.getElementById('myCanvas2'),
-      document.getElementById('myCanvas3'),
-      document.getElementById('myCanvas4'),
-      document.getElementById('myCanvas5')
-    ];
-
-    canvases.forEach(canvas => {
-      const ctx = canvas.getContext('2d');
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = 1500;
-
-      ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = 'blue';
-      ctx.fill();
-      ctx.stroke();
-    });
-  </script>
-
-  <!-- The Modal -->
-  <div id="myModal" class="modal">
-
-    <!-- Modal content -->
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <p>Some text in the Modal..</p>
-    </div>
-
-  </div>
-
   <div class="content" id="haha">
-    <button id="myBtn222">Open Modal</button>
-    <a href="https://www.google.com">asdf asfasdfasfdasdf</a>
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
@@ -311,35 +268,6 @@
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
   </div>
-
-  <script>
-    // Get the modal
-    var modal = document.getElementById("myModal");
-
-    // Get the button that opens the modal
-    var btn = document.getElementById("myBtn");
-
-    // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close")[0];
-
-    // When the user clicks the button, open the modal 
-    btn.onclick = function () {
-      modal.style.display = "block";
-    }
-
-    // When the user clicks on <span> (x), close the modal
-    span.onclick = function () {
-      modal.style.display = "none";
-    }
-
-    // When the user clicks anywhere outside of the modal, close it
-    window.onclick = function (event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-    }
-
-  </script>
 </body>
 
 </html>
