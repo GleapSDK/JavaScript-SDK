@@ -215,7 +215,7 @@ export default class GleapTooltipManager {
 
     canEmbed(element) {
         const voidElements = new Set([
-            'area', 'base', 'br', 'embed', 'hr', 'img', 'input', 'source', 'track', 'wbr'
+            'area', 'base', 'br', 'embed', 'hr', 'img', 'input', 'source', 'track', 'wbr', 'canvas'
         ]);
 
         return element && !voidElements.has(element.tagName.toLowerCase());

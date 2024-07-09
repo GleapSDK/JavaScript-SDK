@@ -1936,11 +1936,13 @@ export const injectStyledCSS = (
       color: ${buttonColor} !important;
     }
 
+    .gleap-tooltip .linktype-button,
     .gleap-tour-message .linktype-button {
       display: inline-block !important;
       border-radius: 5px;
       box-sizing: border-box;
-      padding: 10px 20px;
+      padding: 10px 20px !important;
+      text-decoration: none !important;
       background-color: ${buttonColor} !important;
       color: ${contrastButtonColor} !important;
     }
