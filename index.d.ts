@@ -105,28 +105,28 @@ export namespace Gleap {
   function identify(
     userId: string,
     customerData: {
-      name?: string;
-      email?: string;
-      phone?: string;
-      value?: number;
-      companyId?: string;
-      companyName?: string;
-      plan?: string;
-      customData?: object;
-      createdAt?: Date;
+      name?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      value?: number | null;
+      companyId?: string | null;
+      companyName?: string | null;
+      plan?: string | null;
+      customData?: object | null;
+      createdAt?: Date | null;
     },
     userHash?: string
   ): void;
   function updateContact(
     customerData: {
-      name?: string;
-      email?: string;
-      phone?: string;
-      value?: number;
-      companyId?: string;
-      companyName?: string;
-      plan?: string;
-      customData?: object;
+      name?: string | null;
+      email?: string | null;
+      phone?: string | null;
+      value?: number | null;
+      companyId?: string | null;
+      companyName?: string | null;
+      plan?: string | null;
+      customData?: object | null;
     }
   ): void;
   function getInstance(): any;
