@@ -111,6 +111,7 @@ export namespace Gleap {
       value?: number | null;
       companyId?: string | null;
       companyName?: string | null;
+      sla?: number | null;
       plan?: string | null;
       customData?: object | null;
       createdAt?: Date | null;
@@ -125,6 +126,7 @@ export namespace Gleap {
       value?: number | null;
       companyId?: string | null;
       companyName?: string | null;
+      sla?: number | null;
       plan?: string | null;
       customData?: object | null;
     }
