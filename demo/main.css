@@ -1,0 +1,32 @@
+
+.scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    border: 2px solid #ccc;
+    padding: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.scroll-content {
+    display: inline-block;
+}
+
+.item {
+    display: inline-block;
+    width: 150px;
+    height: 150px;
+    margin-right: 10px;
+    background-color: #4caf50;
+    color: white;
+    text-align: center;
+    line-height: 150px;
+    font-size: 18px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+.item:hover {
+    background-color: #45a049;
+}
