@@ -25,7 +25,11 @@ import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
 import GleapProductTours from "./GleapProductTours";
 
-if (typeof HTMLCanvasElement !== "undefined" && HTMLCanvasElement.prototype && HTMLCanvasElement.prototype.__originalGetContext === undefined) {
+if (
+  typeof HTMLCanvasElement !== "undefined" &&
+  HTMLCanvasElement.prototype &&
+  HTMLCanvasElement.prototype.__originalGetContext === undefined
+) {
   HTMLCanvasElement.prototype.__originalGetContext =
     HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
@@ -88,7 +92,7 @@ class Gleap {
 
   /**
    * Set tags to be submitted with each ticket.
-   * @param {*} tags 
+   * @param {*} tags
    */
   static setTags(tags) {
     GleapTagManager.getInstance().setTags(tags);
@@ -96,7 +100,7 @@ class Gleap {
 
   /**
    * Sets a custom URL handler.
-   * @param {*} urlHandler 
+   * @param {*} urlHandler
    */
   static setUrlHandler(urlHandler) {
     GleapFrameManager.getInstance().setUrlHandler(urlHandler);
@@ -113,7 +117,7 @@ class Gleap {
 
   /**
    * Disable the in-app notifications.
-   * @param {*} disableInAppNotifications 
+   * @param {*} disableInAppNotifications
    */
   static setDisableInAppNotifications(disableInAppNotifications) {
     const instance = this.getInstance();
@@ -122,7 +126,7 @@ class Gleap {
 
   /**
    * Disable the default page tracking.
-   * @param {*} disablePageTracking 
+   * @param {*} disablePageTracking
    */
   static setDisablePageTracking(disablePageTracking) {
     const instance = this.getInstance();
@@ -214,18 +218,27 @@ class Gleap {
 
     try {
       const urlParams = new URLSearchParams(window.location.search);
-      const feedbackFlow = urlParams.get('gleap_feedback');
+
+      const widget = urlParams.get("gleap_widget");
+      if (widget && widget.length > 0) {
+        Gleap.open();
+      }
+
+      const feedbackFlow = urlParams.get("gleap_feedback");
       if (feedbackFlow && feedbackFlow.length > 0) {
         Gleap.startFeedbackFlow(feedbackFlow);
       }
-      const surveyFlow = urlParams.get('gleap_survey');
-      const surveyFlowFormat = urlParams.get('gleap_survey_format');
+      const surveyFlow = urlParams.get("gleap_survey");
+      const surveyFlowFormat = urlParams.get("gleap_survey_format");
       if (surveyFlow && surveyFlow.length > 0) {
-        Gleap.showSurvey(surveyFlow, surveyFlowFormat === "survey_full" ? "survey_full" : "survey");
+        Gleap.showSurvey(
+          surveyFlow,
+          surveyFlowFormat === "survey_full" ? "survey_full" : "survey"
+        );
       }
-      const tourId = urlParams.get('gleap_tour');
+      const tourId = urlParams.get("gleap_tour");
       if (tourId && tourId.length > 0) {
-        var tourDelay = parseInt(urlParams.get('gleap_tour_delay'));
+        var tourDelay = parseInt(urlParams.get("gleap_tour_delay"));
         if (isNaN(tourDelay)) {
           tourDelay = 4;
         }
@@ -234,7 +247,7 @@ class Gleap {
           Gleap.startProductTour(tourId);
         }, tourDelay * 1000);
       }
-    } catch (exp) { }
+    } catch (exp) {}
   }
 
   /**
@@ -260,7 +273,7 @@ class Gleap {
 
   /**
    * Enable or disable Gleap session tracking through cookies.
-   * @param {*} useCookies 
+   * @param {*} useCookies
    */
   static setUseCookies(useCookies) {
     GleapSession.getInstance().useCookies = useCookies;
@@ -284,9 +297,7 @@ class Gleap {
    * @param {*} userData
    */
   static updateContact(userData) {
-    return GleapSession.getInstance().updateSession(
-      gleapDataParser(userData),
-    );
+    return GleapSession.getInstance().updateSession(gleapDataParser(userData));
   }
 
   /**
@@ -361,7 +372,7 @@ class Gleap {
 
   /**
    * Set custom replay options.
-   * @param {*} options 
+   * @param {*} options
    */
   static setReplayOptions(options) {
     GleapReplayRecorder.getInstance().setOptions(options);
@@ -687,8 +698,8 @@ class Gleap {
     );
     feedback
       .sendFeedback()
-      .then(() => { })
-      .catch((error) => { });
+      .then(() => {})
+      .catch((error) => {});
   }
 
   /**
@@ -733,8 +744,7 @@ class Gleap {
     options = {},
     isSurvey = false
   ) {
-    const { autostartDrawing, hideBackButton, format } =
-      options;
+    const { autostartDrawing, hideBackButton, format } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -1117,9 +1127,12 @@ class Gleap {
 
   static startProductTour(tourId) {
     const self = this;
-    GleapSession.getInstance().startProductTourConfig(tourId).then((config) => {
-      self.startProductTourWithConfig(tourId, config);
-    }).catch((error) => { });
+    GleapSession.getInstance()
+      .startProductTourConfig(tourId)
+      .then((config) => {
+        self.startProductTourWithConfig(tourId, config);
+      })
+      .catch((error) => {});
   }
 
   static startProductTourWithConfig(tourId, config) {
@@ -1136,7 +1149,7 @@ class Gleap {
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
-    } catch (e) { }
+    } catch (e) {}
   }
 
   static showNotification(data) {
@@ -1185,51 +1198,51 @@ if (typeof window !== "undefined") {
 
 const handleGleapLink = (href) => {
   try {
-    const urlParts = href.split('/');
+    const urlParts = href.split("/");
     const type = urlParts[2];
-    if (type === 'article') {
+    if (type === "article") {
       const identifier = urlParts[3];
       Gleap.openHelpCenterArticle(identifier, true);
     }
 
-    if (type === 'collection') {
+    if (type === "collection") {
       const identifier = urlParts[3];
       Gleap.openHelpCenterCollection(identifier, true);
     }
 
-    if (type === 'flow') {
+    if (type === "flow") {
       const identifier = urlParts[3];
       Gleap.startFeedbackFlow(identifier, true);
     }
 
-    if (type === 'survey') {
+    if (type === "survey") {
       const identifier = urlParts[3];
       Gleap.showSurvey(identifier);
     }
 
-    if (type === 'bot') {
+    if (type === "bot") {
       const identifier = urlParts[3];
       Gleap.startBot(identifier, true);
     }
 
-    if (type === 'news') {
+    if (type === "news") {
       const identifier = urlParts[3];
       Gleap.openNewsArticle(identifier, true);
     }
 
-    if (type === 'checklist') {
+    if (type === "checklist") {
       const identifier = urlParts[3];
       Gleap.startChecklist(identifier, true);
     }
 
-    if (type === 'tour') {
+    if (type === "tour") {
       const identifier = urlParts[3];
       Gleap.startProductTour(identifier);
     }
   } catch (e) {
     console.error("Failed to handle Gleap link: ", href);
   }
-}
+};
 
 export {
   GleapNetworkIntercepter,
