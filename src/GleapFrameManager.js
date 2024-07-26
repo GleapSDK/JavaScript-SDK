@@ -24,6 +24,7 @@ export default class GleapFrameManager {
   frameUrl = "https://messenger-app.gleap.io";
   gleapFrameContainer = null;
   gleapFrame = null;
+  comReady = false;
   injectedFrame = false;
   widgetOpened = false;
   listeners = [];
@@ -57,14 +58,14 @@ export default class GleapFrameManager {
       function appHeight() {
         try {
           const doc = document.documentElement;
-          doc.style.setProperty('--glvh', (window.innerHeight * .01) + 'px');
-        } catch (e) { }
+          doc.style.setProperty("--glvh", window.innerHeight * 0.01 + "px");
+        } catch (e) {}
       }
 
       try {
-        window.addEventListener('resize', appHeight);
+        window.addEventListener("resize", appHeight);
         appHeight();
-      } catch (e) { }
+      } catch (e) {}
     }
   }
 
@@ -73,7 +74,11 @@ export default class GleapFrameManager {
   }
 
   isSurvey() {
-    return this.appMode === "survey" || this.appMode === "survey_full" || this.appMode === "survey_web";
+    return (
+      this.appMode === "survey" ||
+      this.appMode === "survey_full" ||
+      this.appMode === "survey_web"
+    );
   }
 
   setAppMode(appMode) {
@@ -84,7 +89,9 @@ export default class GleapFrameManager {
       ".gleap-frame-container-inner"
     );
     if (
-      (this.appMode === "widget" || this.appMode === "survey_full" || this.appMode === "survey_web") &&
+      (this.appMode === "widget" ||
+        this.appMode === "survey_full" ||
+        this.appMode === "survey_web") &&
       innerContainer
     ) {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
@@ -173,8 +180,7 @@ export default class GleapFrameManager {
   showImage = (url) => {
     runFunctionWhenDomIsReady(() => {
       var elem = document.createElement("div");
-      elem.className =
-        "gleap-image-view";
+      elem.className = "gleap-image-view";
       elem.innerHTML = `<div class="gleap-image-view-close">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm97.9-320l-17 17-47 47 47 47 17 17L320 353.9l-17-17-47-47-47 47-17 17L158.1 320l17-17 47-47-47-47-17-17L192 158.1l17 17 47 47 47-47 17-17L353.9 192z"/></svg>
       </div><img class="gleap-image-view-image" src="${url}" />`;
@@ -226,9 +232,9 @@ export default class GleapFrameManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     if (
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
     ) {
       styleToApply = classicStyle;
     }
@@ -399,14 +405,14 @@ export default class GleapFrameManager {
   sendMessage(data, queue = false) {
     try {
       this.gleapFrame = document.querySelector(".gleap-frame");
-      if (this.gleapFrame && this.gleapFrame.contentWindow) {
+      if (this.comReady && this.gleapFrame && this.gleapFrame.contentWindow) {
         this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), "*");
       } else {
         if (queue) {
           this.queue.push(data);
         }
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   sendSessionUpdate() {
@@ -459,6 +465,7 @@ export default class GleapFrameManager {
     // Listen for messages.
     this.addMessageListener((data) => {
       if (data.name === "ping") {
+        this.comReady = true;
         this.sendConfigUpdate();
         this.sendSessionUpdate();
         this.workThroughQueue();
@@ -517,7 +524,9 @@ export default class GleapFrameManager {
           ".gleap-frame-container-inner"
         );
         if (
-          (this.appMode === "survey" || this.appMode === "survey_full" || this.appMode === "survey_web") &&
+          (this.appMode === "survey" ||
+            this.appMode === "survey_full" ||
+            this.appMode === "survey_web") &&
           innerContainer
         ) {
           innerContainer.style.maxHeight = `${this.frameHeight}px`;
@@ -590,7 +599,10 @@ export default class GleapFrameManager {
 
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if ((event.origin !== this.frameUrl && event.origin !== GleapBannerManager.getInstance().bannerUrl)) {
+      if (
+        event.origin !== this.frameUrl &&
+        event.origin !== GleapBannerManager.getInstance().bannerUrl
+      ) {
         return;
       }
 
@@ -601,7 +613,7 @@ export default class GleapFrameManager {
             this.listeners[i](data);
           }
         }
-      } catch (exp) { }
+      } catch (exp) {}
     });
   }
 
