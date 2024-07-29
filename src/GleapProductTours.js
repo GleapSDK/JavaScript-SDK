@@ -102,9 +102,9 @@ export default class GleapProductTours {
             if (!gleapTourPopover.contains(evnt.target)) {
                 const stepIndex = gleapTourObj.getActiveIndex();
                 const step = steps[stepIndex];
-
                 const element = gleapTourObj.getActiveElement();
-                if ((element && element.tagName === 'INPUT') || step.mode === "INPUT") {
+
+                if ((element && element.tagName === 'INPUT') || step.mode === "INPUT" || evnt?.target?.id.includes("tooltip-svg")) {
                     // Prevent.
                 } else {
                     gleapTourObj.moveNext();
@@ -171,6 +171,7 @@ export default class GleapProductTours {
                 }
 
                 const playingClass = 'gleap-tour-video--playing';
+                const playPauseContainer = document.querySelector('.gleap-tour-video-playpause');
 
                 const videoElement = document.querySelector('.gleap-tour-video-obj');
                 if (videoElement) {
@@ -186,36 +187,43 @@ export default class GleapProductTours {
                     }
 
                     videoElement.addEventListener('ended', function () {
-                        playButtonElem.innerHTML = loadIcon("replay");
+                        playPauseContainer.innerHTML = loadIcon("replay");
+                        playPauseContainer.classList.add("gleap-tour-video-svg--fullscreen")
                         videoContainer.classList.remove(playingClass);
                     });
 
-                    // Video player controller.
-                    const playButtonElem = document.querySelector('.gleap-tour-video-playpause');
-                    if (playButtonElem) {
-                        playButtonElem.addEventListener('click', () => {
-                            if (videoElement.muted) {
-                                self.unmuted = true;
+                    videoElement.addEventListener('play', function () {
+                        console.log("Video started");
+                        playPauseContainer.classList.remove("gleap-tour-video-svg--fullscreen")
+                    });
 
-                                videoElement.pause();
-                                videoElement.currentTime = 0;
-                                videoElement.muted = false;
-                                videoElement.play();
+                    if (playPauseContainer) {
+                        playPauseContainer.addEventListener('click', () => clickVideo());
+                    }
 
-                                playButtonElem.innerHTML = loadIcon("mute");
-                                videoContainer.classList.add(playingClass);
-                            } else if (videoElement.paused) {
-                                videoElement.muted = false;
-                                videoElement.play();
+                    const clickVideo = () => {
+                        if (videoElement.muted) {
+                            self.unmuted = true;
 
-                                playButtonElem.innerHTML = loadIcon("mute");
-                                videoContainer.classList.add(playingClass);
-                            } else {
-                                videoElement.pause();
-                                playButtonElem.innerHTML = loadIcon("unmute");
-                                videoContainer.classList.remove(playingClass);
-                            }
-                        });
+                            videoElement.pause();
+                            videoElement.currentTime = 0;
+                            videoElement.muted = false;
+                            videoElement.play();
+
+                            playPauseContainer.innerHTML = loadIcon("mute");
+                            videoContainer.classList.add(playingClass);
+                        } else if (videoElement.paused) {
+                            videoElement.muted = false;
+                            videoElement.play();
+
+                            playPauseContainer.innerHTML = loadIcon("mute");
+                            videoContainer.classList.add(playingClass);
+                        } else {
+                            videoElement.pause();
+                            playPauseContainer.innerHTML = loadIcon("unmute");
+                            videoContainer.classList.remove(playingClass);
+
+                        }
                     }
                 }
             }
