@@ -27,12 +27,25 @@ export class GleapScreenRecorder {
   }
 
   getSupportedMimeType() {
-    if (MediaRecorder.isTypeSupported("video/mp4")) {
-      return "video/mp4";
+    // List of MIME types in order of preference
+    const types = [
+      "video/webm",
+      "audio/webm",
+      "video/webm;codecs=vp8",
+      "video/webm;codecs=daala",
+      "video/webm;codecs=h264",
+      "audio/webm;codecs=opus",
+      "video/mp4",
+    ];
+
+    // Iterate through the list and return the first supported type
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        return type;
+      }
     }
-    if (MediaRecorder.isTypeSupported("video/webm;codecs=h264")) {
-      return "video/webm;codecs=h264";
-    }
+
+    // If no types are supported, return a default or handle as needed
     return "video/webm";
   }
 
@@ -64,7 +77,7 @@ export class GleapScreenRecorder {
           displaySurface: "monitor",
         },
         selfBrowserSurface: "include",
-        audio: true
+        audio: true,
       })
       .then(function (displayStream) {
         self.stream = displayStream;
@@ -184,7 +197,7 @@ export class GleapScreenRecorder {
 
     var recordedChunks = [];
     this.mediaRecorder = new MediaRecorder(stream, {
-      mimeType: this.getSupportedMimeType()
+      mimeType: this.getSupportedMimeType(),
     });
     this.isRecording = true;
     this.recordTime = 0;
@@ -226,8 +239,10 @@ export class GleapScreenRecorder {
       type: this.getSupportedMimeType(),
     });
 
-    this.file = new File([completeBlob], `screen-recording.${this.getSupportedMimeType() === "video/mp4" ? 'mp4' : "webm"}`, {
-      type: this.getSupportedMimeType(),
+    const mimeType = this.getSupportedMimeType();
+    const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+    this.file = new File([completeBlob], `screen-recording.${extension}`, {
+      type: mimeType,
     });
 
     const previewVideoElement = document.querySelector(
