@@ -1,4 +1,9 @@
-import { GleapFrameManager, GleapFeedbackButtonManager, GleapSession, GleapConfigManager } from "./Gleap";
+import {
+  GleapFrameManager,
+  GleapFeedbackButtonManager,
+  GleapSession,
+  GleapConfigManager,
+} from "./Gleap";
 
 export default class GleapTranslationManager {
   overrideLanguage = "";
@@ -23,7 +28,7 @@ export default class GleapTranslationManager {
 
   /**
    * Sets the language to override the default language.
-   * @param {*} language 
+   * @param {*} language
    */
   setOverrideLanguage(language) {
     this.overrideLanguage = language;
@@ -34,18 +39,22 @@ export default class GleapTranslationManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
     this.isRTLLayout = false;
-    if (flowConfig && flowConfig.localizationOptions && flowConfig.localizationOptions.rtl) {
+    if (
+      flowConfig &&
+      flowConfig.localizationOptions &&
+      flowConfig.localizationOptions.rtl
+    ) {
       this.isRTLLayout = true;
     }
 
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     GleapFrameManager.getInstance().updateFrameStyle();
   }
-  
+
   getActiveLanguage() {
     var language = "en";
     if (typeof navigator !== "undefined") {
-      language = navigator.language.substring(0, 2).toLowerCase();
+      language = navigator.language.toLowerCase();
     }
     if (this.overrideLanguage && this.overrideLanguage !== "") {
       language = this.overrideLanguage.toLowerCase();

@@ -41,4 +41,4 @@ Gleap.identify("user1234", {
   sla: 30,
 });
 
-Gleap.initialize("xwjGqF5QHMTuQauPoZyMzarGqg7WyTvN");
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
