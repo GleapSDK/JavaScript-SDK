@@ -755,6 +755,7 @@ export const injectStyledCSS = (
     .gleap-notification-item-news-image {
       background-color: ${subTextColor};
       height: 170px;
+      max-height: 170px;
       object-fit: cover;
       width: 100%;
     }
