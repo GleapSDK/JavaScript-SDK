@@ -1793,6 +1793,16 @@ export const injectStyledCSS = (
       color: ${contrastBackgroundColor};
     }
 
+    .gleap-tour-message h2 {
+      font-weight: 600;
+      font-size: 22px;
+    }
+
+    .gleap-tour-message h3 {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
     .gleap-tour-message p {
       line-height: 1.3;
     }
