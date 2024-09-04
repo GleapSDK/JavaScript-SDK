@@ -1,7 +1,7 @@
 const Gleap = window.Gleap;
 
 Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.setWSApiUrl("ws://0.0.0.0:9000");
+// Gleap.setApiUrl("http://0.0.0.0:9000");
+// Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.initialize("EylYN1UChqJkT5wJHu3bA8hswd9xOWJ6");
+Gleap.initialize("<API_KEY>");

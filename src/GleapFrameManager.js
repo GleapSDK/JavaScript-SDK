@@ -36,7 +36,20 @@ export default class GleapFrameManager {
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
-        window.open(url, "_blank").focus();
+        const newWindow = window.open(url, "_blank");
+
+        // Check if the new window was successfully created and not blocked
+        if (
+          !newWindow ||
+          newWindow.closed ||
+          typeof newWindow.closed === "undefined"
+        ) {
+          // If the new window was blocked, navigate in the same tab instead
+          window.location.href = url;
+        } else {
+          // If the new window was created successfully, bring it into focus
+          newWindow.focus();
+        }
       } else {
         window.location.href = url;
       }
