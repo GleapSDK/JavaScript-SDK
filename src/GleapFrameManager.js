@@ -595,6 +595,19 @@ export default class GleapFrameManager {
               data: feedbackData,
             });
             GleapEventManager.notifyEvent("feedback-sent", formData);
+
+            if (outboundId && outboundId.length > 0) {
+              GleapEventManager.notifyEvent("outbound-sent", {
+                outboundId: outboundId,
+                outbound: action,
+                formData: formData,
+              });
+
+              try {
+                delete formData.reportedBy;
+              } catch (e) {}
+              Gleap.trackEvent(`outbound-${outboundId}-submitted`, formData);
+            }
           })
           .catch((error) => {
             this.sendMessage({
