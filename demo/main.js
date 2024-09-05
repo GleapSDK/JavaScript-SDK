@@ -7,5 +7,6 @@ Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 Gleap.on("outbound-sent", (data) => {
+  const { outboundId, outbound, formData }  = data;
   console.log(data);
 });
