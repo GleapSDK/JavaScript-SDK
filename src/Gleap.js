@@ -866,7 +866,6 @@ class Gleap {
         name: "open-help-collection",
         data: {
           collectionId,
-          hideBackButton: !showBackButton,
         },
       },
       true
@@ -957,7 +956,6 @@ class Gleap {
         name: "open-news-article",
         data: {
           id,
-          hideBackButton: !showBackButton,
         },
       },
       true
@@ -975,9 +973,7 @@ class Gleap {
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "open-checklists",
-        data: {
-          hideBackButton: !showBackButton,
-        },
+        data: {},
       },
       true
     );
@@ -999,7 +995,6 @@ class Gleap {
         name: "start-checklist",
         data: {
           outboundId: outboundId,
-          hideBackButton: !showBackButton,
         },
       },
       true
@@ -1061,9 +1056,7 @@ class Gleap {
     GleapFrameManager.getInstance().sendMessage(
       {
         name: "open-feature-requests",
-        data: {
-          hideBackButton: !showBackButton,
-        },
+        data: {},
       },
       true
     );
