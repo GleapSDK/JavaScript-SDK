@@ -259,6 +259,9 @@
   <div class="header-container-image">
     <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
   </div>
+  <input type="button" value="Start Tour" placeholder="helloo"/>
+  <input type="text" id="userInput" placeholder="Enter your name">
+  <button onclick="greetUser()">Submit</button>
   <div class="content" id="haha">
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
@@ -268,6 +271,17 @@
     <div class="skeleton-text"></div>
     <div class="skeleton-text"></div>
   </div>
+
+  <script>
+    function greetUser() {
+      var name = document.getElementById("userInput").value;
+      if (name) {
+        alert("Hello, " + name + "! Welcome to Off-Grid-it-Haus.");
+      } else {
+        alert("Please enter your name.");
+      }
+    }
+  </script>
 </body>
 
 </html>

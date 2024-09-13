@@ -964,6 +964,10 @@ const GleapTours = function () {
             const activeIndex = getState("activeIndex");
             const activeStep = getState("__activeStep");
             const activeElement = getState("__activeElement");
+            
+            if (activeStep.mode === "CLICK") {
+                return;
+            }
             if (typeof activeIndex === "undefined" || typeof activeStep === "undefined") {
                 return;
             }
@@ -989,6 +993,10 @@ const GleapTours = function () {
             const activeIndex = getState("activeIndex");
             const activeStep = getState("__activeStep");
             const activeElement = getState("__activeElement");
+
+            if (activeStep.mode === "CLICK") {
+                return;
+            }
             if (typeof activeIndex === "undefined" || typeof activeStep === "undefined") {
                 return;
             }

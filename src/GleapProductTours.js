@@ -74,6 +74,7 @@ export default class GleapProductTours {
 
             var driverStep = {
                 disableActiveInteraction: disableInteraction,
+                mode: step.mode,
                 popover: {
                     description: message,
                     popoverClass: `gleap-tour-popover-${step.type} ${!hasSender && 'gleap-tour-popover-no-sender'} ${config.allowClose && 'gleap-tour-popover-can-close'}`,
@@ -103,6 +104,11 @@ export default class GleapProductTours {
                 const stepIndex = gleapTourObj.getActiveIndex();
                 const step = steps[stepIndex];
                 const element = gleapTourObj.getActiveElement();
+
+                if (step?.mode === "CLICK" && evnt?.target !== element) {
+                    // Ignore clicks outside of the actual element.
+                    return;
+                }
 
                 if ((element && element.tagName === 'INPUT') || step.mode === "INPUT" || evnt?.target?.id.includes("tooltip-svg")) {
                     // Prevent.
