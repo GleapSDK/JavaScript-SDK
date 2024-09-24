@@ -12,12 +12,12 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       var MAX_HEIGHT = maxHeight;
 
       // Adjust max width / height based on image props
-      if (maxWidth > img.width / 4) {
-        MAX_WIDTH = img.width / 4;
+      if (maxWidth > img.width / 1.5) {
+        MAX_WIDTH = img.width / 1.5;
       }
 
-      if (maxHeight > img.height / 4) {
-        MAX_HEIGHT = img.height / 4;
+      if (maxHeight > img.height / 1.5) {
+        MAX_HEIGHT = img.height / 1.5;
       }
 
       var width = img.width;
@@ -38,7 +38,7 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       canvas.height = height;
       var ctx = canvas.getContext("2d");
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       if (isJPEG) {
         resolve(canvas.toDataURL("image/jpeg", 0.7));
       } else {
@@ -79,21 +79,31 @@ export const truncateString = (str, num) => {
   } else {
     return str;
   }
-}
+};
 
 const removeSubDomain = (v) => {
   try {
-    var parts = v.split('.');
+    var parts = v.split(".");
     var is2ndLevelDomain = false;
     const secondLevel = parts[parts.length - 2];
-    if (secondLevel === "co" || secondLevel === "com" || secondLevel === "gv" || secondLevel === "ac" || secondLevel === "edu" || secondLevel === "gov" || secondLevel === "mil" || secondLevel === "net" || secondLevel === "org") {
+    if (
+      secondLevel === "co" ||
+      secondLevel === "com" ||
+      secondLevel === "gv" ||
+      secondLevel === "ac" ||
+      secondLevel === "edu" ||
+      secondLevel === "gov" ||
+      secondLevel === "mil" ||
+      secondLevel === "net" ||
+      secondLevel === "org"
+    ) {
       is2ndLevelDomain = true;
     }
     parts = parts.slice(is2ndLevelDomain ? -3 : -2);
-    return parts.join('.');
-  } catch (exp) { }
+    return parts.join(".");
+  } catch (exp) {}
   return v;
-}
+};
 
 export const loadFromGleapCache = (key) => {
   try {
@@ -102,7 +112,7 @@ export const loadFromGleapCache = (key) => {
       const config = JSON.parse(cachedData);
       return config;
     }
-  } catch (exp) { }
+  } catch (exp) {}
   return null;
 };
 
@@ -111,7 +121,7 @@ export const saveToGleapCache = (key, data) => {
   if (data) {
     try {
       localStorage.setItem(k, JSON.stringify(data));
-    } catch (exp) { }
+    } catch (exp) {}
   } else {
     localStorage.removeItem(k);
   }
@@ -122,36 +132,40 @@ export const setGleapCookie = (name, value, days) => {
     var expires = "";
     if (days) {
       var date = new Date();
-      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
       expires = "; expires=" + date.toUTCString();
     }
     const host = removeSubDomain(window.location.host.split(":")[0]);
-    document.cookie = name + "=" + (value || "") + expires + "; path=/; domain=" + host;
-  } catch (exp) { }
-}
+    document.cookie =
+      name + "=" + (value || "") + expires + "; path=/; domain=" + host;
+  } catch (exp) {}
+};
 
 export const getGleapCookie = (name) => {
   try {
     var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
+    var ca = document.cookie.split(";");
     for (var i = 0; i < ca.length; i++) {
       var c = ca[i];
-      while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+      while (c.charAt(0) == " ") c = c.substring(1, c.length);
       if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
-  } catch (exp) { }
+  } catch (exp) {}
   return null;
-}
+};
 
 export const eraseGleapCookie = (name) => {
   try {
     const host = removeSubDomain(window.location.host.split(":")[0]);
-    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + host;
-  } catch (exp) { }
-}
+    document.cookie =
+      name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=" + host;
+  } catch (exp) {}
+};
 
 export const getDOMElementDescription = (element, html = true) => {
-  var innerText = truncateString(element.innerText || '', 40).replace(/(\r\n|\n|\r)/gm, "").replace(/ +(?= )/g, '');
+  var innerText = truncateString(element.innerText || "", 40)
+    .replace(/(\r\n|\n|\r)/gm, "")
+    .replace(/ +(?= )/g, "");
   var elementId = "";
   var elementClass = "";
   if (typeof element.getAttribute !== "undefined") {
@@ -164,7 +178,7 @@ export const getDOMElementDescription = (element, html = true) => {
       elementClass = ` class="${elemClass}"`;
     }
   }
-  const elementTag = (element.tagName || '').toLowerCase();
+  const elementTag = (element.tagName || "").toLowerCase();
 
   var htmlPre = "<";
   var htmlPost = ">";
@@ -174,7 +188,7 @@ export const getDOMElementDescription = (element, html = true) => {
   }
 
   return `${htmlPre}${elementTag}${elementId}${elementClass}${htmlPost}${innerText}${htmlPre}/${elementTag}${htmlPost}`;
-}
+};
 
 export const runFunctionWhenDomIsReady = (callback) => {
   if (
@@ -188,4 +202,4 @@ export const runFunctionWhenDomIsReady = (callback) => {
       callback();
     });
   }
-}
+};

@@ -351,13 +351,13 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
   }
 };
 
-const deepClone = (host) => {
+const deepClone = async (host) => {
   let shadowNodeId = 1;
 
   const cloneNode = async (node, parent, shadowRoot) => {
-    const walkTree = (nextn, nextp, innerShadowRoot) => {
+    const walkTree = async (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
-        cloneNode(nextn, nextp, innerShadowRoot);
+        await cloneNode(nextn, nextp, innerShadowRoot);
         nextn = nextn.nextSibling;
       }
     };
@@ -372,8 +372,8 @@ const deepClone = (host) => {
       if (node instanceof HTMLCanvasElement) {
         try {
           const boundingRect = node.getBoundingClientRect();
-          const resizedImage = await resizeImage(node.toDataURL(), 900, 900);
-          
+          const resizedImage = await resizeImage(node.toDataURL(), 1400, 1400);
+
           clone.setAttribute("bb-canvas-data", resizedImage);
           clone.setAttribute("bb-canvas-height", boundingRect.height);
           clone.setAttribute("bb-canvas-width", boundingRect.width);
@@ -432,7 +432,7 @@ const deepClone = (host) => {
     if (node.shadowRoot) {
       var rootShadowNodeId = shadowNodeId;
       shadowNodeId++;
-      walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
+      await walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
       handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
       if (typeof clone.setAttribute !== "undefined") {
@@ -440,11 +440,11 @@ const deepClone = (host) => {
       }
     }
 
-    walkTree(node.firstChild, clone);
+    await walkTree(node.firstChild, clone);
   };
 
   const fragment = document.createDocumentFragment();
-  cloneNode(host, fragment);
+  await cloneNode(host, fragment);
 
   // Work on adopted stylesheets.
   var clonedHead = fragment.querySelector("head");
@@ -457,13 +457,13 @@ const deepClone = (host) => {
 };
 
 const prepareScreenshotData = (remote) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     const styleTags = window.document.querySelectorAll("style, link");
     for (var i = 0; i < styleTags.length; ++i) {
       styleTags[i].setAttribute("bb-styleid", i);
     }
 
-    const clone = deepClone(window.document.documentElement);
+    const clone = await deepClone(window.document.documentElement);
 
     // Fix for web imports (depracted).
     const linkImportElems = clone.querySelectorAll("link[rel=import]");
