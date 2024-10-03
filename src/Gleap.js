@@ -1102,10 +1102,15 @@ class Gleap {
   performActions(actions) {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
+
       if (action && action.actionType) {
         if (action.actionType === "notification") {
-          if (!this.disableInAppNotifications) {
-            Gleap.showNotification(action);
+          if (action?.data?.checklist?.popupType === "widget") {
+            Gleap.openChecklist(action.data.checklist.id, true);
+          } else {
+            if (!this.disableInAppNotifications) {
+              Gleap.showNotification(action);
+            }
           }
         } else if (action.actionType === "banner") {
           Gleap.showBanner(action);

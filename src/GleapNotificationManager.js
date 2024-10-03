@@ -141,11 +141,11 @@ export default class GleapNotificationManager {
       const elem = document.createElement("div");
       elem.onclick = () => {
         if (notification.data.conversation) {
-          Gleap.openConversation(notification.data.conversation.shareToken);
+          Gleap.openConversation(notification.data.conversation.shareToken, true);
         } else if (notification.data.news) {
-          Gleap.openNewsArticle(notification.data.news.id);
+          Gleap.openNewsArticle(notification.data.news.id, true);
         } else if (notification.data.checklist) {
-          Gleap.openChecklist(notification.data.checklist.id);
+          Gleap.openChecklist(notification.data.checklist.id, true);
         } else {
           Gleap.open();
         }
