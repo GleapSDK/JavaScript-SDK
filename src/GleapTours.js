@@ -224,8 +224,18 @@ const GleapTours = function () {
     }
     function highlight(step, attemptTime = 2000) {
         const { element } = step;
-        let elemObj = typeof element === "string" ? document.querySelector(element) : element;
-
+        let elemObj = element;
+        if (typeof elemObj === "string") {
+            try {
+                elemObj = document.querySelector(element);
+            } catch (error) {
+                // This will escape colons within IDs but not affect pseudo-classes or other valid uses of colons
+                let refactoredElement = element.replace(/(#[^#\s]+)/g, function(match) {
+                    return match.replace(/:/g, '\\:');
+                });
+                elemObj = document.querySelector(refactoredElement);
+            }            
+        }
         if (element && !elemObj && attemptTime >= 0) {
             setTimeout(() => {
                 hidePopover();

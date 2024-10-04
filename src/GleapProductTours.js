@@ -106,8 +106,12 @@ export default class GleapProductTours {
                 const element = gleapTourObj.getActiveElement();
 
                 if (step?.mode === "CLICK" && evnt?.target !== element) {
-                    // Ignore clicks outside of the actual element.
-                    return;
+                    const isInsideElement = element.contains(evnt?.target);
+
+                    if (!isInsideElement) {
+                        // Ignore clicks outside of the actual element.
+                        return;
+                    }
                 }
 
                 if ((element && element.tagName === 'INPUT') || step.mode === "INPUT" || evnt?.target?.id.includes("tooltip-svg")) {
