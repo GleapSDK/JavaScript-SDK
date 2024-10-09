@@ -351,6 +351,30 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
   }
 };
 
+const extractFinalCSSState = (element) => {
+  if (element && typeof element.getAnimations === "function") {
+    const animations = element.getAnimations();
+    const finalCSSState = {};
+
+    animations.forEach((animation) => {
+      const keyframes = animation.effect?.getKeyframes() || [];
+      const finalKeyframe = keyframes[keyframes.length - 1] || {};
+
+      // Extract only the keys (CSS properties) from the final keyframe
+      Object.keys(finalKeyframe).forEach((property) => {
+        if (property !== 'offset') {
+          // Store the computed style for each animated property
+          finalCSSState[property] = getComputedStyle(element)[property];
+        }
+      });
+    });
+
+    return JSON.stringify(finalCSSState);
+  }
+
+  return null;
+};
+
 const deepClone = async (host) => {
   let shadowNodeId = 1;
 
@@ -363,6 +387,11 @@ const deepClone = async (host) => {
     };
 
     const clone = node.cloneNode();
+
+    const webAnimations = extractFinalCSSState(node);
+    if (webAnimations != null) {
+      clone.setAttribute("bb-web-animations", webAnimations);
+    }
 
     if (typeof clone.setAttribute !== "undefined") {
       if (shadowRoot) {
