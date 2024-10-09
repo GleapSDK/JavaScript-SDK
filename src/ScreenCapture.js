@@ -362,12 +362,16 @@ const extractFinalCSSState = (element) => {
 
       // Extract only the keys (CSS properties) from the final keyframe
       Object.keys(finalKeyframe).forEach((property) => {
-        if (property !== 'offset') {
+        if (property !== "offset") {
           // Store the computed style for each animated property
           finalCSSState[property] = getComputedStyle(element)[property];
         }
       });
     });
+
+    if (Object.keys(finalCSSState).length === 0) {
+      return null;
+    }
 
     return JSON.stringify(finalCSSState);
   }
