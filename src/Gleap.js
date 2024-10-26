@@ -574,7 +574,7 @@ class Gleap {
   static setLanguage(language) {
     GleapTranslationManager.getInstance().setOverrideLanguage(language);
 
-    if (Gleap.getInstance().initialized) {
+    /*if (Gleap.getInstance().initialized) {
       setTimeout(() => {
         Gleap.getInstance().softReInitialize();
 
@@ -583,7 +583,7 @@ class Gleap {
           lang: language,
         });
       }, 1000);
-    }
+    }*/
   }
 
   /**
