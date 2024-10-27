@@ -280,7 +280,7 @@ export default class GleapSession {
       }
     } catch (exp) {}
 
-    return checkIfSessionDataNeedsUpdate(userData);
+    return this.checkIfSessionDataNeedsUpdate(userData);
   };
 
   checkIfSessionDataNeedsUpdate = (userData) => {
