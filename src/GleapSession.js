@@ -1,5 +1,18 @@
-import { GleapEventManager, GleapTranslationManager, GleapFrameManager, GleapNotificationManager, GleapStreamedEvent, GleapBannerManager } from "./Gleap";
-import { eraseGleapCookie, getGleapCookie, loadFromGleapCache, saveToGleapCache, setGleapCookie } from "./GleapHelper";
+import {
+  GleapEventManager,
+  GleapTranslationManager,
+  GleapFrameManager,
+  GleapNotificationManager,
+  GleapStreamedEvent,
+  GleapBannerManager,
+} from "./Gleap";
+import {
+  eraseGleapCookie,
+  getGleapCookie,
+  loadFromGleapCache,
+  saveToGleapCache,
+  setGleapCookie,
+} from "./GleapHelper";
 import GleapTooltipManager from "./GleapTooltipManager";
 
 export default class GleapSession {
@@ -15,7 +28,7 @@ export default class GleapSession {
     email: "",
     userId: "",
     phone: "",
-    value: 0
+    value: 0,
   };
   ready = false;
   onSessionReadyListener = [];
@@ -37,7 +50,13 @@ export default class GleapSession {
    */
   getName() {
     try {
-      return this.session.name ? this.session.name.split(' ')[0].split('@')[0].split('.')[0].split('+')[0] : "";
+      return this.session.name
+        ? this.session.name
+            .split(" ")[0]
+            .split("@")[0]
+            .split(".")[0]
+            .split("+")[0]
+        : "";
     } catch (exp) {
       return this.session.name;
     }
@@ -45,7 +64,7 @@ export default class GleapSession {
 
   /**
    * Returns the Gleap session object.
-   * @returns 
+   * @returns
    */
   getSession() {
     return this.session;
@@ -53,7 +72,7 @@ export default class GleapSession {
 
   /**
    * Returns the Gleap session object.
-   * @returns 
+   * @returns
    */
   getGleapId() {
     if (this.session && this.session.gleapId) {
@@ -74,7 +93,7 @@ export default class GleapSession {
     return false;
   }
 
-  constructor() { }
+  constructor() {}
 
   setOnSessionReady = (onSessionReady) => {
     if (this.ready) {
@@ -94,17 +113,20 @@ export default class GleapSession {
 
   clearSession = (attemp = 0, retry = true) => {
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+      GleapEventManager.notifyEvent(
+        "unregister-pushmessage-group",
+        `gleapuser-${this.session.gleapHash}`
+      );
     }
 
     try {
       saveToGleapCache(`session-${this.sdkKey}`, null);
-    } catch (exp) { }
+    } catch (exp) {}
 
     if (this.useCookies) {
       try {
         eraseGleapCookie(`session-${this.sdkKey}`);
-      } catch (exp) { }
+      } catch (exp) {}
     }
 
     this.ready = false;
@@ -115,12 +137,15 @@ export default class GleapSession {
       email: "",
       userId: "",
       phone: "",
-      value: 0
+      value: 0,
     };
 
-    GleapFrameManager.getInstance().sendMessage({
-      name: "session-cleared"
-    }, true);
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "session-cleared",
+      },
+      true
+    );
     GleapNotificationManager.getInstance().clearAllNotifications(false);
     GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapBannerManager.getInstance().removeBannerUI();
@@ -128,7 +153,7 @@ export default class GleapSession {
     if (retry) {
       if (!isNaN(attemp)) {
         // Exponentially retry to renew session.
-        const newTimeout = (Math.pow(attemp, 2) * 10);
+        const newTimeout = Math.pow(attemp, 2) * 10;
         setTimeout(() => {
           this.startSession(attemp + 1);
         }, newTimeout * 1000);
@@ -143,12 +168,19 @@ export default class GleapSession {
 
     // Unregister previous group.
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent("unregister-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+      GleapEventManager.notifyEvent(
+        "unregister-pushmessage-group",
+        `gleapuser-${this.session.gleapHash}`
+      );
     }
 
     saveToGleapCache(`session-${this.sdkKey}`, session);
     if (this.useCookies) {
-      setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
+      setGleapCookie(
+        `session-${this.sdkKey}`,
+        encodeURIComponent(JSON.stringify(session)),
+        365
+      );
     }
 
     this.session = session;
@@ -156,7 +188,10 @@ export default class GleapSession {
 
     // Register new push group.
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent("register-pushmessage-group", `gleapuser-${this.session.gleapHash}`);
+      GleapEventManager.notifyEvent(
+        "register-pushmessage-group",
+        `gleapuser-${this.session.gleapHash}`
+      );
     }
 
     this.notifySessionReady();
@@ -172,10 +207,12 @@ export default class GleapSession {
           this.validateSession(sessionData);
         }
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
     // Try to load session from local storage, if not already loaded.
-    if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
+    if (
+      !(this.session && this.session.gleapId && this.session.gleapId.length > 0)
+    ) {
       const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
       if (cachedSession) {
         this.validateSession(cachedSession);
@@ -192,7 +229,7 @@ export default class GleapSession {
         http.setRequestHeader("Gleap-Id", this.session.gleapId);
         http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
       }
-    } catch (exp) { }
+    } catch (exp) {}
     http.onreadystatechange = function (e) {
       if (http.readyState === 4) {
         if (http.status === 200 || http.status === 201) {
@@ -205,7 +242,7 @@ export default class GleapSession {
 
             // Load tooltips.
             GleapTooltipManager.getInstance().load();
-          } catch (exp) { }
+          } catch (exp) {}
         } else {
           if (http.status !== 429) {
             self.clearSession(attemp, true);
@@ -213,9 +250,11 @@ export default class GleapSession {
         }
       }
     };
-    http.send(JSON.stringify({
-      lang: GleapTranslationManager.getInstance().getActiveLanguage(),
-    }));
+    http.send(
+      JSON.stringify({
+        lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+      })
+    );
   };
 
   notifySessionReady() {
@@ -239,15 +278,28 @@ export default class GleapSession {
       if (this.session.userId.toString() !== userId.toString()) {
         return true;
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
+    return checkIfSessionDataNeedsUpdate(userData);
+  };
+
+  checkIfSessionDataNeedsUpdate = (userData) => {
     if (userData) {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
         var userDataKey = userDataKeys[i];
-        if (JSON.stringify(this.session[userDataKey]) !== JSON.stringify(userData[userDataKey])) {
+        if (
+          JSON.stringify(this.session[userDataKey]) !==
+          JSON.stringify(userData[userDataKey])
+        ) {
           // Check custom data for a match.
-          if (!(this.session.customData && JSON.stringify(this.session.customData[userDataKey]) === JSON.stringify(userData[userDataKey]))) {
+          if (
+            !(
+              this.session.customData &&
+              JSON.stringify(this.session.customData[userDataKey]) ===
+                JSON.stringify(userData[userDataKey])
+            )
+          ) {
             return true;
           }
         }
@@ -258,6 +310,12 @@ export default class GleapSession {
   };
 
   updateSession = (userData) => {
+    // Check if session needs update.
+    const sessionNeedsUpdate = this.checkIfSessionDataNeedsUpdate(userData);
+    if (!sessionNeedsUpdate) {
+      return;
+    }
+
     const self = this;
     return new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
@@ -273,7 +331,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader("Gleap-Id", self.session.gleapId);
           http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
-        } catch (exp) { }
+        } catch (exp) {}
 
         http.onerror = () => {
           reject();
@@ -300,7 +358,7 @@ export default class GleapSession {
               ...userData,
               lang: GleapTranslationManager.getInstance().getActiveLanguage(),
             },
-            type: 'js',
+            type: "js",
             sdkVersion: SDK_VERSION,
             ws: true,
           })
@@ -330,7 +388,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader("Gleap-Id", self.session.gleapId);
           http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
-        } catch (exp) { }
+        } catch (exp) {}
 
         http.onerror = () => {
           reject();
@@ -358,15 +416,15 @@ export default class GleapSession {
         };
 
         var dataToSend = {
-          ...userData
+          ...userData,
         };
 
         if (userData.customData) {
-          delete dataToSend['customData'];
+          delete dataToSend["customData"];
           dataToSend = {
             ...dataToSend,
             ...userData.customData,
-          }
+          };
         }
 
         http.send(
@@ -396,7 +454,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader("Gleap-Id", self.session.gleapId);
           http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
-        } catch (exp) { }
+        } catch (exp) {}
 
         http.onerror = () => {
           reject();
@@ -417,9 +475,11 @@ export default class GleapSession {
             }
           }
         };
-        http.send(JSON.stringify({
-          outboundId: tourId
-        }));
+        http.send(
+          JSON.stringify({
+            outboundId: tourId,
+          })
+        );
       });
     });
   };
