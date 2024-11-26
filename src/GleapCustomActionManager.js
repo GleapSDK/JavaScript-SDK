@@ -23,7 +23,7 @@ export default class GleapCustomActionManager {
   /**
    * Triggers a custom action
    */
-  static triggerCustomAction(name) {
+  static triggerCustomAction(name, data) {
     const instance = this.getInstance();
     if (instance.customActionCallbacks) {
       for (var i = 0; i < instance.customActionCallbacks.length; i++) {
@@ -31,6 +31,7 @@ export default class GleapCustomActionManager {
         if (callback) {
           callback({
             name,
+            ...(data ? data : {}),
           });
         }
       }

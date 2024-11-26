@@ -561,7 +561,9 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "run-custom-action") {
-        GleapCustomActionManager.triggerCustomAction(data.data);
+        GleapCustomActionManager.triggerCustomAction(data.data, {
+          shareToken: data.shareToken,
+        });
       }
 
       if (data.name === "close-widget") {

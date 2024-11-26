@@ -98,7 +98,7 @@ export const injectStyledCSS = (
       right: ${buttonX}px;
       bottom: ${61 + buttonY}px;
       width: calc(100% - 40px);
-      max-width: 400px;
+      max-width: 410px;
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
