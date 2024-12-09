@@ -863,7 +863,7 @@ const GleapTours = function () {
         wrapper.classList.add("gleap-tour-popover");
         const arrow = document.createElement("div");
         arrow.classList.add("gleap-tour-popover-arrow");
-        const title = document.createElement("header");
+        const title = document.createElement("div");
         title.id = "gleap-tour-popover-title";
         title.classList.add("gleap-tour-popover-title");
         title.style.display = "none";
@@ -878,7 +878,7 @@ const GleapTours = function () {
         closeButton.classList.add("gleap-tour-popover-close-btn");
         closeButton.setAttribute("aria-label", "Close");
         closeButton.innerHTML = "&times;";
-        const footer = document.createElement("footer");
+        const footer = document.createElement("div");
         footer.classList.add("gleap-tour-popover-footer");
         const progress = document.createElement("span");
         progress.classList.add("gleap-tour-popover-progress-text");
