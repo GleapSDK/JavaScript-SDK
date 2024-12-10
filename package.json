@@ -1,6 +1,6 @@
 {
   "name": "gleap",
-  "version": "14.0.10",
+  "version": "14.1.0",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.mjs",
   "exports": {

@@ -517,6 +517,21 @@ class Gleap {
   }
 
   /**
+   * This method is used to unset ticket attributes programmatically.
+   * @param {*} key The key of the attribute you want to unset.
+   */
+  static unsetTicketAttribute(key) {
+    GleapCustomDataManager.getInstance().unsetTicketAttribute(key);
+  }
+
+  /**
+   * This method is used to clear ticket attributes programmatically.
+   */
+  static clearTicketAttributes() {
+    GleapCustomDataManager.getInstance().clearTicketAttributes();
+  }
+
+  /**
    * Set custom data that will be attached to the bug-report.
    * @param {*} data
    */

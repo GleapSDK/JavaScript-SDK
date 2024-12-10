@@ -65,6 +65,21 @@ export default class GleapCustomDataManager {
     this.ticketAttributes[key] = value;
   }
 
+  /**
+   * This method is used to unset ticket attributes programmatically.
+   * @param {*} key The key of the attribute you want to unset.
+   */
+  unsetTicketAttribute(key) {
+    delete this.ticketAttributes[key];
+  }
+
+  /**
+   * This method is used to clear ticket attributes programmatically.
+   */
+  clearTicketAttributes() {
+    this.ticketAttributes = {};
+  }
+
   getTicketAttributes() {
     return this.ticketAttributes;
   }

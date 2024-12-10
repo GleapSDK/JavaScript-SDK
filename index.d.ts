@@ -38,6 +38,8 @@ export namespace Gleap {
   function startConversation(showBackButton?: boolean): void;
   function attachCustomData(customData: any): void;
   function setTicketAttribute(key: string, value: string): void;
+  function unsetTicketAttribute(key: string): void;
+  function clearTicketAttributes(): void;
   function setCustomData(key: string, value: string): void;
   function removeCustomData(key: string): void;
   function clearCustomData(): void;
