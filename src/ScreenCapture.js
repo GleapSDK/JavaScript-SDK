@@ -386,7 +386,16 @@ const deepClone = async (host) => {
     const walkTree = async (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
         await cloneNode(nextn, nextp, innerShadowRoot);
-        nextn = nextn.nextSibling;
+
+        // Fix missing element nodes.
+        if (
+          nextn.nextElementSibling &&
+          nextn.nextElementSibling.nextSibling === nextn.nextSibling
+        ) {
+          nextn = nextn.nextElementSibling;
+        } else {
+          nextn = nextn.nextSibling;
+        }
       }
     };
 
