@@ -73,7 +73,7 @@ const loadCSSUrlResources = (data, basePath, remote) => {
         try {
           var resourcePath = matchedUrl;
           if (basePath) {
-            resourcePath = basePath + "/" + matchedUrl;
+            resourcePath = new URL(matchedUrl, basePath + "/").href;
           }
 
           // Try to fetch external resource.
@@ -255,11 +255,14 @@ const downloadAllCSSUrlResources = (clone, remote) => {
         const baseTags = document.getElementsByTagName("base");
         var basePathURL = baseTags.length
           ? baseTags[0].href.substr(location.origin.length, 999)
-          : window.location.href;
+          : window.location.href.split(/[?#]/)[0];
+
         if (styleSheet.href) {
           basePathURL = styleSheet.href;
         }
+
         const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
+
         promises.push(
           loadCSSUrlResources(cssTextContent, basePath, remote).then(
             (replacedStyle) => {
