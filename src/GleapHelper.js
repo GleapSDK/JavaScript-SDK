@@ -203,3 +203,57 @@ export const runFunctionWhenDomIsReady = (callback) => {
     });
   }
 };
+
+export const fixGleapHeight = () => {
+  try {
+    if (
+      "visualViewport" in window &&
+      /iPad|iPhone|iPod/.test(navigator.userAgent)
+    ) {
+      let initialHeight = window.innerHeight;
+      let initialWidth = window.innerWidth;
+
+      function updateContainerHeight() {
+        try {
+          const gleapFrameContainer = document.querySelector(
+            ".gleap-frame-container-inner iframe"
+          );
+
+          if (!gleapFrameContainer) {
+            return;
+          }
+
+          // Check if the keyboard is open
+          if (window.visualViewport.height < initialHeight) {
+            gleapFrameContainer.style.setProperty(
+              "max-height",
+              window.visualViewport.height + "px",
+              "important"
+            );
+          } else {
+            // Remove the padding bottom
+            gleapFrameContainer.style.removeProperty("max-height");
+          }
+        } catch (error) {}
+      }
+
+      function handleOrientationChange() {
+        try {
+          // Update initial dimensions
+          initialHeight = window.innerHeight;
+          initialWidth = window.innerWidth;
+          updateContainerHeight();
+        } catch (error) {}
+      }
+
+      // Update on resize (keyboard show/hide and viewport resize)
+      window.visualViewport.addEventListener("resize", updateContainerHeight);
+
+      // Handle orientation changes
+      window.addEventListener("orientationchange", handleOrientationChange);
+
+      // Update initially
+      updateContainerHeight();
+    }
+  } catch (error) {}
+};

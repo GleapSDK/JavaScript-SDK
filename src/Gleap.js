@@ -1,6 +1,10 @@
 import { injectStyledCSS } from "./UI";
 import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
-import { gleapDataParser, runFunctionWhenDomIsReady } from "./GleapHelper";
+import {
+  fixGleapHeight,
+  gleapDataParser,
+  runFunctionWhenDomIsReady,
+} from "./GleapHelper";
 import GleapSession from "./GleapSession";
 import GleapStreamedEvent from "./GleapStreamedEvent";
 import GleapConfigManager from "./GleapConfigManager";
@@ -176,7 +180,12 @@ class Gleap {
       console.warn("Gleap already initialized.");
       return;
     }
+
     instance.initialized = true;
+
+    try {
+      fixGleapHeight();
+    } catch (error) {}
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
