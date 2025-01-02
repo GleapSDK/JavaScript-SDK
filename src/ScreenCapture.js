@@ -394,7 +394,7 @@ const deepClone = async (host) => {
         if (
           nextn.nextElementSibling &&
           (nextn.nextElementSibling.nextSibling === nextn.nextSibling ||
-            nextn.nextElementSibling.nextSibling === null)
+            nextn.nextSibling === null)
         ) {
           nextn = nextn.nextElementSibling;
         } else {
