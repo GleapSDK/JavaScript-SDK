@@ -393,7 +393,8 @@ const deepClone = async (host) => {
         // Fix missing element nodes.
         if (
           nextn.nextElementSibling &&
-          nextn.nextElementSibling.nextSibling === nextn.nextSibling
+          (nextn.nextElementSibling.nextSibling === nextn.nextSibling ||
+            nextn.nextElementSibling.nextSibling === null)
         ) {
           nextn = nextn.nextElementSibling;
         } else {
