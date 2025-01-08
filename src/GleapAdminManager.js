@@ -288,7 +288,7 @@ export default class GleapAdminManager {
     // Inject widget HTML.
     var elem = document.createElement("div");
     elem.className = "gleap-admin-frame-container";
-    elem.innerHTML = `<iframe src="http://localhost:3000/${
+    elem.innerHTML = `<iframe src="https://app.gleap.io/${
       this?.configData?.type === "tooltips"
         ? "tooltipbuilder"
         : "producttourbuilder"
