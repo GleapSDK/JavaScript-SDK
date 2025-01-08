@@ -113,6 +113,10 @@ export const injectStyledCSS = (
       transition: max-width 0.3s ease-out;
     }
 
+    .gleap-admin-highlight {
+      box-shadow: 0px 0px 0px 4px red;
+    }
+
     :root {
       --gleap-margin-top: 50px;
     }
@@ -1818,6 +1822,29 @@ export const injectStyledCSS = (
       max-height: calc(80vh - 100px) !important;
       overflow-y: auto;
       min-width: 270px;
+    }
+
+    .gleap-tour-message::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .gleap-tour-message::-webkit-scrollbar-track {
+      border-radius: 0px;
+    }
+    
+    .gleap-tour-message::-webkit-scrollbar-thumb {
+      background: ${hoverHoverColor}; 
+      border-radius: 5px;
+    }
+
+    .gleap-tour-message::-webkit-scrollbar-thumb:hover {
+      background: ${subTextColor};
+    }
+
+    @media only screen and (max-width: 450px) {
+      .gleap-tour-message {
+        min-width: auto !important;
+      }
     }
 
     .gleap-tour-message iframe {

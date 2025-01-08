@@ -28,7 +28,7 @@ import Gleap from 'gleap';
 
 ### Initialize the SDK
 
-Add the following code to initialize the Gleap JavaScript SDK. Replace "SDK-TOKEN" with your actual SDK token from the [Gleap dashboard](https://app.gleap.io).
+Add the following code to initialize the Gleap JavaScript SDK. Replace "SDK-TOKEN" with your actual SDK token from the [Gleap dashboard](http://localhost:3000).
 
 ```
 Gleap.initialize("SDK-TOKEN");

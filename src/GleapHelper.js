@@ -211,7 +211,6 @@ export const fixGleapHeight = () => {
       /iPad|iPhone|iPod/.test(navigator.userAgent)
     ) {
       let initialHeight = window.innerHeight;
-      let initialWidth = window.innerWidth;
 
       function updateContainerHeight() {
         try {
@@ -241,7 +240,6 @@ export const fixGleapHeight = () => {
         try {
           // Update initial dimensions
           initialHeight = window.innerHeight;
-          initialWidth = window.innerWidth;
           updateContainerHeight();
         } catch (error) {}
       }

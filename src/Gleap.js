@@ -205,6 +205,9 @@ class Gleap {
               // Inject the notification container
               GleapNotificationManager.getInstance().injectNotificationUI();
 
+              // Check for uncompleted tour.
+              Gleap.checkForUncompletedTour();
+
               // Check for URL params.
               Gleap.checkForUrlParams();
 
@@ -231,6 +234,15 @@ class Gleap {
       const widget = urlParams.get("gleap_widget");
       if (widget && widget.length > 0) {
         Gleap.open();
+      }
+
+      const conversationFlow = urlParams.get("gleap_conversation");
+      if (conversationFlow && conversationFlow.length > 0) {
+        if (conversationFlow === "true") {
+          Gleap.startConversation(true);
+        } else {
+          Gleap.startBot(conversationFlow, true);
+        }
       }
 
       const feedbackFlow = urlParams.get("gleap_feedback");
@@ -1157,15 +1169,18 @@ class Gleap {
       .catch((error) => {});
   }
 
-  static startProductTourWithConfig(tourId, config) {
-    GleapProductTours.getInstance().startWithConfig(tourId, config, (data) => {
-      const comData = {
-        tourId: data.tourId,
-      };
+  static checkForUncompletedTour() {
+    const tourData = GleapProductTours.getInstance().loadUncompletedTour();
+    if (tourData) {
+      GleapProductTours.getInstance().startWithConfig(
+        tourData.tourId,
+        tourData.tourData
+      );
+    }
+  }
 
-      GleapEventManager.notifyEvent("productTourCompleted", comData);
-      Gleap.trackEvent(`tour-${data.tourId}-completed`, comData);
-    });
+  static startProductTourWithConfig(tourId, config) {
+    GleapProductTours.getInstance().startWithConfig(tourId, config);
   }
 
   static showBanner(data) {
@@ -1289,6 +1304,7 @@ export {
   GleapFrameManager,
   GleapMetaDataManager,
   GleapTagManager,
+  GleapProductTours,
   handleGleapLink,
 };
 export default Gleap;

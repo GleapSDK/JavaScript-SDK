@@ -1,11 +1,16 @@
 import { loadIcon } from "./UI";
 import GleapTours from "./GleapTours";
+import Gleap, { GleapEventManager } from "./Gleap";
+
+const localStorageKey = "gleap-tour-data";
 
 export default class GleapProductTours {
   productTourData = undefined;
   productTourId = undefined;
-  onCompletion = undefined;
   unmuted = false;
+  currentActiveIndex = undefined;
+  gleapTourObj = undefined;
+  disabled = false;
 
   // GleapReplayRecorder singleton
   static instance;
@@ -18,14 +23,77 @@ export default class GleapProductTours {
     }
   }
 
-  constructor() {}
+  disable() {
+    if (this.gleapTourObj) {
+      this.gleapTourObj.destroy();
+    }
 
-  startWithConfig(tourId, config, onCompletion) {
+    this.gleapTourObj = undefined;
+    this.disabled = true;
+  }
+
+  constructor() {
+    const self = this;
+
+    const beforeUnloadListener = (event) => {
+      self.storeUncompletedTour();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("beforeunload", beforeUnloadListener);
+    }
+  }
+
+  startWithConfig(tourId, config) {
+    // Prevent multiple tours from being started.
+    if (this.productTourId || this.disabled) {
+      return;
+    }
+
     this.productTourId = tourId;
     this.productTourData = config;
-    this.onCompletion = onCompletion;
+    this.currentActiveIndex = 0;
 
     return this.start();
+  }
+
+  loadUncompletedTour() {
+    try {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      if (data?.tourData && data?.tourId) {
+        return data;
+      }
+    } catch (e) {}
+
+    return null;
+  }
+
+  storeUncompletedTour() {
+    if (this.productTourId && this.productTourData) {
+      try {
+        let data = JSON.parse(
+          JSON.stringify({
+            tourData: this.productTourData,
+            tourId: this.productTourId,
+          })
+        );
+
+        data.tourData.steps = data.tourData.steps.slice(
+          this.currentActiveIndex || 0,
+          data.tourData.steps.length
+        );
+
+        localStorage.setItem(localStorageKey, JSON.stringify(data));
+      } catch (e) {}
+    } else {
+      this.clearUncompletedTour();
+    }
+  }
+
+  clearUncompletedTour() {
+    try {
+      localStorage.removeItem(localStorageKey);
+    } catch (e) {}
   }
 
   start() {
@@ -105,18 +173,21 @@ export default class GleapProductTours {
       try {
         var gleapTourPopover = document.querySelector(".gleap-tour-popover");
         if (gleapTourPopover && !gleapTourPopover.contains(evnt.target)) {
-          const stepIndex = gleapTourObj.getActiveIndex();
+          const stepIndex = self.gleapTourObj.getActiveIndex();
           const step = steps[stepIndex];
-          const element = gleapTourObj.getActiveElement();
+          const element = self.gleapTourObj.getActiveElement();
 
           if (step?.mode === "CLICK" && evnt?.target !== element) {
             const isInsideElement = element.contains(evnt?.target);
-
             if (!isInsideElement) {
               // Ignore clicks outside of the actual element.
               return;
             }
           }
+
+          // Store next step index.
+          self.currentActiveIndex = (self.currentActiveIndex || 0) + 1;
+          self.storeUncompletedTour();
 
           if (
             (element && element.tagName === "INPUT") ||
@@ -125,14 +196,15 @@ export default class GleapProductTours {
           ) {
             // Prevent.
           } else {
-            gleapTourObj.moveNext();
+            self.gleapTourObj.moveNext();
           }
         }
       } catch (e) {}
     }
 
-    const gleapTourObj = GleapTours({
+    this.gleapTourObj = GleapTours({
       showProgress: true,
+      allowKeyboardControl: false,
       steps: driverSteps,
       showProgress: steps.length > 1,
       allowClose: config.allowClose,
@@ -140,17 +212,28 @@ export default class GleapProductTours {
       doneBtnText: config.doneText,
       prevBtnText: config.prevText,
       showButtons: buttons,
+      onHighlightStarted: (element, step, config) => {
+        this.currentActiveIndex = config?.state?.activeIndex;
+        this.storeUncompletedTour();
+      },
       onDestroyStarted: () => {
-        if (!gleapTourObj.hasNextStep()) {
-          gleapTourObj.destroy();
+        if (!this.gleapTourObj.hasNextStep()) {
+          this.gleapTourObj.destroy();
 
-          if (self.onCompletion) {
-            self.onCompletion({
-              tourId: self.productTourId,
-            });
-          }
+          const comData = {
+            tourId: self.productTourId,
+          };
+
+          GleapEventManager.notifyEvent("productTourCompleted", comData);
+          Gleap.trackEvent(`tour-${self.productTourId}-completed`, comData);
+
+          // Clear data.
+          self.productTourData = undefined;
+          self.productTourId = undefined;
+          self.currentActiveIndex = undefined;
+          self.clearUncompletedTour();
         } else {
-          gleapTourObj.destroy();
+          this.gleapTourObj.destroy();
         }
 
         document.removeEventListener("click", onDocumentClick);
@@ -164,10 +247,10 @@ export default class GleapProductTours {
 
           const performRequentialRefresh = () => {
             setTimeout(() => {
-              gleapTourObj.refresh();
+              this.gleapTourObj.refresh();
             }, 500);
             setTimeout(() => {
-              gleapTourObj.refresh();
+              this.gleapTourObj.refresh();
             }, 750);
           };
 
@@ -218,7 +301,6 @@ export default class GleapProductTours {
           });
 
           videoElement.addEventListener("play", function () {
-            console.log("Video started");
             playPauseContainer.classList.remove(
               "gleap-tour-video-svg--fullscreen"
             );
@@ -254,7 +336,7 @@ export default class GleapProductTours {
         }
       },
     });
-    gleapTourObj.drive();
+    this.gleapTourObj.drive();
 
     document.addEventListener("click", onDocumentClick);
   }

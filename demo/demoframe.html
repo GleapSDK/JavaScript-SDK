@@ -22,8 +22,6 @@
                 // Log the message data for demonstration purposes
                 const data = JSON.parse(event.data);
 
-                console.log(data);
-
                 // Respond with a 'pong' message
                 if (data.type === 'admin' && data.name === 'init') {
                     iframe.contentWindow.postMessage(JSON.stringify({

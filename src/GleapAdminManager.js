@@ -1,5 +1,6 @@
 import { loadIcon } from "./UI";
 import GleapAdminHelper from "./GleapAdminHelper";
+import { GleapProductTours } from "./Gleap";
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -32,7 +33,7 @@ export default class GleapAdminManager {
         name: "page-changed",
         data: {
           page: currentUrl,
-        }
+        },
       });
     }
   }
@@ -47,6 +48,9 @@ export default class GleapAdminManager {
   initAdminHelper() {
     const self = this;
 
+    // Disable product tours.
+    GleapProductTours.getInstance().disable();
+
     self.adminHelper = new GleapAdminHelper();
 
     try {
@@ -55,8 +59,8 @@ export default class GleapAdminManager {
         self.sendMessageToTourBuilder({
           name: "element-picked",
           data: {
-            selector
-          }
+            selector,
+          },
         });
       };
     } catch (e) {
@@ -95,12 +99,13 @@ export default class GleapAdminManager {
 
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if (!event.origin || !event.origin === "https://app.gleap.io") {
+      if (!event.origin || !event.origin === "http://localhost:3000") {
         return;
       }
 
       try {
         const data = JSON.parse(event.data);
+
         if (data.type === "admin") {
           if (data.name === "load") {
             self.configData = data.data;
@@ -119,8 +124,28 @@ export default class GleapAdminManager {
           if (data.name === "loaddata") {
             this.sendMessageToTourBuilder({
               name: "data",
-              data: self.configData,
+              data: {
+                ...self.configData,
+                currentPage: window.location.href,
+              },
             });
+          }
+
+          if (data.name === "highlight-element") {
+            // Cleanup.
+            document
+              .querySelectorAll(".gleap-admin-highlight")
+              .forEach((el) => {
+                el.classList.remove("gleap-admin-highlight");
+              });
+
+            // Find the element and highlight it.
+            if (data?.data?.selector) {
+              const element = document.querySelector(data?.data?.selector);
+              if (element) {
+                element.classList.add("gleap-admin-highlight");
+              }
+            }
           }
 
           if (data.name === "smartlink-search") {
@@ -130,9 +155,23 @@ export default class GleapAdminManager {
             });
           }
 
+          if (data.name === "product-tour-started") {
+            this.sendMessage({
+              name: "product-tour-started",
+              data: data.data,
+            });
+          }
+
           if (data.name === "save") {
             this.sendMessage({
               name: "save",
+              data: data.data,
+            });
+          }
+
+          if (data.name === "update-steps") {
+            this.sendMessage({
+              name: "update-steps",
               data: data.data,
             });
           }
@@ -155,7 +194,7 @@ export default class GleapAdminManager {
             }
           }
         }
-      } catch (exp) { }
+      } catch (exp) {}
     });
 
     this.sendMessage({
@@ -168,23 +207,29 @@ export default class GleapAdminManager {
   sendMessage(data) {
     try {
       if (window && window.opener) {
-        window.opener.postMessage(JSON.stringify({
-          ...data,
-          type: "admin"
-        }), "*");
+        window.opener.postMessage(
+          JSON.stringify({
+            ...data,
+            type: "admin",
+          }),
+          "*"
+        );
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   sendMessageToTourBuilder(data) {
     try {
       if (this.gleapFrame && this.gleapFrame.contentWindow) {
-        this.gleapFrame.contentWindow.postMessage(JSON.stringify({
-          ...data,
-          type: "tourbuilder"
-        }), "*");
+        this.gleapFrame.contentWindow.postMessage(
+          JSON.stringify({
+            ...data,
+            type: "tourbuilder",
+          }),
+          "*"
+        );
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   toggleCollapseUI = (onlyIfActive = false) => {
@@ -192,10 +237,15 @@ export default class GleapAdminManager {
     const FRAME_CONTAINER_ACTIVE_CLASS = "gleap-admin-frame-container-active";
 
     // Helper function to check if an element has an active class
-    const isActive = (element, activeClass) => element && element.classList.contains(activeClass);
+    const isActive = (element, activeClass) =>
+      element && element.classList.contains(activeClass);
 
     // Check if onlyIfActive is true and if the UI elements are already inactive
-    if (onlyIfActive && (!isActive(this.gleapCollapseUI, COLLAPSE_UI_ACTIVE_CLASS) || !isActive(this.gleapFrameContainer, FRAME_CONTAINER_ACTIVE_CLASS))) {
+    if (
+      onlyIfActive &&
+      (!isActive(this.gleapCollapseUI, COLLAPSE_UI_ACTIVE_CLASS) ||
+        !isActive(this.gleapFrameContainer, FRAME_CONTAINER_ACTIVE_CLASS))
+    ) {
       return; // Return early without toggling the UI
     }
 
@@ -206,7 +256,7 @@ export default class GleapAdminManager {
     if (this.gleapFrameContainer) {
       this.gleapFrameContainer.classList.toggle(FRAME_CONTAINER_ACTIVE_CLASS);
     }
-  }
+  };
 
   injectCollapseUI = () => {
     if (this.injectedCollapseUI) {
@@ -216,8 +266,7 @@ export default class GleapAdminManager {
 
     // Inject widget HTML.
     var elem = document.createElement("div");
-    elem.className =
-      "gleap-admin-collapse-ui";
+    elem.className = "gleap-admin-collapse-ui";
     elem.innerHTML = `<div class="gleap-admin-collapse-ui-icon">
     ${loadIcon("arrowdown")}
     </div>`;
@@ -228,7 +277,7 @@ export default class GleapAdminManager {
     elem.addEventListener("click", () => {
       this.toggleCollapseUI();
     });
-  }
+  };
 
   injectFrame = () => {
     if (this.injectedFrame) {
@@ -238,9 +287,12 @@ export default class GleapAdminManager {
 
     // Inject widget HTML.
     var elem = document.createElement("div");
-    elem.className =
-      "gleap-admin-frame-container";
-    elem.innerHTML = `<iframe src="https://app.gleap.io/${this?.configData?.type === 'tooltips' ? 'tooltipbuilder' : 'producttourbuilder'}" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
+    elem.className = "gleap-admin-frame-container";
+    elem.innerHTML = `<iframe src="http://localhost:3000/${
+      this?.configData?.type === "tooltips"
+        ? "tooltipbuilder"
+        : "producttourbuilder"
+    }" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
 
     this.gleapFrameContainer = elem;
