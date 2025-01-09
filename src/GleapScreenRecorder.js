@@ -170,7 +170,6 @@ export class GleapScreenRecorder {
       var formdata = new FormData();
       formdata.append("file", screenRecordingData);
 
-      xhr.send(formdata);
       xhr.onerror = function () {
         reject();
       };
@@ -183,6 +182,7 @@ export class GleapScreenRecorder {
           }
         }
       };
+      xhr.send(formdata);
     });
   };
 
