@@ -261,7 +261,7 @@ class Gleap {
       if (tourId && tourId.length > 0) {
         var tourDelay = parseInt(urlParams.get("gleap_tour_delay"));
         if (isNaN(tourDelay)) {
-          tourDelay = 4;
+          tourDelay = 2;
         }
 
         setTimeout(() => {
@@ -1174,7 +1174,8 @@ class Gleap {
     if (tourData) {
       GleapProductTours.getInstance().startWithConfig(
         tourData.tourId,
-        tourData.tourData
+        tourData.tourData,
+        2000
       );
     }
   }
