@@ -16,6 +16,46 @@ function htmlToPlainText(html) {
   return tempDiv.textContent || ""; // Extract and return plain text
 }
 
+function scrollToElement(element) {
+  if (element) {
+    element.scrollIntoView({
+      behavior: "smooth", // Ensures smooth scrolling
+      block: "center", // Aligns the element in the center of the viewport
+      inline: "center", // Aligns inline elements in the center horizontally
+    });
+  }
+}
+
+function waitForElement(selector, timeout = 5000) {
+  const pollInterval = 100;
+  const maxAttempts = timeout / pollInterval;
+  let attempts = 0;
+
+  return new Promise((resolve, reject) => {
+    const interval = setInterval(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        clearInterval(interval);
+        resolve(element);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        reject(new Error(`Element not found for selector: ${selector}`));
+      }
+      attempts++;
+    }, pollInterval);
+  });
+}
+
+function smoothScrollToY(yPosition) {
+  const viewportHeight = window.innerHeight;
+  const targetScrollPosition = yPosition - viewportHeight / 2;
+
+  window.scrollTo({
+    top: targetScrollPosition,
+    behavior: "smooth", // Ensures smooth scrolling
+  });
+}
+
 export default class GleapCopilotTours {
   productTourData = undefined;
   productTourId = undefined;
@@ -34,7 +74,33 @@ export default class GleapCopilotTours {
     }
   }
 
-  constructor() {}
+  constructor() {
+    const self = this;
+    // Add on window resize listener.
+    window.addEventListener("resize", () => {
+      // Check if we currently have a tour.
+      if (
+        self.productTourId &&
+        self.currentActiveIndex >= 0 &&
+        self.productTourData &&
+        self.productTourData.steps
+      ) {
+        const steps = self.productTourData.steps;
+        const currentStep = steps[self.currentActiveIndex];
+
+        if (
+          currentStep &&
+          currentStep.selector &&
+          currentStep.selector !== ""
+        ) {
+          // Wait for the element to be rendered.
+          self.updatePointerPosition(
+            document.querySelector(currentStep.selector)
+          );
+        }
+      }
+    });
+  }
 
   startWithConfig(tourId, config, delay = 0) {
     // Prevent multiple tours from being started.
@@ -99,78 +165,68 @@ export default class GleapCopilotTours {
   }
 
   updatePointerPosition(anchor) {
-    const container = document.getElementById(pointerContainerId);
-    if (!container) {
-      return;
-    }
-
-    const infoBubble = container.querySelector("#info-bubble");
-
-    // If no anchor, center on screen.
-    if (!anchor) {
-      const scrollX = window.scrollX || 0;
-      const scrollY = window.scrollY || 0;
-
-      // The center of the *viewport* in document coordinates:
-      const centerX = scrollX + window.innerWidth / 2;
-      const centerY = scrollY + window.innerHeight / 2;
-
-      container.style.position = "absolute";
-      container.style.left = `${centerX}px`;
-      container.style.top = `${centerY}px`;
-      container.style.transform = `translate(-50%, -50%)`;
-      return;
-    }
-
-    // 1) Calculate the anchor’s position on the page (not just viewport).
-    const anchorRect = anchor.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    // Suppose the arrow’s tip is ~15px from the top and left (tweak as needed).
-    const arrowTipOffsetX = 15;
-    const arrowTipOffsetY = 15;
-
-    // Center of anchor:
-    const anchorCenterX =
-      anchorRect.left + anchorRect.width / 2 + window.scrollX;
-    const anchorCenterY =
-      anchorRect.top + anchorRect.height / 2 + window.scrollY;
-
-    // We want the arrow’s tip at the anchorCenter.
-    // So offset the pointer container so that (container’s top-left + arrowTipOffset) = anchor center
-    const containerLeft = anchorCenterX - arrowTipOffsetX;
-    const containerTop = anchorCenterY - arrowTipOffsetY;
-
-    // Position the pointer container (arrow + bubble).
-    container.style.left = `${containerLeft}px`;
-    container.style.top = `${containerTop}px`;
-    container.style.transform = ""; // no translate needed, or clear any you might have
-
-    // 2) Check if the info bubble goes off the right edge
-    if (infoBubble) {
-      // Reset bubble style so we can measure it properly
-      infoBubble.style.marginLeft = "10px"; // default to the right side
-      infoBubble.style.marginRight = ""; // clear any previous override
-      infoBubble.style.transform = "none";
-
-      const bubbleRect = infoBubble.getBoundingClientRect();
-      const bubbleRightEdge = bubbleRect.right;
-      const windowWidth = window.innerWidth;
-
-      // If bubble extends past the right edge by any amount, flip it to the left side
-      if (bubbleRightEdge > windowWidth) {
-        // Move bubble to the left side of the arrow
-        // One approach: negative margin-left by the bubble’s width + some padding
-        // Another approach: transform: translateX(-100%) etc.
-
-        infoBubble.style.marginLeft = "";
-        infoBubble.style.marginRight = "10px";
-        // Or do something like:
-        // infoBubble.style.transform = `translateX(-${bubbleRect.width + 10}px)`;
+    try {
+      const container = document.getElementById(pointerContainerId);
+      if (!container) {
+        return;
       }
-    }
 
-    console.log("Pointer placed at:", containerLeft, containerTop);
+      // If no anchor, center on screen.
+      if (!anchor) {
+        const scrollX = window.scrollX || 0;
+        const scrollY = window.scrollY || 0;
+
+        // The center of the *viewport* in document coordinates:
+        const centerX = scrollX + window.innerWidth / 2;
+        const centerY = scrollY + window.innerHeight / 2;
+
+        container.style.position = "absolute";
+        container.style.left = `${centerX}px`;
+        container.style.top = `${centerY}px`;
+        container.style.transform = `translate(-50%, -50%)`;
+
+        smoothScrollToY(centerY);
+
+        return;
+      }
+
+      // 1) Calculate the anchor’s position on the page (not just viewport).
+      const anchorRect = anchor.getBoundingClientRect();
+
+      // Center of anchor:
+      let anchorCenterX =
+        anchorRect.left + anchorRect.width / 2 + window.scrollX;
+      let anchorCenterY =
+        anchorRect.top + anchorRect.height / 2 + window.scrollY;
+
+      let containerWidthSpace = 330;
+      if (containerWidthSpace > window.innerWidth - 40) {
+        containerWidthSpace = window.innerWidth - 40;
+      }
+
+      const windowWidth = window.innerWidth;
+      const isTooFarRight =
+        anchorCenterX + containerWidthSpace > windowWidth - 20;
+
+      container.style.transform = "";
+
+      if (isTooFarRight) {
+        container.classList.add("copilot-pointer-container-right");
+
+        // Reverse the arrow direction and recalculate the position.
+        container.style.right = `${windowWidth - anchorCenterX}px`;
+        container.style.top = `${anchorCenterY}px`;
+        container.style.left = "";
+      } else {
+        container.classList.remove("copilot-pointer-container-right");
+        container.style.left = `${anchorCenterX}px`;
+        container.style.top = `${anchorCenterY}px`;
+      }
+
+      scrollToElement(anchor);
+    } catch (e) {
+      console.error("Error updating pointer position:", e);
+    }
   }
 
   cleanup() {
@@ -212,10 +268,10 @@ export default class GleapCopilotTours {
           top: 0;
           left: 0;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           pointer-events: none;
           z-index: 9999;
-          transition: transform 0.5s ease, top 0.5s ease, left 0.5s ease;;
+          transition: all 0.5s ease;;
         }
   
         #${pointerContainerId} svg {
@@ -223,9 +279,25 @@ export default class GleapCopilotTours {
           height: auto;
           fill: none;
         }
+          
+        .${pointerContainerId}-right {
+          left: auto;
+          right: 0;
+          flex-direction: row-reverse;
+        }
+
+        .${pointerContainerId}-right svg {
+          transform: scaleX(-1);
+        }
+
+        .${pointerContainerId}-right #info-bubble {
+          margin-left: 0px;
+          margin-right: 5px;
+        }
   
         #info-bubble {
-          margin-left: 10px;
+          margin-left: 5px;
+          margin-top: 18px;
           padding: 10px 15px;
           border-radius: 20px;
           background-color: black;
@@ -245,11 +317,11 @@ export default class GleapCopilotTours {
           pointer-events: all;
           z-index: 2147483610;
           box-sizing: border-box;
-          border: 6px solid transparent;
-          filter: blur(15px);
+          border: 8px solid transparent;
+          filter: blur(20px);
           border-image-slice: 1;
           border-image-source: linear-gradient(45deg, #2142e7, #e721b3);
-          animation: animateBorder 4s infinite alternate ease-in-out;
+          animation: animateBorder 3s infinite alternate ease-in-out;
         }
   
         body::after {
@@ -266,7 +338,7 @@ export default class GleapCopilotTours {
           border: 2px solid transparent;
           border-image-slice: 1;
           border-image-source: linear-gradient(45deg, #2142e7, #e721b3);
-          animation: animateBorder 4s infinite alternate ease-in-out;
+          animation: animateBorder 3s infinite alternate ease-in-out;
         }
   
         @keyframes animateBorder {
@@ -298,11 +370,13 @@ export default class GleapCopilotTours {
           align-items: center;
           gap: 10px;
           border: 1px solid #e721b3;
+          max-width: min(330px, 100vw - 40px);
         }
 
         .copilot-info-container svg {
           width: 24px;
           height: 24px;
+          flex-shrink: 0;
         }
       `;
       document.head.appendChild(styleNode);
@@ -349,7 +423,6 @@ export default class GleapCopilotTours {
   renderNextStep() {
     const config = this.productTourData;
     const steps = config.steps;
-    const self = this;
 
     // Check if we have reached the end of the tour.
     if (this.currentActiveIndex >= steps.length) {
@@ -358,39 +431,43 @@ export default class GleapCopilotTours {
     }
 
     const currentStep = steps[this.currentActiveIndex];
-    const element = document.querySelector(currentStep.selector);
 
-    // Wait for the pointer to be rendered. (by checking if the pointer container exists)
-    setTimeout(() => {
+    const handleStep = (element) => {
+      // Update pointer position, even if element is null.
       this.updatePointerPosition(element);
-    }, 100);
 
-    const message =
-      currentStep && currentStep.message
+      const message = currentStep?.message
         ? htmlToPlainText(currentStep.message)
         : "🤔";
 
-    // Set content of info bubble.
-    document.getElementById("info-bubble").textContent = message;
-    document.getElementById(pointerContainerId).style.opacity = 1;
+      // Set content of info bubble.
+      document.getElementById("info-bubble").textContent = message;
+      document.getElementById(pointerContainerId).style.opacity = 1;
 
-    // Estimate readtime in seconds.
-    const readTime = estimateReadTime(message);
+      // Estimate read time in seconds.
+      const readTime = estimateReadTime(message);
 
-    // Automatically move to next step after 3 seconds.
-    setTimeout(() => {
-      self.currentActiveIndex++;
-      self.renderNextStep();
-      self.storeUncompletedTour();
+      // Automatically move to the next step after the estimated read time.
+      setTimeout(() => {
+        this.currentActiveIndex++;
+        this.storeUncompletedTour();
 
-      if (currentStep.mode === "CLICK") {
-        // Perform click on element.
-        setTimeout(() => {
+        if (currentStep.mode === "CLICK" && element) {
           try {
             element.click();
-          } catch (e) {}
-        }, 1000 * 60);
-      }
-    }, readTime * 1000);
+          } catch (e) {
+            console.error("Error clicking the element:", e);
+          }
+        }
+
+        this.renderNextStep();
+      }, readTime * 1000);
+    };
+
+    const elementPromise = currentStep.selector
+      ? waitForElement(currentStep.selector)
+      : Promise.resolve(null);
+
+    elementPromise.then(handleStep).catch(() => handleStep(null));
   }
 }

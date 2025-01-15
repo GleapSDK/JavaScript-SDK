@@ -1,6 +1,7 @@
 import { loadIcon } from "./UI";
 import GleapTours from "./GleapTours";
 import Gleap, { GleapEventManager } from "./Gleap";
+import GleapCopilotTours from "./GleapCopilotTours";
 
 const localStorageKey = "gleap-tour-data";
 
@@ -10,7 +11,6 @@ export default class GleapProductTours {
   unmuted = false;
   currentActiveIndex = undefined;
   gleapTourObj = undefined;
-  type = undefined;
   disabled = false;
 
   // GleapReplayRecorder singleton
@@ -46,12 +46,13 @@ export default class GleapProductTours {
   }
 
   startWithConfig(tourId, config, delay = 0) {
+    return GleapCopilotTours.getInstance().startWithConfig(tourId, config, delay);
+
     // Prevent multiple tours from being started.
     if (this.productTourId || this.disabled) {
       return;
     }
 
-    this.type = "copilot";
     this.productTourId = tourId;
     this.productTourData = config;
     this.currentActiveIndex = 0;
@@ -242,8 +243,6 @@ export default class GleapProductTours {
           self.productTourId = undefined;
           self.currentActiveIndex = undefined;
           self.clearUncompletedTour();
-          this.removePointerUI();
-          this.type = undefined;
         } else {
           this.gleapTourObj.destroy();
         }
