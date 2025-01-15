@@ -46,8 +46,6 @@ export default class GleapProductTours {
   }
 
   startWithConfig(tourId, config, delay = 0) {
-    return GleapCopilotTours.getInstance().startWithConfig(tourId, config, delay);
-
     // Prevent multiple tours from being started.
     if (this.productTourId || this.disabled) {
       return;
@@ -66,6 +64,24 @@ export default class GleapProductTours {
     } else {
       return this.start();
     }
+  }
+
+  onComplete() {
+    const comData = {
+      tourId: this.productTourId,
+    };
+
+    GleapEventManager.notifyEvent("productTourCompleted", comData);
+    Gleap.trackEvent(`tour-${this.productTourId}-completed`, comData);
+
+    // Clear data.
+    if (this.gleapTourObj) {
+      this.gleapTourObj.destroy();
+    }
+    this.productTourData = undefined;
+    this.productTourId = undefined;
+    this.currentActiveIndex = undefined;
+    this.clearUncompletedTour();
   }
 
   loadUncompletedTour() {
@@ -111,6 +127,16 @@ export default class GleapProductTours {
     const config = this.productTourData;
     if (!config) {
       return;
+    }
+
+    if (config.tourType === "cobrowse") {
+      return GleapCopilotTours.getInstance().startWithConfig(
+        this.productTourId,
+        config,
+        () => {
+          this.onComplete();
+        }
+      );
     }
 
     this.unmuted = false;
@@ -229,20 +255,8 @@ export default class GleapProductTours {
       },
       onDestroyStarted: () => {
         if (!this.gleapTourObj.hasNextStep()) {
-          this.gleapTourObj.destroy();
-
-          const comData = {
-            tourId: self.productTourId,
-          };
-
-          GleapEventManager.notifyEvent("productTourCompleted", comData);
-          Gleap.trackEvent(`tour-${self.productTourId}-completed`, comData);
-
-          // Clear data.
-          self.productTourData = undefined;
-          self.productTourId = undefined;
-          self.currentActiveIndex = undefined;
-          self.clearUncompletedTour();
+          // Mark as completed.
+          this.onComplete();
         } else {
           this.gleapTourObj.destroy();
         }

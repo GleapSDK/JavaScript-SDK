@@ -4,10 +4,10 @@ const styleId = "copilot-tour-styles";
 const copilotInfoContainerId = "copilot-info-container";
 
 function estimateReadTime(text) {
-  const wordsPerSecond = 3.5; // Average reading speed
+  const wordsPerSecond = 3.6; // Average reading speed
   const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
   const readTimeInSeconds = Math.ceil(wordCount / wordsPerSecond);
-  return readTimeInSeconds + 1.5;
+  return readTimeInSeconds + 1;
 }
 
 function htmlToPlainText(html) {
@@ -24,6 +24,26 @@ function scrollToElement(element) {
       inline: "center", // Aligns inline elements in the center horizontally
     });
   }
+}
+
+function performClickAnimation(posX, posY) {
+  // Create a new div element to act as the wave
+  const wave = document.createElement("div");
+
+  // Apply the CSS class for styling
+  wave.className = "click-wave";
+
+  // Set the position dynamically
+  wave.style.left = `${posX - 17}px`;
+  wave.style.top = `${posY - 17}px`;
+
+  // Append the wave to the body
+  document.body.appendChild(wave);
+
+  // Remove the wave after the animation ends
+  setTimeout(() => {
+    wave.remove();
+  }, 800);
 }
 
 function waitForElement(selector, timeout = 5000) {
@@ -62,6 +82,7 @@ export default class GleapCopilotTours {
   currentActiveIndex = undefined;
   lastArrowPositionX = undefined;
   lastArrowPositionY = undefined;
+  onCompleteCallback = undefined;
 
   // GleapReplayRecorder singleton
   static instance;
@@ -102,7 +123,7 @@ export default class GleapCopilotTours {
     });
   }
 
-  startWithConfig(tourId, config, delay = 0) {
+  startWithConfig(tourId, config, onCompleteCallback = undefined) {
     // Prevent multiple tours from being started.
     if (this.productTourId) {
       return;
@@ -111,27 +132,8 @@ export default class GleapCopilotTours {
     this.productTourId = tourId;
     this.productTourData = config;
     this.currentActiveIndex = 0;
-
-    const self = this;
-
-    if (delay > 0) {
-      return setTimeout(() => {
-        self.start();
-      }, delay);
-    } else {
-      return this.start();
-    }
-  }
-
-  loadUncompletedTour() {
-    try {
-      const data = JSON.parse(localStorage.getItem(localStorageKey));
-      if (data?.tourData && data?.tourId) {
-        return data;
-      }
-    } catch (e) {}
-
-    return null;
+    this.onCompleteCallback = onCompleteCallback;
+    this.start();
   }
 
   storeUncompletedTour() {
@@ -154,14 +156,8 @@ export default class GleapCopilotTours {
         localStorage.setItem(localStorageKey, JSON.stringify(data));
       } catch (e) {}
     } else {
-      this.clearUncompletedTour();
-    }
-  }
-
-  clearUncompletedTour() {
-    try {
       localStorage.removeItem(localStorageKey);
-    } catch (e) {}
+    }
   }
 
   updatePointerPosition(anchor) {
@@ -199,7 +195,7 @@ export default class GleapCopilotTours {
       let anchorCenterY =
         anchorRect.top + anchorRect.height / 2 + window.scrollY;
 
-      let containerWidthSpace = 330;
+      let containerWidthSpace = 350;
       if (containerWidthSpace > window.innerWidth - 40) {
         containerWidthSpace = window.innerWidth - 40;
       }
@@ -230,29 +226,24 @@ export default class GleapCopilotTours {
   }
 
   cleanup() {
-    this.removePointerUI();
-    this.clearUncompletedTour();
-  }
-
-  removePointerUI() {
     const container = document.getElementById(pointerContainerId);
     if (container) {
       container.remove();
     }
 
-    // Remove style node.
-    const styleNode = document.getElementById(styleId);
-    if (styleNode) {
-      styleNode.remove();
-    }
-
-    // Remove copilot info container.
     const copilotInfoContainer = document.getElementById(
       copilotInfoContainerId
     );
     if (copilotInfoContainer) {
       copilotInfoContainer.remove();
     }
+
+    setTimeout(() => {
+      const styleNode = document.getElementById(styleId);
+      if (styleNode) {
+        styleNode.remove();
+      }
+    }, 1000);
   }
 
   setupCopilotTour() {
@@ -279,7 +270,7 @@ export default class GleapCopilotTours {
           height: auto;
           fill: none;
         }
-          
+                  
         .${pointerContainerId}-right {
           left: auto;
           right: 0;
@@ -307,57 +298,11 @@ export default class GleapCopilotTours {
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
-        body::before {
-          content: "";
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          pointer-events: all;
-          z-index: 2147483610;
-          box-sizing: border-box;
-          border: 8px solid transparent;
-          filter: blur(20px);
-          border-image-slice: 1;
-          border-image-source: linear-gradient(45deg, #2142e7, #e721b3);
-          animation: animateBorder 3s infinite alternate ease-in-out;
-        }
-  
-        body::after {
-          content: "";
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100vw;
-          height: 100vh;
-          pointer-events: all;
-          z-index: 2147483610;
-          opacity: 0.5;
-          box-sizing: border-box;
-          border: 2px solid transparent;
-          border-image-slice: 1;
-          border-image-source: linear-gradient(45deg, #2142e7, #e721b3);
-          animation: animateBorder 3s infinite alternate ease-in-out;
-        }
-  
-        @keyframes animateBorder {
-          0% {
-            border-image-source: linear-gradient(45deg, #2142e7, #e721b3);
-          }
-          50% {
-            border-image-source: linear-gradient(135deg, #e721b3, #ff8a00);
-          }
-          100% {
-            border-image-source: linear-gradient(225deg, #ff8a00, #2142e7);
-          }
-        }
-
         .copilot-info-container {
           position: fixed;
           top: 20px;
           right: 20px;
-          z-index: 2147483610;
+          z-index: 2147483612;
           background: #fff;
           padding: 5px;
           padding-left: 10px;
@@ -377,6 +322,64 @@ export default class GleapCopilotTours {
           width: 24px;
           height: 24px;
           flex-shrink: 0;
+        }
+
+        .click-wave {
+          position: absolute;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background-color: rgba(0, 0, 0, 0.5);
+          pointer-events: none;
+          z-index: 2147483611;
+          animation: click-wave-animation 0.8s ease forwards;
+        }
+
+        @keyframes click-wave-animation {
+          0% {
+            transform: scale(0.2);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(2);
+            opacity: 0;
+          }
+        }
+
+        ${
+          this.productTourData.gradient
+            ? `body::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          pointer-events: all;
+          z-index: 2147483610;
+          box-sizing: border-box;
+          border: 20px solid transparent;
+          filter: blur(28px);
+          border-image-slice: 1;
+          border-image-source: linear-gradient(45deg, #ED5587, #FBE6A9, #a6e3f8, #C294F2);
+        }
+  
+        body::after {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          pointer-events: all;
+          z-index: 2147483610;
+          opacity: 0.5;
+          box-sizing: border-box;
+          border: 2px solid transparent;
+          border-image-slice: 1;
+          border-image-source: linear-gradient(45deg, #ED5587, #FBE6A9, #a6e3f8, #C294F2);
+        }`
+            : ""
         }
       `;
       document.head.appendChild(styleNode);
@@ -416,6 +419,8 @@ export default class GleapCopilotTours {
     // Setup the copilot tour.
     this.setupCopilotTour();
 
+    // Show copilot joined info.
+
     // Render the first step.
     this.renderNextStep();
   }
@@ -427,12 +432,37 @@ export default class GleapCopilotTours {
     // Check if we have reached the end of the tour.
     if (this.currentActiveIndex >= steps.length) {
       this.cleanup();
+      if (this.onCompleteCallback) {
+        this.onCompleteCallback();
+      }
       return;
     }
 
     const currentStep = steps[this.currentActiveIndex];
 
     const handleStep = (element) => {
+      const gotToNextStep = () => {
+        this.currentActiveIndex++;
+        this.storeUncompletedTour();
+
+        if (currentStep.mode === "CLICK" && element) {
+          const rect = element.getBoundingClientRect();
+
+          // Get current scroll position.
+          const scrollX = window.scrollX || 0;
+          const scrollY = window.scrollY || 0;
+
+          performClickAnimation(
+            rect.left + rect.width / 2 + scrollX,
+            rect.top + rect.height / 2 + scrollY
+          );
+
+          element.click();
+        }
+
+        this.renderNextStep();
+      };
+
       // Update pointer position, even if element is null.
       this.updatePointerPosition(element);
 
@@ -447,21 +477,32 @@ export default class GleapCopilotTours {
       // Estimate read time in seconds.
       const readTime = estimateReadTime(message);
 
-      // Automatically move to the next step after the estimated read time.
-      setTimeout(() => {
-        this.currentActiveIndex++;
-        this.storeUncompletedTour();
+      console.log("Read time:", currentStep);
 
-        if (currentStep.mode === "CLICK" && element) {
-          try {
-            element.click();
-          } catch (e) {
-            console.error("Error clicking the element:", e);
-          }
+      // Read the message.
+      if (currentStep.voice && currentStep.voice.length > 0) {
+        try {
+          const audio = new Audio(currentStep.voice);
+
+          // Add an event listener for the 'ended' event
+          audio.addEventListener("ended", () => {
+            setTimeout(() => {
+              gotToNextStep();
+            }, 1000);
+          });
+
+          // Play the audio
+          audio.play();
+        } catch (error) {
+          setTimeout(() => {
+            gotToNextStep();
+          }, readTime * 1000);
         }
-
-        this.renderNextStep();
-      }, readTime * 1000);
+      } else {
+        setTimeout(() => {
+          gotToNextStep();
+        }, readTime * 1000);
+      }
     };
 
     const elementPromise = currentStep.selector
