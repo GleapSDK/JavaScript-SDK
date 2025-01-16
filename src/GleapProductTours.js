@@ -29,6 +29,9 @@ export default class GleapProductTours {
       this.gleapTourObj.destroy();
     }
 
+    // Disable copilot tours.
+    GleapCopilotTours.getInstance().disable();
+
     this.gleapTourObj = undefined;
     this.disabled = true;
   }
@@ -37,7 +40,13 @@ export default class GleapProductTours {
     const self = this;
 
     const beforeUnloadListener = (event) => {
-      self.storeUncompletedTour();
+      if (
+        self?.productTourId &&
+        self?.productTourData &&
+        self?.productTourData?.tourType !== "cobrowse"
+      ) {
+        self.storeUncompletedTour();
+      }
     };
 
     if (typeof window !== "undefined") {
@@ -66,18 +75,24 @@ export default class GleapProductTours {
     }
   }
 
-  onComplete() {
-    const comData = {
-      tourId: this.productTourId,
-    };
+  onComplete(success = true) {
+    if (success) {
+      const comData = {
+        tourId: this.productTourId,
+      };
 
-    GleapEventManager.notifyEvent("productTourCompleted", comData);
-    Gleap.trackEvent(`tour-${this.productTourId}-completed`, comData);
+      GleapEventManager.notifyEvent("productTourCompleted", comData);
+      Gleap.trackEvent(`tour-${this.productTourId}-completed`, comData);
+    } else {
+      console.warn("[Product tour] Selector not found");
+    }
 
     // Clear data.
     if (this.gleapTourObj) {
       this.gleapTourObj.destroy();
     }
+
+    this.gleapTourObj = undefined;
     this.productTourData = undefined;
     this.productTourId = undefined;
     this.currentActiveIndex = undefined;
@@ -133,8 +148,8 @@ export default class GleapProductTours {
       return GleapCopilotTours.getInstance().startWithConfig(
         this.productTourId,
         config,
-        () => {
-          this.onComplete();
+        (success) => {
+          this.onComplete(success);
         }
       );
     }
@@ -253,10 +268,15 @@ export default class GleapProductTours {
         this.currentActiveIndex = config?.state?.activeIndex;
         this.storeUncompletedTour();
       },
+      onElementNotFound: (step) => {
+        document.removeEventListener("click", onDocumentClick);
+
+        this.onComplete(false);
+      },
       onDestroyStarted: () => {
         if (!this.gleapTourObj.hasNextStep()) {
           // Mark as completed.
-          this.onComplete();
+          this.onComplete(true);
         } else {
           this.gleapTourObj.destroy();
         }

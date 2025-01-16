@@ -1175,7 +1175,7 @@ class Gleap {
       GleapProductTours.getInstance().startWithConfig(
         tourData.tourId,
         tourData.tourData,
-        2000
+        500
       );
     }
   }
