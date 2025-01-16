@@ -1,288 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <script src="/htmlimports.js"></script>
-  <title>Gleap Demo</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
-    rel="stylesheet" />
-  <link rel="icon" type="image/x-icon" href="fav.png">
-  <script src="https://kit.fontawesome.com/0a1af2edbf.js" crossorigin="anonymous"></script>
-  <meta name="viewport" content="height=device-height, 
+  <head>
+    <script src="/htmlimports.js"></script>
+    <title>Gleap Demo</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/x-icon" href="fav.png" />
+    <script
+      src="https://kit.fontawesome.com/0a1af2edbf.js"
+      crossorigin="anonymous"
+    ></script>
+    <meta
+      name="viewport"
+      content="height=device-height, 
                       width=device-width, initial-scale=1.0, 
                       minimum-scale=1.0, maximum-scale=1.0, 
-                      user-scalable=no, target-densitydpi=device-dpi">
-  <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <!-- index.js as found in build/index.js -->
-  <script src="build/cjs/index.js"></script>
-  <script src="main.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      border: none;
-      padding: 0px;
-      margin: 0px;
-      font-family: "Montserrat", sans-serif;
-    }
-
-    body,
-    html {
-      background-color: #fff;
-      margin: 0;
-    }
-
-    .header {
-      width: 100%;
-      min-height: 500px;
-      background-color: #eee;
-    }
-
-    .header-container {
-      max-width: 650px;
-      margin: auto;
-      padding-top: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-    }
-
-    .header-container-image {
-      max-width: 850px;
-      margin: auto;
-      margin-top: -200px;
-    }
-
-    h1 {
-      color: #000;
-      font-size: 32px;
-      font-weight: 900;
-      background-color: #000;
-      border-radius: 5px;
-      opacity: 0.8;
-    }
-
-    .sub-headline {
-      font-size: 16px;
-      color: transparent;
-      font-weight: 500;
-      margin-top: 8px;
-      background-color: #00000088;
-      border-radius: 5px;
-      min-width: 350px;
-      height: 30px;
-      opacity: 0.4;
-    }
-
-    .sub-headline i {
-      color: red;
-    }
-
-    .sub-headline a {
-      color: #00000088;
-      display: inline;
-      text-decoration: underline;
-    }
-
-    .logo {
-      position: absolute;
-      top: 40px;
-      left: 40px;
-    }
-
-    .logo i {
-      font-size: 40px;
-      color: #fff;
-    }
-
-    .head-image {
-      margin-top: 0px;
-      width: 100%;
-      height: auto;
-      max-height: 450px;
-      border-radius: 10px;
-      object-fit: cover;
-      object-position: top center;
-    }
-
-    .content {
-      max-width: 650px;
-      margin: auto;
-      margin-top: 40px;
-      margin-bottom: 40px;
-      color: #333;
-      font-size: 18px;
-      line-height: 26px;
-      font-weight: 300;
-    }
-
-    .content img {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-    }
-
-    a {
-      color: rgb(57, 140, 254);
-      text-decoration: none;
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-
-    .buttonlink {
-      display: inline-block;
-      width: fit-content;
-      font-size: 16px;
-      font-weight: 600;
-      color: rgb(255, 255, 255);
-      background-color: #2142e7;
-      border-style: solid;
-      border-width: 0px;
-      border-radius: 10px;
-      padding: 15px 40px;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    @media only screen and (max-width: 600px) {
-      .header-container {
-        padding-left: 40px;
-        padding-right: 40px;
-        padding-top: 150px;
+                      user-scalable=no, target-densitydpi=device-dpi"
+    />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <!-- index.js as found in build/index.js -->
+    <script src="build/cjs/index.js"></script>
+    <script src="main.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        border: none;
+        padding: 0px;
+        margin: 0px;
+        font-family: "Montserrat", sans-serif;
       }
 
-      .head-image {
-        border-radius: 0px;
+      body,
+      html {
+        background-color: #fff;
+        margin: 0;
       }
 
       .header {
-        min-height: initial;
+        width: 100%;
+        min-height: 500px;
+        background-color: #eee;
+      }
+
+      .header-container {
+        max-width: 650px;
+        margin: auto;
+        padding-top: 200px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+      }
+
+      .header-container-image {
+        max-width: 850px;
+        margin: auto;
+        margin-top: -200px;
+      }
+
+      h1 {
+        color: #000;
+        font-size: 32px;
+        font-weight: 900;
+        background-color: #000;
+        border-radius: 5px;
+        opacity: 0.8;
+      }
+
+      .sub-headline {
+        font-size: 16px;
+        color: transparent;
+        font-weight: 500;
+        margin-top: 8px;
+        background-color: #00000088;
+        border-radius: 5px;
+        min-width: 350px;
+        height: 30px;
+        opacity: 0.4;
+      }
+
+      .sub-headline i {
+        color: red;
+      }
+
+      .sub-headline a {
+        color: #00000088;
+        display: inline;
+        text-decoration: underline;
+      }
+
+      .logo {
+        position: absolute;
+        top: 40px;
+        left: 40px;
+      }
+
+      .logo i {
+        font-size: 40px;
+        color: #fff;
+      }
+
+      .head-image {
+        margin-top: 0px;
+        width: 100%;
+        height: auto;
+        max-height: 450px;
+        border-radius: 10px;
+        object-fit: cover;
+        object-position: top center;
       }
 
       .content {
-        margin-top: 0px;
-        padding: 40px;
+        max-width: 650px;
+        margin: auto;
+        margin-top: 40px;
+        margin-bottom: 40px;
+        color: #333;
+        font-size: 18px;
+        line-height: 26px;
+        font-weight: 300;
       }
-    }
 
-    .skeleton-text {
-      width: 100%;
-      height: 0.7rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.25rem;
-      background-color: #eee;
-    }
+      .content img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+      }
 
-    .skeleton-text:nth-child(2) {
-      max-width: 95%;
-    }
+      a {
+        color: rgb(57, 140, 254);
+        text-decoration: none;
+        display: block;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
 
-    .skeleton-text:nth-child(3) {
-      max-width: 90%;
-    }
+      .buttonlink {
+        display: inline-block;
+        width: fit-content;
+        font-size: 16px;
+        font-weight: 600;
+        color: rgb(255, 255, 255);
+        background-color: #2142e7;
+        border-style: solid;
+        border-width: 0px;
+        border-radius: 10px;
+        padding: 15px 40px;
+        text-decoration: none;
+        cursor: pointer;
+      }
 
-    .skeleton-text:nth-child(4) {
-      max-width: 95%;
-    }
+      @media only screen and (max-width: 600px) {
+        .header-container {
+          padding-left: 40px;
+          padding-right: 40px;
+          padding-top: 150px;
+        }
 
-    video {
-      border: 1px solid lightgray;
-      width: 100%;
-      background-color: #eee;
-    }
+        .head-image {
+          border-radius: 0px;
+        }
 
-    /* The Modal (background) */
-    .modal {
-      display: none;
-      /* Hidden by default */
-      position: fixed;
-      /* Stay in place */
-      z-index: 1;
-      /* Sit on top */
-      left: 0;
-      top: 0;
-      width: 100%;
-      /* Full width */
-      height: 100%;
-      /* Full height */
-      overflow: auto;
-      /* Enable scroll if needed */
-      background-color: rgb(0, 0, 0);
-      /* Fallback color */
-      background-color: rgba(0, 0, 0, 0.4);
-      /* Black w/ opacity */
-    }
+        .header {
+          min-height: initial;
+        }
 
-    /* Modal Content */
-    .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      /* 15% from the top and centered */
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      /* Could be more or less, depending on screen size */
-    }
+        .content {
+          margin-top: 0px;
+          padding: 40px;
+        }
+      }
 
-    /* The Close Button */
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
+      .skeleton-text {
+        width: 100%;
+        height: 0.7rem;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem;
+        background-color: #eee;
+      }
 
-    .close:hover,
-    .close:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
-    }
-  </style>
-</head>
+      .skeleton-text:nth-child(2) {
+        max-width: 95%;
+      }
 
-<body>
-  <div class="logo"><i class="fa-solid fa-earth-africa"></i></div>
-  <div class="header">
-    <div class="header-container">
-      <h1>Off-Grid-it-Haus</h1>
-      <h2 class="sub-headline">
-      </h2>
+      .skeleton-text:nth-child(3) {
+        max-width: 90%;
+      }
+
+      .skeleton-text:nth-child(4) {
+        max-width: 95%;
+      }
+
+      video {
+        border: 1px solid lightgray;
+        width: 100%;
+        background-color: #eee;
+      }
+
+      /* The Modal (background) */
+      .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        /* Stay in place */
+        z-index: 1;
+        /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%;
+        /* Full width */
+        height: 100%;
+        /* Full height */
+        overflow: auto;
+        /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0);
+        /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4);
+        /* Black w/ opacity */
+      }
+
+      /* Modal Content */
+      .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        /* Could be more or less, depending on screen size */
+      }
+
+      /* The Close Button */
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="logo"><i class="fa-solid fa-earth-africa"></i></div>
+    <div class="header">
+      <div class="header-container">
+        <h1>Off-Grid-it-Haus</h1>
+        <h2 class="sub-headline"></h2>
+      </div>
     </div>
-  </div>
-  <div class="header-container-image">
-    <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
-  </div>
-  <input type="button" value="Start Tour" placeholder="helloo"/>
-  <input type="text" id="userInput" placeholder="Enter your name">
-  <button onclick="greetUser()">Submit</button>
-  <div class="content" id="haha">
-    <a href="/index2.html">Index 2</a>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-  </div>
+    <div class="header-container-image">
+      <img class="head-image" src="./pexels-niklas-jeromin-12734294.jpg" />
+    </div>
+    <input type="button" value="Start Tour" placeholder="helloo" />
+    <input type="text" id="userInput" placeholder="Enter your name" />
+    <button onclick="greetUser()">Submit</button>
+    <div class="content" id="haha">
+      <a class="buttonlink" href="index2.html">Index 2</a>
+      <a class="buttonlink1" href="index3.html">Index 3</a>
+      <a class="buttonlink2" href="index.html">Back to home</a>
+      <style>
+        body {
+          font-family: Arial, Helvetica, sans-serif;
+        }
 
-  <script>
-    function greetUser() {
-      var name = document.getElementById("userInput").value;
-      if (name) {
-        alert("Hello, " + name + "! Welcome to Off-Grid-it-Haus.");
-      } else {
-        alert("Please enter your name.");
+        /* The Modal (background) */
+        .modal {
+          display: none; /* Hidden by default */
+          position: fixed; /* Stay in place */
+          z-index: 1; /* Sit on top */
+          padding-top: 100px; /* Location of the box */
+          left: 0;
+          top: 0;
+          width: 100%; /* Full width */
+          height: 100%; /* Full height */
+          overflow: auto; /* Enable scroll if needed */
+          background-color: rgb(0, 0, 0); /* Fallback color */
+          background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content */
+        .modal-content {
+          background-color: #fefefe;
+          margin: auto;
+          padding: 20px;
+          border: 1px solid #888;
+          width: 80%;
+        }
+
+        /* The Close Button */
+        .close {
+          color: #aaaaaa;
+          float: right;
+          font-size: 28px;
+          font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+          color: #000;
+          text-decoration: none;
+          cursor: pointer;
+        }
+      </style>
+
+      <h2>Modal Example</h2>
+
+      <!-- Trigger/Open The Modal -->
+      <button id="myBtn">Open Modal</button>
+
+      <!-- The Modal -->
+      <div id="myModal" class="modal">
+        <!-- Modal content -->
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <p>Some text in the Modal..</p>
+        </div>
+      </div>
+
+      <script>
+        // Get the modal
+        var modal = document.getElementById("myModal");
+
+        // Get the button that opens the modal
+        var btn = document.getElementById("myBtn");
+
+        // Get the <span> element that closes the modal
+        var span = document.getElementsByClassName("close")[0];
+
+        // When the user clicks the button, open the modal
+        btn.onclick = function () {
+          modal.style.display = "block";
+        };
+
+        // When the user clicks on <span> (x), close the modal
+        span.onclick = function () {
+          modal.style.display = "none";
+        };
+
+        // When the user clicks anywhere outside of the modal, close it
+        window.onclick = function (event) {
+          if (event.target == modal) {
+            modal.style.display = "none";
+          }
+        };
+      </script>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+      <div class="skeleton-text"></div>
+    </div>
+
+    <script>
+      function greetUser() {
+        var name = document.getElementById("userInput").value;
+        if (name) {
+          alert("Hello, " + name + "! Welcome to Off-Grid-it-Haus.");
+        } else {
+          alert("Please enter your name.");
+        }
       }
-    }
-  </script>
-</body>
-
+    </script>
+  </body>
 </html>

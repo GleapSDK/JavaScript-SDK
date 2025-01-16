@@ -269,7 +269,7 @@ const GleapTours = (function () {
     document.body.appendChild(element);
     return element;
   }
-  function highlight(step, attemptTime = 2000) {
+  function highlight(step, attemptTime = 5000) {
     const { element } = step;
     let elemObj = element;
     if (typeof elemObj === "string") {
@@ -293,6 +293,12 @@ const GleapTours = (function () {
       }, 100);
 
       return;
+    }
+
+    if (!elemObj) {
+      if (step.mode === "INPUT" || step.mode === "CLICK") {
+        return getConfig("onElementNotFound")(step);
+      }
     }
 
     if (!elemObj) {
