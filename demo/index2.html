@@ -1,288 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <script src="/htmlimports.js"></script>
-  <title>Gleap Demo</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
-    rel="stylesheet" />
-  <link rel="icon" type="image/x-icon" href="fav.png">
-  <script src="https://kit.fontawesome.com/0a1af2edbf.js" crossorigin="anonymous"></script>
-  <meta name="viewport" content="height=device-height, 
+  <head>
+    <script src="/htmlimports.js"></script>
+    <title>Gleap Demo</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, minimum-scale=1"
+    />
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/x-icon" href="fav.png" />
+    <script
+      src="https://kit.fontawesome.com/0a1af2edbf.js"
+      crossorigin="anonymous"
+    ></script>
+    <meta
+      name="viewport"
+      content="height=device-height, 
                       width=device-width, initial-scale=1.0, 
                       minimum-scale=1.0, maximum-scale=1.0, 
-                      user-scalable=no, target-densitydpi=device-dpi">
-  <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-  <!-- index.js as found in build/index.js -->
-  <script src="build/cjs/index.js"></script>
-  <script src="main.js"></script>
-  <style>
-    * {
-      box-sizing: border-box;
-      border: none;
-      padding: 0px;
-      margin: 0px;
-      font-family: "Montserrat", sans-serif;
-    }
-
-    body,
-    html {
-      background-color: #fff;
-      margin: 0;
-    }
-
-    .header {
-      width: 100%;
-      min-height: 500px;
-      background-color: #eee;
-    }
-
-    .header-container {
-      max-width: 650px;
-      margin: auto;
-      padding-top: 200px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: flex-start;
-    }
-
-    .header-container-image {
-      max-width: 850px;
-      margin: auto;
-      margin-top: -200px;
-    }
-
-    h1 {
-      color: #000;
-      font-size: 32px;
-      font-weight: 900;
-      background-color: #000;
-      border-radius: 5px;
-      opacity: 0.8;
-    }
-
-    .sub-headline {
-      font-size: 16px;
-      color: transparent;
-      font-weight: 500;
-      margin-top: 8px;
-      background-color: #00000088;
-      border-radius: 5px;
-      min-width: 350px;
-      height: 30px;
-      opacity: 0.4;
-    }
-
-    .sub-headline i {
-      color: red;
-    }
-
-    .sub-headline a {
-      color: #00000088;
-      display: inline;
-      text-decoration: underline;
-    }
-
-    .logo {
-      position: absolute;
-      top: 40px;
-      left: 40px;
-    }
-
-    .logo i {
-      font-size: 40px;
-      color: #fff;
-    }
-
-    .head-image {
-      margin-top: 0px;
-      width: 100%;
-      height: auto;
-      max-height: 450px;
-      border-radius: 10px;
-      object-fit: cover;
-      object-position: top center;
-    }
-
-    .content {
-      max-width: 650px;
-      margin: auto;
-      margin-top: 40px;
-      margin-bottom: 40px;
-      color: #333;
-      font-size: 18px;
-      line-height: 26px;
-      font-weight: 300;
-    }
-
-    .content img {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-    }
-
-    a {
-      color: rgb(57, 140, 254);
-      text-decoration: none;
-      display: block;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      cursor: pointer;
-    }
-
-    .buttonlink {
-      display: inline-block;
-      width: fit-content;
-      font-size: 16px;
-      font-weight: 600;
-      color: rgb(255, 255, 255);
-      background-color: #2142e7;
-      border-style: solid;
-      border-width: 0px;
-      border-radius: 10px;
-      padding: 15px 40px;
-      text-decoration: none;
-      cursor: pointer;
-    }
-
-    @media only screen and (max-width: 600px) {
-      .header-container {
-        padding-left: 40px;
-        padding-right: 40px;
-        padding-top: 150px;
+                      user-scalable=no, target-densitydpi=device-dpi"
+    />
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <!-- index.js as found in build/index.js -->
+    <script src="build/cjs/index.js"></script>
+    <script src="main.js"></script>
+    <style>
+      /* Basic reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
       }
 
-      .head-image {
-        border-radius: 0px;
+      /* Subtle background for the page */
+      body {
+        background: #fff;
+        font-family: sans-serif;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
       }
 
-      .header {
-        min-height: initial;
+      /* Container that holds sidebar + main content side by side */
+      .layout-container {
+        flex: 1;
+        display: flex;
       }
 
-      .content {
-        margin-top: 0px;
-        padding: 40px;
+      /* Sidebar placeholder */
+      .sidebar-placeholder {
+        width: 320px;
+        background-color: rgba(0, 0, 0, 0.05);
       }
-    }
 
-    .skeleton-text {
-      width: 100%;
-      height: 0.7rem;
-      margin-bottom: 0.5rem;
-      border-radius: 0.25rem;
-      background-color: #eee;
-    }
+      /* Main area where we place wireframe blocks in a grid */
+      .main-placeholder {
+        flex: 1;
+        padding: 3rem;
+        display: flex;
+        width: 100%;
+        max-width: 650px;
+        flex-direction: column;
+        margin: auto;
+        margin-top: 100px;
+      }
 
-    .skeleton-text:nth-child(2) {
-      max-width: 95%;
-    }
+      /* Generic wireframe “card” style */
+      .wireframe-block {
+        border-radius: 6px;
+        width: 100%;
+      }
 
-    .skeleton-text:nth-child(3) {
-      max-width: 90%;
-    }
+      .wireframe-block--text {
+        background-color: #999;
+        border-radius: 6px;
+        height: 18px;
+        width: calc(100% - 40px);
+        margin-bottom: 15px;
+      }
 
-    .skeleton-text:nth-child(4) {
-      max-width: 95%;
-    }
+      .wireframe-block--blank {
+        border-radius: 6px;
+        height: 18px;
+        width: calc(100% - 40px);
+        margin-bottom: 15px;
+      }
 
-    video {
-      border: 1px solid lightgray;
-      width: 100%;
-      background-color: #eee;
-    }
+      .wireframe-block--title {
+        background-color: #666;
+        border-radius: 6px;
+        height: 29px;
+        width: calc(100% - 40px);
+        height: 42px;
+        margin-bottom: 50px;
+      }
 
-    /* The Modal (background) */
-    .modal {
-      display: none;
-      /* Hidden by default */
-      position: fixed;
-      /* Stay in place */
-      z-index: 1;
-      /* Sit on top */
-      left: 0;
-      top: 0;
-      width: 100%;
-      /* Full width */
-      height: 100%;
-      /* Full height */
-      overflow: auto;
-      /* Enable scroll if needed */
-      background-color: rgb(0, 0, 0);
-      /* Fallback color */
-      background-color: rgba(0, 0, 0, 0.4);
-      /* Black w/ opacity */
-    }
+      .sidebar-block {
+        background-color: #666;
+        border-radius: 6px;
+        height: 29px;
+        width: calc(100% - 40px);
+        margin-bottom: 20px;
+        margin-left: 30px;
+        margin-right: 0px;
+      }
+    </style>
+  </head>
 
-    /* Modal Content */
-    .modal-content {
-      background-color: #fefefe;
-      margin: 15% auto;
-      /* 15% from the top and centered */
-      padding: 20px;
-      border: 1px solid #888;
-      width: 80%;
-      /* Could be more or less, depending on screen size */
-    }
+  <body>
+    <!-- Main layout container -->
+    <div class="layout-container">
+      <!-- Left sidebar placeholder -->
+      <aside class="sidebar-placeholder">
+        <div class="sidebar-block" onclick="window.location.href='index.html'" style="width: 50%; margin-top: 160px"></div>
+        <div class="sidebar-block" style="width: 65%"></div>
+        <div class="sidebar-block" style="width: 55%"></div>
+        <div class="sidebar-block" style="width: 70%"></div>
+        <div class="sidebar-block" style="width: 67%"></div>
+        <div class="sidebar-block" style="width: 55%"></div>
+      </aside>
 
-    /* The Close Button */
-    .close {
-      color: #aaa;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-    }
-
-    .close:hover,
-    .close:focus {
-      color: black;
-      text-decoration: none;
-      cursor: pointer;
-    }
-  </style>
-</head>
-
-<body>
-  <div class="logo"><i class="fa-solid fa-earth-africa"></i></div>
-  <div class="header">
-    <div class="header-container">
-      <h1>Off-Grid-it-Haus</h1>
-      <h2 class="sub-headline">
-      </h2>
+      <!-- Main content wireframe blocks -->
+      <main class="main-placeholder">
+        <div class="wireframe-block--title"></div>
+        <div class="wireframe-block">
+          <div class="wireframe-block--text" style="width: 80%"></div>
+          <div class="wireframe-block--text" style="width: 87%"></div>
+          <div class="wireframe-block--text" style="width: 85%"></div>
+          <div class="wireframe-block--text" style="width: 87%"></div>
+          <div class="wireframe-block--text" style="width: 85%"></div>
+          <div class="wireframe-block--text" style="width: 89%"></div>
+          <div class="wireframe-block--blank"></div>
+          <div class="wireframe-block--text" style="width: 85%"></div>
+          <div class="wireframe-block--text" style="width: 89%"></div>
+          <div class="wireframe-block--text" style="width: 80%"></div>
+          <div class="wireframe-block--text" style="width: 87%"></div>
+          <div class="wireframe-block--text" style="width: 85%"></div>
+          <div class="wireframe-block--text" style="width: 87%"></div>
+        </div>
+      </main>
     </div>
-  </div>
-  <div class="header-container-image">
-    <img class="head-image" src="./pexels-pixabay-259588.jpg" />
-  </div>
-  <input type="button" value="Start Tour" placeholder="helloo"/>
-  <input type="text" id="userInput" placeholder="Enter your name">
-  <button onclick="greetUser()">Submit</button>
-  <div class="content" id="haha"></div>
-    <a href="/index3.html">Index 3</a>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-    <div class="skeleton-text"></div>
-  </div>
-
-  <script>
-    function greetUser() {
-      var name = document.getElementById("userInput").value;
-      if (name) {
-        alert("Hello, " + name + "! Welcome to Off-Grid-it-Haus.");
-      } else {
-        alert("Please enter your name.");
-      }
-    }
-  </script>
-</body>
-
+  </body>
 </html>

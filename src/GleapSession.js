@@ -483,4 +483,51 @@ export default class GleapSession {
       });
     });
   };
+
+  validateProductTour = (tourId) => {
+    const self = this;
+    return new Promise((resolve, reject) => {
+      this.setOnSessionReady(function () {
+        if (!self.session.gleapId || !self.session.gleapHash) {
+          return reject("Session not ready yet.");
+        }
+
+        const http = new XMLHttpRequest();
+        http.open("POST", self.apiUrl + "/outbound/producttourvalidation");
+        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        http.setRequestHeader("Api-Token", self.sdkKey);
+        try {
+          http.setRequestHeader("Gleap-Id", self.session.gleapId);
+          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+        } catch (exp) {}
+
+        http.onerror = () => {
+          reject();
+        };
+        http.onreadystatechange = function (e) {
+          if (http.readyState === 4) {
+            if (http.status === 200 || http.status === 201) {
+              try {
+                const tourData = JSON.parse(http.responseText);
+                if (tourData && tourData.status === "live") {
+                  resolve(tourData.config);
+                } else {
+                  reject();
+                }
+              } catch (exp) {
+                reject(exp);
+              }
+            } else {
+              reject();
+            }
+          }
+        };
+        http.send(
+          JSON.stringify({
+            outboundId: tourId,
+          })
+        );
+      });
+    });
+  };
 }

@@ -1,6 +1,6 @@
 import { loadIcon } from "./UI";
 import GleapTours from "./GleapTours";
-import Gleap, { GleapEventManager } from "./Gleap";
+import Gleap, { GleapEventManager, GleapSession } from "./Gleap";
 import GleapCopilotTours from "./GleapCopilotTours";
 
 const localStorageKey = "gleap-tour-data";
@@ -66,25 +66,38 @@ export default class GleapProductTours {
 
     const self = this;
 
-    if (delay > 0) {
-      return setTimeout(() => {
-        self.start();
-      }, delay);
-    } else {
-      return this.start();
-    }
+    // Validate product tour.
+    GleapSession.getInstance()
+      .validateProductTour(tourId)
+      .then(() => {
+        console.log("Product tour is live.");
+        if (delay > 0) {
+          return setTimeout(() => {
+            self.start();
+          }, delay);
+        } else {
+          return this.start();
+        }
+      })
+      .catch((error) => {
+        console.log("Product tour is not live. Cleaning up...");
+        console.error(error);
+
+        self.onComplete(false);
+      });
   }
 
   onComplete(success = true) {
-    if (success) {
-      const comData = {
-        tourId: this.productTourId,
-      };
+    const comData = {
+      tourId: this.productTourId,
+    };
 
+    if (success) {
       GleapEventManager.notifyEvent("productTourCompleted", comData);
       Gleap.trackEvent(`tour-${this.productTourId}-completed`, comData);
     } else {
-      console.warn("[Product tour] Selector not found");
+      GleapEventManager.notifyEvent("productTourQuit", comData);
+      Gleap.trackEvent(`tour-${this.productTourId}-quit`, comData);
     }
 
     // Clear data.
