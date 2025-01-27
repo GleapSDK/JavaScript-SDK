@@ -52,20 +52,25 @@ export default class GleapNotificationManager {
 
   reloadNotificationsFromCache() {
     // Load persisted notifications.
-    const notificationsFromCache = loadFromGleapCache(
-      this.unreadNotificationsKey
-    );
-    if (notificationsFromCache && notificationsFromCache.length > 0) {
-      if (notificationsFromCache.length > 2) {
-        this.notifications = notificationsFromCache.splice(
-          0,
-          notificationsFromCache.length - 2
+    try {
+      const notificationsFromCache = loadFromGleapCache(
+        this.unreadNotificationsKey
+      );
+      if (notificationsFromCache && notificationsFromCache.length > 0) {
+        let nots = notificationsFromCache.filter(
+          (notification) =>
+            new Date(notification.createdAt) >
+            new Date(Date.now() - 1 * 60 * 60 * 1000)
         );
-      } else {
-        this.notifications = notificationsFromCache;
+
+        if (nots.length > 2) {
+          this.notifications = nots.splice(0, nots.length - 2);
+        } else {
+          this.notifications = nots;
+        }
+        this.renderNotifications();
       }
-      this.renderNotifications();
-    }
+    } catch (exp) {}
   }
 
   setNotificationCount(unreadCount) {
@@ -141,7 +146,10 @@ export default class GleapNotificationManager {
       const elem = document.createElement("div");
       elem.onclick = () => {
         if (notification.data.conversation) {
-          Gleap.openConversation(notification.data.conversation.shareToken, true);
+          Gleap.openConversation(
+            notification.data.conversation.shareToken,
+            true
+          );
         } else if (notification.data.news) {
           Gleap.openNewsArticle(notification.data.news.id, true);
         } else if (notification.data.checklist) {
