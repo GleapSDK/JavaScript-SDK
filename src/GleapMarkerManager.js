@@ -164,6 +164,17 @@ export default class GleapMarkerManager {
       this.touchMoveEventHandler
     );
 
+    // Clean up toolbar drag listeners
+    const dragHandle = document.querySelector(".bb-capture-toolbar-item[data-type='drag']");
+    if (dragHandle) {
+      dragHandle.removeEventListener("mousedown", this.dragStart);
+      dragHandle.removeEventListener("touchstart", this.dragStart);
+      document.removeEventListener("mousemove", this.drag);
+      document.removeEventListener("touchmove", this.drag);
+      document.removeEventListener("mouseup", this.dragEnd);
+      document.removeEventListener("touchend", this.dragEnd);
+    }
+
     if (this.dragCursor) {
       this.dragCursor.remove();
     }
@@ -179,6 +190,9 @@ export default class GleapMarkerManager {
           <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
           <div class='bb-capture-editor-drag-info'>${loadIcon("rect")}</div>
           <div class="bb-capture-toolbar">
+            <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-tool drag-handle-item" data-type="drag">
+              ${loadIcon("drag")}
+            </div>
             ${this.type === "capture"
         ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
                   ${loadIcon("recorderon")}
@@ -397,6 +411,67 @@ export default class GleapMarkerManager {
 
   setupToolbar() {
     const self = this;
+    const toolbar = document.querySelector(".bb-capture-toolbar");
+    let isDragging = false;
+    let currentX;
+    let currentY;
+    let initialX;
+    let initialY;
+    let xOffset = 0;
+    let yOffset = 0;
+
+    const getTransformValues = () => {
+      const transform = window.getComputedStyle(toolbar).transform;
+      if (transform === 'none') return { x: 0, y: 0 };
+      const matrix = new DOMMatrix(transform);
+      return { x: matrix.m41, y: matrix.m42 };
+    };
+
+    this.dragStart = (e) => {
+      const { x, y } = getTransformValues();
+      xOffset = x;
+      yOffset = y;
+
+      if (e.type === "mousedown") {
+        initialX = e.clientX - xOffset;
+        initialY = e.clientY - yOffset;
+      } else {
+        initialX = e.touches[0].clientX - xOffset;
+        initialY = e.touches[0].clientY - yOffset;
+      }
+      isDragging = true;
+    };
+
+    this.dragEnd = () => {
+      isDragging = false;
+    };
+
+    this.drag = (e) => {
+      if (isDragging) {
+        e.preventDefault();
+        if (e.type === "mousemove") {
+          currentX = e.clientX - initialX;
+          currentY = e.clientY - initialY;
+        } else {
+          currentX = e.touches[0].clientX - initialX;
+          currentY = e.touches[0].clientY - initialY;
+        }
+
+        xOffset = currentX;
+        yOffset = currentY;
+
+        toolbar.style.transform = `translate(${currentX}px, ${currentY}px)`;
+      }
+    };
+
+    const dragHandle = document.querySelector(".bb-capture-toolbar-item[data-type='drag']");
+
+    dragHandle.addEventListener("mousedown", this.dragStart);
+    dragHandle.addEventListener("touchstart", this.dragStart);
+    document.addEventListener("mousemove", this.drag);
+    document.addEventListener("touchmove", this.drag);
+    document.addEventListener("mouseup", this.dragEnd);
+    document.addEventListener("touchend", this.dragEnd);
 
     // Hook up dismiss button
     const dismissButton = document.querySelector(".bb-capture-dismiss");

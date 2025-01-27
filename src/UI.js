@@ -1284,6 +1284,17 @@ export const injectStyledCSS = (
       position: relative;
       margin-right: 5px;
     }
+
+    .drag-handle-item {
+      cursor: grab !important;
+      width: 34px;
+      min-width: 34px;
+    }
+
+    .drag-handle-item svg {
+      width: 18px !important;
+      height: 18px !important;
+    }
     
     .bb-capture-toolbar-item svg {
       width: 23px;
@@ -2303,6 +2314,10 @@ export const loadIcon = function (name, color) {
     return `<svg class="bb-logo-logo bb-logo-logo--default" width="145" height="144" viewBox="0 0 145 144" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M38.9534 15H105.047C113.857 15 121 22.1426 121 30.9534L121 89.5238L121 96.015L121 125.541C121 128.759 117.393 130.66 114.739 128.84L90.1188 111.968H38.9534C30.1426 111.968 23 104.826 23 96.015V30.9534C23 22.1426 30.1426 15 38.9534 15Z" fill="white"/>
     </svg>`;
+  }
+
+  if (name === "drag") {
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--!Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2025 Fonticons, Inc.--><path d="M64 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm0 160a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM96 416a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96-288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm32 128a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM192 448a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>`;
   }
 
   if (name === "unmute") {
