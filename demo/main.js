@@ -4,7 +4,7 @@ Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.setLanguage("ar-DZ");
+// Gleap.setLanguage("en");
 
 Gleap.initialize("VHKvTzWV8jKjms6mWWygiUDWlL8zs7an");
 
@@ -17,6 +17,7 @@ Gleap.identify("94383829393", {
 })
 
 Gleap.open();
+
 // Gleap.showSurvey("c01abef016b8efb03a9a", "survey_full");
 
 
@@ -26,6 +27,9 @@ Gleap.open();
 // Gleap.trackEvent("Step 2 resolved");
 // Gleap.trackEvent("Step 3 resolved");
 
+// setTimeout(() => {
+    // Gleap.trackEvent("Step 4 resolved");
+// }, 4000);
 // Gleap.setTicketAttribute("qwerrewq", "Custom value")
 // Gleap.attachCustomData({
 //     test: "dataaa",
