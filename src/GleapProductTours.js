@@ -70,7 +70,6 @@ export default class GleapProductTours {
     GleapSession.getInstance()
       .validateProductTour(tourId)
       .then(() => {
-        console.log("Product tour is live.");
         if (delay > 0) {
           return setTimeout(() => {
             self.start();

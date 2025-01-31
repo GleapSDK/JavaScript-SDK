@@ -1,3 +1,4 @@
+import { GleapTranslationManager } from "./Gleap";
 import { loadIcon } from "./UI";
 
 const localStorageKey = "gleap-tour-data";
@@ -5,6 +6,8 @@ const pointerContainerId = "copilot-pointer-container";
 const styleId = "copilot-tour-styles";
 const copilotJoinedContainerId = "copilot-joined-container";
 const copilotInfoBubbleId = "copilot-info-bubble";
+
+const arrowRightIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>`;
 
 function estimateReadTime(text) {
   const wordsPerSecond = 3.6; // Average reading speed
@@ -138,7 +141,8 @@ export default class GleapCopilotTours {
         ) {
           // Wait for the element to be rendered.
           self.updatePointerPosition(
-            document.querySelector(currentStep.selector)
+            document.querySelector(currentStep.selector),
+            currentStep
           );
         }
       }
@@ -186,7 +190,7 @@ export default class GleapCopilotTours {
     }
   }
 
-  updatePointerPosition(anchor) {
+  updatePointerPosition(anchor, currentStep) {
     try {
       const container = document.getElementById(pointerContainerId);
       if (!container) {
@@ -220,6 +224,11 @@ export default class GleapCopilotTours {
         anchorRect.left + anchorRect.width / 2 + window.scrollX;
       let anchorCenterY =
         anchorRect.top + anchorRect.height / 2 + window.scrollY;
+
+      if (currentStep?.mode === "INPUT") {
+        anchorCenterX -= anchorRect.width / 2 - 10;
+        anchorCenterY += anchorRect.height / 2 - 5;
+      }
 
       let containerWidthSpace = 350;
       if (containerWidthSpace > window.innerWidth - 40) {
@@ -286,8 +295,21 @@ export default class GleapCopilotTours {
           display: flex;
           align-items: flex-start;
           pointer-events: none;
-          z-index: 9999;
-          transition: all 0.5s ease;;
+          z-index: 2147483610;
+          transition: all 0.5s ease;
+        }
+
+        .${pointerContainerId}-clickmode {
+          cursor: pointer;
+          pointer-events: all !important;
+        }
+
+        .${pointerContainerId}-clickmode #${copilotInfoBubbleId}-content {
+          display: flex !important;
+        }
+
+        .${pointerContainerId}-clickmode svg {
+          display: none !important;
         }
   
         #${pointerContainerId} svg {
@@ -313,6 +335,13 @@ export default class GleapCopilotTours {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+        }
+
+        #${copilotInfoBubbleId}-content svg {
+          width: 16px;
+          height: 16px;
+          display: inline-block !important;
+          margin-left: 5px;
         }
 
         #${copilotInfoBubbleId}-content {
@@ -605,6 +634,7 @@ export default class GleapCopilotTours {
       return;
     }
 
+    const self = this;
     const config = this.productTourData;
     const steps = config.steps;
 
@@ -619,6 +649,8 @@ export default class GleapCopilotTours {
     const currentStep = steps[this.currentActiveIndex];
 
     const handleStep = (element) => {
+      document.getElementById(pointerContainerId).style.display = "flex";
+
       // If we have a selector but the element was null, close the tour.
       if (currentStep.selector && currentStep.selector.length > 0 && !element) {
         this.completeTour(false);
@@ -626,6 +658,60 @@ export default class GleapCopilotTours {
       }
 
       const gotToNextStep = () => {
+        if (currentStep.mode === "INPUT" && element) {
+          // Wait for text to be entered. Continue tour on enter. element is the input.
+          function handleClick() {
+            document
+              .querySelector(`#${pointerContainerId}`)
+              .classList.remove("copilot-pointer-container-clickmode");
+
+            // Remove the highlight from the input fields.
+            element.classList.remove("gleap-input-highlight");
+
+            // Hide the info bubble.
+            document.getElementById(pointerContainerId).style.display = "none";
+
+            self.currentActiveIndex++;
+            self.storeUncompletedTour();
+            self.renderNextStep();
+          }
+
+          function handleInputEvent(e) {
+            if (e.target.value.length === 0) return;
+
+            const cursor = document.getElementById(
+              `${copilotInfoBubbleId}-content`
+            );
+            if (!cursor) return;
+
+            cursor.innerHTML = `${GleapTranslationManager.translateText(
+              `next`
+            )} ${arrowRightIcon}`;
+            cursor.addEventListener("click", handleClick, { once: true });
+
+            // Add highlight to the input fields. red shadow glow.
+            element.classList.add("gleap-input-highlight");
+
+            document
+              .querySelector(`#${pointerContainerId}`)
+              .classList.add("copilot-pointer-container-clickmode");
+
+            // Remove the input event listener after execution
+            element.removeEventListener("input", handleInputEvent);
+          }
+
+          element.addEventListener("input", handleInputEvent);
+
+          // Focus on the input.
+          element.addEventListener("blur", () => {
+            element.focus();
+          });
+
+          element.focus();
+
+          return;
+        }
+
         this.currentActiveIndex++;
         this.storeUncompletedTour();
 
@@ -648,7 +734,7 @@ export default class GleapCopilotTours {
       };
 
       // Update pointer position, even if element is null.
-      this.updatePointerPosition(element);
+      this.updatePointerPosition(element, currentStep);
 
       const message = currentStep?.message
         ? htmlToPlainText(currentStep.message)

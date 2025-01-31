@@ -94,6 +94,9 @@ export const injectStyledCSS = (
       line-height: 1;
       font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     }
+    .gleap-input-highlight {
+      box-shadow: 0 0 0 3px ${primaryColor} !important;
+    }
     .gleap-frame-container {
       right: ${buttonX}px;
       bottom: ${61 + buttonY}px;

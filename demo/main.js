@@ -1,22 +1,14 @@
 const Gleap = window.Gleap;
 
-Gleap.setFrameUrl("http://0.0.0.0:3001");
-Gleap.setApiUrl("http://0.0.0.0:9000");
-Gleap.setWSApiUrl("ws://0.0.0.0:9000");
+// Gleap.setFrameUrl("http://0.0.0.0:3001");
+// Gleap.setApiUrl("http://0.0.0.0:9000");
+// Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.setLanguage("ar-DZ");
-
-Gleap.initialize("VHKvTzWV8jKjms6mWWygiUDWlL8zs7an");
+Gleap.initialize("ng6GlnVz6BEUyxFu9nVCg1dlrfHz8tTK");
 
 // const lastMonthDate = new Date();
 // lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
-Gleap.identify("94383829393", {
-    email: "luca@gleap.io",
-    name: "Luca Blaser",
-})
-
-Gleap.open();
 // Gleap.showSurvey("c01abef016b8efb03a9a", "survey_full");
 
 
