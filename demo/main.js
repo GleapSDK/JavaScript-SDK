@@ -18,6 +18,9 @@ Gleap.initialize("ng6GlnVz6BEUyxFu9nVCg1dlrfHz8tTK");
 // Gleap.trackEvent("Step 2 resolved");
 // Gleap.trackEvent("Step 3 resolved");
 
+// setTimeout(() => {
+    // Gleap.trackEvent("Step 4 resolved");
+// }, 4000);
 // Gleap.setTicketAttribute("qwerrewq", "Custom value")
 // Gleap.attachCustomData({
 //     test: "dataaa",

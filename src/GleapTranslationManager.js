@@ -4,7 +4,6 @@ import {
   GleapSession,
   GleapConfigManager,
 } from "./Gleap";
-import { rtlLanguages } from "./rtlLanguages";
 
 export default class GleapTranslationManager {
   overrideLanguage = "";
@@ -35,29 +34,16 @@ export default class GleapTranslationManager {
     this.overrideLanguage = language;
   }
 
-  checkRTL(language) {
-    try {
-      const languageCode = language.split("-")[0];
-  
-      return rtlLanguages.includes(languageCode);
-    } catch (error) {
-      return false;
-    }
-  }
-
   updateRTLSupport() {
     // Update RTL support.
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
     this.isRTLLayout = false;
-
-    if (flowConfig && flowConfig.localizationOptions && flowConfig.localizationOptions.rtl) {
-      this.isRTLLayout = true;
-    }
-
-    const language = this.getActiveLanguage();
-    const isRTL = this.checkRTL(language);
-    if (isRTL) {
+    if (
+      flowConfig &&
+      flowConfig.localizationOptions &&
+      flowConfig.localizationOptions.rtl
+    ) {
       this.isRTLLayout = true;
     }
 
