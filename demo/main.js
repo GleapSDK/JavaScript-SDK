@@ -1,10 +1,10 @@
 const Gleap = window.Gleap;
 
-// Gleap.setFrameUrl("http://0.0.0.0:3001");
-// Gleap.setApiUrl("http://0.0.0.0:9000");
-// Gleap.setWSApiUrl("ws://0.0.0.0:9000");
+Gleap.setFrameUrl("http://0.0.0.0:3001");
+Gleap.setApiUrl("http://0.0.0.0:9000");
+Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.initialize("ng6GlnVz6BEUyxFu9nVCg1dlrfHz8tTK");
+Gleap.initialize("MJwWCcTa1rl6Aor6ENPRN1TADFhQ05a9");
 
 // const lastMonthDate = new Date();
 // lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);

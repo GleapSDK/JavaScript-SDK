@@ -446,6 +446,23 @@ export default class GleapCopilotTours {
           opacity: 0.8;
         }
 
+        .${copilotJoinedContainerId}-dismiss {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding-right: 3px;
+        }
+
+        .${copilotJoinedContainerId}-dismiss svg {
+          width: 15px;
+          height: auto;
+          cursor: pointer;
+        }
+
+        .${copilotJoinedContainerId}-dismiss svg:hover {
+          opacity: 0.8;
+        }
+
         @keyframes pulsate {
           0% {
             transform: scale(1);
@@ -576,7 +593,13 @@ export default class GleapCopilotTours {
       <span>${this.productTourData?.kaiSlug}</span>
       <div class="${copilotJoinedContainerId}-mute">
         ${loadIcon(this.audioMuted ? "unmute" : "mute")}
-      </div>
+      </div>${
+        this.productTourData?.allowClose
+          ? `<div class="${copilotJoinedContainerId}-dismiss">
+        ${loadIcon("dismiss")}
+      </div>`
+          : ""
+      }
     `;
     document.body.appendChild(copilotInfoContainer);
 
@@ -595,6 +618,14 @@ export default class GleapCopilotTours {
         document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML =
           loadIcon(self.audioMuted ? "unmute" : "mute");
       });
+
+    if (this.productTourData?.allowClose) {
+      document
+        .querySelector(`.${copilotJoinedContainerId}-dismiss`)
+        .addEventListener("click", () => {
+          this.completeTour(false);
+        });
+    }
 
     // Append elements
     container.appendChild(svgMouse);
@@ -660,7 +691,7 @@ export default class GleapCopilotTours {
       const gotToNextStep = () => {
         if (currentStep.mode === "INPUT" && element) {
           // Wait for text to be entered. Continue tour on enter. element is the input.
-          function handleClick() {
+          function proceedClickmode() {
             document
               .querySelector(`#${pointerContainerId}`)
               .classList.remove("copilot-pointer-container-clickmode");
@@ -676,38 +707,65 @@ export default class GleapCopilotTours {
             self.renderNextStep();
           }
 
-          function handleInputEvent(e) {
-            if (e.target.value.length === 0) return;
+          const inputModeType = currentStep.inputType ?? "default";
 
-            const cursor = document.getElementById(
-              `${copilotInfoBubbleId}-content`
-            );
-            if (!cursor) return;
+          if (inputModeType === "default") {
+            function handleInputEvent(e) {
+              if (e.target.value.length === 0) return;
 
-            cursor.innerHTML = `${GleapTranslationManager.translateText(
-              `next`
-            )} ${arrowRightIcon}`;
-            cursor.addEventListener("click", handleClick, { once: true });
+              const cursor = document.getElementById(
+                `${copilotInfoBubbleId}-content`
+              );
+              if (!cursor) return;
 
-            // Add highlight to the input fields. red shadow glow.
-            element.classList.add("gleap-input-highlight");
+              cursor.innerHTML = `${GleapTranslationManager.translateText(
+                `next`
+              )} ${arrowRightIcon}`;
+              cursor.addEventListener("click", proceedClickmode, {
+                once: true,
+              });
 
-            document
-              .querySelector(`#${pointerContainerId}`)
-              .classList.add("copilot-pointer-container-clickmode");
+              // Add highlight to the input fields. red shadow glow.
+              element.classList.add("gleap-input-highlight");
 
-            // Remove the input event listener after execution
-            element.removeEventListener("input", handleInputEvent);
-          }
+              document
+                .querySelector(`#${pointerContainerId}`)
+                .classList.add("copilot-pointer-container-clickmode");
 
-          element.addEventListener("input", handleInputEvent);
+              // Remove the input event listener after execution
+              element.removeEventListener("input", handleInputEvent);
+            }
 
-          // Focus on the input.
-          element.addEventListener("blur", () => {
+            element.addEventListener("input", handleInputEvent);
+
+            // Focus on the input.
+            element.addEventListener("blur", () => {
+              element.focus();
+            });
+
             element.focus();
-          });
+          } else {
+            // Set the input value, wait and proceed.
+            const inputValue = currentStep.inputValue ?? "";
 
-          element.focus();
+            let index = 0;
+            function typeCharacter() {
+              if (index < inputValue.length) {
+                // Append one character at a time.
+                element.value += inputValue[index];
+                index++;
+
+                setTimeout(typeCharacter, 100);
+              } else {
+                setTimeout(() => {
+                  proceedClickmode();
+                }, 1200);
+              }
+            }
+
+            // Start the typewriter effect.
+            typeCharacter();
+          }
 
           return;
         }
