@@ -686,7 +686,39 @@ export const injectStyledCSS = (
 
     .gleap-notification-item-news {
       width: 100%;
+    }
+
+    .gleap-news-pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .gleap-news-page-indicator {
+      font-size: 12px;
+      color: ${subTextColor};
+    }
+
+    .gleap-news-next-button {
+      background-color: ${primaryColor};
+      color: ${contrastColor};
+      border-radius: ${formItemSmallBorderRadius}px;
+      box-sizing: border-box;
+      padding: 5px 10px;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 21px;
+      border: none;
+      text-align: center;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: none !important;
+      outline: none !important;^
     }
 
     .gleap-notification-item-news-content {
@@ -698,7 +730,7 @@ export const injectStyledCSS = (
 
     .gleap-notification-item-news-preview {
       color: ${subTextColor};
-      font-size: 15px;
+      font-size: 14px;
       line-height: 21px;
       font-weight: 400;
       overflow-wrap: break-word;
@@ -729,6 +761,7 @@ export const injectStyledCSS = (
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      cursor: pointer;
     }
 
     .gleap-notification-item-news-sender img {
@@ -751,7 +784,6 @@ export const injectStyledCSS = (
       background-color: ${backgroundColor};
       border-radius: ${subTextColor};
       box-sizing: border-box;
-      cursor: pointer;
       flex-direction: column;
       overflow: hidden;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
@@ -765,9 +797,10 @@ export const injectStyledCSS = (
       max-height: 170px;
       object-fit: cover;
       width: 100%;
+      cursor: pointer;
     }
-
-    .gleap-notification-item-news:hover .gleap-notification-item-news-content-title {
+      
+    .gleap-notification-item-news-content-title:hover {
       color: ${primaryColor};
     }
 
