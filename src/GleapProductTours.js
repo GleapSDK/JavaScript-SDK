@@ -290,7 +290,8 @@ export default class GleapProductTours {
           // Mark as completed.
           this.onComplete(true);
         } else {
-          this.gleapTourObj.destroy();
+          // Mark as quit.
+          this.onComplete(false);
         }
 
         document.removeEventListener("click", onDocumentClick);
