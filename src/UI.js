@@ -2018,7 +2018,7 @@ export const injectStyledCSS = (
 
     .gleap-admin-frame {
       width: 100%;
-      height: 100%;
+      height: 100% !important;
       border: none;
       outline: none;
       display: block;
