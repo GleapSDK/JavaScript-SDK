@@ -274,7 +274,11 @@ export default class GleapAdminManager {
 
     this.gleapCollapseUI = elem;
 
-    elem.addEventListener("click", () => {
+    elem.addEventListener("click", (e) => {
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      e.preventDefault();
+
       this.toggleCollapseUI();
     });
   };

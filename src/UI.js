@@ -1991,7 +1991,6 @@ export const injectStyledCSS = (
     .gleap-admin-collapse-ui svg {
       width: 20px;
       height: 14px;
-      margin-top: 6px;
       fill: #000 !important;
     }
 
