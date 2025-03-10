@@ -38,7 +38,10 @@ export default class GleapBannerManager {
           });
         }
         if (data.name === "banner-height") {
-          document.documentElement.style.setProperty('--gleap-margin-top', data.data.height + 'px');
+          document.documentElement.style.setProperty(
+            "--gleap-margin-top",
+            data.data.height + "px"
+          );
         }
         if (data.name === "banner-data-set") {
           document.body.classList.add("gleap-b-shown");
@@ -68,7 +71,10 @@ export default class GleapBannerManager {
         if (data.name === "show-help-article") {
           Gleap.openHelpCenterArticle(data.data?.articleId);
         }
-      } catch (exp) { }
+        if (data.name === "show-checklist") {
+          Gleap.startChecklist(data.data?.checklistId);
+        }
+      } catch (exp) {}
     });
   }
 
@@ -77,7 +83,7 @@ export default class GleapBannerManager {
       document.body.removeChild(this.bannerContainer);
       this.bannerContainer = null;
     }
-    
+
     document.body.classList.remove("gleap-b-shown");
     document.body.classList.remove("gleap-b-f");
   }
@@ -103,12 +109,15 @@ export default class GleapBannerManager {
     try {
       const gleapBFrame = document.querySelector(".gleap-b-frame");
       if (gleapBFrame && gleapBFrame.contentWindow) {
-        gleapBFrame.contentWindow.postMessage(JSON.stringify({
-          ...data,
-          type: "banner"
-        }), "*");
+        gleapBFrame.contentWindow.postMessage(
+          JSON.stringify({
+            ...data,
+            type: "banner",
+          }),
+          "*"
+        );
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   showBanner(bannerData) {
