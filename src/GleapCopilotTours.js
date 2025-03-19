@@ -7,7 +7,9 @@ const styleId = "copilot-tour-styles";
 const copilotJoinedContainerId = "copilot-joined-container";
 const copilotInfoBubbleId = "copilot-info-bubble";
 
-const arrowRightIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></svg>`;
+const arrowRightIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+  <path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
+</svg>`;
 
 function estimateReadTime(text) {
   const wordsPerSecond = 3.6; // Average reading speed
@@ -25,7 +27,7 @@ function htmlToPlainText(html) {
 function scrollToElement(element) {
   if (element) {
     element.scrollIntoView({
-      behavior: "smooth", // Ensures smooth scrolling
+      behavior: "smooth",
       block: "center",
       inline: "center",
     });
@@ -83,7 +85,18 @@ async function canPlayAudio() {
   }
 }
 
-// === Helper: Get scrollable ancestors of an element ===
+// Helper: Check if an element is fully visible in the viewport.
+function isElementFullyVisible(el) {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= window.innerHeight &&
+    rect.right <= window.innerWidth
+  );
+}
+
+// Helper: Get scrollable ancestors of an element.
 function getScrollableAncestors(el) {
   let ancestors = [];
   let current = el.parentElement;
@@ -110,13 +123,13 @@ export default class GleapCopilotTours {
   audioMuted = false;
   currentAudio = undefined;
 
-  // Cached pointer container reference.
+  // Cached pointer container.
   _pointerContainer = null;
-  // New properties for scroll handling.
+  // For scroll handling.
   _scrollListeners = [];
   _currentAnchor = null;
   _currentStep = null;
-  _updateScheduled = false;
+  _scrollDebounceTimer = null;
 
   // GleapReplayRecorder singleton.
   static instance;
@@ -132,7 +145,7 @@ export default class GleapCopilotTours {
     this._scrollListeners = [];
     this._currentAnchor = null;
     this._currentStep = null;
-    this._updateScheduled = false;
+    this._scrollDebounceTimer = null;
 
     window.addEventListener("resize", () => {
       if (
@@ -193,28 +206,25 @@ export default class GleapCopilotTours {
     }
   }
 
-  // === Attach scroll listeners to update the pointer position on scroll ===
+  // Attach scroll listeners with a debounce to update the pointer position after scrolling stops.
   attachScrollListeners(anchor, currentStep) {
     if (!anchor) return;
     const scrollableAncestors = getScrollableAncestors(anchor);
-    // Also include window to catch any page-level scrolling.
+    // Also include window.
     scrollableAncestors.push(window);
     scrollableAncestors.forEach((el) => {
       const handler = () => {
-        if (!this._updateScheduled) {
-          this._updateScheduled = true;
-          requestAnimationFrame(() => {
-            this.updatePointerPosition(anchor, currentStep);
-            this._updateScheduled = false;
-          });
-        }
+        clearTimeout(this._scrollDebounceTimer);
+        this._scrollDebounceTimer = setTimeout(() => {
+          this.updatePointerPosition(anchor, currentStep);
+        }, 150);
       };
       el.addEventListener("scroll", handler, { passive: true });
       this._scrollListeners.push({ el, handler });
     });
   }
 
-  // === Remove previously attached scroll listeners ===
+  // Remove scroll listeners and clear debounce timer.
   removeScrollListeners() {
     if (this._scrollListeners && this._scrollListeners.length > 0) {
       this._scrollListeners.forEach(({ el, handler }) => {
@@ -222,17 +232,21 @@ export default class GleapCopilotTours {
       });
       this._scrollListeners = [];
     }
+    if (this._scrollDebounceTimer) {
+      clearTimeout(this._scrollDebounceTimer);
+      this._scrollDebounceTimer = null;
+    }
   }
 
-  // === Updated pointer position using fixed positioning and scroll listeners ===
+  // Updated pointer position:
+  // 1. Scroll the element into view.
+  // 2. After the element is fully visible (or after a maximum delay), update the pointer position to point towards the element.
   updatePointerPosition(anchor, currentStep) {
     try {
-      // Use the cached pointer container if available.
       const container =
         this._pointerContainer || document.getElementById(pointerContainerId);
       if (!container) return;
 
-      // If no anchor, center pointer in the viewport.
       if (!anchor) {
         container.style.position = "fixed";
         container.style.left = "50%";
@@ -244,44 +258,54 @@ export default class GleapCopilotTours {
         this._currentStep = null;
         return;
       }
-      // Calculate element’s position relative to the viewport.
-      const anchorRect = anchor.getBoundingClientRect();
-      let anchorCenterX = anchorRect.left + anchorRect.width / 2;
-      let anchorCenterY = anchorRect.top + anchorRect.height / 2;
-      if (currentStep?.mode === "INPUT") {
-        anchorCenterX -= anchorRect.width / 2 - 10;
-        anchorCenterY += anchorRect.height / 2 - 5;
-      }
-      container.style.position = "fixed";
-      container.style.left = `${anchorCenterX}px`;
-      container.style.top = `${anchorCenterY}px`;
-      container.style.transform = "translate(-50%, -50%)";
 
-      let containerWidthSpace = 350;
-      if (containerWidthSpace > window.innerWidth - 40) {
-        containerWidthSpace = window.innerWidth - 40;
-      }
-      const windowWidth = window.innerWidth;
-      const isTooFarRight =
-        anchorCenterX + containerWidthSpace > windowWidth - 20;
-      if (isTooFarRight) {
-        container.classList.add("copilot-pointer-container-right");
-      } else {
-        container.classList.remove("copilot-pointer-container-right");
-      }
-
-      // If desired, consider debouncing this auto-scroll to avoid jarring effects.
+      // Step 1: Scroll the element into view.
       scrollToElement(anchor);
 
-      // Reattach scroll listeners if the target or step has changed.
-      if (this._currentAnchor !== anchor || this._currentStep !== currentStep) {
-        this.removeScrollListeners();
-        this._currentAnchor = anchor;
-        this._currentStep = currentStep;
-        this.attachScrollListeners(anchor, currentStep);
-      }
+      // Step 2: Poll until the element is fully visible (or after maximum polls).
+      const pollInterval = 100;
+      const maxPolls = 20;
+      let pollCount = 0;
+      const updateFinalPosition = () => {
+        if (isElementFullyVisible(anchor) || pollCount >= maxPolls) {
+          // Compute final target coordinates.
+          const anchorRect = anchor.getBoundingClientRect();
+          const targetX = anchorRect.left + anchorRect.width / 2;
+          const targetY = anchorRect.top + anchorRect.height / 2 + 10; // 10px downward offset.
+          container.style.position = "fixed";
+          container.style.left = `${targetX}px`;
+          container.style.top = `${targetY}px`;
+          container.style.transform = "translate(-50%, -50%)";
+
+          // Adjust container if too far right.
+          let containerWidthSpace = 350;
+          if (containerWidthSpace > window.innerWidth - 40) {
+            containerWidthSpace = window.innerWidth - 40;
+          }
+          if (targetX + containerWidthSpace > window.innerWidth - 20) {
+            container.classList.add("copilot-pointer-container-right");
+          } else {
+            container.classList.remove("copilot-pointer-container-right");
+          }
+
+          // Reattach scroll listeners if the target or step has changed.
+          if (
+            this._currentAnchor !== anchor ||
+            this._currentStep !== currentStep
+          ) {
+            this.removeScrollListeners();
+            this._currentAnchor = anchor;
+            this._currentStep = currentStep;
+            this.attachScrollListeners(anchor, currentStep);
+          }
+        } else {
+          pollCount++;
+          setTimeout(updateFinalPosition, pollInterval);
+        }
+      };
+      updateFinalPosition();
     } catch (e) {
-      // Optionally log errors here.
+      // Optionally log errors.
     }
   }
 
@@ -563,7 +587,7 @@ export default class GleapCopilotTours {
     const container = document.createElement("div");
     container.id = pointerContainerId;
     container.style.opacity = 0;
-    // Cache the pointer container reference.
+    // Cache the pointer container.
     this._pointerContainer = container;
 
     const svgMouse = document.createElementNS(
