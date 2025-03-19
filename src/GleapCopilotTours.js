@@ -365,10 +365,6 @@ export default class GleapCopilotTours {
         #${copilotInfoBubbleId} {
           position: relative;
         }
-        .${pointerContainerId}-right #${copilotInfoBubbleId}-content-container {
-          left: auto !important;
-          right: 0px !important;
-        }
         #${copilotInfoBubbleId}-content-container {
           position: absolute;
           top: 0px;
@@ -377,6 +373,17 @@ export default class GleapCopilotTours {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+        }
+        .${pointerContainerId}-right #${copilotInfoBubbleId}-content-container {
+          left: auto !important;
+          right: 0px !important;
+          align-items: flex-end;
+        }
+        .${pointerContainerId}-right .copilot-info-bubble-content {
+          margin-right: 5px;
+        }
+        .${pointerContainerId}-right svg {
+          transform: scaleX(-1);
         }
         #${copilotInfoBubbleId}-content svg {
           width: 16px;
