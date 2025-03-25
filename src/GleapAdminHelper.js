@@ -1,5 +1,5 @@
 import { ElementPicker } from "pick-dom-element";
-import unique from 'unique-selector';
+import unique from "unique-selector";
 
 class GleapAdminHelper {
   picker = null;
@@ -11,42 +11,57 @@ class GleapAdminHelper {
       this.picker = null;
       return;
     }
-  }
+  };
 
   startPicker = () => {
     this.stopPicker();
     var self = this;
 
-    const style = { borderColor: "#2142E7", background: "transparent", borderWidth: "4px", borderRadius: "5px" };
+    const style = {
+      borderColor: "#2142E7",
+      background: "transparent",
+      borderWidth: "4px",
+      borderRadius: "5px",
+    };
     this.picker = new ElementPicker({ style });
     this.picker.start({
       useShadowDOM: false,
       onClick: (el) => {
         try {
-          var selector = unique(el);
+          let selector;
+          const tourId = el.getAttribute("data-gleap-tour");
+          if (tourId) {
+            selector = `[data-gleap-tour="${tourId}"]`;
+          } else {
+            selector = unique(el);
+          }
+
           self.onElementPicked && self.onElementPicked(selector);
         } catch (e) {
-          console.error('Error while getting unique selector', e);
+          console.error("Error while getting unique selector", e);
         }
       },
       elementFilter: (el) => {
-        if (el.classList.contains('gleap-admin-collapse-ui') || el.closest('.gleap-admin-collapse-ui')) {
+        if (
+          el.classList.contains("gleap-admin-collapse-ui") ||
+          el.closest(".gleap-admin-collapse-ui")
+        ) {
           return false;
         }
         return true;
-      }
+      },
     });
   };
 
   setMode = (mode) => {
     this.mode = mode;
-    if (mode === 'navigate') {
+    if (mode === "navigate") {
       this.stopPicker();
     }
-    if (mode === 'picker') {
+    if (mode === "picker") {
       this.startPicker();
     }
-  }
+  };
 }
 
 export default GleapAdminHelper;
