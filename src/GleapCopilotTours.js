@@ -12,6 +12,8 @@ const arrowRightIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448
 </svg>`;
 
 function estimateReadTime(text) {
+  if (typeof window === "undefined") return;
+
   const wordsPerSecond = 3.6; // Average reading speed
   const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
   const readTimeInSeconds = Math.ceil(wordCount / wordsPerSecond);
@@ -19,12 +21,16 @@ function estimateReadTime(text) {
 }
 
 function htmlToPlainText(html) {
+  if (typeof window === "undefined") return;
+
   const tempDiv = document.createElement("div");
   tempDiv.innerHTML = html;
   return tempDiv.textContent || "";
 }
 
 function scrollToElement(element) {
+  if (typeof window === "undefined") return;
+
   if (element) {
     element.scrollIntoView({
       behavior: "smooth",
@@ -35,6 +41,8 @@ function scrollToElement(element) {
 }
 
 function performClickAnimation(posX, posY) {
+  if (typeof window === "undefined") return;
+
   const wave = document.createElement("div");
   wave.className = "click-wave";
   wave.style.left = `${posX - 17}px`;
@@ -46,6 +54,8 @@ function performClickAnimation(posX, posY) {
 }
 
 function waitForElement(selector, timeout = 5000) {
+  if (typeof window === "undefined") return;
+
   const pollInterval = 100;
   const maxAttempts = timeout / pollInterval;
   let attempts = 0;
@@ -65,6 +75,8 @@ function waitForElement(selector, timeout = 5000) {
 }
 
 function smoothScrollToY(yPosition) {
+  if (typeof window === "undefined") return;
+
   const viewportHeight = window.innerHeight;
   const targetScrollPosition = yPosition - viewportHeight / 2;
   window.scrollTo({
@@ -74,6 +86,8 @@ function smoothScrollToY(yPosition) {
 }
 
 async function canPlayAudio() {
+  if (typeof window === "undefined") return;
+
   const audio = new Audio(
     "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgAEABAAZGF0YQAAAAA="
   );
@@ -87,6 +101,8 @@ async function canPlayAudio() {
 
 // Helper: Check if an element is fully visible in the viewport.
 function isElementFullyVisible(el) {
+  if (typeof window === "undefined") return;
+
   const rect = el.getBoundingClientRect();
   return (
     rect.top >= 0 &&
@@ -98,6 +114,8 @@ function isElementFullyVisible(el) {
 
 // Helper: Get scrollable ancestors of an element.
 function getScrollableAncestors(el) {
+  if (typeof window === "undefined") return;
+
   let ancestors = [];
   let current = el.parentElement;
   while (current) {
@@ -142,32 +160,35 @@ export default class GleapCopilotTours {
 
   constructor() {
     const self = this;
-    this._scrollListeners = [];
-    this._currentAnchor = null;
-    this._currentStep = null;
-    this._scrollDebounceTimer = null;
 
-    window.addEventListener("resize", () => {
-      if (
-        self.productTourId &&
-        self.currentActiveIndex >= 0 &&
-        self.productTourData &&
-        self.productTourData.steps
-      ) {
-        const steps = self.productTourData.steps;
-        const currentStep = steps[self.currentActiveIndex];
+    if (typeof window !== "undefined") {
+      this._scrollListeners = [];
+      this._currentAnchor = null;
+      this._currentStep = null;
+      this._scrollDebounceTimer = null;
+
+      window.addEventListener("resize", () => {
         if (
-          currentStep &&
-          currentStep.selector &&
-          currentStep.selector !== ""
+          self.productTourId &&
+          self.currentActiveIndex >= 0 &&
+          self.productTourData &&
+          self.productTourData.steps
         ) {
-          self.updatePointerPosition(
-            document.querySelector(currentStep.selector),
-            currentStep
-          );
+          const steps = self.productTourData.steps;
+          const currentStep = steps[self.currentActiveIndex];
+          if (
+            currentStep &&
+            currentStep.selector &&
+            currentStep.selector !== ""
+          ) {
+            self.updatePointerPosition(
+              document.querySelector(currentStep.selector),
+              currentStep
+            );
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   disable() {
@@ -176,6 +197,7 @@ export default class GleapCopilotTours {
   }
 
   startWithConfig(tourId, config, onCompleteCallback = undefined) {
+    if (typeof window === "undefined") return;
     if (this.productTourId) return;
     this.productTourId = tourId;
     this.productTourData = config;
@@ -185,6 +207,7 @@ export default class GleapCopilotTours {
   }
 
   storeUncompletedTour() {
+    if (typeof window === "undefined") return;
     if (this.productTourId && this.productTourData) {
       try {
         let data = JSON.parse(
@@ -208,6 +231,7 @@ export default class GleapCopilotTours {
 
   // Attach scroll listeners with a debounce to update the pointer position after scrolling stops.
   attachScrollListeners(anchor, currentStep) {
+    if (typeof window === "undefined") return;
     if (!anchor) return;
     const scrollableAncestors = getScrollableAncestors(anchor);
     // Also include window.
@@ -226,6 +250,7 @@ export default class GleapCopilotTours {
 
   // Remove scroll listeners and clear debounce timer.
   removeScrollListeners() {
+    if (typeof window === "undefined") return;
     if (this._scrollListeners && this._scrollListeners.length > 0) {
       this._scrollListeners.forEach(({ el, handler }) => {
         el.removeEventListener("scroll", handler);
@@ -242,6 +267,7 @@ export default class GleapCopilotTours {
   // 1. Scroll the element into view.
   // 2. After the element is fully visible (or after a maximum delay), update the pointer position to point towards the element.
   updatePointerPosition(anchor, currentStep) {
+    if (typeof window === "undefined") return;
     try {
       const container =
         this._pointerContainer || document.getElementById(pointerContainerId);
@@ -310,6 +336,7 @@ export default class GleapCopilotTours {
   }
 
   cleanup() {
+    if (typeof window === "undefined") return;
     document.body.classList.add("gl-copilot-fade-out");
     setTimeout(() => {
       if (this._pointerContainer) {
@@ -331,6 +358,8 @@ export default class GleapCopilotTours {
   }
 
   setupCopilotTour() {
+    if (typeof window === "undefined") return;
+
     let styleNode = document.getElementById(styleId);
     if (!styleNode) {
       styleNode = document.createElement("style");
@@ -657,6 +686,7 @@ export default class GleapCopilotTours {
   }
 
   start() {
+    if (typeof window === "undefined") return;
     const config = this.productTourData;
     if (!config) return;
     canPlayAudio().then((supported) => {
@@ -669,6 +699,7 @@ export default class GleapCopilotTours {
   }
 
   completeTour(success = true) {
+    if (typeof window === "undefined") return;
     this.cleanup();
     if (this.onCompleteCallback) {
       this.onCompleteCallback(success);
@@ -676,6 +707,8 @@ export default class GleapCopilotTours {
   }
 
   renderNextStep() {
+    if (typeof window === "undefined") return;
+
     if (this.disabled) return;
     const self = this;
     const config = this.productTourData;

@@ -39,18 +39,20 @@ export default class GleapProductTours {
   constructor() {
     const self = this;
 
-    const beforeUnloadListener = (event) => {
-      if (
-        self?.productTourId &&
-        self?.productTourData &&
-        self?.productTourData?.tourType !== "cobrowse"
-      ) {
-        self.storeUncompletedTour();
-      }
-    };
-
     if (typeof window !== "undefined") {
-      window.addEventListener("beforeunload", beforeUnloadListener);
+      const beforeUnloadListener = (event) => {
+        if (
+          self?.productTourId &&
+          self?.productTourData &&
+          self?.productTourData?.tourType !== "cobrowse"
+        ) {
+          self.storeUncompletedTour();
+        }
+      };
+
+      if (typeof window !== "undefined") {
+        window.addEventListener("beforeunload", beforeUnloadListener);
+      }
     }
   }
 
