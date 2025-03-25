@@ -1,5 +1,10 @@
 export const rrwebRecord = (function () {
   "use strict";
+
+  if (typeof window === "undefined") {
+    return;
+  }
+
   var x;
   (function (e) {
       (e[(e.Document = 0)] = "Document"), (e[(e.DocumentType = 1)] = "DocumentType"), (e[(e.Element = 2)] = "Element"), (e[(e.Text = 3)] = "Text"), (e[(e.CDATA = 4)] = "CDATA"), (e[(e.Comment = 5)] = "Comment");

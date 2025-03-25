@@ -1,7 +1,6 @@
 import {
   GleapFrameManager,
   GleapFeedbackButtonManager,
-  GleapSession,
   GleapConfigManager,
 } from "./Gleap";
 

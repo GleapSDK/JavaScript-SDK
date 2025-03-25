@@ -28,8 +28,10 @@ import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
 import GleapProductTours from "./GleapProductTours";
+import { checkPageFilter } from "./GleapPageFilter";
 
 if (
+  typeof window !== "undefined" &&
   typeof HTMLCanvasElement !== "undefined" &&
   HTMLCanvasElement.prototype &&
   HTMLCanvasElement.prototype.__originalGetContext === undefined
@@ -1138,8 +1140,19 @@ class Gleap {
   performActions(actions) {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
-
       if (action && action.actionType) {
+        if (action.pageFilter && window && window.location) {
+          const passed = checkPageFilter(
+            window.location.href,
+            action.pageFilter,
+            action.pageFilterType
+          );
+
+          if (!passed) {
+            continue;
+          }
+        }
+
         if (action.actionType === "notification") {
           if (action?.data?.checklist?.popupType === "widget") {
             Gleap.openChecklist(action.data.checklist.id, true);
@@ -1308,4 +1321,5 @@ export {
   GleapProductTours,
   handleGleapLink,
 };
+
 export default Gleap;

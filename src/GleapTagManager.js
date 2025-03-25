@@ -1,5 +1,3 @@
-import { gleapDataParser } from "./GleapHelper";
-
 export default class GleapTagManager {
   tags = [];
 
