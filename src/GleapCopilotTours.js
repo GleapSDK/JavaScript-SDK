@@ -5,11 +5,6 @@ const localStorageKey = "gleap-tour-data";
 const pointerContainerId = "copilot-pointer-container";
 const styleId = "copilot-tour-styles";
 const copilotJoinedContainerId = "copilot-joined-container";
-const copilotInfoBubbleId = "copilot-info-bubble";
-
-const arrowRightIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-  <path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
-</svg>`;
 
 function estimateReadTime(text) {
   if (typeof window === "undefined") return;
@@ -380,7 +375,7 @@ export default class GleapCopilotTours {
           cursor: pointer;
           pointer-events: all !important;
         }
-        .${pointerContainerId}-clickmode #${copilotInfoBubbleId}-content {
+        .${pointerContainerId}-clickmode #copilot-info-bubble-content {
           display: flex !important;
         }
         .${pointerContainerId}-clickmode svg {
@@ -391,10 +386,10 @@ export default class GleapCopilotTours {
           height: auto;
           fill: none;
         }
-        #${copilotInfoBubbleId} {
+        #copilot-info-bubble {
           position: relative;
         }
-        #${copilotInfoBubbleId}-content-container {
+        #copilot-info-bubble-content-container {
           position: absolute;
           top: 0px;
           left: 0px;
@@ -403,7 +398,7 @@ export default class GleapCopilotTours {
           flex-direction: column;
           align-items: flex-start;
         }
-        .${pointerContainerId}-right #${copilotInfoBubbleId}-content-container {
+        .${pointerContainerId}-right #copilot-info-bubble-content-container {
           left: auto !important;
           right: 0px !important;
           align-items: flex-end;
@@ -414,13 +409,13 @@ export default class GleapCopilotTours {
         .${pointerContainerId}-right svg {
           transform: scaleX(-1);
         }
-        #${copilotInfoBubbleId}-content svg {
+        #copilot-info-bubble-content svg {
           width: 16px;
           height: 16px;
           display: inline-block !important;
           margin-left: 5px;
         }
-        #${copilotInfoBubbleId}-content {
+        #copilot-info-bubble-content {
           margin-top: 18px;
           margin-left: 5px;
           padding: 10px 15px;
@@ -436,7 +431,7 @@ export default class GleapCopilotTours {
           word-break: normal;
           hyphens: none;
         }
-        .${pointerContainerId}-right #${copilotInfoBubbleId}-content {
+        .${pointerContainerId}-right #copilot-info-bubble-content {
           margin-top: 30px;
           margin-left: 0px;
           margin-right: 5px;
@@ -635,8 +630,8 @@ export default class GleapCopilotTours {
       '<path d="M352.595 268.315L352.581 268.302L352.566 268.29L78.6092 24.7278C71.6245 18.433 62.5487 15 53.2 15C32.1157 15 15 32.1157 15 53.2V424C15 444.34 31.4714 461 52 461C62.6797 461 72.8089 456.467 79.8863 448.38C79.8871 448.379 79.8879 448.378 79.8886 448.378L180.804 333.1H327.9C348.384 333.1 365 316.484 365 296C365 285.404 360.46 275.344 352.595 268.315Z" fill="black" stroke="white" stroke-width="30"/>';
 
     const infoBubble = document.createElement("div");
-    infoBubble.id = copilotInfoBubbleId;
-    infoBubble.innerHTML = `<div id='${copilotInfoBubbleId}-content-container'><div id='${copilotInfoBubbleId}-content'></div></div>`;
+    infoBubble.id = "copilot-info-bubble";
+    infoBubble.innerHTML = `<div id='copilot-info-bubble-content-container'><div id='copilot-info-bubble-content'></div></div>`;
 
     const copilotInfoContainer = document.createElement("div");
     copilotInfoContainer.id = copilotJoinedContainerId;
@@ -743,12 +738,14 @@ export default class GleapCopilotTours {
             function handleInputEvent(e) {
               if (e.target.value.length === 0) return;
               const cursor = document.getElementById(
-                `${copilotInfoBubbleId}-content`
+                `copilot-info-bubble-content`
               );
               if (!cursor) return;
               cursor.innerHTML = `${GleapTranslationManager.translateText(
                 "next"
-              )} ${arrowRightIcon}`;
+              )} <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+  <path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
+</svg>`;
               cursor.addEventListener("click", proceedClickmode, {
                 once: true,
               });
@@ -806,7 +803,7 @@ export default class GleapCopilotTours {
       const message = currentStep?.message
         ? htmlToPlainText(currentStep.message)
         : "🤔";
-      document.getElementById(`${copilotInfoBubbleId}-content`).textContent =
+      document.getElementById(`copilot-info-bubble-content`).textContent =
         message;
       this._pointerContainer.style.opacity = 1;
       const readTime = estimateReadTime(message);
