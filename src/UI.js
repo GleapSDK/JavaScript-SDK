@@ -307,6 +307,7 @@ export const injectStyledCSS = (
       left: 0px;
       width: 100vw;
       height: var(--gleap-margin-top);
+      z-index: ${zIndexBase + 99};
     }
 
     @keyframes gleapSlideIn {
