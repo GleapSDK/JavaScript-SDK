@@ -47,6 +47,9 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
       matched =
         removeTrailingSlash(currentUrl) === removeTrailingSlash(pageFilter);
       break;
+    case "isnot":
+      matched = removeTrailingSlash(currentUrl) !== removeTrailingSlash(pageFilter);
+      break;
     case "contains":
       matched = isMatchingUrl(currentUrl, pageFilter);
       break;
@@ -55,6 +58,9 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
       break;
     case "endswith":
       matched = currentUrl.endsWith(pageFilter);
+      break;
+    case "notcontains":
+      matched = !isMatchingUrl(currentUrl, pageFilter);
       break;
     default:
       matched = false;
