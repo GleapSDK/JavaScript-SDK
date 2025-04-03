@@ -736,7 +736,7 @@ export default class GleapCopilotTours {
           const inputModeType = currentStep.inputType ?? "default";
           if (inputModeType === "default") {
             function handleInputEvent(e) {
-              if (e.target.value.length === 0) return;
+              if (e?.target?.value?.length === 0) return;
               const cursor = document.getElementById(
                 `copilot-info-bubble-content`
               );
@@ -758,6 +758,11 @@ export default class GleapCopilotTours {
             element.addEventListener("input", handleInputEvent, {
               once: false,
             });
+            if (element.hasAttribute("contenteditable")) {
+              element.addEventListener("keyup", handleInputEvent, {
+                once: false,
+              });
+            }
             element.addEventListener(
               "blur",
               () => {
