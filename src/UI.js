@@ -1815,7 +1815,7 @@ export const injectStyledCSS = (
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .gleap-tour-sender-image {
@@ -1857,13 +1857,15 @@ export const injectStyledCSS = (
 
     .gleap-tour-message p {
       line-height: 1.3;
+      margin-bottom: 10px !important;
+      margin-top: 10px !important;
     }
 
     .gleap-tour-message ul {
       line-height: 1.3;
       padding-left: 20px;
-      margin-top: 10px;
-      margin-bottom: 10px;
+      margin-top: 10px !important;
+      margin-bottom: 10px !important;
     }
 
     .gleap-tour-message {
