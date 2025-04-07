@@ -29,6 +29,7 @@ import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
 import GleapProductTours from "./GleapProductTours";
 import { checkPageFilter } from "./GleapPageFilter";
+import GleapChecklist from "./GleapChecklist";
 
 if (
   typeof window !== "undefined" &&
@@ -223,6 +224,10 @@ class Gleap {
       }, 0);
     });
     sessionInstance.startSession();
+  }
+
+  static openURL(url, newTab = false) {
+    GleapFrameManager.getInstance().urlHandler(url, newTab);
   }
 
   static checkForUrlParams() {

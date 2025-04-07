@@ -72,7 +72,7 @@ export default class GleapTooltipManager {
         };
         timeout = setTimeout(later, time);
       };
-    }
+    };
 
     const handleResizeThrottled = throttle(
       self.updateHotspotPositions.bind(self),
@@ -306,6 +306,37 @@ export default class GleapTooltipManager {
       this.elementToFloatingUIMap.set(element, floatingUIInstance);
     }
   };
+
+  destroy() {
+    // Disconnect the MutationObserver if it exists.
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+
+    // Remove the window resize event listener if it was stored.
+    // (In start() you can assign the listener to a class property, e.g., this.resizeListener.)
+    if (this.resizeListener) {
+      window.removeEventListener("resize", this.resizeListener);
+      this.resizeListener = null;
+    }
+
+    // Remove all tooltip elements created by Gleap.
+    const tooltipElements = document.querySelectorAll(".gleap-tooltip");
+    tooltipElements.forEach((tooltip) => tooltip.remove());
+
+    // Remove any tooltip anchors and hotspots.
+    const anchors = document.querySelectorAll("[data-gleap-tooltip-anchor]");
+    anchors.forEach((anchor) => anchor.remove());
+    const hotspots = document.querySelectorAll("[data-gleap-tooltip-hotspot]");
+    hotspots.forEach((hotspot) => hotspot.remove());
+
+    // Clear internal references.
+    this.elementToFloatingUIMap = new WeakMap();
+    this.elementToTooltipMap = new WeakMap();
+    this.tooltips = [];
+    this.filteredTooltips = [];
+  }
 
   repositionHotspot(element, tooltip) {
     if (!element || !tooltip) {

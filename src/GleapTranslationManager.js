@@ -76,4 +76,19 @@ export default class GleapTranslationManager {
 
     return key;
   }
+
+  static translateTextWithVars(key, vars) {
+    if (!key) {
+      return "";
+    }
+
+    var template = this.translateText(key);
+    if (!template) {
+      return "";
+    }
+
+    return template.replace(/{(\w+)}/g, function (_, key) {
+      return vars[key];
+    });
+  }
 }
