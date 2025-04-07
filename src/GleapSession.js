@@ -1,10 +1,11 @@
+import ChecklistNetworkManager from "./ChecklistNetworkManager";
 import {
+  GleapBannerManager,
   GleapEventManager,
-  GleapTranslationManager,
   GleapFrameManager,
   GleapNotificationManager,
   GleapStreamedEvent,
-  GleapBannerManager,
+  GleapTranslationManager,
 } from "./Gleap";
 import {
   eraseGleapCookie,
@@ -166,6 +167,11 @@ export default class GleapSession {
       return;
     }
 
+    let sessionChanged = false;
+    if (this.session?.gleapId !== session?.gleapId) {
+      sessionChanged = true;
+    }
+
     // Unregister previous group.
     if (this.session && this.session.gleapHash) {
       GleapEventManager.notifyEvent(
@@ -192,6 +198,30 @@ export default class GleapSession {
         "register-pushmessage-group",
         `gleapuser-${this.session.gleapHash}`
       );
+    }
+
+    if (sessionChanged) {
+      // Clear cache first, as the session context has changed.
+      ChecklistNetworkManager.getInstance().clearCache();
+
+      // Initially track.
+      GleapStreamedEvent.getInstance().restart();
+
+      // Load tooltips.
+      setTimeout(() => {
+        const tooltipManager = GleapTooltipManager.getInstance();
+        if (tooltipManager) {
+          try {
+            tooltipManager.destroy();
+          } catch (exp) {}
+
+          tooltipManager.load();
+        }
+      }, 0);
+
+      if (typeof window.dispatchEvent === "function") {
+        window.dispatchEvent(new CustomEvent("session-updated"));
+      }
     }
 
     this.notifySessionReady();
@@ -236,12 +266,6 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
-
-            // Initially track.
-            GleapStreamedEvent.getInstance().restart();
-
-            // Load tooltips.
-            GleapTooltipManager.getInstance().load();
           } catch (exp) {}
         } else {
           if (http.status !== 429) {
@@ -399,12 +423,6 @@ export default class GleapSession {
               try {
                 const sessionData = JSON.parse(http.responseText);
                 self.validateSession(sessionData);
-
-                // Initially track.
-                GleapStreamedEvent.getInstance().restart();
-
-                // Load tooltips.
-                GleapTooltipManager.getInstance().load();
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);

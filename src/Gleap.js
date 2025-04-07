@@ -29,6 +29,7 @@ import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
 import GleapProductTours from "./GleapProductTours";
 import { checkPageFilter } from "./GleapPageFilter";
+import { registerGleapChecklist } from "./GleapChecklist";
 
 if (
   typeof window !== "undefined" &&
@@ -44,6 +45,14 @@ if (
       preserveDrawingBuffer: true,
     });
   };
+}
+
+if (
+  typeof customElements !== "undefined" &&
+  typeof HTMLElement !== "undefined" &&
+  typeof window !== "undefined"
+) {
+  registerGleapChecklist();
 }
 
 class Gleap {
@@ -223,6 +232,10 @@ class Gleap {
       }, 0);
     });
     sessionInstance.startSession();
+  }
+
+  static openURL(url, newTab = false) {
+    GleapFrameManager.getInstance().urlHandler(url, newTab);
   }
 
   static checkForUrlParams() {
