@@ -1,5 +1,5 @@
-import { ElementPicker } from "pick-dom-element";
 import unique from "unique-selector";
+import ElementPicker from "./ElementPicker";
 
 class GleapAdminHelper {
   picker = null;
