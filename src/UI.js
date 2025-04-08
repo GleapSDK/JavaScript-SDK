@@ -23,7 +23,7 @@ const calculateShadeColor = function (col, amt) {
   return `#${rr}${gg}${bb}`;
 };
 
-const calculateContrast = (hex) => {
+export const calculateContrast = (hex) => {
   var r = parseInt(hex.substr(1, 2), 16),
     g = parseInt(hex.substr(3, 2), 16),
     b = parseInt(hex.substr(5, 2), 16),

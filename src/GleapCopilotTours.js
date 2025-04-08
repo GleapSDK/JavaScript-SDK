@@ -1,5 +1,5 @@
-import { GleapTranslationManager } from "./Gleap";
-import { loadIcon } from "./UI";
+import { GleapConfigManager, GleapTranslationManager } from "./Gleap";
+import { calculateContrast, loadIcon } from "./UI";
 
 const localStorageKey = "gleap-tour-data";
 const pointerContainerId = "copilot-pointer-container";
@@ -352,8 +352,21 @@ export default class GleapCopilotTours {
     this.removeScrollListeners();
   }
 
+  toggleAudio(muted = false) {
+    this.audioMuted = muted;
+    if (this.currentAudio) {
+      this.currentAudio.muted = this.audioMuted;
+    }
+    document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML =
+      loadIcon(this.audioMuted ? "unmute" : "mute");
+  }
+
   setupCopilotTour() {
     if (typeof window === "undefined") return;
+
+    const primaryColor =
+      GleapConfigManager.getInstance().flowConfig?.color ?? "#485BFF";
+    const contrastColor = calculateContrast(primaryColor);
 
     let styleNode = document.getElementById(styleId);
     if (!styleNode) {
@@ -550,6 +563,70 @@ export default class GleapCopilotTours {
             opacity: 0;
           }
         }
+
+        .gleap-audio-unmute-modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 2147483620;
+        }
+
+        .gleap-audio-unmute-modal {
+          background-color: #fff;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+          text-align: center;
+          max-width: 90%;
+          width: 400px;
+        }
+
+        .gleap-audio-unmute-modal p {
+          margin-bottom: 20px;
+          font-size: 16px;
+          line-height: 22px;
+          font-weight: normal;
+        }
+
+        .gleap-audio-unmute-button {
+          background: ${primaryColor};
+          color: ${contrastColor};
+          outline: none;
+          border: none;
+          padding: 10px 14px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: bold;
+          cursor: pointer;
+        }
+
+        .gleap-audio-unmute-button:hover {
+          opacity: 0.8;
+        }
+
+        .gleap-tour-continue-button {
+          color: ${primaryColor};
+          text-decoration: none;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: bold;
+          border: none;
+          background: none;
+          padding: 0;
+          margin: 0;
+          margin-left: 20px;
+        }
+
+        .gleap-tour-continue-button:hover {
+          opacity: 0.8;
+        }
+
         body.gl-copilot-fade-out::before,
         body.gl-copilot-fade-out::after,
         body.gl-copilot-fade-out #${copilotJoinedContainerId} {
@@ -659,12 +736,7 @@ export default class GleapCopilotTours {
     document
       .querySelector(`.${copilotJoinedContainerId}-mute`)
       .addEventListener("click", () => {
-        self.audioMuted = !self.audioMuted;
-        if (self.currentAudio) {
-          self.currentAudio.muted = self.audioMuted;
-        }
-        document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML =
-          loadIcon(self.audioMuted ? "unmute" : "mute");
+        this.toggleAudio(!this.audioMuted);
       });
 
     if (this.productTourData?.allowClose) {
@@ -687,10 +759,65 @@ export default class GleapCopilotTours {
     canPlayAudio().then((supported) => {
       this.audioMuted = !supported;
       this.setupCopilotTour();
+
+      console.log(this.audioMuted, config);
+
+      if (this.audioMuted && config?.showUnmuteModal) {
+        this.showAudioUnmuteModal();
+      } else {
+        setTimeout(() => {
+          this.renderNextStep();
+        }, 1500);
+      }
+    });
+  }
+
+  showAudioUnmuteModal() {
+    // Create the overlay element
+    const modalOverlay = document.createElement("div");
+    modalOverlay.classList.add("gleap-audio-unmute-modal-overlay");
+
+    // Create the modal container element
+    const modal = document.createElement("div");
+    modal.classList.add("gleap-audio-unmute-modal");
+
+    // Create and add the modal message
+    const message = document.createElement("p");
+    message.textContent = this.productTourData?.unmuteModalTitle;
+    modal.appendChild(message);
+
+    // Create the "Unmute Audio" button
+    const unmuteButton = document.createElement("button");
+    unmuteButton.classList.add("gleap-audio-unmute-button");
+    unmuteButton.textContent = this.productTourData?.unmuteModalButton;
+    unmuteButton.addEventListener("click", () => {
+      this.toggleAudio(false);
+      if (modalOverlay.parentNode) {
+        modalOverlay.parentNode.removeChild(modalOverlay);
+      }
       setTimeout(() => {
         this.renderNextStep();
-      }, 1500);
+      }, 1000);
     });
+    modal.appendChild(unmuteButton);
+
+    // Create the "Start Anyway" button
+    const startAnywayButton = document.createElement("button");
+    startAnywayButton.classList.add("gleap-tour-continue-button");
+    startAnywayButton.textContent = this.productTourData?.unmuteModalContinue;
+    startAnywayButton.addEventListener("click", () => {
+      if (modalOverlay.parentNode) {
+        modalOverlay.parentNode.removeChild(modalOverlay);
+      }
+      setTimeout(() => {
+        this.renderNextStep();
+      }, 1000);
+    });
+    modal.appendChild(startAnywayButton);
+
+    // Build the modal and attach it to the DOM
+    modalOverlay.appendChild(modal);
+    document.body.appendChild(modalOverlay);
   }
 
   completeTour(success = true) {
