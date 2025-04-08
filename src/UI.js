@@ -1001,7 +1001,7 @@ export const injectStyledCSS = (
       position: absolute;
       top: -5px;
       right: -5px;
-      min-width: 20px;
+      min-width: 12px;
       padding: 0px 4px;
       height: 20px;
       border-radius: 20px;

@@ -201,14 +201,14 @@ export default class GleapSession {
     }
 
     if (sessionChanged) {
-      // Clear cache first, as the session context has changed.
-      ChecklistNetworkManager.getInstance().clearCache();
-
-      // Initially track.
-      GleapStreamedEvent.getInstance().restart();
-
       // Load tooltips.
       setTimeout(() => {
+        // Clear cache first, as the session context has changed.
+        ChecklistNetworkManager.getInstance().clearCache();
+
+        // Initially track.
+        GleapStreamedEvent.getInstance().restart();
+
         const tooltipManager = GleapTooltipManager.getInstance();
         if (tooltipManager) {
           try {

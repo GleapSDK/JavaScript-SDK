@@ -760,8 +760,6 @@ export default class GleapCopilotTours {
       this.audioMuted = !supported;
       this.setupCopilotTour();
 
-      console.log(this.audioMuted, config);
-
       if (this.audioMuted && config?.showUnmuteModal) {
         this.showAudioUnmuteModal();
       } else {
