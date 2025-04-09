@@ -572,6 +572,8 @@ export const registerGleapChecklist = () => {
         return `
           <div part="${className}" class="${
           isHeader ? "checklist-floating-header" : "checklist-floating-launcher"
+        } ${
+          renderDoneState ? "checklist-floating-launcher--done" : ""
         }">
             <div class="floating-header">
               <div class="floating-circular-progress">
@@ -955,6 +957,9 @@ export const registerGleapChecklist = () => {
               transition: transform 0.3s ease;
               cursor: pointer;
             }
+            .checklist-floating-launcher--done {
+              cursor: default !important;
+            }
             .checklist-floating-header {
               padding: 12px;
               padding-bottom: 16px;
@@ -1011,6 +1016,9 @@ export const registerGleapChecklist = () => {
               stroke-width: 3;
               stroke-linecap: round;
               transition: stroke-dashoffset var(--animation-duration) var(--animation-timing);
+            }
+            .checklist-floating-launcher--done .floating-circular-progress .progress {
+              stroke: var(--color-success);
             }
             .floating-icon {
               margin-left: auto;
