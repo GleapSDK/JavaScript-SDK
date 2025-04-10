@@ -80,48 +80,50 @@ export default class GleapTooltipManager {
     );
     window.addEventListener("resize", handleResizeThrottled);
 
-    this.observer = new MutationObserver((mutations) => {
-      if (self.lastUrl !== window.location.href) {
-        self.lastUrl = window.location.href;
-        self.filteredTooltips = self.getFilteredTooltips();
-      }
+    window.requestAnimationFrame(() => {
+      this.observer = new MutationObserver((mutations) => {
+        if (self.lastUrl !== window.location.href) {
+          self.lastUrl = window.location.href;
+          self.filteredTooltips = self.getFilteredTooltips();
+        }
 
-      mutations.forEach((mutation) => {
-        // Check for added nodes
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            self.processNodeInsertion(node);
-          }
-        });
-
-        // Check for removed nodes
-        mutation.removedNodes.forEach((node) => {
-          if (
-            node.nodeType === Node.ELEMENT_NODE &&
-            this.elementToFloatingUIMap.has(node)
-          ) {
-            const floatingUI = this.elementToFloatingUIMap.get(node);
-            if (floatingUI) {
-              if (floatingUI.tooltip) {
-                floatingUI.tooltip.remove();
-              }
-              floatingUI.cleanup();
-
-              this.elementToFloatingUIMap.delete(node);
+        mutations.forEach((mutation) => {
+          // Check for added nodes
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              self.processNodeInsertion(node);
             }
-          }
+          });
 
-          if (this.elementToTooltipMap.has(node)) {
-            this.elementToTooltipMap.delete(node);
-          }
+          // Check for removed nodes
+          mutation.removedNodes.forEach((node) => {
+            if (
+              node.nodeType === Node.ELEMENT_NODE &&
+              this.elementToFloatingUIMap.has(node)
+            ) {
+              const floatingUI = this.elementToFloatingUIMap.get(node);
+              if (floatingUI) {
+                if (floatingUI.tooltip) {
+                  floatingUI.tooltip.remove();
+                }
+                floatingUI.cleanup();
+
+                this.elementToFloatingUIMap.delete(node);
+              }
+            }
+
+            if (this.elementToTooltipMap.has(node)) {
+              this.elementToTooltipMap.delete(node);
+            }
+          });
         });
       });
-    });
 
-    // Start observing the document for changes.
-    this.observer.observe(document.body, {
-      childList: true,
-      subtree: true,
+      // Start observing the document for changes.
+      this.observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
     });
   }
 
