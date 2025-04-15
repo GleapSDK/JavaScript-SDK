@@ -42,6 +42,7 @@ export default class GleapProductTours {
     if (typeof window !== "undefined") {
       const beforeUnloadListener = (event) => {
         if (
+          !self?.disabled &&
           self?.productTourId &&
           self?.productTourData &&
           self?.productTourData?.tourType !== "cobrowse"

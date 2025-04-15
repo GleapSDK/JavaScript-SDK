@@ -187,13 +187,16 @@ export default class GleapCopilotTours {
   }
 
   disable() {
-    this.cleanup();
     this.disabled = true;
+    
+    this.cleanup();
   }
 
   startWithConfig(tourId, config, onCompleteCallback = undefined) {
     if (typeof window === "undefined") return;
     if (this.productTourId) return;
+    if (this.disabled) return;
+
     this.productTourId = tourId;
     this.productTourData = config;
     this.currentActiveIndex = 0;
@@ -754,6 +757,8 @@ export default class GleapCopilotTours {
 
   start() {
     if (typeof window === "undefined") return;
+    if (this.disabled) return;
+
     const config = this.productTourData;
     if (!config) return;
     canPlayAudio().then((supported) => {
@@ -828,8 +833,8 @@ export default class GleapCopilotTours {
 
   renderNextStep() {
     if (typeof window === "undefined") return;
-
     if (this.disabled) return;
+
     const self = this;
     const config = this.productTourData;
     const steps = config.steps;
