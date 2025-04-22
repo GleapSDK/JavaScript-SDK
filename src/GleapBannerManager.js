@@ -72,7 +72,7 @@ export default class GleapBannerManager {
           Gleap.openHelpCenterArticle(data.data?.articleId);
         }
         if (data.name === "show-checklist") {
-          Gleap.startChecklist(data.data?.checklistId);
+          Gleap.startChecklist(data.data?.checklistId, true, data.data?.sharedKey);
         }
       } catch (exp) {}
     });

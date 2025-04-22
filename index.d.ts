@@ -137,7 +137,7 @@ export namespace Gleap {
   function open(): void;
   function openChecklists(showBackButton?: boolean): void;
   function openChecklist(checklistId: string, showBackButton?: boolean): void;
-  function startChecklist(outboundId: string, showBackButton?: boolean): void;
+  function startChecklist(outboundId: string, showBackButton?: boolean, sharedKey?: string): void;
   function openNews(showBackButton?: boolean): void;
   function openNewsArticle(id: string, showBackButton?: boolean): void;
   function openConversations(showBackButton?: boolean): void;

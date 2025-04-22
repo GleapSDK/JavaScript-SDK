@@ -1035,7 +1035,11 @@ class Gleap {
   /**
    * Starts a new checklist and opens it.
    */
-  static startChecklist(outboundId, showBackButton = true) {
+  static startChecklist(
+    outboundId,
+    showBackButton = true,
+    sharedKey = undefined
+  ) {
     if (!outboundId) {
       return false;
     }
@@ -1046,6 +1050,8 @@ class Gleap {
         name: "start-checklist",
         data: {
           outboundId: outboundId,
+          hideBackButton: !showBackButton,
+          ...(sharedKey ? { sharedKey: sharedKey } : {}),
         },
       },
       true
@@ -1296,7 +1302,7 @@ const handleGleapLink = (href) => {
 
     if (type === "checklist") {
       const identifier = urlParts[3];
-      Gleap.startChecklist(identifier, true);
+      Gleap.startChecklist(identifier, true, urlParts[4]);
     }
 
     if (type === "tour") {
