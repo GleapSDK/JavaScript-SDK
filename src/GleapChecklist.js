@@ -96,7 +96,14 @@ export const registerGleapChecklist = () => {
 
       // --- Observed Attributes ---
       static get observedAttributes() {
-        return ["checklistId", "info", "progressbar", "dark", "floating"];
+        return [
+          "checklistId",
+          "info",
+          "progressbar",
+          "dark",
+          "floating",
+          "sharedKey",
+        ];
       }
 
       // --- Lifecycle Callbacks ---
@@ -298,8 +305,10 @@ export const registerGleapChecklist = () => {
         this.checklistData = null;
         this._hasLoaded = false;
         this.renderResponse();
+        const sharedKey = this.getAttribute("sharedKey");
+        
         this._networkManager
-          .validateChecklist(outboundId)
+          .validateChecklist(outboundId, sharedKey)
           .then((internalId) => {
             if (!this.isConnected || !this._isSessionReady || !internalId) {
               return;
@@ -572,9 +581,7 @@ export const registerGleapChecklist = () => {
         return `
           <div part="${className}" class="${
           isHeader ? "checklist-floating-header" : "checklist-floating-launcher"
-        } ${
-          renderDoneState ? "checklist-floating-launcher--done" : ""
-        }">
+        } ${renderDoneState ? "checklist-floating-launcher--done" : ""}">
             <div class="floating-header">
               <div class="floating-circular-progress">
                 <svg viewBox="0 0 20 20">

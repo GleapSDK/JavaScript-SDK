@@ -127,14 +127,28 @@ class ChecklistNetworkManager {
   }
 
   /**
+   * @private
+   * Creates a cache key from outboundId and sharedKey
+   * @param {string} outboundId - The public/outbound checklist ID.
+   * @param {string|undefined} sharedKey - Optional shared key.
+   * @returns {string} Combined cache key.
+   */
+  _createCacheKey(outboundId, sharedKey) {
+    return sharedKey ? `${outboundId}::${sharedKey}` : outboundId;
+  }
+
+  /**
    * Validates an outbound checklist ID, returning a Promise for the internal ID.
    * Manages caching and deduplicates requests.
    * @param {string} outboundId - The public/outbound checklist ID.
+   * @param {string} [sharedKey] - Optional shared key for the checklist.
    * @returns {Promise<string>} A promise that resolves with the internal checklist ID.
    */
-  validateChecklist(outboundId) {
+  validateChecklist(outboundId, sharedKey) {
+    const cacheKey = this._createCacheKey(outboundId, sharedKey);
+
     // 1. Check cache for final result (success or error)
-    const cachedResult = this.validationCache.get(outboundId);
+    const cachedResult = this.validationCache.get(cacheKey);
     if (cachedResult) {
       if (cachedResult.status === RequestStatus.SUCCESS) {
         return Promise.resolve(cachedResult.internalId);
@@ -144,17 +158,17 @@ class ChecklistNetworkManager {
     }
 
     // 2. Check for an ongoing request
-    if (this.validationRequests.has(outboundId)) {
-      return this.validationRequests.get(outboundId);
+    if (this.validationRequests.has(cacheKey)) {
+      return this.validationRequests.get(cacheKey);
     }
-    
+
     // 3. Start a new request
     const apiUrl = this._getApiUrl();
     if (!apiUrl) {
       const error = new Error(
         "ChecklistNetworkManager: Gleap API URL not configured."
       );
-      this.validationCache.set(outboundId, {
+      this.validationCache.set(cacheKey, {
         status: RequestStatus.ERROR,
         error,
       });
@@ -162,17 +176,20 @@ class ChecklistNetworkManager {
     }
 
     const url = `${apiUrl}/outbound/checklists?${this._getQueryParams()}`;
-    const requestPromise = this._makeRequest("POST", url, { outboundId })
+    const requestPromise = this._makeRequest("POST", url, {
+      outboundId,
+      sharedKey,
+    })
       .then((responseData) => {
         if (responseData && responseData.id) {
-          this.validationCache.set(outboundId, {
+          this.validationCache.set(cacheKey, {
             status: RequestStatus.SUCCESS,
             internalId: responseData.id,
           });
           return responseData.id;
         } else {
           const error = new Error("Validation response missing checklist ID.");
-          this.validationCache.set(outboundId, {
+          this.validationCache.set(cacheKey, {
             status: RequestStatus.ERROR,
             error: responseData || error,
           });
@@ -181,7 +198,7 @@ class ChecklistNetworkManager {
       })
       .catch((error) => {
         // Store the error object itself in the cache
-        this.validationCache.set(outboundId, {
+        this.validationCache.set(cacheKey, {
           status: RequestStatus.ERROR,
           error,
         });
@@ -189,11 +206,11 @@ class ChecklistNetworkManager {
       })
       .finally(() => {
         // Remove from pending requests map once done (success or fail)
-        this.validationRequests.delete(outboundId);
+        this.validationRequests.delete(cacheKey);
       });
 
     // Store the promise for potential concurrent requests
-    this.validationRequests.set(outboundId, requestPromise);
+    this.validationRequests.set(cacheKey, requestPromise);
     return requestPromise;
   }
 
