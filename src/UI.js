@@ -210,6 +210,7 @@ export const injectStyledCSS = (
       display: inline !important;
       margin: 0px !important;
       padding: 0px !important;
+      word-break: break-word;
     }
 
     .gleap-tooltip ul {
