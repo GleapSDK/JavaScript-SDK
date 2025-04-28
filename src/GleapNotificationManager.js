@@ -336,8 +336,9 @@ export default class GleapNotificationManager {
       this.notificationContainer.appendChild(elem);
     }
 
-    const hasNotifications = newsNotifications.length > 0 || otherNotifications.length > 0;
-    if (hasNotifications) {
+    const hasNotifications =
+      newsNotifications.length > 0 || otherNotifications.length > 0;
+    if (!hasNotifications) {
       // Clear the notification container
       this.clearAllNotifications(true);
     }
@@ -379,7 +380,7 @@ export default class GleapNotificationManager {
 
   /**
    * Clears all notifications from the container.
-   * 
+   *
    * @param {boolean} uiOnly - Whether to only clear the UI or also the notifications.
    */
   clearAllNotifications(uiOnly = false) {

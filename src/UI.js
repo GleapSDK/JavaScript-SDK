@@ -1005,6 +1005,7 @@ export const injectStyledCSS = (
       min-width: 12px;
       padding: 0px 4px;
       height: 20px;
+      min-width: 20px;
       border-radius: 20px;
       background-color: red;
       color: #fff;
