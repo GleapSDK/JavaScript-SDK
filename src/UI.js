@@ -2337,6 +2337,66 @@ export const injectStyledCSS = (
     .gleap-tour-popover-arrow-none {
       display: none;
     }    
+
+    /* Modal styles */
+    .gleap-modal-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: ${zIndexBase + 40};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gleap-modal-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: ${zIndexBase + 41};
+    }
+
+    .gleap-modal {
+      position: relative;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      z-index: ${zIndexBase + 100};
+      background-color: ${backgroundColor};
+      border-radius: ${containerRadius}px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+      animation-name: gleapFadeInUp;
+    }
+
+    .gleap-modal-frame {
+      width: 100%;
+      border: none;
+      display: block;
+      outline: none;
+    }
+
+    body.gleap-modal-open {
+      overflow: hidden;
+    }
+
+    @keyframes gleapFadeInUp {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
     `;
 
   const oldNode = document.querySelector(".gleap-styles");

@@ -50,7 +50,9 @@ export namespace Gleap {
   function setWSApiUrl(wsApiUrl: string): void;
   function setFrameUrl(frameUrl: string): void;
   function closeBanner(): void;
+  function closeModal(): void;
   function setBannerUrl(bannerUrl: string): void;
+  function setModalUrl(modalUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;

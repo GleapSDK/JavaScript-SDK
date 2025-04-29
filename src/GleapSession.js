@@ -3,6 +3,7 @@ import {
   GleapBannerManager,
   GleapEventManager,
   GleapFrameManager,
+  GleapModalManager,
   GleapNotificationManager,
   GleapStreamedEvent,
   GleapTranslationManager,
@@ -150,6 +151,7 @@ export default class GleapSession {
     GleapNotificationManager.getInstance().clearAllNotifications(false);
     GleapNotificationManager.getInstance().setNotificationCount(0);
     GleapBannerManager.getInstance().removeBannerUI();
+    GleapModalManager.getInstance().hideModal();
 
     if (retry) {
       if (!isNaN(attemp)) {

@@ -24,6 +24,7 @@ import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
 import GleapBannerManager from "./GleapBannerManager";
+import GleapModalManager from "./GleapModalManager";
 import GleapAudioManager from "./GleapAudioManager";
 import GleapTagManager from "./GleapTagManager";
 import GleapAdminManager from "./GleapAdminManager";
@@ -308,6 +309,13 @@ class Gleap {
   }
 
   /**
+   * Close any open modal.
+   */
+  static closeModal() {
+    GleapModalManager.getInstance().hideModal();
+  }
+
+  /**
    * Enable or disable Gleap session tracking through cookies.
    * @param {*} useCookies
    */
@@ -533,6 +541,14 @@ class Gleap {
    */
   static setBannerUrl(bannerUrl) {
     GleapBannerManager.getInstance().setBannerUrl(bannerUrl);
+  }
+
+  /**
+   * Set a custom modal url.
+   * @param {string} modalUrl
+   */
+  static setModalUrl(modalUrl) {
+    GleapModalManager.getInstance().setModalUrl(modalUrl);
   }
 
   /**
@@ -1182,6 +1198,8 @@ class Gleap {
           }
         } else if (action.actionType === "banner") {
           Gleap.showBanner(action);
+        } else if (action.actionType === "modal") {
+          Gleap.showModal(action);
         } else if (action.actionType === "tour") {
           Gleap.startProductTourWithConfig(action.outbound, action.data);
         } else {
@@ -1219,6 +1237,12 @@ class Gleap {
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
+    } catch (e) {}
+  }
+
+  static showModal(data) {
+    try {
+      GleapModalManager.getInstance().showModal(data);
     } catch (e) {}
   }
 
@@ -1319,6 +1343,7 @@ export {
   GleapAudioManager,
   GleapNotificationManager,
   GleapBannerManager,
+  GleapModalManager,
   GleapPreFillManager,
   GleapShortcutListener,
   GleapMarkerManager,

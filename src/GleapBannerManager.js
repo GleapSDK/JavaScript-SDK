@@ -1,4 +1,4 @@
-import Gleap from "./Gleap";
+import Gleap, { GleapFrameManager } from "./Gleap";
 
 export default class GleapBannerManager {
   bannerUrl = "https://outboundmedia.gleap.io";
@@ -25,7 +25,7 @@ export default class GleapBannerManager {
   startCommunication() {
     // Add window message listener.
     window.addEventListener("message", (event) => {
-      if (event.origin !== this.bannerUrl) {
+      if (!this.bannerUrl?.includes(event.origin)) {
         return;
       }
 
@@ -59,6 +59,11 @@ export default class GleapBannerManager {
         if (data.name === "start-custom-action") {
           Gleap.triggerCustomAction(data.data?.action);
         }
+        if (data.name === "open-url") {
+          const url = data.data;
+          const newTab = data.newTab ? true : false;
+          GleapFrameManager.getInstance().urlHandler(url, newTab);
+        }
         if (data.name === "show-form") {
           Gleap.startFeedbackFlow(data.data?.formId);
         }
@@ -72,7 +77,11 @@ export default class GleapBannerManager {
           Gleap.openHelpCenterArticle(data.data?.articleId);
         }
         if (data.name === "show-checklist") {
-          Gleap.startChecklist(data.data?.checklistId, true, data.data?.sharedKey);
+          Gleap.startChecklist(
+            data.data?.checklistId,
+            true,
+            data.data?.sharedKey
+          );
         }
       } catch (exp) {}
     });
