@@ -833,7 +833,7 @@ export const registerGleapChecklist = () => {
               --radius-lg: 12px;
               --radius-full: 9999px;
               --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-              --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+              --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.08);
               --shadow-lg: rgba(0, 0, 0, 0.2) 0px 7px 29px 0px;
               --animation-duration: 0.2s;
               --animation-timing: ease-in-out;
@@ -872,7 +872,7 @@ export const registerGleapChecklist = () => {
             .checklist-progress-bar-progress { height: 100%; background-color: var(--color-primary); transition: width var(--animation-duration) var(--animation-timing); border-radius: var(--radius-full); }
             .checklist-tasks { display: flex; flex-direction: column; gap: 12px; }
             .checklist-task { border: 1px solid var(--color-border); border-radius: var(--radius-lg); background-color: var(--color-bg); box-shadow: var(--shadow-sm); overflow: hidden; transition: background-color var(--animation-duration) var(--animation-timing), border-color var(--animation-duration) var(--animation-timing); }
-            .checklist-task-header { display: flex; align-items: center; padding: 12px 16px; cursor: pointer; gap: 12px; position: relative; }
+            .checklist-task-header { display: flex; align-items: center; padding: 15px 20px; cursor: pointer; gap: 12px; position: relative; }
             .checklist-task-header:hover { background: var(--color-gray-lighter); }
             .checklist-task-header:hover .checklist-task-header--chevron {
               color: var(--color-font-title);
@@ -892,7 +892,7 @@ export const registerGleapChecklist = () => {
               max-height: var(--task-body-active-height, 200px);
               opacity: 1;
             }
-            .checklist-task-body-inner { padding: 4px 16px 20px 56px; font-size: 0.875rem; color: var(--color-font-text); line-height: 1.5; }
+            .checklist-task-body-inner { padding: 4px 16px 20px 60px; font-size: 0.875rem; color: var(--color-font-text); line-height: 1.5; }
             .checklist-task-body-content { margin-bottom: 16px; }
             .checklist-task-body-content p:first-child { margin-top: 0; }
             .checklist-task-body-content p:last-child { margin-bottom: 0; }
@@ -929,7 +929,7 @@ export const registerGleapChecklist = () => {
               z-index: 1000;
               max-height: 90vh;
               display: none;
-              padding: 10px;
+              padding: 0px;
               min-width: min(380px, 90vw);
               background-color: var(--color-bg);
               border-radius: var(--radius-lg);
@@ -968,7 +968,7 @@ export const registerGleapChecklist = () => {
               cursor: default !important;
             }
             .checklist-floating-header {
-              padding: 12px;
+              padding: 20px;
               padding-bottom: 16px;
               border-bottom: 1px solid var(--color-border);
               cursor: pointer;
