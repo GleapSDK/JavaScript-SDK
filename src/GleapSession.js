@@ -529,7 +529,11 @@ export default class GleapSession {
             if (http.status === 200 || http.status === 201) {
               try {
                 const tourData = JSON.parse(http.responseText);
-                if (tourData && tourData.status === "live") {
+                if (
+                  tourData &&
+                  tourData.status === "live" &&
+                  tourData.passedPageFilter
+                ) {
                   resolve(tourData.config);
                 } else {
                   reject();
@@ -545,6 +549,7 @@ export default class GleapSession {
         http.send(
           JSON.stringify({
             outboundId: tourId,
+            currentUrl: window?.location?.href,
           })
         );
       });
