@@ -306,7 +306,7 @@ export const registerGleapChecklist = () => {
         this._hasLoaded = false;
         this.renderResponse();
         const sharedKey = this.getAttribute("sharedKey");
-        
+
         this._networkManager
           .validateChecklist(outboundId, sharedKey)
           .then((internalId) => {
@@ -1147,9 +1147,12 @@ export const registerGleapChecklist = () => {
                 if (step.action === "BOT") Gleap.startBot(step.botId);
                 else if (step.action === "CUSTOM_ACTION")
                   Gleap.triggerCustomAction(step.actionBody);
-                else if (step.action === "REDIRECT_URL")
+                else if (step.action === "REDIRECT_URL") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  e.stopImmediatePropagation();
                   Gleap.openURL(step.actionBody, !!step.actionOpenInNewTab);
-                else if (step.action === "FEEDBACK_FLOW")
+                } else if (step.action === "FEEDBACK_FLOW")
                   Gleap.startFeedbackFlow(step.formId);
                 else if (step.action === "NEWS_ARTICLE")
                   Gleap.openNewsArticle(step.articleId);
