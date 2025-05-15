@@ -32,6 +32,10 @@ export default class GleapModalManager {
       try {
         const data = JSON.parse(event.data);
 
+        if (data?.type !== "MODAL") {
+          return;
+        }
+
         if (data.name === "modal-loaded" && this.modalData) {
           const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
           const primaryColor = flowConfig.color ? flowConfig.color : "#485BFF";
@@ -97,8 +101,6 @@ export default class GleapModalManager {
 
   _injectModalUI(modalData) {
     if (this.modalContainer || !document.body) return false;
-
-    console.log("modalData", modalData);
 
     this.modalData = modalData;
 

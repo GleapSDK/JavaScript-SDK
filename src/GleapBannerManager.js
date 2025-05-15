@@ -31,6 +31,11 @@ export default class GleapBannerManager {
 
       try {
         const data = JSON.parse(event.data);
+
+        if (data?.type !== "BANNER") {
+          return;
+        }
+
         if (data.name === "banner-loaded" && this.bannerData) {
           this.sendMessage({
             name: "banner-data",
