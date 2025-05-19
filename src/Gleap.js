@@ -299,6 +299,9 @@ class Gleap {
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
+
+    // Reset the initialized flag and clear the instance
+    this.instance = null;
   }
 
   /**
