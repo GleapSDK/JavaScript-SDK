@@ -1159,7 +1159,7 @@ export const registerGleapChecklist = () => {
                 else if (step.action === "HELP_ARTICLE")
                   Gleap.openHelpCenterArticle(step.articleId);
                 else if (step.action === "CHECKLIST")
-                  Gleap.startChecklist(step.checklistId, true, step?.sharedKey);
+                  Gleap.startChecklist(step.outboundId, true, step?.sharedKey);
               } catch (gleapError) {}
             });
           }
