@@ -295,7 +295,7 @@ class Gleap {
     GleapReplayRecorder.getInstance().stop();
     GleapStreamedEvent.getInstance().stop();
     GleapFrameManager.getInstance().destroy();
-    GleapFeedbackButtonManager.getInstance().toggleFeedbackButton(false);
+    GleapFeedbackButtonManager.getInstance().destroy();
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();

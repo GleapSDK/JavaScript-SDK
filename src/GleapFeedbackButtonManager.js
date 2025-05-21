@@ -30,6 +30,18 @@ export default class GleapFeedbackButtonManager {
     return this.instance;
   }
 
+  destroy() {
+    if (this.feedbackButton) {
+      this.feedbackButton.remove();
+      this.feedbackButton = null;
+    }
+
+    this.buttonHidden = null;
+    this.lastButtonIcon = null;
+    this.injectedFeedbackButton = false;
+    this.instance = null;
+  }
+
   /**
    * Toggles the feedback button visibility.
    * @param {*} show
