@@ -1,6 +1,6 @@
 {
   "name": "gleap",
-  "version": "14.6.6",
+  "version": "14.6.7",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.mjs",
   "exports": {
@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "@floating-ui/dom": "^1.6.3",
+    "@rrweb/record": "^2.0.0-alpha.18",
     "unique-selector": "^0.5.0"
   }
 }

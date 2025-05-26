@@ -1,5 +1,5 @@
 import { isMobile } from "./GleapHelper";
-import { rrwebRecord } from "./RRWebRecorder.js";
+import { record } from "@rrweb/record";
 
 export default class GleapReplayRecorder {
   startDate = undefined;
@@ -19,7 +19,7 @@ export default class GleapReplayRecorder {
     }
   }
 
-  constructor() { }
+  constructor() {}
 
   setOptions(options) {
     this.customOptions = options;
@@ -27,7 +27,7 @@ export default class GleapReplayRecorder {
 
   /**
    * Start replays
-   * @returns 
+   * @returns
    */
   start() {
     this.stop();
@@ -63,7 +63,7 @@ export default class GleapReplayRecorder {
     };
 
     try {
-      this.stopFunction = rrwebRecord({
+      this.stopFunction = record({
         ...options,
         ...this.customOptions,
         emit(rrwebEvent) {
@@ -78,7 +78,7 @@ export default class GleapReplayRecorder {
 
   /**
    * Stop replays
-   * @returns 
+   * @returns
    */
   stop() {
     if (this.stopFunction) {
@@ -102,7 +102,7 @@ export default class GleapReplayRecorder {
       width: window.innerWidth,
       height: window.innerHeight,
       isMobile: isMobile(),
-      type: 'rrweb',
+      type: "rrweb",
     };
 
     return replayResult;
@@ -112,15 +112,18 @@ export default class GleapReplayRecorder {
 export function ensureMaxMessageSize(data) {
   let stringifiedData = JSON.stringify(data);
   if (stringifiedData.length > 4000000) {
-    const dataURIRegex = /data:([\w\/\-\.]+);(\w+),([^)"]*)/gim
-    const matches = stringifiedData.matchAll(dataURIRegex)
+    const dataURIRegex = /data:([\w\/\-\.]+);(\w+),([^)"]*)/gim;
+    const matches = stringifiedData.matchAll(dataURIRegex);
     for (const match of matches) {
-      if (match[1].toLocaleLowerCase().slice(0, 6) === 'image/') {
-        stringifiedData = stringifiedData.replace(match[0], 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8ABRg5/wHSAVZN1mnaAAAAAElFTkSuQmCC')
+      if (match[1].toLocaleLowerCase().slice(0, 6) === "image/") {
+        stringifiedData = stringifiedData.replace(
+          match[0],
+          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8ABRg5/wHSAVZN1mnaAAAAAElFTkSuQmCC"
+        );
       } else {
-        stringifiedData = stringifiedData.replace(match[0], '')
+        stringifiedData = stringifiedData.replace(match[0], "");
       }
     }
   }
-  return { event: JSON.parse(stringifiedData), size: stringifiedData.length }
+  return { event: JSON.parse(stringifiedData), size: stringifiedData.length };
 }
