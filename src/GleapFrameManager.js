@@ -430,6 +430,10 @@ export default class GleapFrameManager {
   }
 
   sendConfigUpdate() {
+    if (!this.comReady) {
+      return;
+    }
+
     this.sendMessage({
       name: "config-update",
       data: {

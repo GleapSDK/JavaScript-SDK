@@ -162,6 +162,7 @@ class Gleap {
    */
   static setAiTools(tools) {
     GleapConfigManager.getInstance().setAiTools(tools);
+    GleapFrameManager.getInstance().sendConfigUpdate();
   }
 
   /**
