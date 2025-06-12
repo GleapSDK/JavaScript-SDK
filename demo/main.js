@@ -4,7 +4,7 @@ Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.initialize("CnH8klmCyIqhTn7a4O9ozy2bCb6XrsgV");
+Gleap.initialize("SWDRYt539LLdlWtMLGYVos7oIAbWQPbX");
 
 // const lastMonthDate = new Date();
 // lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);

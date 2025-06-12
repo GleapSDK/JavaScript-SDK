@@ -1205,7 +1205,7 @@ class Gleap {
         } else if (action.actionType === "modal") {
           Gleap.showModal(action);
         } else if (action.actionType === "tour") {
-          Gleap.startProductTourWithConfig(action.outbound, action.data);
+          Gleap.startProductTourWithConfig(action.outbound, action.data, false);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
         }
@@ -1218,7 +1218,7 @@ class Gleap {
     GleapSession.getInstance()
       .startProductTourConfig(tourId)
       .then((config) => {
-        self.startProductTourWithConfig(tourId, config);
+        self.startProductTourWithConfig(tourId, config, true);
       })
       .catch((error) => {});
   }
@@ -1234,8 +1234,13 @@ class Gleap {
     }
   }
 
-  static startProductTourWithConfig(tourId, config) {
-    GleapProductTours.getInstance().startWithConfig(tourId, config);
+  static startProductTourWithConfig(tourId, config, manually = false) {
+    GleapProductTours.getInstance().startWithConfig(
+      tourId,
+      config,
+      0,
+      manually
+    );
   }
 
   static showBanner(data) {

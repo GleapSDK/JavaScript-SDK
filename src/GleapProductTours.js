@@ -57,7 +57,7 @@ export default class GleapProductTours {
     }
   }
 
-  startWithConfig(tourId, config, delay = 0) {
+  startWithConfig(tourId, config, delay = 0, manually = false) {
     // Prevent multiple tours from being started.
     if (this.productTourId || this.disabled) {
       return;
@@ -67,26 +67,30 @@ export default class GleapProductTours {
     this.productTourData = config;
     this.currentActiveIndex = 0;
 
-    const self = this;
+    if (manually) {
+      this.start();
+    } else {
+      const self = this;
 
-    // Validate product tour.
-    GleapSession.getInstance()
-      .validateProductTour(tourId)
-      .then(() => {
-        if (delay > 0) {
-          return setTimeout(() => {
-            self.start();
-          }, delay);
-        } else {
-          return this.start();
-        }
-      })
-      .catch((error) => {
-        console.log("Product tour is not live. Cleaning up...");
-        console.error(error);
+      // Validate product tour.
+      GleapSession.getInstance()
+        .validateProductTour(tourId)
+        .then(() => {
+          if (delay > 0) {
+            return setTimeout(() => {
+              self.start();
+            }, delay);
+          } else {
+            return this.start();
+          }
+        })
+        .catch((error) => {
+          console.log("Product tour is not live. Cleaning up...");
+          console.error(error);
 
-        self.onComplete(false);
-      });
+          self.onComplete(false);
+        });
+    }
   }
 
   onComplete(success = true) {
