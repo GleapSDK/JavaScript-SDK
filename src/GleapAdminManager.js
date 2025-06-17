@@ -118,6 +118,13 @@ export default class GleapAdminManager {
               data: data.data,
             });
           }
+
+          if (data.name === "translate-complete") {
+            this.sendMessageToTourBuilder({
+              name: "translate-complete",
+              data: data.data,
+            });
+          }
         }
 
         if (data.type === "tourbuilder") {
@@ -158,6 +165,13 @@ export default class GleapAdminManager {
           if (data.name === "product-tour-started") {
             this.sendMessage({
               name: "product-tour-started",
+              data: data.data,
+            });
+          }
+
+          if (data.name === "translate") {
+            this.sendMessage({
+              name: "translate",
               data: data.data,
             });
           }
