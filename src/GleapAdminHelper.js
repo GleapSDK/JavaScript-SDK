@@ -1,4 +1,4 @@
-import unique from "unique-selector";
+import unique from "./unique-selector/src/unique-selector";
 import ElementPicker from "./ElementPicker";
 
 class GleapAdminHelper {
