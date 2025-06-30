@@ -336,6 +336,9 @@ export default class GleapCopilotTours {
   cleanup() {
     if (typeof window === "undefined") return;
     document.body.classList.add("gl-copilot-fade-out");
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+    }
     setTimeout(() => {
       if (this._pointerContainer) {
         this._pointerContainer.remove();
