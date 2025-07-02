@@ -428,9 +428,10 @@ class Gleap {
 
   /**
    * Closes any open Gleap dialogs.
+   * @param {boolean} resetRoutes
    */
-  static close() {
-    GleapFrameManager.getInstance().hideWidget();
+  static close(resetRoutes = false) {
+    GleapFrameManager.getInstance().hideWidget(resetRoutes);
   }
 
   /**

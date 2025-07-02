@@ -379,7 +379,7 @@ export default class GleapFrameManager {
     }
   }
 
-  hideWidget() {
+  hideWidget(resetRoutes = false) {
     // Prevent for survey web.
     if (this.appMode === "survey_web") {
       return;
@@ -391,6 +391,12 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.classList.remove(
         "gleap-frame-container--animate"
       );
+    }
+    if (resetRoutes) {
+      this.sendMessage({
+        name: "reset-routes",
+        data: {},
+      });
     }
     this.widgetOpened = false;
     this.updateWidgetStatus();
