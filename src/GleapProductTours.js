@@ -403,6 +403,6 @@ export default class GleapProductTours {
     });
     this.gleapTourObj.drive();
 
-    document.addEventListener("click", onDocumentClick);
+    document.addEventListener("click", onDocumentClick, true);
   }
 }
