@@ -8,7 +8,7 @@ const copyBuildPlugin = {
     compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
       const nodeVersion = process.env.npm_package_version;
       return exec(
-        `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/cjs/index.js published/${nodeVersion}/index.js & cp ./build/cjs/index.js published/latest/index.js`,
+        `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/browser/index.js published/${nodeVersion}/index.js & cp ./build/browser/index.js published/latest/index.js`,
         (err, stdout, stderr) => {
           if (stdout) process.stdout.write(stdout);
           if (stderr) process.stderr.write(stderr);
@@ -75,14 +75,14 @@ const commonConfig = (isDevelopment, plugins = []) => {
       compress: true,
       open: true,
       hot: true,
-      host: '0.0.0.0',
+      host: "0.0.0.0",
       static: [
         {
-          directory: path.join(__dirname, 'demo'),
+          directory: path.join(__dirname, "demo"),
         },
         {
-          directory: path.join(__dirname, 'build'),
-          publicPath: '/build',
+          directory: path.join(__dirname, "build"),
+          publicPath: "/build",
         },
       ],
       port: 4444,
@@ -123,6 +123,22 @@ const cjsConfig = {
   },
 };
 
+// Configuration for browser
+const browserConfig = {
+  ...commonConfig(false, [copyBuildPlugin]),
+  output: {
+    path: path.resolve(__dirname, "build/browser"),
+    filename: "[name].js",
+    library: {
+      name: "Gleap",
+      type: "assign",
+      export: "default",
+    },
+    globalObject: "typeof self !== 'undefined' ? self : this",
+    clean: true,
+  },
+};
+
 const developmentConfig = {
   ...commonConfig(true, []),
   // ... additional development-specific settings ...
@@ -132,6 +148,6 @@ module.exports = (env) => {
   if (env && env.development) {
     return developmentConfig;
   } else {
-    return [esmConfig, cjsConfig];
+    return [esmConfig, cjsConfig, browserConfig];
   }
 };
