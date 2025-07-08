@@ -355,6 +355,10 @@ export default class GleapCopilotTours {
       if (styleNode) styleNode.remove();
       document.body.classList.remove("gl-copilot-fade-out");
     }, 800);
+
+    this.productTourId = undefined;
+    this.productTourData = undefined;
+    
     this.removeScrollListeners();
   }
 
