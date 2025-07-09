@@ -8,7 +8,7 @@ const copyBuildPlugin = {
     compiler.hooks.afterEmit.tap("AfterEmitPlugin", (compilation) => {
       const nodeVersion = process.env.npm_package_version;
       return exec(
-        `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/browser/index.js published/${nodeVersion}/index.js & cp ./build/browser/index.js published/latest/index.js`,
+        `mkdir -p published/${nodeVersion} & mkdir -p published/latest & cp ./build/browser/index.js published/${nodeVersion}/index.js & cp ./build/browser/index.js published/latest/index.js & cp ./build/browser/index.js.map published/${nodeVersion}/index.js.map & cp ./build/browser/index.js.map published/latest/index.js.map`,
         (err, stdout, stderr) => {
           if (stdout) process.stdout.write(stdout);
           if (stderr) process.stderr.write(stderr);
@@ -23,6 +23,7 @@ const copyBuildPlugin = {
 const commonConfig = (isDevelopment, plugins = []) => {
   var config = {
     mode: "production",
+    devtool: "source-map", // Generate external source map files
     entry: {
       index: "./src/index.js",
     },
