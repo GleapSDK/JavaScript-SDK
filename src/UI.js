@@ -446,13 +446,15 @@ export const injectStyledCSS = (
       right: 0 !important;
       width: 100vw !important;
       max-width: 100vw !important;
-      height: 100vh !important;
+      height: 100vh;
+      height: 100dvh !important;
       background-color: rgba(0, 0, 0, 0.5);
       backdrop-filter: blur(6px);
       display: flex !important;
       justify-content: center !important;
       align-items: center !important;
-      max-height: 100vh !important;
+      max-height: 100vh;
+      max-height: 100dvh !important;
       border-radius: 0 !important;
       animation-name: none !important;
     }
