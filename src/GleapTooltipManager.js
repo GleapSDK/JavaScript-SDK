@@ -8,6 +8,7 @@ import {
 } from "@floating-ui/dom";
 import { GleapSession } from "./Gleap";
 import { loadIcon } from "./UI";
+import { checkPageFilter } from "./GleapPageFilter";
 
 export default class GleapTooltipManager {
   tooltips = [];
@@ -442,25 +443,16 @@ export default class GleapTooltipManager {
         return true;
       }
 
-      const filterType = tooltip.pageType;
-      const filterValue = tooltip.page;
+      const passed = checkPageFilter(
+        currentUrl,
+        tooltip.page,
+        tooltip.pageType
+      );
 
-      switch (filterType) {
-        case "is":
-          return currentUrl === filterValue;
-        case "isnot":
-          return currentUrl !== filterValue;
-        case "contains":
-          return currentUrl.includes(filterValue);
-        case "notcontains":
-          return !currentUrl.includes(filterValue);
-        case "startswith":
-          return currentUrl.startsWith(filterValue);
-        case "endswith":
-          return currentUrl.endsWith(filterValue);
-        default:
-          return false;
+      if (!passed) {
+        return false;
       }
+      return true;
     });
   };
 
