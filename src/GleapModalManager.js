@@ -39,12 +39,16 @@ export default class GleapModalManager {
         if (data.name === "modal-loaded" && this.modalData) {
           const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
           const primaryColor = flowConfig.color ? flowConfig.color : "#485BFF";
+          const backgroundColor = flowConfig.backgroundColor
+            ? flowConfig.backgroundColor
+            : "#FFFFFF";
 
           this._postMessage({
             name: "modal-data",
             data: {
               ...this.modalData,
               primaryColor: primaryColor,
+              backgroundColor: backgroundColor,
             },
           });
         }
