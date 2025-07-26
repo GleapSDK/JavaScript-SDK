@@ -106,8 +106,12 @@ export default class GleapBannerManager {
    * Injects the feedback button into the current DOM.
    */
   injectBannerUI(bannerData) {
-    if (this.bannerContainer || !document.body) {
+    if (!document.body) {
       return false;
+    }
+
+    if (this.bannerContainer) {
+      this.removeBannerUI();
     }
 
     this.bannerData = bannerData;

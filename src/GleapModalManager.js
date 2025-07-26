@@ -104,7 +104,11 @@ export default class GleapModalManager {
   }
 
   _injectModalUI(modalData) {
-    if (this.modalContainer || !document.body) return false;
+    if (!document.body) return false;
+
+    if (this.modalContainer) {
+      this.hideModal();
+    }
 
     this.modalData = modalData;
 
