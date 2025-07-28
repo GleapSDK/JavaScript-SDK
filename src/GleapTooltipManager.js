@@ -89,6 +89,24 @@ export default class GleapTooltipManager {
         }
 
         mutations.forEach((mutation) => {
+          // Check for attribute changes that might affect hotspot positioning
+          if (mutation.type === "attributes") {
+            const target = mutation.target;
+            if (target.nodeType === Node.ELEMENT_NODE) {
+              // Check if the changed element has tooltip hotspots or is a parent of tooltip elements
+              const hasTooltipHotspots =
+                target.querySelector("[data-gleap-tooltip-hotspot]") ||
+                target.hasAttribute("data-gleap-tooltip-mode");
+
+              if (
+                hasTooltipHotspots ||
+                target.hasAttribute("data-gleap-tooltip")
+              ) {
+                self.updateHotspotPositions();
+              }
+            }
+          }
+
           // Check for added nodes
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
@@ -124,6 +142,8 @@ export default class GleapTooltipManager {
       this.observer.observe(document.body, {
         childList: true,
         subtree: true,
+        attributes: true,
+        attributeFilter: ["style", "class"],
       });
     });
   }
