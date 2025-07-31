@@ -25,3 +25,21 @@ Gleap.initialize("SWDRYt539LLdlWtMLGYVos7oIAbWQPbX");
 //     test: "dataaa",
 // })
 // Gleap.startBot("6789110e41e9869af7a2b6b8")
+
+// Get checklist data
+/*Gleap.getChecklistData("68872462bfc42d80c3838e3d", "project_X4").then((data) => {
+    console.log(data);
+});
+
+// Listen for checklist events
+Gleap.on('checklist-loaded', (data) => {
+  console.log('Checklist loaded:', data);
+});
+
+Gleap.on('checklist-step-completed', (data) => {
+  console.log('Step completed:', data.stepId);
+});
+
+Gleap.on('checklist-completed', (data) => {
+  console.log('Checklist completed!');
+});*/

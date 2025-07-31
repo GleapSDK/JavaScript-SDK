@@ -31,6 +31,7 @@ import GleapAdminManager from "./GleapAdminManager";
 import GleapProductTours from "./GleapProductTours";
 import { checkPageFilter } from "./GleapPageFilter";
 import { registerGleapChecklist } from "./GleapChecklist";
+import ChecklistNetworkManager from "./ChecklistNetworkManager";
 
 if (
   typeof window !== "undefined" &&
@@ -1105,6 +1106,35 @@ class Gleap {
 
     GleapFrameManager.getInstance().showWidget();
   }
+
+  /**
+   * Gets the full checklist data by validating the outbound ID and fetching the data.
+   * @param {string} outboundId - The outbound checklist ID to get data for.
+   * @param {string} [sharedKey] - Optional shared key for the checklist.
+   * @returns {Promise<object>} A promise that resolves with the full checklist data.
+   * 
+   * Available events for checklist updates (use Gleap.on() to listen):
+   * - 'checklist-loaded': Fired when a checklist is initially loaded
+   * - 'checklist-update': Fired when checklist data is updated
+   * - 'checklist-step-completed': Fired when a step is marked as completed
+   * - 'checklist-completed': Fired when the entire checklist is completed
+   */
+  static getChecklistData(outboundId, sharedKey) {
+    if (!outboundId) {
+      return Promise.reject(new Error("outboundId is required"));
+    }
+
+    const networkManager = ChecklistNetworkManager.getInstance();
+    
+    // First validate the checklist to get the internal ID
+    return networkManager.validateChecklist(outboundId, sharedKey)
+      .then((internalId) => {
+        // Then fetch the full checklist data
+        return networkManager.fetchChecklist(internalId);
+      });
+  }
+
+
 
   /**
    * Opens the news overview.
