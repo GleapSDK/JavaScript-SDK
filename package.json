@@ -15,7 +15,9 @@
     "test": "jest",
     "prepare": "npm run build",
     "trypublish": "npm publish || true",
-    "deploy": "curl -X POST \"https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/e1f9e34c-3bc4-4e63-8c58-54ea6a9bc2a7\""
+    "dev": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
+    "deploy:staging": "npm run build && wrangler deploy --env staging"
   },
   "repository": {
     "type": "git",
@@ -61,7 +63,8 @@
     "url-loader": "^4.1.1",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
-    "webpack-dev-server": "^5.0.2"
+    "webpack-dev-server": "^5.0.2",
+    "wrangler": "^3.0.0"
   },
   "jest": {
     "moduleNameMapper": {

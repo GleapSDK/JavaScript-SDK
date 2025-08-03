@@ -1,0 +1,16 @@
+{
+  "name": "gleap-javascript-sdk",
+  "compatibility_date": "2025-08-01",
+
+  // Configure static assets
+  "assets": {
+    "directory": "./published",
+    "not_found_handling": "404-page"
+  },
+
+  // Enable workers.dev subdomain
+  "workers_dev": true,
+
+  // Enable preview URLs for branch deployments
+  "preview_urls": false
+}

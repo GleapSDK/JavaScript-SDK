@@ -1,0 +1,30 @@
+# Node.js
+**/node_modules
+**/.npm
+**/package-lock.json
+
+# Build artifacts and source
+src/
+scripts/
+webpack.config.js
+babel.config.js
+
+# Git and version control
+**/.git
+**/.gitignore
+
+# OS files
+**/.DS_Store
+**/Thumbs.db
+
+# Development and configuration files
+**/.env*
+**/wrangler.jsonc
+**/.assetsignore
+
+# Test files
+**/*.test.js
+**/*.spec.js
+
+# Documentation (excluding demo files)
+README.md
