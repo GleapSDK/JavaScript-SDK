@@ -354,6 +354,18 @@ export default class GleapTooltipManager {
     const hotspots = document.querySelectorAll("[data-gleap-tooltip-hotspot]");
     hotspots.forEach((hotspot) => hotspot.remove());
 
+    // Remove all attributes from elements.
+    const elements = document.querySelectorAll("[data-gleap-tooltip]");
+    elements.forEach((element) =>
+      element.removeAttribute("data-gleap-tooltip")
+    );
+
+    // Remove all attributes from elements.
+    const modeElements = document.querySelectorAll("[data-gleap-tooltip-mode]");
+    modeElements.forEach((element) =>
+      element.removeAttribute("data-gleap-tooltip-mode")
+    );
+
     // Clear internal references.
     this.elementToFloatingUIMap = new WeakMap();
     this.elementToTooltipMap = new WeakMap();
