@@ -118,6 +118,7 @@ export namespace Gleap {
       sla?: number | null;
       plan?: string | null;
       customData?: object | null;
+      avatar?: string | null;
       createdAt?: Date | null;
     },
     userHash?: string
@@ -132,6 +133,7 @@ export namespace Gleap {
       companyName?: string | null;
       sla?: number | null;
       plan?: string | null;
+      avatar?: string | null;
       customData?: object | null;
     }
   ): void;
