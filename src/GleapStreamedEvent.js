@@ -117,13 +117,23 @@ export default class GleapStreamedEvent {
       if (message.name === "update") {
         const { a, u } = message.data;
 
-        if (!GleapFrameManager.getInstance().isOpened()) {
-          if (a) {
-            Gleap.getInstance().performActions(a);
-          }
-          if (u != null) {
-            GleapNotificationManager.getInstance().setNotificationCount(u);
-          }
+        const isOpened = GleapFrameManager.getInstance().isOpened();
+
+        if (a) {
+          const listOfActionsWhereIgnoreOpened = ["banner", "modal"];
+          const filteredActions = a.filter(
+            (action) =>
+              !isOpened ||
+              listOfActionsWhereIgnoreOpened.includes(
+                action?.actionType?.toLowerCase()
+              )
+          );
+
+          Gleap.getInstance().performActions(filteredActions);
+        }
+
+        if (u != null && !isOpened) {
+          GleapNotificationManager.getInstance().setNotificationCount(u);
         }
       }
 
