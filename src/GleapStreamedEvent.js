@@ -132,7 +132,7 @@ export default class GleapStreamedEvent {
           Gleap.getInstance().performActions(filteredActions);
         }
 
-        if (u != null && !isOpened) {
+        if (u != null) {
           GleapNotificationManager.getInstance().setNotificationCount(u);
         }
       }

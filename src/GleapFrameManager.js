@@ -348,7 +348,8 @@ export default class GleapFrameManager {
     GleapNotificationManager.getInstance().clearAllNotifications(
       this.isSurvey()
     );
-    GleapNotificationManager.getInstance().setNotificationCount(0);
+
+    GleapFeedbackButtonManager.getInstance().updateNotificationBadge(0);
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
   }
 

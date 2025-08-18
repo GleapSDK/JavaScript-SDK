@@ -90,7 +90,7 @@ export default class GleapFeedbackButtonManager {
     }
 
     const notificationHiddenClass = "bb-notification-bubble--hidden";
-    if (count > 0) {
+    if (count > 0 && !GleapFrameManager.getInstance().isOpened()) {
       notificationBadge.classList.remove(notificationHiddenClass);
       notificationBadge.innerText = count;
     } else {

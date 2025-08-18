@@ -72,13 +72,7 @@ export default class GleapNotificationManager {
   }
 
   setNotificationCount(unreadCount) {
-    if (GleapFrameManager.getInstance().isOpened()) {
-      this.unreadCount = 0;
-      this.updateTabBarNotificationCount();
-    } else {
-      this.unreadCount = unreadCount;
-    }
-
+    this.unreadCount = unreadCount;
     this.updateTabBarNotificationCount();
 
     // Update the badge counter.
