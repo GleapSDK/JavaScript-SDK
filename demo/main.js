@@ -4,14 +4,7 @@ Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.initialize("SWDRYt539LLdlWtMLGYVos7oIAbWQPbX");
-
-Gleap.identify("38473294732892", {
-  name: "Luca",
-  email: "luca@gleap.io",
-});
-
-Gleap.open();
+Gleap.initialize("ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV");
 
 // Gleap.setTicketAttribute("description", "Custom value")
 // Gleap.startBot("68833cbbf197435e2e3fb781");

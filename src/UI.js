@@ -873,7 +873,7 @@ export const injectStyledCSS = (
     .gleap-frame-container-inner {
       position: relative;
       width: 100%;
-      height: calc(100vh - ${130 + buttonY}px);
+      height: calc(100vh - ${84 + buttonY}px);
       max-height: ${widgetMaxHeight}px;
     }
 
