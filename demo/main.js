@@ -16,7 +16,6 @@ Gleap.open();
 // Gleap.setTicketAttribute("description", "Custom value")
 // Gleap.startBot("68833cbbf197435e2e3fb781");
 
-
 // const lastMonthDate = new Date();
 // lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
 
@@ -38,8 +37,10 @@ Gleap.open();
 // Gleap.startBot("6789110e41e9869af7a2b6b8")
 
 setTimeout(() => {
-  const sidebarPlaceholders = document.querySelectorAll('.sidebar-placeholder > :nth-child(5)');
-  sidebarPlaceholders.forEach(element => {
-    element.style.marginLeft = '200px';
+  const sidebarPlaceholders = document.querySelectorAll(
+    ".sidebar-placeholder > :nth-child(5)"
+  );
+  sidebarPlaceholders.forEach((element) => {
+    element.style.marginLeft = "200px";
   });
 }, 3000);

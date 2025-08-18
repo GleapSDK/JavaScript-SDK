@@ -55,6 +55,16 @@ export default class GleapTranslationManager {
     if (typeof navigator !== "undefined") {
       language = navigator.language.toLowerCase();
     }
+
+    // Get language from HTML lang attribute if available
+    if (typeof document !== "undefined" && document.documentElement) {
+      const htmlLang = document.documentElement.lang;
+      if (htmlLang && htmlLang.trim() !== "") {
+        language = htmlLang.toLowerCase().trim();
+        console.log("languageFromHTML", language);
+      }
+    }
+
     if (this.overrideLanguage && this.overrideLanguage !== "") {
       language = this.overrideLanguage.toLowerCase();
     }
