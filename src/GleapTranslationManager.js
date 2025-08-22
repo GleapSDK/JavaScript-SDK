@@ -61,7 +61,6 @@ export default class GleapTranslationManager {
       const htmlLang = document.documentElement.lang;
       if (htmlLang && htmlLang.trim() !== "") {
         language = htmlLang.toLowerCase().trim();
-        console.log("languageFromHTML", language);
       }
     }
 
