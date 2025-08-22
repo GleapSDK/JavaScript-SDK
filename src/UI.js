@@ -1744,8 +1744,9 @@ export const injectStyledCSS = (
         width: 100vw;
         max-width: 100vw;
         min-height: 100vh;
-        min-height: -webkit-fill-available;
-        max-height: -webkit-fill-available;
+        max-height: 100vh;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
         top: 0px;
         bottom: 0px;
         border-radius: 0px;
