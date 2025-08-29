@@ -561,6 +561,10 @@ export default class GleapFrameManager {
         this.urlHandler(url, newTab);
       }
 
+      if (data.name === "start-product-tour") {
+        Gleap.startProductTour(data.data?.tourId, true);
+      }
+
       if (data.name === "run-custom-action") {
         GleapCustomActionManager.triggerCustomAction(data.data, {
           shareToken: data.shareToken,

@@ -64,6 +64,9 @@ export default class GleapBannerManager {
         if (data.name === "start-custom-action") {
           Gleap.triggerCustomAction(data.data?.action);
         }
+        if (data.name === "start-product-tour") {
+          Gleap.startProductTour(data.data?.tourId, true);
+        }
         if (data.name === "open-url") {
           const url = data.data;
           const newTab = data.newTab ? true : false;

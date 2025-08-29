@@ -1112,7 +1112,7 @@ class Gleap {
    * @param {string} outboundId - The outbound checklist ID to get data for.
    * @param {string} [sharedKey] - Optional shared key for the checklist.
    * @returns {Promise<object>} A promise that resolves with the full checklist data.
-   * 
+   *
    * Available events for checklist updates (use Gleap.on() to listen):
    * - 'checklist-loaded': Fired when a checklist is initially loaded
    * - 'checklist-update': Fired when checklist data is updated
@@ -1125,16 +1125,15 @@ class Gleap {
     }
 
     const networkManager = ChecklistNetworkManager.getInstance();
-    
+
     // First validate the checklist to get the internal ID
-    return networkManager.validateChecklist(outboundId, sharedKey)
+    return networkManager
+      .validateChecklist(outboundId, sharedKey)
       .then((internalId) => {
         // Then fetch the full checklist data
         return networkManager.fetchChecklist(internalId);
       });
   }
-
-
 
   /**
    * Opens the news overview.
@@ -1244,11 +1243,20 @@ class Gleap {
     }
   }
 
-  static startProductTour(tourId) {
+  static startProductTour(tourId, checkStartUrl = false) {
     const self = this;
     GleapSession.getInstance()
       .startProductTourConfig(tourId)
       .then((config) => {
+        if (
+          checkStartUrl &&
+          config?.startURL &&
+          !window?.location?.href?.includes(config?.baseURL)
+        ) {
+          window.location.href = `${config.startURL}?gleap_tour=${tourId}&gleap_tour_delay=1`;
+          return;
+        }
+
         self.startProductTourWithConfig(tourId, config, true);
       })
       .catch((error) => {});
