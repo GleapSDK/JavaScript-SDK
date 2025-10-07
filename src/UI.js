@@ -2236,11 +2236,6 @@ export const injectStyledCSS = (
       pointer-events: none;
     }
     
-    /* Disable the scrolling of parent element if it has an active element*/
-    :not(body):has(> .gleap-tour-active-element) {
-      overflow: hidden !important;
-    }
-    
     .gleap-tour-no-interaction, .gleap-tour-no-interaction * {
       pointer-events: none !important;
     }
