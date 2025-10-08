@@ -11,17 +11,23 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
   const generateRegex = (match) => {
     if (!match) return null;
     try {
-        // Replace dynamic patterns {anything} with a placeholder first
-        var dynamicPattern = /{\w+}/g;
-        var regexPattern = match.replace(dynamicPattern, '___PLACEHOLDER___');
-        
-        // Escape special regex characters in the URL pattern
-        regexPattern = regexPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        
-        // Replace our placeholder with the actual regex pattern
-        regexPattern = regexPattern.replace(/___PLACEHOLDER___/g, '[^&?]+');
-        var pattern = new RegExp('^' + regexPattern + '$', 'i');
-        return pattern;
+      // If match starts with "/", remove it to work with Regex
+      if (match.startsWith("/")) {
+        match = match.substring(1);
+      }
+      
+      // Replace dynamic patterns {anything} with a placeholder first
+      var dynamicPattern = /{\w+}/g;
+      var regexPattern = match.replace(dynamicPattern, "___PLACEHOLDER___");
+
+      // Escape special regex characters in the URL pattern
+      regexPattern = regexPattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      // Replace our placeholder with the actual regex pattern
+      regexPattern = regexPattern.replace(/___PLACEHOLDER___/g, "[^&?]+");
+      var pattern = new RegExp(regexPattern, "i");
+
+      return pattern;
     } catch (e) {
       return null;
     }
@@ -56,7 +62,8 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
         removeTrailingSlash(currentUrl) === removeTrailingSlash(pageFilter);
       break;
     case "isnot":
-      matched = removeTrailingSlash(currentUrl) !== removeTrailingSlash(pageFilter);
+      matched =
+        removeTrailingSlash(currentUrl) !== removeTrailingSlash(pageFilter);
       break;
     case "contains":
       matched = isMatchingUrl(currentUrl, pageFilter);
