@@ -63,6 +63,9 @@ export const isMobile = () => {
 };
 
 export const gleapDataParser = function (data) {
+  if (!data) {
+    return {};
+  }
   if (typeof data === "string" || data instanceof String) {
     try {
       return JSON.parse(data);
@@ -101,7 +104,7 @@ const removeSubDomain = (v) => {
     }
     parts = parts.slice(is2ndLevelDomain ? -3 : -2);
     return parts.join(".");
-  } catch (exp) {}
+  } catch (exp) { }
   return v;
 };
 
@@ -112,7 +115,7 @@ export const loadFromGleapCache = (key) => {
       const config = JSON.parse(cachedData);
       return config;
     }
-  } catch (exp) {}
+  } catch (exp) { }
   return null;
 };
 
@@ -121,7 +124,7 @@ export const saveToGleapCache = (key, data) => {
   if (data) {
     try {
       localStorage.setItem(k, JSON.stringify(data));
-    } catch (exp) {}
+    } catch (exp) { }
   } else {
     localStorage.removeItem(k);
   }
@@ -138,7 +141,7 @@ export const setGleapCookie = (name, value, days) => {
     const host = removeSubDomain(window.location.host.split(":")[0]);
     document.cookie =
       name + "=" + (value || "") + expires + "; path=/; domain=" + host;
-  } catch (exp) {}
+  } catch (exp) { }
 };
 
 export const getGleapCookie = (name) => {
@@ -150,7 +153,7 @@ export const getGleapCookie = (name) => {
       while (c.charAt(0) == " ") c = c.substring(1, c.length);
       if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
-  } catch (exp) {}
+  } catch (exp) { }
   return null;
 };
 
@@ -159,7 +162,7 @@ export const eraseGleapCookie = (name) => {
     const host = removeSubDomain(window.location.host.split(":")[0]);
     document.cookie =
       name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=" + host;
-  } catch (exp) {}
+  } catch (exp) { }
 };
 
 export const getDOMElementDescription = (element, html = true) => {
@@ -233,7 +236,7 @@ export const fixGleapHeight = () => {
             // Remove the padding bottom
             gleapFrameContainer.style.removeProperty("max-height");
           }
-        } catch (error) {}
+        } catch (error) { }
       }
 
       function handleOrientationChange() {
@@ -241,7 +244,7 @@ export const fixGleapHeight = () => {
           // Update initial dimensions
           initialHeight = window.innerHeight;
           updateContainerHeight();
-        } catch (error) {}
+        } catch (error) { }
       }
 
       // Update on resize (keyboard show/hide and viewport resize)
@@ -253,5 +256,5 @@ export const fixGleapHeight = () => {
       // Update initially
       updateContainerHeight();
     }
-  } catch (error) {}
+  } catch (error) { }
 };
