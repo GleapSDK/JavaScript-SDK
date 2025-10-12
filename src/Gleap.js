@@ -23,6 +23,7 @@ import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
+import GleapAIUIManager from "./GleapAIUIManager";
 import GleapBannerManager from "./GleapBannerManager";
 import GleapModalManager from "./GleapModalManager";
 import GleapAudioManager from "./GleapAudioManager";
@@ -199,7 +200,7 @@ class Gleap {
 
     try {
       fixGleapHeight();
-    } catch (error) {}
+    } catch (error) { }
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
@@ -218,6 +219,9 @@ class Gleap {
 
               // Inject the notification container
               GleapNotificationManager.getInstance().injectNotificationUI();
+
+              // Inject the AI UI container
+              GleapAIUIManager.getInstance().injectAIUI();
 
               // Check for uncompleted tour.
               Gleap.checkForUncompletedTour();
@@ -286,7 +290,7 @@ class Gleap {
           Gleap.startProductTour(tourId);
         }, tourDelay * 1000);
       }
-    } catch (exp) {}
+    } catch (exp) { }
   }
 
   /**
@@ -299,6 +303,7 @@ class Gleap {
     GleapFrameManager.getInstance().destroy();
     GleapFeedbackButtonManager.getInstance().destroy();
     GleapNotificationManager.getInstance().clearAllNotifications(true);
+    GleapAIUIManager.getInstance().destroy();
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
 
@@ -318,6 +323,28 @@ class Gleap {
    */
   static closeModal() {
     GleapModalManager.getInstance().hideModal();
+  }
+
+  /**
+   * Show the AI bar.
+   */
+  static showAIBar() {
+    GleapAIUIManager.getInstance().show();
+  }
+
+  /**
+   * Hide the AI search.
+   */
+  static hideAIBar() {
+    GleapAIUIManager.getInstance().hide();
+  }
+
+  /**
+   * Set the AI quick actions.
+   * @param {Array<string>} quickActions
+   */
+  static setAIBarQuickActions(quickActions) {
+    GleapAIUIManager.getInstance().setQuickActions(quickActions);
   }
 
   /**
@@ -771,8 +798,8 @@ class Gleap {
     );
     feedback
       .sendFeedback()
-      .then(() => {})
-      .catch((error) => {});
+      .then(() => { })
+      .catch((error) => { });
   }
 
   /**
@@ -1196,6 +1223,9 @@ class Gleap {
 
         // Inject the notification container
         GleapNotificationManager.getInstance().injectNotificationUI();
+
+        // Inject the AI UI container
+        GleapAIUIManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
         console.warn("Failed to initialize Gleap.");
@@ -1259,7 +1289,7 @@ class Gleap {
 
         self.startProductTourWithConfig(tourId, config, true);
       })
-      .catch((error) => {});
+      .catch((error) => { });
   }
 
   static checkForUncompletedTour() {
@@ -1285,13 +1315,13 @@ class Gleap {
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   static showModal(data) {
     try {
       GleapModalManager.getInstance().showModal(data);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   static showNotification(data) {
@@ -1390,6 +1420,7 @@ export {
   GleapNetworkIntercepter,
   GleapAudioManager,
   GleapNotificationManager,
+  GleapAIUIManager,
   GleapBannerManager,
   GleapModalManager,
   GleapPreFillManager,
