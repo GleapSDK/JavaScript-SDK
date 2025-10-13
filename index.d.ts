@@ -45,9 +45,9 @@ export namespace Gleap {
   function clearCustomData(): void;
   function playSound(play: boolean): void;
   function destroy(): void;
-  function showAIBar(): void;
-  function hideAIBar(): void;
-  function setAIBarQuickActions(quickActions: string[]): void;
+  function showAiChatbar(): void;
+  function hideAiChatbar(): void;
+  function setAiChatbarQuickActions(quickActions: string[]): void;
   function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;
   function setWSApiUrl(wsApiUrl: string): void;

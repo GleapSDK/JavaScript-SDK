@@ -23,7 +23,7 @@ import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
-import GleapAIUIManager from "./GleapAIUIManager";
+import GleapAiChatbarManager from "./GleapAiChatbarManager";
 import GleapBannerManager from "./GleapBannerManager";
 import GleapModalManager from "./GleapModalManager";
 import GleapAudioManager from "./GleapAudioManager";
@@ -97,6 +97,9 @@ class Gleap {
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
       GleapAdminManager.getInstance().start();
+      GleapAiChatbarManager.getInstance().setOnMessageSend((question) => {
+        Gleap.askAI(question, true);
+      });
     }
   }
 
@@ -221,7 +224,7 @@ class Gleap {
               GleapNotificationManager.getInstance().injectNotificationUI();
 
               // Inject the AI UI container
-              GleapAIUIManager.getInstance().injectAIUI();
+              GleapAiChatbarManager.getInstance().injectAIUI();
 
               // Check for uncompleted tour.
               Gleap.checkForUncompletedTour();
@@ -303,7 +306,7 @@ class Gleap {
     GleapFrameManager.getInstance().destroy();
     GleapFeedbackButtonManager.getInstance().destroy();
     GleapNotificationManager.getInstance().clearAllNotifications(true);
-    GleapAIUIManager.getInstance().destroy();
+    GleapAiChatbarManager.getInstance().destroy();
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
 
@@ -328,23 +331,33 @@ class Gleap {
   /**
    * Show the AI bar.
    */
-  static showAIBar() {
-    GleapAIUIManager.getInstance().show();
+  static showAiChatbar() {
+    GleapAiChatbarManager.getInstance().manuallyHidden = false;
+    GleapAiChatbarManager.getInstance().show();
   }
 
   /**
    * Hide the AI search.
    */
-  static hideAIBar() {
-    GleapAIUIManager.getInstance().hide();
+  static hideAiChatbar() {
+    GleapAiChatbarManager.getInstance().manuallyHidden = true;
+    GleapAiChatbarManager.getInstance().hide();
   }
 
   /**
    * Set the AI quick actions.
    * @param {Array<string>} quickActions
    */
-  static setAIBarQuickActions(quickActions) {
-    GleapAIUIManager.getInstance().setQuickActions(quickActions);
+  static setAiChatbarQuickActions(quickActions) {
+    GleapAiChatbarManager.getInstance().setQuickActions(quickActions);
+  }
+
+  /**
+   * Set the AI chatbar placeholder.
+   * @param {string} placeholder
+   */
+  static setAiChatbarPlaceholder(placeholder) {
+    GleapAiChatbarManager.getInstance().setPlaceholder(placeholder);
   }
 
   /**
@@ -952,6 +965,25 @@ class Gleap {
   }
 
   /**
+   * Starts a new conversation and attaches the bot with the given id.
+   */
+  static askAI(question, showBackButton = true) {
+    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "ask-ai",
+        data: {
+          question,
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
    * Opens a help center collection
    */
   static openHelpCenterCollection(collectionId, showBackButton = true) {
@@ -1225,7 +1257,7 @@ class Gleap {
         GleapNotificationManager.getInstance().injectNotificationUI();
 
         // Inject the AI UI container
-        GleapAIUIManager.getInstance().injectAIUI();
+        GleapAiChatbarManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
         console.warn("Failed to initialize Gleap.");
@@ -1420,7 +1452,7 @@ export {
   GleapNetworkIntercepter,
   GleapAudioManager,
   GleapNotificationManager,
-  GleapAIUIManager,
+  GleapAiChatbarManager,
   GleapBannerManager,
   GleapModalManager,
   GleapPreFillManager,

@@ -1,24 +1,24 @@
 import Gleap, {
-  GleapStreamedEvent,
   GleapAudioManager,
-  GleapNotificationManager,
+  GleapBannerManager,
+  GleapConfigManager,
+  GleapConsoleLogManager,
   GleapCustomActionManager,
+  GleapCustomDataManager,
   GleapEventManager,
-  GleapMarkerManager,
   GleapFeedback,
   GleapFeedbackButtonManager,
-  GleapTranslationManager,
-  GleapSession,
-  GleapConfigManager,
-  GleapCustomDataManager,
+  GleapMarkerManager,
   GleapMetaDataManager,
-  GleapConsoleLogManager,
   GleapNetworkIntercepter,
+  GleapNotificationManager,
+  GleapSession,
+  GleapStreamedEvent,
   GleapTagManager,
-  GleapBannerManager,
+  GleapTranslationManager,
 } from "./Gleap";
-import { widgetMaxHeight } from "./UI";
 import { runFunctionWhenDomIsReady } from "./GleapHelper";
+import { widgetMaxHeight } from "./UI";
 
 export default class GleapFrameManager {
   frameUrl = "https://messenger-app.gleap.io";
@@ -62,13 +62,13 @@ export default class GleapFrameManager {
         try {
           const doc = document.documentElement;
           doc.style.setProperty("--glvh", window.innerHeight * 0.01 + "px");
-        } catch (e) {}
+        } catch (e) { }
       }
 
       try {
         window.addEventListener("resize", appHeight);
         appHeight();
-      } catch (e) {}
+      } catch (e) { }
     }
   }
 
@@ -235,9 +235,9 @@ export default class GleapFrameManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     if (
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
     ) {
       styleToApply = classicStyle;
     }
@@ -422,7 +422,7 @@ export default class GleapFrameManager {
           this.queue.push(data);
         }
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 
   sendSessionUpdate() {
@@ -612,7 +612,7 @@ export default class GleapFrameManager {
 
               try {
                 delete formData.reportedBy;
-              } catch (e) {}
+              } catch (e) { }
               Gleap.trackEvent(`outbound-${outboundId}-submitted`, formData);
             }
           })
@@ -646,7 +646,7 @@ export default class GleapFrameManager {
             this.listeners[i](data);
           }
         }
-      } catch (exp) {}
+      } catch (exp) { }
     });
   }
 

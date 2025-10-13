@@ -1,5 +1,8 @@
+import {
+  GleapFrameManager,
+} from "./Gleap";
 
-export default class GleapAIUIManager {
+export default class GleapAiChatbarManager {
   aiUIContainer = null;
   shadowRoot = null;
   innerContainer = null;
@@ -9,11 +12,16 @@ export default class GleapAIUIManager {
   inputText = '';
   inputElement = null;
   sendButton = null;
+  manuallyHidden = false;
+  placeholder = 'Ask me anything...';
+  onMessageSend = null;
+  isHidden = true;
+  config = null;
 
   static instance;
   static getInstance() {
     if (!this.instance) {
-      this.instance = new GleapAIUIManager();
+      this.instance = new GleapAiChatbarManager();
     }
     return this.instance;
   }
@@ -25,13 +33,84 @@ export default class GleapAIUIManager {
     this.destroy = this.destroy.bind(this);
   }
 
+  setConfig(config) {
+    this.config = config;
 
-  show() {
-    if (!this.aiUIContainer) {
-      console.warn('GleapAIUIManager: AI UI not initialized. Call injectAIUI() first.');
+    if (config.placeholder) {
+      this.setPlaceholder(config.placeholder);
+    }
+
+    if (config.quickActions) {
+      this.setQuickActions(config.quickActions);
+    }
+
+    if (config.enabled) {
+      this.show();
+    }
+  }
+
+  updateUIVisibility() {
+    if (!this.config?.enabled) {
       return;
     }
 
+    const isOpened = GleapFrameManager.getInstance().isOpened();
+
+    console.log("updateUIVisibility", isOpened);
+
+    if (isOpened) {
+      this.hide();
+    } else {
+      this.show();
+    }
+  }
+
+  setPlaceholder(placeholder) {
+    this.placeholder = placeholder;
+
+    if (this.inputElement) {
+      this.inputElement.placeholder = placeholder;
+    }
+  }
+
+  setOnMessageSend(callback) {
+    this.onMessageSend = callback;
+  }
+
+  arraysEqual(arr1, arr2) {
+    // Quick length check
+    if (arr1.length !== arr2.length) {
+      return false;
+    }
+
+    // Compare each element
+    for (let i = 0; i < arr1.length; i++) {
+      if (arr1[i] !== arr2[i]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  show() {
+    if (!this.config?.enabled) {
+      return;
+    }
+
+    if (this.manuallyHidden) {
+      return;
+    }
+
+    if (!this.aiUIContainer) {
+      return;
+    }
+
+    if (!this.isHidden) {
+      return;
+    }
+
+    this.isHidden = false;
     this.aiUIContainer.style.display = "block";
     this.aiUIContainer.setAttribute('aria-hidden', 'false');
     // Remove fade-out from inner container and reset animation
@@ -41,9 +120,15 @@ export default class GleapAIUIManager {
   }
 
   hide() {
+    if (this.isHidden) {
+      return;
+    }
+
     if (!this.aiUIContainer) {
       return;
     }
+
+    this.isHidden = true;
 
     // Fade out the inner container
     if (this.innerContainer) {
@@ -64,7 +149,11 @@ export default class GleapAIUIManager {
 
   setQuickActions(quickActions) {
     if (!Array.isArray(quickActions)) {
-      console.warn('GleapAIUIManager: quickActions must be an array');
+      return;
+    }
+
+    // Check if they changed using array comparison
+    if (this.arraysEqual(this.quickActions, quickActions)) {
       return;
     }
 
@@ -81,7 +170,7 @@ export default class GleapAIUIManager {
     // Add new actions with staggered animation
     this.quickActions.slice(0, 2).forEach((action, index) => {
       if (typeof action !== 'string' || !action.trim()) {
-        console.warn('GleapAIUIManager: Invalid quick action:', action);
+        console.warn('GleapAiChatbarManager: Invalid quick action:', action);
         return;
       }
 
@@ -92,11 +181,15 @@ export default class GleapAIUIManager {
       actionElement.setAttribute('tabindex', '0');
       actionElement.setAttribute('aria-label', `Quick action: ${action.trim()}`);
 
-      // Add keyboard support
+      // Add click and keyboard support
+      actionElement.addEventListener('click', () => {
+        this.sendMessage(action.trim());
+      });
+
       actionElement.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          actionElement.click();
+          this.sendMessage(action.trim());
         }
       });
 
@@ -120,7 +213,7 @@ export default class GleapAIUIManager {
     }
 
     if (!document.body) {
-      console.error('GleapAIUIManager: Document body not available');
+      console.error('GleapAiChatbarManager: Document body not available');
       return;
     }
 
@@ -141,6 +234,9 @@ export default class GleapAIUIManager {
 
     // Create and add HTML content directly to shadow DOM
     this.createUIInShadow();
+
+    // Update the UI visibility
+    this.updateUIVisibility();
   }
 
   addStylesToShadow() {
@@ -164,6 +260,10 @@ export default class GleapAIUIManager {
         bottom: 20px;
         left: 50%;
         z-index: 999999;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
         opacity: 0;
         transform: translateX(-50%) translateY(20px);
         animation: fadeUpInContainer 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -216,7 +316,7 @@ export default class GleapAIUIManager {
       
       .gleap-ai-ui-input-container {
         position: relative;
-        width: 100%;
+        width: auto;
         min-width: min(280px, calc(100vw - 40px));
         margin: 0 auto;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -509,7 +609,7 @@ export default class GleapAIUIManager {
           <div class="bg-gradient-blur">
             <div class="gleap-ai-ui-input">
               <div class="gleap-ai-ui-input-content">
-                <input type="text" placeholder="Ask me anything..." />
+                <input name="AI question" type="text" placeholder="${this.placeholder}" />
                 <div class="gleap-ai-ui-input-send-button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M342.6 81.4C330.1 68.9 309.8 68.9 297.3 81.4L137.3 241.4C124.8 253.9 124.8 274.2 137.3 286.7C149.8 299.2 170.1 299.2 182.6 286.7L288 181.3L288 552C288 569.7 302.3 584 320 584C337.7 584 352 569.7 352 552L352 181.3L457.4 286.7C469.9 299.2 490.2 299.2 502.7 286.7C515.2 274.2 515.2 253.9 502.7 241.4L342.7 81.4z"/></svg>
                 </div>
@@ -546,6 +646,21 @@ export default class GleapAIUIManager {
       this.inputText = e.target.value.trim();
       this.updateSendButtonState();
     });
+
+    // Add Enter key listener for sending message
+    this.inputElement.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && this.inputText.length > 0) {
+        e.preventDefault();
+        this.sendMessage(this.inputText);
+      }
+    });
+
+    // Add click listener for send button
+    this.sendButton.addEventListener('click', () => {
+      if (this.inputText.length > 0) {
+        this.sendMessage(this.inputText);
+      }
+    });
   }
 
   updateSendButtonState() {
@@ -558,6 +673,24 @@ export default class GleapAIUIManager {
     } else {
       this.innerContainer.classList.remove('active');
     }
+  }
+
+  sendMessage(question) {
+    if (!question || question.trim().length === 0) {
+      return;
+    }
+
+    // Call the callback if it exists
+    if (this.onMessageSend && typeof this.onMessageSend === 'function') {
+      this.onMessageSend(question.trim());
+    }
+
+    // Reset the input text
+    this.inputText = '';
+    if (this.inputElement) {
+      this.inputElement.value = '';
+    }
+    this.updateSendButtonState();
   }
 
   destroy() {
@@ -575,13 +708,15 @@ export default class GleapAIUIManager {
 
     // Clear references
     this.shadowRoot = null;
+    this.innerContainer = null;
     this.quickActionsContainer = null;
     this.quickActions = [];
     this.inputElement = null;
     this.sendButton = null;
     this.inputText = '';
+    this.onMessageSend = null;
 
     // Reset singleton instance
-    GleapAIUIManager.instance = null;
+    GleapAiChatbarManager.instance = null;
   }
 }
