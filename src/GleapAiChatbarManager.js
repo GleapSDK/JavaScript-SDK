@@ -1,5 +1,6 @@
 import {
   GleapFrameManager,
+  GleapConfigManager,
 } from "./Gleap";
 
 export default class GleapAiChatbarManager {
@@ -116,6 +117,20 @@ export default class GleapAiChatbarManager {
     // Remove fade-out from inner container and reset animation
     if (this.innerContainer) {
       this.innerContainer.classList.remove('fade-out');
+
+      // Get feedback button style and update positioning classes
+      const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+
+      // Remove previously added positioning classes
+      this.innerContainer.classList.remove('gleap-ai-ui-container--bottom-right');
+      this.innerContainer.classList.remove('gleap-ai-ui-container--bottom-left');
+
+      // Add the appropriate positioning class based on config
+      if (flowConfig?.feedbackButtonPosition === "BOTTOM_RIGHT") {
+        this.innerContainer.classList.add('gleap-ai-ui-container--bottom-right');
+      } else if (flowConfig?.feedbackButtonPosition === "BOTTOM_LEFT") {
+        this.innerContainer.classList.add('gleap-ai-ui-container--bottom-left');
+      }
     }
   }
 
@@ -258,14 +273,15 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-container {
         position: fixed;
         bottom: 20px;
-        left: 50%;
+        left: 0;
+        right: 0;
         z-index: 999999;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         opacity: 0;
-        transform: translateX(-50%) translateY(20px);
+        transform: translateY(20px);
         animation: fadeUpInContainer 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
       
@@ -278,6 +294,7 @@ export default class GleapAiChatbarManager {
         opacity: 0;
         transform: translateY(10px);
         animation: fadeUpIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
+        max-width: 100%;
       }
       
       .gleap-ai-ui-quick-action {
@@ -288,11 +305,16 @@ export default class GleapAiChatbarManager {
         border-bottom-right-radius: 4px;
         font-size: 13px;
         cursor: pointer;
-        border: 1px solid #00000022;
+        border: 1px solid rgba(30, 24, 24, 0.13);
         transition: background-color 0.2s, transform 0.2s;
         box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
         opacity: 0;
         transform: translateY(15px) scale(0.95);
+        max-width: calc(50% - 28px);
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       
       .gleap-ai-ui-quick-action.animate-in {
@@ -329,29 +351,35 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-container.active .gleap-ai-ui-input-container {
         min-width: 430px;
       }
-      
-      /* Mobile responsive styles */
-      @media (max-width: 768px) {
+
+      @media (max-width: 580px) {
+        .gleap-ai-ui-container {
+          bottom: 23px;
+          align-items: flex-start;
+          left: 20px;
+          right: 20px;
+        }
+
+        .gleap-ai-ui-quick-actions {
+          justify-content: flex-start;
+          gap: 6px;
+          margin-bottom: 10px;
+        }
+
+        .gleap-ai-ui-container--bottom-right {
+          right: 78px;
+        }
+
+        .gleap-ai-ui-container--bottom-left {
+          left: 78px;
+        }
+
+        .gleap-ai-ui-input-container:focus-within,
         .gleap-ai-ui-input-container {
-          min-width: 200px;
-          max-width: calc(100vw - 40px);
-          margin: 0 20px;
-        }
-        
-        .gleap-ai-ui-input-container:focus-within {
-          min-width: calc(100vw - 40px);
-        }
-      }
-      
-      @media (max-width: 480px) {
-        .gleap-ai-ui-input-container {
-          min-width: 180px;
-          max-width: calc(100vw - 32px);
-          margin: 0 16px;
-        }
-        
-        .gleap-ai-ui-input-container:focus-within {
-          min-width: calc(100vw - 32px);
+          min-width: auto;
+          width: 100%;
+          max-width: 100%;
+          margin: 0px;
         }
       }
       
@@ -568,22 +596,22 @@ export default class GleapAiChatbarManager {
       @keyframes fadeUpInContainer {
         0% {
           opacity: 0;
-          transform: translateX(-50%) translateY(20px);
+          transform: translateY(20px);
         }
         100% {
           opacity: 1;
-          transform: translateX(-50%) translateY(0);
+          transform: translateY(0);
         }
       }
       
       @keyframes fadeOutDownContainer {
         0% {
           opacity: 1;
-          transform: translateX(-50%) translateY(0);
+          transform: translateY(0);
         }
         100% {
           opacity: 0;
-          transform: translateX(-50%) translateY(20px);
+          transform: translateY(20px);
         }
       }
       
