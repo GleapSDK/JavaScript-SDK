@@ -521,7 +521,7 @@ export default class GleapAiChatbarManager {
       }
 
       .gleap-ai-ui-container.active .gleap-ai-ui-input-send-button svg {
-        fill: #fff;
+        color: #fff;
       }
       
       .gleap-ai-ui-input input::placeholder {
