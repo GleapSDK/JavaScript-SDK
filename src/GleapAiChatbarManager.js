@@ -360,6 +360,7 @@ export default class GleapAiChatbarManager {
           justify-content: flex-start;
           gap: 6px;
           margin-bottom: 10px;
+          width: 100%;
         }
 
         .gleap-ai-ui-quick-action {
@@ -376,10 +377,10 @@ export default class GleapAiChatbarManager {
 
         .gleap-ai-ui-input-container:focus-within,
         .gleap-ai-ui-input-container {
-          min-width: auto;
-          width: 100%;
-          max-width: 100%;
-          margin: 0px;
+          min-width: auto !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0px !important;
         }
       }
       
