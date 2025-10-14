@@ -47,6 +47,7 @@ export namespace Gleap {
   function destroy(): void;
   function showAiChatbar(): void;
   function hideAiChatbar(): void;
+  function askAI(question: string, showBackButton?: boolean): void;
   function setAiChatbarQuickActions(quickActions: string[]): void;
   function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;

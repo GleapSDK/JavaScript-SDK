@@ -41,7 +41,7 @@ export default class GleapAiChatbarManager {
       this.setPlaceholder(config.placeholder);
     }
 
-    if (config.quickActions) {
+    if (config.quickActions && config.quickActions.length > 0) {
       this.setQuickActions(config.quickActions);
     }
 
@@ -307,7 +307,6 @@ export default class GleapAiChatbarManager {
         box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
         opacity: 0;
         transform: translateY(15px) scale(0.95);
-        max-width: calc(50% - 28px);
         flex-shrink: 0;
         white-space: nowrap;
         overflow: hidden;
@@ -361,6 +360,10 @@ export default class GleapAiChatbarManager {
           justify-content: flex-start;
           gap: 6px;
           margin-bottom: 10px;
+        }
+
+        .gleap-ai-ui-quick-action {
+          max-width: calc(50% - 28px);
         }
 
         .gleap-ai-ui-container--bottom-right {
