@@ -1,6 +1,7 @@
 import Gleap, {
   GleapFrameManager,
   GleapMetaDataManager,
+  GleapAiChatbarManager,
   GleapNotificationManager,
   GleapSession,
 } from "./Gleap";
@@ -74,10 +75,8 @@ export default class GleapStreamedEvent {
     }
 
     this.socket = new WebSocket(
-      `${GleapSession.getInstance().wsApiUrl}?gleapId=${
-        GleapSession.getInstance().session.gleapId
-      }&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${
-        GleapSession.getInstance().sdkKey
+      `${GleapSession.getInstance().wsApiUrl}?gleapId=${GleapSession.getInstance().session.gleapId
+      }&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${GleapSession.getInstance().sdkKey
       }&sdkVersion=${SDK_VERSION}`
     );
     this.socket.addEventListener("open", this.handleOpenBound);
@@ -104,7 +103,7 @@ export default class GleapStreamedEvent {
     this.processMessage(JSON.parse(event.data));
   }
 
-  handleError(error) {}
+  handleError(error) { }
 
   handleClose(event) {
     setTimeout(() => {
@@ -115,7 +114,7 @@ export default class GleapStreamedEvent {
   processMessage(message) {
     try {
       if (message.name === "update") {
-        const { a, u } = message.data;
+        const { a, u, ai } = message.data;
 
         const isOpened = GleapFrameManager.getInstance().isOpened();
 
@@ -132,6 +131,15 @@ export default class GleapStreamedEvent {
           Gleap.getInstance().performActions(filteredActions);
         }
 
+        if (ai) {
+          GleapAiChatbarManager.getInstance().setConfig({
+            enabled: ai.e ?? false,
+            placeholder: ai.p,
+            quickActions: ai.a,
+            style: ai.s,
+          });
+        }
+
         if (u != null) {
           GleapNotificationManager.getInstance().setNotificationCount(u);
         }
@@ -144,7 +152,7 @@ export default class GleapStreamedEvent {
           );
         }
       }
-    } catch (exp) {}
+    } catch (exp) { }
   }
 
   getEventArray() {

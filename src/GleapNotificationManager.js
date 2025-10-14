@@ -1,7 +1,6 @@
 import Gleap, {
   GleapFeedbackButtonManager,
   GleapConfigManager,
-  GleapFrameManager,
   GleapSession,
   GleapAudioManager,
   GleapTranslationManager,

@@ -7,6 +7,7 @@ import Gleap, {
   GleapSession,
   GleapReplayRecorder,
   GleapNotificationManager,
+  GleapAiChatbarManager,
 } from "./Gleap";
 
 const parseIntWithDefault = (val, def) => {
@@ -64,13 +65,12 @@ export default class GleapConfigManager {
   start = () => {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(
-      `config-${
-        session.sdkKey
+      `config-${session.sdkKey
       }-${GleapTranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
-      this.loadConfigFromServer().catch(function (e) {});
+      this.loadConfigFromServer().catch(function (e) { });
       return Promise.resolve();
     }
 
@@ -99,10 +99,10 @@ export default class GleapConfigManager {
               const config = JSON.parse(http.responseText);
               try {
                 saveToGleapCache(`config-${session.sdkKey}-${lang}`, config);
-              } catch (exp) {}
+              } catch (exp) { }
               self.applyConfig(config);
               return resolve();
-            } catch (e) {}
+            } catch (e) { }
           }
           reject();
         }
@@ -182,7 +182,11 @@ export default class GleapConfigManager {
 
       Gleap.enableShortcuts(flowConfig.enableShortcuts ? true : false);
 
+      if (config.aiBar) {
+        GleapAiChatbarManager.getInstance().setConfig(config.aiBar);
+      }
+
       this.notifyConfigLoaded();
-    } catch (e) {}
+    } catch (e) { }
   }
 }

@@ -3,6 +3,7 @@ import {
   GleapConfigManager,
   GleapNotificationManager,
   GleapTranslationManager,
+  GleapAiChatbarManager,
   GleapSession,
 } from "./Gleap";
 import { loadIcon } from "./UI";
@@ -118,11 +119,11 @@ export default class GleapFeedbackButtonManager {
     if (
       !(
         flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
         flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
         flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
       )
     ) {
       return;
@@ -143,6 +144,8 @@ export default class GleapFeedbackButtonManager {
    * @returns
    */
   updateFeedbackButtonState() {
+    GleapAiChatbarManager.getInstance().updateUIVisibility();
+
     if (this.feedbackButton === null) {
       return;
     }
@@ -164,27 +167,25 @@ export default class GleapFeedbackButtonManager {
 
     if (
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
       flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
       this.feedbackButton.classList.add(
         "bb-feedback-button--classic-button-style"
       );
 
-      this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+      this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition ===
+          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
           ? "bb-feedback-button-classic--left"
           : ""
-      }${
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+        }${flowConfig.feedbackButtonPosition ===
+          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
           ? "bb-feedback-button-classic--bottom"
           : ""
-      }">${flowConfig.widgetButtonText}</div>`;
+        }">${flowConfig.widgetButtonText}</div>`;
     } else {
       if (buttonIcon !== this.lastButtonIcon) {
         this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(

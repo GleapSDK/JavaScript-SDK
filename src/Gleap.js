@@ -23,6 +23,7 @@ import GleapTranslationManager from "./GleapTranslationManager";
 import GleapShortcutListener from "./GleapShortcutListener";
 import GleapPreFillManager from "./GleapPreFillManager";
 import GleapNotificationManager from "./GleapNotificationManager";
+import GleapAiChatbarManager from "./GleapAiChatbarManager";
 import GleapBannerManager from "./GleapBannerManager";
 import GleapModalManager from "./GleapModalManager";
 import GleapAudioManager from "./GleapAudioManager";
@@ -96,6 +97,9 @@ class Gleap {
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
       GleapAdminManager.getInstance().start();
+      GleapAiChatbarManager.getInstance().setOnMessageSend((question) => {
+        Gleap.askAI(question, true);
+      });
     }
   }
 
@@ -199,7 +203,7 @@ class Gleap {
 
     try {
       fixGleapHeight();
-    } catch (error) {}
+    } catch (error) { }
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
@@ -218,6 +222,9 @@ class Gleap {
 
               // Inject the notification container
               GleapNotificationManager.getInstance().injectNotificationUI();
+
+              // Inject the AI UI container
+              GleapAiChatbarManager.getInstance().injectAIUI();
 
               // Check for uncompleted tour.
               Gleap.checkForUncompletedTour();
@@ -286,7 +293,7 @@ class Gleap {
           Gleap.startProductTour(tourId);
         }, tourDelay * 1000);
       }
-    } catch (exp) {}
+    } catch (exp) { }
   }
 
   /**
@@ -299,6 +306,7 @@ class Gleap {
     GleapFrameManager.getInstance().destroy();
     GleapFeedbackButtonManager.getInstance().destroy();
     GleapNotificationManager.getInstance().clearAllNotifications(true);
+    GleapAiChatbarManager.getInstance().destroy();
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
 
@@ -318,6 +326,38 @@ class Gleap {
    */
   static closeModal() {
     GleapModalManager.getInstance().hideModal();
+  }
+
+  /**
+   * Show the AI bar.
+   */
+  static showAiChatbar() {
+    GleapAiChatbarManager.getInstance().manuallyHidden = false;
+    GleapAiChatbarManager.getInstance().show();
+  }
+
+  /**
+   * Hide the AI search.
+   */
+  static hideAiChatbar() {
+    GleapAiChatbarManager.getInstance().manuallyHidden = true;
+    GleapAiChatbarManager.getInstance().hide();
+  }
+
+  /**
+   * Set the AI quick actions.
+   * @param {Array<string>} quickActions
+   */
+  static setAiChatbarQuickActions(quickActions) {
+    GleapAiChatbarManager.getInstance().setQuickActions(quickActions);
+  }
+
+  /**
+   * Set the AI chatbar placeholder.
+   * @param {string} placeholder
+   */
+  static setAiChatbarPlaceholder(placeholder) {
+    GleapAiChatbarManager.getInstance().setPlaceholder(placeholder);
   }
 
   /**
@@ -771,8 +811,8 @@ class Gleap {
     );
     feedback
       .sendFeedback()
-      .then(() => {})
-      .catch((error) => {});
+      .then(() => { })
+      .catch((error) => { });
   }
 
   /**
@@ -915,6 +955,25 @@ class Gleap {
         name: "start-bot",
         data: {
           botId: botId ? botId : "",
+          hideBackButton: !showBackButton,
+        },
+      },
+      true
+    );
+
+    GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Starts a new conversation and attaches the bot with the given id.
+   */
+  static askAI(question, showBackButton = true) {
+    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().sendMessage(
+      {
+        name: "ask-ai",
+        data: {
+          question,
           hideBackButton: !showBackButton,
         },
       },
@@ -1196,6 +1255,9 @@ class Gleap {
 
         // Inject the notification container
         GleapNotificationManager.getInstance().injectNotificationUI();
+
+        // Inject the AI UI container
+        GleapAiChatbarManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
         console.warn("Failed to initialize Gleap.");
@@ -1259,7 +1321,7 @@ class Gleap {
 
         self.startProductTourWithConfig(tourId, config, true);
       })
-      .catch((error) => {});
+      .catch((error) => { });
   }
 
   static checkForUncompletedTour() {
@@ -1285,13 +1347,13 @@ class Gleap {
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   static showModal(data) {
     try {
       GleapModalManager.getInstance().showModal(data);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   static showNotification(data) {
@@ -1390,6 +1452,7 @@ export {
   GleapNetworkIntercepter,
   GleapAudioManager,
   GleapNotificationManager,
+  GleapAiChatbarManager,
   GleapBannerManager,
   GleapModalManager,
   GleapPreFillManager,
