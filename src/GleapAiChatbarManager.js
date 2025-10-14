@@ -56,9 +56,6 @@ export default class GleapAiChatbarManager {
     }
 
     const isOpened = GleapFrameManager.getInstance().isOpened();
-
-    console.log("updateUIVisibility", isOpened);
-
     if (isOpened) {
       this.hide();
     } else {
@@ -185,7 +182,6 @@ export default class GleapAiChatbarManager {
     // Add new actions with staggered animation
     this.quickActions.slice(0, 2).forEach((action, index) => {
       if (typeof action !== 'string' || !action.trim()) {
-        console.warn('GleapAiChatbarManager: Invalid quick action:', action);
         return;
       }
 
@@ -460,34 +456,12 @@ export default class GleapAiChatbarManager {
         z-index: 1;
       }
       
-      .bg-gradient-blur:before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
-        will-change: filter;
-        filter: blur(14px);
-        opacity: 0.2;
-        background-image: radial-gradient(
-          circle at left top,
-          #b6e0dc,
-          #eaef8c,
-          #fdc19e,
-          #f29be5,
-          #c4aeff
-        );
-        background-size: 200% 200%;
-        animation: gradient-shift 10s linear infinite;
-        z-index: -1;
-      }
-      
       .gleap-ai-ui-input {
         position: relative;
         z-index: 1;
         width: 100%;
         height: 42px;
         padding: 0px;
-        background: #fff;
         border-radius: 42px;
       }
 
@@ -548,6 +522,42 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-input input::placeholder {
         color: rgba(0, 0, 0, 0.6);
         transition: color 0.2s ease;
+      }
+
+      .gleap-ai-ui-container--noglow .animated-gradient-border-wrapper,
+      .gleap-ai-ui-container--noglow .animated-gradient-border-wrapper {
+        display: none !important;
+      }
+
+      .gleap-ai-ui-container--dark .bg-gradient-blur {
+        background-color: rgba(80, 80, 80, 0.68);
+        backdrop-filter: blur(24px);
+      }
+
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input-send-button {
+        background-color: rgba(255, 255, 255, 0.44);
+      }
+
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input-send-button svg {
+        color: rgba(0, 0, 0, 0.6);
+      }
+      
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input input::placeholder {
+        color: rgba(255, 255, 255, 0.44);
+      }
+
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input input {
+        color: #fff;
+      }
+
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input-container:focus-within .gleap-ai-ui-input-send-button,
+      .gleap-ai-ui-container--dark.active .gleap-ai-ui-input-container .gleap-ai-ui-input-send-button {
+        background-color: #fff;
+      }
+
+      .gleap-ai-ui-container--dark .gleap-ai-ui-input-container:focus-within .gleap-ai-ui-input-send-button svg,
+      .gleap-ai-ui-container--dark.active .gleap-ai-ui-input-container .gleap-ai-ui-input-send-button svg {
+        color: #000;
       }
       
       @keyframes gradient-shift {
@@ -623,9 +633,17 @@ export default class GleapAiChatbarManager {
   }
 
   createUIInShadow() {
+    let extraClasses = '';
+    if (this.config?.style === 'light' || this.config?.style === 'dark') {
+      extraClasses += ' gleap-ai-ui-container--noglow';
+    }
+    if (this.config?.style === 'dark' || this.config?.style === 'dark-glow') {
+      extraClasses += ' gleap-ai-ui-container--dark';
+    }
+
     // Create the main container div inside shadow DOM
     this.innerContainer = document.createElement("div");
-    this.innerContainer.className = "gleap-ai-ui-container";
+    this.innerContainer.className = "gleap-ai-ui-container" + extraClasses;
 
     // Create the HTML structure inside shadow DOM
     this.innerContainer.innerHTML = `
@@ -639,7 +657,7 @@ export default class GleapAiChatbarManager {
               <div class="gleap-ai-ui-input-content">
                 <input name="AI question" type="text" placeholder="${this.placeholder}" />
                 <div class="gleap-ai-ui-input-send-button">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M342.6 81.4C330.1 68.9 309.8 68.9 297.3 81.4L137.3 241.4C124.8 253.9 124.8 274.2 137.3 286.7C149.8 299.2 170.1 299.2 182.6 286.7L288 181.3L288 552C288 569.7 302.3 584 320 584C337.7 584 352 569.7 352 552L352 181.3L457.4 286.7C469.9 299.2 490.2 299.2 502.7 286.7C515.2 274.2 515.2 253.9 502.7 241.4L342.7 81.4z"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M342.6 81.4C330.1 68.9 309.8 68.9 297.3 81.4L137.3 241.4C124.8 253.9 124.8 274.2 137.3 286.7C149.8 299.2 170.1 299.2 182.6 286.7L288 181.3L288 552C288 569.7 302.3 584 320 584C337.7 584 352 569.7 352 552L352 181.3L457.4 286.7C469.9 299.2 490.2 299.2 502.7 286.7C515.2 274.2 515.2 253.9 502.7 241.4L342.7 81.4z"/></svg>
                 </div>
               </div>
             </div>

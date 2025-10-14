@@ -136,6 +136,7 @@ export default class GleapStreamedEvent {
             enabled: ai.e ?? false,
             placeholder: ai.p,
             quickActions: ai.a,
+            style: ai.s,
           });
         }
 
