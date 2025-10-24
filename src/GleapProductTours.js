@@ -184,6 +184,7 @@ export default class GleapProductTours {
 
       const isClickMode = step.mode === "CLICK";
       const isInputMode = step.mode === "INPUT";
+      const isInteractionMode = step.mode === "INTERACTION";
 
       var message = "";
       var hasSender = false;
@@ -211,7 +212,7 @@ export default class GleapProductTours {
         message = `${senderHTML}<div class="gleap-tour-message">${step.message}</div>`;
       }
 
-      const disableInteraction = !isClickMode && !isInputMode;
+      const disableInteraction = !isClickMode && !isInputMode && !isInteractionMode;
 
       var driverStep = {
         disableActiveInteraction: disableInteraction,
@@ -263,6 +264,7 @@ export default class GleapProductTours {
           if (
             (element && element.tagName === "INPUT") ||
             step.mode === "INPUT" ||
+            step.mode === "INTERACTION" ||
             evnt?.target?.id.includes("tooltip-svg")
           ) {
             // Prevent.
