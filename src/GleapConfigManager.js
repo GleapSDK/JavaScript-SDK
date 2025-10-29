@@ -1,4 +1,8 @@
-import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import {
+  loadFromGleapCache,
+  saveToGleapCache,
+  clearGleapCache,
+} from "./GleapHelper";
 import Gleap, {
   GleapFrameManager,
   GleapFeedbackButtonManager,
@@ -71,10 +75,10 @@ export default class GleapConfigManager {
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
+      this.loadConfigFromServer().catch(function (e) {});
+      return Promise.resolve();
     }
 
-    // Always attempt to fetch from server
-    // If server fetch fails, reject the promise
     return this.loadConfigFromServer();
   };
 
@@ -95,6 +99,10 @@ export default class GleapConfigManager {
       };
       http.onreadystatechange = function (e) {
         if (http.readyState === 4) {
+          if (http.status === 403) {
+            clearGleapCache(`config-${session.sdkKey}-${lang}`);
+            Gleap.destroy();
+          }
           if (http.status === 200 || http.status === 201) {
             try {
               const config = JSON.parse(http.responseText);
