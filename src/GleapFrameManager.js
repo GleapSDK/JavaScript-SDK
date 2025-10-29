@@ -32,6 +32,7 @@ export default class GleapFrameManager {
   markerManager = undefined;
   escListener = undefined;
   frameHeight = 0;
+  sendingFeedback = false;
   queue = [];
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
@@ -62,13 +63,13 @@ export default class GleapFrameManager {
         try {
           const doc = document.documentElement;
           doc.style.setProperty("--glvh", window.innerHeight * 0.01 + "px");
-        } catch (e) { }
+        } catch (e) {}
       }
 
       try {
         window.addEventListener("resize", appHeight);
         appHeight();
-      } catch (e) { }
+      } catch (e) {}
     }
   }
 
@@ -235,9 +236,9 @@ export default class GleapFrameManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     if (
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
     ) {
       styleToApply = classicStyle;
     }
@@ -422,7 +423,7 @@ export default class GleapFrameManager {
           this.queue.push(data);
         }
       }
-    } catch (e) { }
+    } catch (e) {}
   }
 
   sendSessionUpdate() {
@@ -580,6 +581,12 @@ export default class GleapFrameManager {
       }
 
       if (data.name === "send-feedback") {
+        if (this.sendingFeedback) {
+          return;
+        }
+
+        this.sendingFeedback = true;
+
         const formData = data.data.formData;
         const action = data.data.action;
         const outboundId = data.data.outboundId;
@@ -597,6 +604,10 @@ export default class GleapFrameManager {
         feedback
           .sendFeedback()
           .then((feedbackData) => {
+            setTimeout(() => {
+              this.sendingFeedback = false;
+            }, 1000);
+
             this.sendMessage({
               name: "feedback-sent",
               data: feedbackData,
@@ -612,16 +623,20 @@ export default class GleapFrameManager {
 
               try {
                 delete formData.reportedBy;
-              } catch (e) { }
+              } catch (e) {}
               Gleap.trackEvent(`outbound-${outboundId}-submitted`, formData);
             }
           })
           .catch((error) => {
-            this.sendMessage({
-              name: "feedback-sending-failed",
-              data: "Something went wrong, please try again.",
-            });
-            GleapEventManager.notifyEvent("error-while-sending");
+            setTimeout(() => {
+              this.sendingFeedback = false;
+
+              this.sendMessage({
+                name: "feedback-sending-failed",
+                data: "Something went wrong, please try again.",
+              });
+              GleapEventManager.notifyEvent("error-while-sending");
+            }, 1000);
           });
       }
 
@@ -646,7 +661,7 @@ export default class GleapFrameManager {
             this.listeners[i](data);
           }
         }
-      } catch (exp) { }
+      } catch (exp) {}
     });
   }
 
