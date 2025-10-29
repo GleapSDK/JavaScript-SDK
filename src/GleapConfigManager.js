@@ -65,15 +65,16 @@ export default class GleapConfigManager {
   start = () => {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(
-      `config-${session.sdkKey
+      `config-${
+        session.sdkKey
       }-${GleapTranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
-      this.loadConfigFromServer().catch(function (e) { });
-      return Promise.resolve();
     }
 
+    // Always attempt to fetch from server
+    // If server fetch fails, reject the promise
     return this.loadConfigFromServer();
   };
 
@@ -99,10 +100,10 @@ export default class GleapConfigManager {
               const config = JSON.parse(http.responseText);
               try {
                 saveToGleapCache(`config-${session.sdkKey}-${lang}`, config);
-              } catch (exp) { }
+              } catch (exp) {}
               self.applyConfig(config);
               return resolve();
-            } catch (e) { }
+            } catch (e) {}
           }
           reject();
         }
@@ -187,6 +188,6 @@ export default class GleapConfigManager {
       }
 
       this.notifyConfigLoaded();
-    } catch (e) { }
+    } catch (e) {}
   }
 }
