@@ -1,4 +1,8 @@
-import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
+import {
+  loadFromGleapCache,
+  saveToGleapCache,
+  clearGleapCache,
+} from "./GleapHelper";
 import Gleap, {
   GleapFrameManager,
   GleapFeedbackButtonManager,
@@ -65,12 +69,13 @@ export default class GleapConfigManager {
   start = () => {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(
-      `config-${session.sdkKey
+      `config-${
+        session.sdkKey
       }-${GleapTranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
-      this.loadConfigFromServer().catch(function (e) { });
+      this.loadConfigFromServer().catch(function (e) {});
       return Promise.resolve();
     }
 
@@ -94,15 +99,19 @@ export default class GleapConfigManager {
       };
       http.onreadystatechange = function (e) {
         if (http.readyState === 4) {
+          if (http.status === 403) {
+            clearGleapCache(`config-${session.sdkKey}-${lang}`);
+            Gleap.destroy();
+          }
           if (http.status === 200 || http.status === 201) {
             try {
               const config = JSON.parse(http.responseText);
               try {
                 saveToGleapCache(`config-${session.sdkKey}-${lang}`, config);
-              } catch (exp) { }
+              } catch (exp) {}
               self.applyConfig(config);
               return resolve();
-            } catch (e) { }
+            } catch (e) {}
           }
           reject();
         }
@@ -187,6 +196,6 @@ export default class GleapConfigManager {
       }
 
       this.notifyConfigLoaded();
-    } catch (e) { }
+    } catch (e) {}
   }
 }

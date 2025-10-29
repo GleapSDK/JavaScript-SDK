@@ -299,12 +299,12 @@ export default class GleapFrameManager {
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
 
-        if (flowConfig.disableBGFade) {
+        if (flowConfig && flowConfig.disableBGFade) {
           this.gleapFrameContainer.classList.add(
             "gleap-frame-container--loading-nofade"
           );
         }
-        if (flowConfig.disableBGGradient) {
+        if (flowConfig && flowConfig.disableBGGradient) {
           this.gleapFrameContainer.classList.add(
             "gleap-frame-container--loading-nogradient"
           );
