@@ -1474,6 +1474,7 @@ export {
   GleapMetaDataManager,
   GleapTagManager,
   GleapProductTours,
+  GleapAdminManager,
   handleGleapLink,
 };
 

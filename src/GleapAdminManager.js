@@ -1,6 +1,6 @@
 import { loadIcon } from "./UI";
 import GleapAdminHelper from "./GleapAdminHelper";
-import { GleapProductTours } from "./Gleap";
+import Gleap, { GleapModalManager, GleapProductTours, GleapBannerManager } from "./Gleap";
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -13,6 +13,7 @@ export default class GleapAdminManager {
   configData = null;
   adminHelper = null;
   status = "navigate";
+  initialized = false;
 
   // GleapAdminManager singleton
   static instance;
@@ -49,7 +50,12 @@ export default class GleapAdminManager {
     const self = this;
 
     // Disable product tours.
+    this.initialized = true;
     GleapProductTours.getInstance().disable();
+    GleapBannerManager.getInstance().disable();
+    GleapModalManager.getInstance().disable();
+    Gleap.close();
+    Gleap.showFeedbackButton(false);
 
     self.adminHelper = new GleapAdminHelper();
 

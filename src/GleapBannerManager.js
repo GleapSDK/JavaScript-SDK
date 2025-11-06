@@ -4,6 +4,7 @@ export default class GleapBannerManager {
   bannerUrl = "https://outboundmedia.gleap.io";
   bannerContainer = null;
   bannerData = null;
+  disabled = false;
 
   // GleapBannerManager singleton
   static instance;
@@ -105,11 +106,20 @@ export default class GleapBannerManager {
     document.body.classList.remove("gleap-b-f");
   }
 
+  disable() {
+    this.disabled = true;
+    this.removeBannerUI();
+  }
+
   /**
    * Injects the feedback button into the current DOM.
    */
   injectBannerUI(bannerData) {
     if (!document.body) {
+      return false;
+    }
+
+    if (this.disabled) {
       return false;
     }
 

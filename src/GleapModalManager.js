@@ -5,7 +5,7 @@ export default class GleapModalManager {
   modalContainer = null;
   modalData = null;
   modalBackdropClickListener = null;
-
+  disabled = false;
   // singleton
   static instance;
   static getInstance() {
@@ -21,6 +21,11 @@ export default class GleapModalManager {
 
   setModalUrl(url) {
     this.modalUrl = url;
+  }
+
+  disable() {
+    this.disabled = true;
+    this.hideModal();
   }
 
   _listenForMessages() {
@@ -108,6 +113,10 @@ export default class GleapModalManager {
 
   _injectModalUI(modalData) {
     if (!document.body) return false;
+
+    if (this.disabled) {
+      return false;
+    }
 
     if (this.modalContainer) {
       this.hideModal();

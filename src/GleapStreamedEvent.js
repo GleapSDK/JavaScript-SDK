@@ -4,6 +4,7 @@ import Gleap, {
   GleapAiChatbarManager,
   GleapNotificationManager,
   GleapSession,
+  GleapAdminManager,
 } from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
 
@@ -113,6 +114,10 @@ export default class GleapStreamedEvent {
 
   processMessage(message) {
     try {
+      if (GleapAdminManager.getInstance().initialized) {
+        return;
+      }
+
       if (message.name === "update") {
         const { a, u, ai } = message.data;
 
