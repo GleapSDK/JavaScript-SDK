@@ -108,6 +108,10 @@ export default class GleapAiChatbarManager {
       return;
     }
 
+    if (GleapFrameManager.getInstance().isOpened()) {
+      return;
+    }
+
     this.isHidden = false;
     this.aiUIContainer.style.display = "block";
     this.aiUIContainer.setAttribute('aria-hidden', 'false');
