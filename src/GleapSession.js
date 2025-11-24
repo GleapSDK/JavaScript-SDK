@@ -10,6 +10,7 @@ import {
 } from "./Gleap";
 import {
   eraseGleapCookie,
+  getDeviceType,
   getGleapCookie,
   loadFromGleapCache,
   saveToGleapCache,
@@ -279,6 +280,8 @@ export default class GleapSession {
     http.send(
       JSON.stringify({
         lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+        deviceType: getDeviceType(),
+        platform: 'web',
       })
     );
   };
@@ -383,6 +386,8 @@ export default class GleapSession {
             data: {
               ...userData,
               lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+              deviceType: getDeviceType(),
+              platform: 'web',
             },
             type: "js",
             sdkVersion: SDK_VERSION,
@@ -453,6 +458,8 @@ export default class GleapSession {
             userId,
             userHash,
             lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+            deviceType: getDeviceType(),
+            platform: 'web',
           })
         );
       });
