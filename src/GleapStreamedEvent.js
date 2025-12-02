@@ -76,8 +76,10 @@ export default class GleapStreamedEvent {
     }
 
     this.socket = new WebSocket(
-      `${GleapSession.getInstance().wsApiUrl}?gleapId=${GleapSession.getInstance().session.gleapId
-      }&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${GleapSession.getInstance().sdkKey
+      `${GleapSession.getInstance().wsApiUrl}?gleapId=${
+        GleapSession.getInstance().session.gleapId
+      }&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${
+        GleapSession.getInstance().sdkKey
       }&sdkVersion=${SDK_VERSION}`
     );
     this.socket.addEventListener("open", this.handleOpenBound);
@@ -104,7 +106,7 @@ export default class GleapStreamedEvent {
     this.processMessage(JSON.parse(event.data));
   }
 
-  handleError(error) { }
+  handleError(error) {}
 
   handleClose(event) {
     setTimeout(() => {
@@ -157,7 +159,7 @@ export default class GleapStreamedEvent {
           );
         }
       }
-    } catch (exp) { }
+    } catch (exp) {}
   }
 
   getEventArray() {
@@ -280,7 +282,7 @@ export default class GleapStreamedEvent {
     this.streamingEvents = true;
 
     const http = new XMLHttpRequest();
-    http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/ping");
+    http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/events");
     http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
     GleapSession.getInstance().injectSession(http);
     http.onerror = () => {
