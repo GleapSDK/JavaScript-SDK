@@ -1200,6 +1200,8 @@ export const registerGleapChecklist = () => {
                   Gleap.openHelpCenterArticle(step.articleId);
                 else if (step.action === "CHECKLIST")
                   Gleap.startChecklist(step.outboundId, true, step?.sharedKey);
+                else if (step.action === "PRODUCT_TOUR")
+                  Gleap.startProductTour(step.productTourId, true);
               } catch (gleapError) {}
             });
           }
