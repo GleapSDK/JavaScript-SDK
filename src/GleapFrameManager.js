@@ -165,7 +165,7 @@ export default class GleapFrameManager {
         var elem = document.createElement("div");
         elem.className =
           "gleap-frame-container gleap-frame-container--hidden gl-block";
-        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *;" frameborder="0"></iframe></div>`;
+        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
         document.body.appendChild(elem);
 
         this.gleapFrameContainer = elem;
