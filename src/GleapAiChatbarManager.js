@@ -282,6 +282,7 @@ export default class GleapAiChatbarManager {
         justify-content: flex-end;
         align-items: center;
         opacity: 0;
+        white-space: normal;
         transform: translateY(20px);
         animation: fadeUpInContainer 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
