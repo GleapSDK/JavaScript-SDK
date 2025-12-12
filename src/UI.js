@@ -925,6 +925,31 @@ export const injectStyledCSS = (
       padding: 0px;
     }
 
+    @keyframes bbRedDotPulse {
+      0% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.8;
+      }
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .bb-feedback-button--red-dot {
+      position: absolute;
+      top: 0px;
+      right: 0px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background-color: #ff3b30;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: ${zIndexBase + 31};
+      animation: bbRedDotPulse 2s ease-in-out infinite;
+    }
+
     [dir=rtl].bb-feedback-button {
       bottom: ${buttonY}px;
       right: auto;

@@ -576,6 +576,16 @@ export default class GleapFrameManager {
         this.hideWidget();
       }
 
+      if (data.name === "video-call-joined") {
+        GleapFeedbackButtonManager.getInstance().showingRedDot = true;
+        GleapFeedbackButtonManager.getInstance().updateRedDot(true);
+      }
+
+      if (data.name === "video-call-left") {
+        GleapFeedbackButtonManager.getInstance().showingRedDot = false;
+        GleapFeedbackButtonManager.getInstance().updateRedDot(false);
+      }
+
       if (data.name === "tool-execution") {
         GleapEventManager.notifyEvent("tool-execution", data.data);
       }
