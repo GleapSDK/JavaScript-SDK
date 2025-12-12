@@ -13,6 +13,7 @@ export default class GleapFeedbackButtonManager {
   injectedFeedbackButton = false;
   buttonHidden = null;
   lastButtonIcon = null;
+  showingRedDot = false;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
@@ -55,13 +56,37 @@ export default class GleapFeedbackButtonManager {
     GleapNotificationManager.getInstance().updateContainerStyle();
   }
 
+  updateRedDot(show) {
+    var frameManager = GleapFrameManager.getInstance();
+    if (!this.feedbackButton || this.buttonHidden || frameManager.isOpened()) {
+      return;
+    }
+
+    const redDotClass = "bb-feedback-button--red-dot";
+    const existingDot = this.feedbackButton.querySelector(`.${redDotClass}`);
+
+    if (show) {
+      if (!existingDot) {
+        const dot = document.createElement("div");
+        dot.className = redDotClass;
+        this.feedbackButton.appendChild(dot);
+      }
+    } else {
+      if (existingDot) {
+        existingDot.remove();
+      }
+    }
+  }
+
   feedbackButtonPressed() {
     var frameManager = GleapFrameManager.getInstance();
     if (frameManager.isOpened()) {
       frameManager.hideWidget();
+      this.updateRedDot(this.showingRedDot);
     } else {
       frameManager.setAppMode("widget");
       frameManager.showWidget();
+      this.updateRedDot(false);
     }
   }
 
@@ -119,11 +144,11 @@ export default class GleapFeedbackButtonManager {
     if (
       !(
         flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
         flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
         flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
       )
     ) {
       return;
@@ -167,25 +192,27 @@ export default class GleapFeedbackButtonManager {
 
     if (
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
       flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
       this.feedbackButton.classList.add(
         "bb-feedback-button--classic-button-style"
       );
 
-      this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+      this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${
+        flowConfig.feedbackButtonPosition ===
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
           ? "bb-feedback-button-classic--left"
           : ""
-        }${flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+      }${
+        flowConfig.feedbackButtonPosition ===
+        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
           ? "bb-feedback-button-classic--bottom"
           : ""
-        }">${flowConfig.widgetButtonText}</div>`;
+      }">${flowConfig.widgetButtonText}</div>`;
     } else {
       if (buttonIcon !== this.lastButtonIcon) {
         this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
