@@ -590,6 +590,42 @@ export default class GleapFrameManager {
         GleapEventManager.notifyEvent("tool-execution", data.data);
       }
 
+      if (data.name === "checklist-loaded") {
+        const checklistData = data.data;
+        GleapEventManager.notifyEvent("checklist-loaded", {
+          checklistId: checklistData.id,
+          outboundId: checklistData.outbound?.id,
+          completedSteps: checklistData.completedSteps,
+          status: checklistData.status,
+          data: checklistData,
+        });
+      }
+
+      if (data.name === "checklist-step-completed") {
+        const { checklistData, step, index } = data.data;
+        GleapEventManager.notifyEvent("checklist-step-completed", {
+          checklistId: checklistData.id,
+          outboundId: checklistData.outbound?.id,
+          stepId: step.id,
+          stepIndex: index,
+          step: step,
+          completedSteps: checklistData.completedSteps,
+          status: checklistData.status,
+          data: checklistData,
+        });
+      }
+
+      if (data.name === "checklist-completed") {
+        const checklistData= data.data;
+        GleapEventManager.notifyEvent("checklist-completed", {
+          checklistId: checklistData.id,
+          outboundId: checklistData.outbound?.id,
+          completedSteps: checklistData.completedSteps,
+          status: checklistData.status,
+          data: checklistData,
+        });
+      }
+
       if (data.name === "send-feedback") {
         if (this.sendingFeedback) {
           return;
