@@ -1106,18 +1106,6 @@ export const registerGleapChecklist = () => {
                 this.checklistData.completedSteps = [];
               if (!this.checklistData.completedSteps.includes(step.id)) {
                 this.checklistData.completedSteps.push(step.id);
-                
-                // Notify external listeners about the step completion
-                GleapEventManager.notifyEvent("checklist-step-completed", {
-                  checklistId: this.checklistData.id,
-                  outboundId: this.checklistData.outbound?.id,
-                  stepId: step.id,
-                  stepIndex: index,
-                  step: step,
-                  completedSteps: this.checklistData.completedSteps,
-                  status: this.checklistData.status,
-                  data: this.checklistData
-                });
                 const allSteps = this.checklistData.outbound.config.steps;
                 let nextActiveStep = -1;
                 if (previouslyActiveStep === index) {
@@ -1156,15 +1144,6 @@ export const registerGleapChecklist = () => {
                 ) {
                   this.checklistData.status = "done";
                   updateData.status = "done";
-                  
-                  // Notify external listeners about the checklist completion
-                  GleapEventManager.notifyEvent("checklist-completed", {
-                    checklistId: this.checklistData.id,
-                    outboundId: this.checklistData.outbound?.id,
-                    completedSteps: this.checklistData.completedSteps,
-                    status: this.checklistData.status,
-                    data: this.checklistData
-                  });
                 }
                 this.updateChecklist(this.checklistData.id, updateData);
               }

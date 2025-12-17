@@ -5,6 +5,7 @@ import Gleap, {
   GleapNotificationManager,
   GleapSession,
   GleapAdminManager,
+  GleapEventManager,
 } from "./Gleap";
 import { gleapDataParser } from "./GleapHelper";
 
@@ -153,6 +154,34 @@ export default class GleapStreamedEvent {
       }
 
       if (message.name === "checklist" && message?.data && window) {
+        const checklistData = message.data;
+        const completedSteps = checklistData.completedSteps ?? [];
+        const completedStepsBefore = checklistData.completedStepsBefore ?? [];
+        if (completedSteps.length > completedStepsBefore.length) {
+          for (let i = 0; i < completedSteps.length; i++) {
+            const step = completedSteps[i];
+            const stepIndex = i;
+            if (!completedStepsBefore.includes(step)) {
+              GleapEventManager.notifyEvent("checklist-step-completed", {
+                checklistId: checklistData.id,
+                stepId: step,
+                stepIndex: stepIndex,
+                step: step,
+                completedSteps: checklistData.completedSteps,
+                status: checklistData.status,
+                data: checklistData,
+              });
+            }
+          }
+        }
+        if (checklistData.status === "done") {
+          GleapEventManager.notifyEvent("checklist-completed", {
+            checklistId: checklistData.id,
+            completedSteps: checklistData.completedSteps,
+            status: checklistData.status,
+            data: checklistData,
+          });
+        }
         if (typeof window.dispatchEvent === "function") {
           window.dispatchEvent(
             new CustomEvent("checkListUpdate", { detail: message.data })
