@@ -159,12 +159,16 @@ export default class GleapStreamedEvent {
         const completedStepsBefore = checklistData.completedStepsBefore ?? [];
         if (completedSteps.length > completedStepsBefore.length) {
           for (let i = 0; i < completedSteps.length; i++) {
-            const step = completedSteps[i];
+            const step = checklistData?.steps?.find(step => step.id === completedSteps[i]);
+            if (!step) {
+              continue;
+            }
             const stepIndex = i;
             if (!completedStepsBefore.includes(step)) {
               GleapEventManager.notifyEvent("checklist-step-completed", {
                 checklistId: checklistData.id,
-                stepId: step,
+                outboundId: checklistData.outboundId,
+                stepId: step.id,
                 stepIndex: stepIndex,
                 step: step,
                 completedSteps: checklistData.completedSteps,
@@ -177,6 +181,7 @@ export default class GleapStreamedEvent {
         if (checklistData.status === "done") {
           GleapEventManager.notifyEvent("checklist-completed", {
             checklistId: checklistData.id,
+            outboundId: checklistData.outboundId,
             completedSteps: checklistData.completedSteps,
             status: checklistData.status,
             data: checklistData,
