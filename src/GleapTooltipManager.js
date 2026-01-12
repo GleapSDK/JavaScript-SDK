@@ -245,6 +245,9 @@ export default class GleapTooltipManager {
     tooltip.addEventListener("mouseenter", show);
     tooltip.addEventListener("mouseleave", hide);
 
+    element.addEventListener("click", hide);
+    tooltip.addEventListener("click", hide);
+
     return {
       cleanup,
       tooltip,
