@@ -65,6 +65,7 @@ class Gleap {
   offlineMode = false;
   disablePageTracking = false;
   disableInAppNotifications = false;
+  disableQueryParams = false;
 
   // Global data
   globalData = {
@@ -248,7 +249,16 @@ class Gleap {
     GleapFrameManager.getInstance().urlHandler(url, newTab);
   }
 
+  static disableQueryParams(disableQueryParams = true) {
+    this.getInstance().disableQueryParams = disableQueryParams;
+  }
+
   static checkForUrlParams() {
+    if (this.getInstance().disableQueryParams) {
+      console.log("Query params are disabled.");
+      return;
+    }
+
     if (typeof window === "undefined" || !window.location.search) {
       return;
     }
