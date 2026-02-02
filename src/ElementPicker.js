@@ -205,6 +205,16 @@ class ElementPicker {
    * @param {MouseEvent} event - The click event.
    */
   handleClick(event) {
+    const clickedEl = document.elementFromPoint(event.clientX, event.clientY);
+    if (
+      this.options &&
+      this.options.elementFilter &&
+      clickedEl &&
+      !this.options.elementFilter(clickedEl)
+    ) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();

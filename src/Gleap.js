@@ -1008,6 +1008,7 @@ class Gleap {
         name: "open-help-collection",
         data: {
           collectionId,
+          hideBackButton: !showBackButton,
         },
       },
       true
