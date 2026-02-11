@@ -1,13 +1,13 @@
-import { GleapConfigManager, GleapTranslationManager } from "./Gleap";
-import { calculateContrast, loadIcon } from "./UI";
+import { GleapConfigManager, GleapTranslationManager } from './Gleap';
+import { calculateContrast, loadIcon } from './UI';
 
-const localStorageKey = "gleap-tour-data";
-const pointerContainerId = "copilot-pointer-container";
-const styleId = "copilot-tour-styles";
-const copilotJoinedContainerId = "copilot-joined-container";
+const localStorageKey = 'gleap-tour-data';
+const pointerContainerId = 'copilot-pointer-container';
+const styleId = 'copilot-tour-styles';
+const copilotJoinedContainerId = 'copilot-joined-container';
 
 function estimateReadTime(text) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const wordsPerSecond = 3.6; // Average reading speed
   const wordCount = text.split(/\s+/).filter((word) => word.length > 0).length;
@@ -16,30 +16,30 @@ function estimateReadTime(text) {
 }
 
 function htmlToPlainText(html) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
-  const tempDiv = document.createElement("div");
+  const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
-  return tempDiv.textContent || "";
+  return tempDiv.textContent || '';
 }
 
 function scrollToElement(element) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   if (element) {
     element.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-      inline: "center",
+      behavior: 'smooth',
+      block: 'center',
+      inline: 'center',
     });
   }
 }
 
 function performClickAnimation(posX, posY) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
-  const wave = document.createElement("div");
-  wave.className = "click-wave";
+  const wave = document.createElement('div');
+  wave.className = 'click-wave';
   wave.style.left = `${posX - 17}px`;
   wave.style.top = `${posY - 17}px`;
   document.body.appendChild(wave);
@@ -49,7 +49,7 @@ function performClickAnimation(posX, posY) {
 }
 
 function waitForElement(selector, timeout = 5000) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const pollInterval = 100;
   const maxAttempts = timeout / pollInterval;
@@ -70,22 +70,20 @@ function waitForElement(selector, timeout = 5000) {
 }
 
 function smoothScrollToY(yPosition) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const viewportHeight = window.innerHeight;
   const targetScrollPosition = yPosition - viewportHeight / 2;
   window.scrollTo({
     top: targetScrollPosition,
-    behavior: "smooth",
+    behavior: 'smooth',
   });
 }
 
 async function canPlayAudio() {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
-  const audio = new Audio(
-    "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgAEABAAZGF0YQAAAAA="
-  );
+  const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgAEABAAZGF0YQAAAAA=');
   try {
     await audio.play();
     return true;
@@ -96,29 +94,21 @@ async function canPlayAudio() {
 
 // Helper: Check if an element is fully visible in the viewport.
 function isElementFullyVisible(el) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   const rect = el.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= window.innerHeight &&
-    rect.right <= window.innerWidth
-  );
+  return rect.top >= 0 && rect.left >= 0 && rect.bottom <= window.innerHeight && rect.right <= window.innerWidth;
 }
 
 // Helper: Get scrollable ancestors of an element.
 function getScrollableAncestors(el) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   let ancestors = [];
   let current = el.parentElement;
   while (current) {
     const style = window.getComputedStyle(current);
-    if (
-      (style.overflowY === "auto" || style.overflowY === "scroll") &&
-      current.scrollHeight > current.clientHeight
-    ) {
+    if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
       ancestors.push(current);
     }
     current = current.parentElement;
@@ -156,30 +146,18 @@ export default class GleapCopilotTours {
   constructor() {
     const self = this;
 
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       this._scrollListeners = [];
       this._currentAnchor = null;
       this._currentStep = null;
       this._scrollDebounceTimer = null;
 
-      window.addEventListener("resize", () => {
-        if (
-          self.productTourId &&
-          self.currentActiveIndex >= 0 &&
-          self.productTourData &&
-          self.productTourData.steps
-        ) {
+      window.addEventListener('resize', () => {
+        if (self.productTourId && self.currentActiveIndex >= 0 && self.productTourData && self.productTourData.steps) {
           const steps = self.productTourData.steps;
           const currentStep = steps[self.currentActiveIndex];
-          if (
-            currentStep &&
-            currentStep.selector &&
-            currentStep.selector !== ""
-          ) {
-            self.updatePointerPosition(
-              document.querySelector(currentStep.selector),
-              currentStep
-            );
+          if (currentStep && currentStep.selector && currentStep.selector !== '') {
+            self.updatePointerPosition(document.querySelector(currentStep.selector), currentStep);
           }
         }
       });
@@ -188,12 +166,12 @@ export default class GleapCopilotTours {
 
   disable() {
     this.disabled = true;
-    
+
     this.cleanup();
   }
 
   startWithConfig(tourId, config, onCompleteCallback = undefined) {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (this.productTourId) return;
     if (this.disabled) return;
 
@@ -205,7 +183,7 @@ export default class GleapCopilotTours {
   }
 
   storeUncompletedTour() {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (this.productTourId && this.productTourData) {
       try {
         let data = JSON.parse(
@@ -214,10 +192,7 @@ export default class GleapCopilotTours {
             tourId: this.productTourId,
           })
         );
-        data.tourData.steps = data.tourData.steps.slice(
-          this.currentActiveIndex || 0,
-          data.tourData.steps.length
-        );
+        data.tourData.steps = data.tourData.steps.slice(this.currentActiveIndex || 0, data.tourData.steps.length);
         localStorage.setItem(localStorageKey, JSON.stringify(data));
       } catch (e) {
         // Optionally log error in development mode.
@@ -229,7 +204,7 @@ export default class GleapCopilotTours {
 
   // Attach scroll listeners with a debounce to update the pointer position after scrolling stops.
   attachScrollListeners(anchor, currentStep) {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (!anchor) return;
     const scrollableAncestors = getScrollableAncestors(anchor);
     // Also include window.
@@ -241,17 +216,17 @@ export default class GleapCopilotTours {
           this.updatePointerPosition(anchor, currentStep);
         }, 150);
       };
-      el.addEventListener("scroll", handler, { passive: true });
+      el.addEventListener('scroll', handler, { passive: true });
       this._scrollListeners.push({ el, handler });
     });
   }
 
   // Remove scroll listeners and clear debounce timer.
   removeScrollListeners() {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (this._scrollListeners && this._scrollListeners.length > 0) {
       this._scrollListeners.forEach(({ el, handler }) => {
-        el.removeEventListener("scroll", handler);
+        el.removeEventListener('scroll', handler);
       });
       this._scrollListeners = [];
     }
@@ -265,17 +240,16 @@ export default class GleapCopilotTours {
   // 1. Scroll the element into view.
   // 2. After the element is fully visible (or after a maximum delay), update the pointer position to point towards the element.
   updatePointerPosition(anchor, currentStep) {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     try {
-      const container =
-        this._pointerContainer || document.getElementById(pointerContainerId);
+      const container = this._pointerContainer || document.getElementById(pointerContainerId);
       if (!container) return;
 
       if (!anchor) {
-        container.style.position = "fixed";
-        container.style.left = "50%";
-        container.style.top = "50%";
-        container.style.transform = "translate(-50%, -50%)";
+        container.style.position = 'fixed';
+        container.style.left = '50%';
+        container.style.top = '50%';
+        container.style.transform = 'translate(-50%, -50%)';
         smoothScrollToY(window.innerHeight / 2);
         this.removeScrollListeners();
         this._currentAnchor = null;
@@ -296,10 +270,10 @@ export default class GleapCopilotTours {
           const anchorRect = anchor.getBoundingClientRect();
           const targetX = anchorRect.left + anchorRect.width / 2;
           const targetY = anchorRect.top + anchorRect.height / 2 + 10; // 10px downward offset.
-          container.style.position = "fixed";
+          container.style.position = 'fixed';
           container.style.left = `${targetX}px`;
           container.style.top = `${targetY}px`;
-          container.style.transform = "translate(-50%, -50%)";
+          container.style.transform = 'translate(-50%, -50%)';
 
           // Adjust container if too far right.
           let containerWidthSpace = 350;
@@ -307,16 +281,13 @@ export default class GleapCopilotTours {
             containerWidthSpace = window.innerWidth - 40;
           }
           if (targetX + containerWidthSpace > window.innerWidth - 20) {
-            container.classList.add("copilot-pointer-container-right");
+            container.classList.add('copilot-pointer-container-right');
           } else {
-            container.classList.remove("copilot-pointer-container-right");
+            container.classList.remove('copilot-pointer-container-right');
           }
 
           // Reattach scroll listeners if the target or step has changed.
-          if (
-            this._currentAnchor !== anchor ||
-            this._currentStep !== currentStep
-          ) {
+          if (this._currentAnchor !== anchor || this._currentStep !== currentStep) {
             this.removeScrollListeners();
             this._currentAnchor = anchor;
             this._currentStep = currentStep;
@@ -334,8 +305,8 @@ export default class GleapCopilotTours {
   }
 
   cleanup() {
-    if (typeof window === "undefined") return;
-    document.body.classList.add("gl-copilot-fade-out");
+    if (typeof window === 'undefined') return;
+    document.body.classList.add('gl-copilot-fade-out');
     if (this.currentAudio) {
       this.currentAudio.pause();
     }
@@ -347,18 +318,16 @@ export default class GleapCopilotTours {
         const container = document.getElementById(pointerContainerId);
         if (container) container.remove();
       }
-      const copilotInfoContainer = document.getElementById(
-        copilotJoinedContainerId
-      );
+      const copilotInfoContainer = document.getElementById(copilotJoinedContainerId);
       if (copilotInfoContainer) copilotInfoContainer.remove();
       const styleNode = document.getElementById(styleId);
       if (styleNode) styleNode.remove();
-      document.body.classList.remove("gl-copilot-fade-out");
+      document.body.classList.remove('gl-copilot-fade-out');
     }, 800);
 
     this.productTourId = undefined;
     this.productTourData = undefined;
-    
+
     this.removeScrollListeners();
   }
 
@@ -367,22 +336,20 @@ export default class GleapCopilotTours {
     if (this.currentAudio) {
       this.currentAudio.muted = this.audioMuted;
     }
-    document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML =
-      loadIcon(this.audioMuted ? "unmute" : "mute");
+    document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML = loadIcon(this.audioMuted ? 'unmute' : 'mute');
   }
 
   setupCopilotTour() {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
 
-    const primaryColor =
-      GleapConfigManager.getInstance().flowConfig?.color ?? "#485BFF";
+    const primaryColor = GleapConfigManager.getInstance().flowConfig?.color ?? '#485BFF';
     const contrastColor = calculateContrast(primaryColor);
 
     let styleNode = document.getElementById(styleId);
     if (!styleNode) {
-      styleNode = document.createElement("style");
+      styleNode = document.createElement('style');
       styleNode.id = styleId;
-      styleNode.type = "text/css";
+      styleNode.type = 'text/css';
       styleNode.textContent = `
         #${pointerContainerId} {
           position: absolute;
@@ -643,8 +610,8 @@ export default class GleapCopilotTours {
           animation: glCoFadeOut 0.8s ease-out forwards;
         }
         ${
-          this.productTourData?.playVoice ?? true
-            ? ""
+          (this.productTourData?.playVoice ?? true)
+            ? ''
             : `
           .${copilotJoinedContainerId}-mute {
             display: none;
@@ -702,59 +669,50 @@ export default class GleapCopilotTours {
       document.head.appendChild(styleNode);
     }
 
-    const container = document.createElement("div");
+    const container = document.createElement('div');
     container.id = pointerContainerId;
     container.style.opacity = 0;
     // Cache the pointer container.
     this._pointerContainer = container;
 
-    const svgMouse = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    svgMouse.setAttribute("viewBox", "0 0 380 476");
+    const svgMouse = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgMouse.setAttribute('viewBox', '0 0 380 476');
     svgMouse.innerHTML =
       '<path d="M352.595 268.315L352.581 268.302L352.566 268.29L78.6092 24.7278C71.6245 18.433 62.5487 15 53.2 15C32.1157 15 15 32.1157 15 53.2V424C15 444.34 31.4714 461 52 461C62.6797 461 72.8089 456.467 79.8863 448.38C79.8871 448.379 79.8879 448.378 79.8886 448.378L180.804 333.1H327.9C348.384 333.1 365 316.484 365 296C365 285.404 360.46 275.344 352.595 268.315Z" fill="black" stroke="white" stroke-width="30"/>';
 
-    const infoBubble = document.createElement("div");
-    infoBubble.id = "copilot-info-bubble";
+    const infoBubble = document.createElement('div');
+    infoBubble.id = 'copilot-info-bubble';
     infoBubble.innerHTML = `<div id='copilot-info-bubble-content-container'><div id='copilot-info-bubble-content'></div></div>`;
 
-    const copilotInfoContainer = document.createElement("div");
+    const copilotInfoContainer = document.createElement('div');
     copilotInfoContainer.id = copilotJoinedContainerId;
     copilotInfoContainer.classList.add(copilotJoinedContainerId);
     copilotInfoContainer.innerHTML = `
-      <img class="${copilotJoinedContainerId}-avatar" src="${
-      this.productTourData?.kaiAvatar
-    }" />
+      <img class="${copilotJoinedContainerId}-avatar" src="${this.productTourData?.kaiAvatar}" />
       <span>${this.productTourData?.kaiSlug}</span>
       <div class="${copilotJoinedContainerId}-mute">
-        ${loadIcon(this.audioMuted ? "unmute" : "mute")}
+        ${loadIcon(this.audioMuted ? 'unmute' : 'mute')}
       </div>
       ${
         this.productTourData?.allowClose
           ? `<div class="${copilotJoinedContainerId}-dismiss">
-               ${loadIcon("dismiss")}
+               ${loadIcon('dismiss')}
              </div>`
-          : ""
+          : ''
       }
     `;
     document.body.appendChild(copilotInfoContainer);
 
     const self = this;
 
-    document
-      .querySelector(`.${copilotJoinedContainerId}-mute`)
-      .addEventListener("click", () => {
-        this.toggleAudio(!this.audioMuted);
-      });
+    document.querySelector(`.${copilotJoinedContainerId}-mute`).addEventListener('click', () => {
+      this.toggleAudio(!this.audioMuted);
+    });
 
     if (this.productTourData?.allowClose) {
-      document
-        .querySelector(`.${copilotJoinedContainerId}-dismiss`)
-        .addEventListener("click", () => {
-          this.completeTour(false);
-        });
+      document.querySelector(`.${copilotJoinedContainerId}-dismiss`).addEventListener('click', () => {
+        this.completeTour(false);
+      });
     }
 
     container.appendChild(svgMouse);
@@ -763,7 +721,7 @@ export default class GleapCopilotTours {
   }
 
   start() {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (this.disabled) return;
 
     const config = this.productTourData;
@@ -784,23 +742,23 @@ export default class GleapCopilotTours {
 
   showAudioUnmuteModal() {
     // Create the overlay element
-    const modalOverlay = document.createElement("div");
-    modalOverlay.classList.add("gleap-audio-unmute-modal-overlay");
+    const modalOverlay = document.createElement('div');
+    modalOverlay.classList.add('gleap-audio-unmute-modal-overlay');
 
     // Create the modal container element
-    const modal = document.createElement("div");
-    modal.classList.add("gleap-audio-unmute-modal");
+    const modal = document.createElement('div');
+    modal.classList.add('gleap-audio-unmute-modal');
 
     // Create and add the modal message
-    const message = document.createElement("p");
+    const message = document.createElement('p');
     message.textContent = this.productTourData?.unmuteModalTitle;
     modal.appendChild(message);
 
     // Create the "Unmute Audio" button
-    const unmuteButton = document.createElement("button");
-    unmuteButton.classList.add("gleap-audio-unmute-button");
+    const unmuteButton = document.createElement('button');
+    unmuteButton.classList.add('gleap-audio-unmute-button');
     unmuteButton.textContent = this.productTourData?.unmuteModalButton;
-    unmuteButton.addEventListener("click", () => {
+    unmuteButton.addEventListener('click', () => {
       this.toggleAudio(false);
       if (modalOverlay.parentNode) {
         modalOverlay.parentNode.removeChild(modalOverlay);
@@ -812,10 +770,10 @@ export default class GleapCopilotTours {
     modal.appendChild(unmuteButton);
 
     // Create the "Start Anyway" button
-    const startAnywayButton = document.createElement("button");
-    startAnywayButton.classList.add("gleap-tour-continue-button");
+    const startAnywayButton = document.createElement('button');
+    startAnywayButton.classList.add('gleap-tour-continue-button');
     startAnywayButton.textContent = this.productTourData?.unmuteModalContinue;
-    startAnywayButton.addEventListener("click", () => {
+    startAnywayButton.addEventListener('click', () => {
       if (modalOverlay.parentNode) {
         modalOverlay.parentNode.removeChild(modalOverlay);
       }
@@ -831,7 +789,7 @@ export default class GleapCopilotTours {
   }
 
   completeTour(success = true) {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     this.cleanup();
     if (this.onCompleteCallback) {
       this.onCompleteCallback(success);
@@ -839,7 +797,7 @@ export default class GleapCopilotTours {
   }
 
   renderNextStep() {
-    if (typeof window === "undefined") return;
+    if (typeof window === 'undefined') return;
     if (this.disabled) return;
 
     const self = this;
@@ -853,55 +811,49 @@ export default class GleapCopilotTours {
     }
     const currentStep = steps[this.currentActiveIndex];
     const handleStep = (element) => {
-      this._pointerContainer.style.display = "flex";
+      this._pointerContainer.style.display = 'flex';
       if (currentStep.selector && currentStep.selector.length > 0 && !element) {
         this.completeTour(false);
         return;
       }
       const gotToNextStep = () => {
-        if (currentStep.mode === "INPUT" && element) {
+        if (currentStep.mode === 'INPUT' && element) {
           function proceedClickmode() {
-            document
-              .querySelector(`#${pointerContainerId}`)
-              .classList.remove("copilot-pointer-container-clickmode");
-            element.classList.remove("gleap-input-highlight");
-            document.getElementById(pointerContainerId).style.display = "none";
+            document.querySelector(`#${pointerContainerId}`).classList.remove('copilot-pointer-container-clickmode');
+            element.classList.remove('gleap-input-highlight');
+            document.getElementById(pointerContainerId).style.display = 'none';
             self.currentActiveIndex++;
             self.storeUncompletedTour();
             self.renderNextStep();
           }
-          const inputModeType = currentStep.inputType ?? "default";
-          if (inputModeType === "default") {
+          const inputModeType = currentStep.inputType ?? 'default';
+          if (inputModeType === 'default') {
             function handleInputEvent(e) {
               if (e?.target?.value?.length === 0) return;
-              const cursor = document.getElementById(
-                `copilot-info-bubble-content`
-              );
+              const cursor = document.getElementById(`copilot-info-bubble-content`);
               if (!cursor) return;
               cursor.innerHTML = `${GleapTranslationManager.translateText(
-                "next"
+                'next'
               )} <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
   <path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/>
 </svg>`;
-              cursor.addEventListener("click", proceedClickmode, {
+              cursor.addEventListener('click', proceedClickmode, {
                 once: true,
               });
-              element.classList.add("gleap-input-highlight");
-              document
-                .querySelector(`#${pointerContainerId}`)
-                .classList.add("copilot-pointer-container-clickmode");
-              element.removeEventListener("input", handleInputEvent);
+              element.classList.add('gleap-input-highlight');
+              document.querySelector(`#${pointerContainerId}`).classList.add('copilot-pointer-container-clickmode');
+              element.removeEventListener('input', handleInputEvent);
             }
-            element.addEventListener("input", handleInputEvent, {
+            element.addEventListener('input', handleInputEvent, {
               once: false,
             });
-            if (element.hasAttribute("contenteditable")) {
-              element.addEventListener("keyup", handleInputEvent, {
+            if (element.hasAttribute('contenteditable')) {
+              element.addEventListener('keyup', handleInputEvent, {
                 once: false,
               });
             }
             element.addEventListener(
-              "blur",
+              'blur',
               () => {
                 element.focus();
               },
@@ -909,7 +861,7 @@ export default class GleapCopilotTours {
             );
             element.focus();
           } else {
-            const inputValue = currentStep.inputValue ?? "";
+            const inputValue = currentStep.inputValue ?? '';
             let index = 0;
             function typeCharacter() {
               if (index < inputValue.length) {
@@ -928,25 +880,19 @@ export default class GleapCopilotTours {
         }
         self.currentActiveIndex++;
         self.storeUncompletedTour();
-        if (currentStep.mode === "CLICK" && element) {
+        if (currentStep.mode === 'CLICK' && element) {
           const rect = element.getBoundingClientRect();
           const scrollX = window.scrollX || 0;
           const scrollY = window.scrollY || 0;
-          performClickAnimation(
-            rect.left + rect.width / 2 + scrollX,
-            rect.top + rect.height / 2 + scrollY
-          );
+          performClickAnimation(rect.left + rect.width / 2 + scrollX, rect.top + rect.height / 2 + scrollY);
           element.click();
         }
         self.renderNextStep();
       };
 
       this.updatePointerPosition(element, currentStep);
-      const message = currentStep?.message
-        ? htmlToPlainText(currentStep.message)
-        : "🤔";
-      document.getElementById(`copilot-info-bubble-content`).textContent =
-        message;
+      const message = currentStep?.message ? htmlToPlainText(currentStep.message) : '🤔';
+      document.getElementById(`copilot-info-bubble-content`).textContent = message;
       this._pointerContainer.style.opacity = 1;
       const readTime = estimateReadTime(message);
       const continueWithNoAudio = () => {
@@ -960,7 +906,7 @@ export default class GleapCopilotTours {
         if (this.audioMuted) {
           this.currentAudio.muted = true;
         }
-        this.currentAudio.addEventListener("ended", () => {
+        this.currentAudio.addEventListener('ended', () => {
           setTimeout(() => {
             gotToNextStep();
           }, 1000);
@@ -976,9 +922,7 @@ export default class GleapCopilotTours {
       }
     };
 
-    const elementPromise = currentStep.selector
-      ? waitForElement(currentStep.selector)
-      : Promise.resolve(null);
+    const elementPromise = currentStep.selector ? waitForElement(currentStep.selector) : Promise.resolve(null);
     elementPromise.then(handleStep).catch(() => handleStep(null));
   }
 }

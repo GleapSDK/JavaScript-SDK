@@ -1,11 +1,7 @@
-import {
-  GleapFrameManager,
-  GleapFeedbackButtonManager,
-  GleapConfigManager,
-} from "./Gleap";
+import { GleapFrameManager, GleapFeedbackButtonManager, GleapConfigManager } from './Gleap';
 
 export default class GleapTranslationManager {
-  overrideLanguage = "";
+  overrideLanguage = '';
   isRTLLayout = false;
 
   // GleapTranslationManager singleton
@@ -38,11 +34,7 @@ export default class GleapTranslationManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
     this.isRTLLayout = false;
-    if (
-      flowConfig &&
-      flowConfig.localizationOptions &&
-      flowConfig.localizationOptions.rtl
-    ) {
+    if (flowConfig && flowConfig.localizationOptions && flowConfig.localizationOptions.rtl) {
       this.isRTLLayout = true;
     }
 
@@ -51,20 +43,20 @@ export default class GleapTranslationManager {
   }
 
   getActiveLanguage() {
-    var language = "en";
-    if (typeof navigator !== "undefined") {
+    var language = 'en';
+    if (typeof navigator !== 'undefined') {
       language = navigator.language.toLowerCase();
     }
 
     // Get language from HTML lang attribute if available
-    if (typeof document !== "undefined" && document.documentElement) {
+    if (typeof document !== 'undefined' && document.documentElement) {
       const htmlLang = document.documentElement.lang;
-      if (htmlLang && htmlLang.trim() !== "") {
+      if (htmlLang && htmlLang.trim() !== '') {
         language = htmlLang.toLowerCase().trim();
       }
     }
 
-    if (this.overrideLanguage && this.overrideLanguage !== "") {
+    if (this.overrideLanguage && this.overrideLanguage !== '') {
       language = this.overrideLanguage.toLowerCase();
     }
 
@@ -73,7 +65,7 @@ export default class GleapTranslationManager {
 
   static translateText(key) {
     if (!key) {
-      return "";
+      return '';
     }
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
@@ -88,12 +80,12 @@ export default class GleapTranslationManager {
 
   static translateTextWithVars(key, vars) {
     if (!key) {
-      return "";
+      return '';
     }
 
     var template = this.translateText(key);
     if (!template) {
-      return "";
+      return '';
     }
 
     return template.replace(/{(\w+)}/g, function (_, key) {

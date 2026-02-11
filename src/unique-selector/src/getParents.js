@@ -5,13 +5,11 @@ import { isElement } from './isElement';
  * @param { DOM Element }
  * @return { Array of DOM elements }
  */
-export function getParents( el )
-{
+export function getParents(el) {
   const parents = [];
   let currentElement = el;
-  while( isElement( currentElement ) )
-  {
-    parents.push( currentElement );
+  while (isElement(currentElement)) {
+    parents.push(currentElement);
     currentElement = currentElement.parentNode;
   }
 

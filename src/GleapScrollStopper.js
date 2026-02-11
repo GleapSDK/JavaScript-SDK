@@ -2,8 +2,7 @@ export class GleapScrollStopper {
   keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
   supportsPassive = false;
   wheelOpt = this.supportsPassive ? { passive: false } : false;
-  wheelEvent =
-    "onwheel" in document.createElement("div") ? "wheel" : "mousewheel";
+  wheelEvent = 'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
   scrollDisabled = false;
 
   // GleapScrollStopper singleton
@@ -21,9 +20,9 @@ export class GleapScrollStopper {
     const self = this;
     try {
       window.addEventListener(
-        "test",
+        'test',
         null,
-        Object.defineProperty({}, "passive", {
+        Object.defineProperty({}, 'passive', {
           get: function () {
             self.supportsPassive = true;
             self.wheelOpt = self.supportsPassive ? { passive: false } : false;
@@ -52,22 +51,10 @@ export class GleapScrollStopper {
 
     instance.scrollDisabled = true;
 
-    window.addEventListener("DOMMouseScroll", instance.preventDefault, false); // older FF
-    window.addEventListener(
-      instance.wheelEvent,
-      instance.preventDefault,
-      instance.wheelOpt
-    ); // modern desktop
-    window.addEventListener(
-      "touchmove",
-      instance.preventDefault,
-      instance.wheelOpt
-    ); // mobile
-    window.addEventListener(
-      "keydown",
-      instance.preventDefaultForScrollKeys,
-      false
-    );
+    window.addEventListener('DOMMouseScroll', instance.preventDefault, false); // older FF
+    window.addEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt); // modern desktop
+    window.addEventListener('touchmove', instance.preventDefault, instance.wheelOpt); // mobile
+    window.addEventListener('keydown', instance.preventDefaultForScrollKeys, false);
   }
 
   static enableScroll() {
@@ -77,25 +64,9 @@ export class GleapScrollStopper {
     }
 
     instance.scrollDisabled = false;
-    window.removeEventListener(
-      "DOMMouseScroll",
-      instance.preventDefault,
-      false
-    );
-    window.removeEventListener(
-      instance.wheelEvent,
-      instance.preventDefault,
-      instance.wheelOpt
-    );
-    window.removeEventListener(
-      "touchmove",
-      instance.preventDefault,
-      instance.wheelOpt
-    );
-    window.removeEventListener(
-      "keydown",
-      instance.preventDefaultForScrollKeys,
-      false
-    );
+    window.removeEventListener('DOMMouseScroll', instance.preventDefault, false);
+    window.removeEventListener(instance.wheelEvent, instance.preventDefault, instance.wheelOpt);
+    window.removeEventListener('touchmove', instance.preventDefault, instance.wheelOpt);
+    window.removeEventListener('keydown', instance.preventDefaultForScrollKeys, false);
   }
 }

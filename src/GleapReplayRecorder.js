@@ -1,5 +1,5 @@
-import { isMobile } from "./GleapHelper";
-import { record } from "@rrweb/record";
+import { isMobile } from './GleapHelper';
+import { record } from '@rrweb/record';
 
 export default class GleapReplayRecorder {
   startDate = undefined;
@@ -37,9 +37,9 @@ export default class GleapReplayRecorder {
 
     var options = {
       inlineStylesheet: true,
-      blockClass: "gl-block",
-      ignoreClass: "gl-ignore",
-      maskTextClass: "gl-mask",
+      blockClass: 'gl-block',
+      ignoreClass: 'gl-ignore',
+      maskTextClass: 'gl-mask',
       dataURLOptions: {
         quality: 0.7,
       },
@@ -102,7 +102,7 @@ export default class GleapReplayRecorder {
       width: window.innerWidth,
       height: window.innerHeight,
       isMobile: isMobile(),
-      type: "rrweb",
+      type: 'rrweb',
     };
 
     return replayResult;
@@ -115,13 +115,13 @@ export function ensureMaxMessageSize(data) {
     const dataURIRegex = /data:([\w\/\-\.]+);(\w+),([^)"]*)/gim;
     const matches = stringifiedData.matchAll(dataURIRegex);
     for (const match of matches) {
-      if (match[1].toLocaleLowerCase().slice(0, 6) === "image/") {
+      if (match[1].toLocaleLowerCase().slice(0, 6) === 'image/') {
         stringifiedData = stringifiedData.replace(
           match[0],
-          "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8ABRg5/wHSAVZN1mnaAAAAAElFTkSuQmCC"
+          'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8ABRg5/wHSAVZN1mnaAAAAAElFTkSuQmCC'
         );
       } else {
-        stringifiedData = stringifiedData.replace(match[0], "");
+        stringifiedData = stringifiedData.replace(match[0], '');
       }
     }
   }

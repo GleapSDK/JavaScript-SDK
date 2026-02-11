@@ -1,4 +1,4 @@
-import Gleap from "./Gleap";
+import Gleap from './Gleap';
 
 export default class GleapEventManager {
   eventListeners = {};
@@ -16,11 +16,10 @@ export default class GleapEventManager {
    * Notify all registrants for event.
    */
   static notifyEvent(event, data = {}) {
-    if (event === "flow-started") {
-
+    if (event === 'flow-started') {
       const gleapInstance = Gleap.getInstance();
-      gleapInstance.setGlobalDataItem("webReplay", null);
-      gleapInstance.setGlobalDataItem("screenRecordingData", null);
+      gleapInstance.setGlobalDataItem('webReplay', null);
+      gleapInstance.setGlobalDataItem('screenRecordingData', null);
       gleapInstance.takeCurrentReplay();
     }
 

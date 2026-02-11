@@ -5,7 +5,7 @@ class GleapNetworkIntercepter {
   externalRequests = [];
   maxRequests = 30;
   filters = [];
-  defaultBlacklist = ["gleap.io"];
+  defaultBlacklist = ['gleap.io'];
   blacklist = [];
   initialized = false;
   stopped = false;
@@ -25,17 +25,17 @@ class GleapNetworkIntercepter {
   }
 
   isContentTypeSupported(contentType) {
-    if (typeof contentType !== "string") {
+    if (typeof contentType !== 'string') {
       return false;
     }
 
-    if (contentType === "") {
+    if (contentType === '') {
       return true;
     }
 
     contentType = contentType.toLocaleLowerCase();
 
-    const supportedContentTypes = ["text/", "xml", "json"];
+    const supportedContentTypes = ['text/', 'xml', 'json'];
     for (var i = 0; i < supportedContentTypes.length; i++) {
       if (contentType.includes(supportedContentTypes[i])) {
         return true;
@@ -70,7 +70,7 @@ class GleapNetworkIntercepter {
           var payloadObj = request.request.payload;
           try {
             payloadObj = JSON.parse(request.request.payload);
-          } catch (e) { }
+          } catch (e) {}
 
           if (payloadObj) {
             for (var j = 0; j < this.filters.length; j++) {
@@ -88,31 +88,34 @@ class GleapNetworkIntercepter {
               delete data[this.filters[j]];
             }
             request.response.responseText = JSON.stringify(data);
-          } catch (e) { }
+          } catch (e) {}
         }
       }
     }
 
     // Get static resources from performance.
     try {
-      if (typeof window !== "undefined" && window.performance) {
-        var resources = window.performance.getEntriesByType("resource");
+      if (typeof window !== 'undefined' && window.performance) {
+        var resources = window.performance.getEntriesByType('resource');
         for (var i = 0; i < resources.length; i++) {
           var resource = resources[i];
           if (resource && resource.name) {
-            if ((this.loadAllResources || ["xmlhttprequest", "fetch"].indexOf(resource.initiatorType) > -1) && !requests.find(request => request.url === resource.name)) {
+            if (
+              (this.loadAllResources || ['xmlhttprequest', 'fetch'].indexOf(resource.initiatorType) > -1) &&
+              !requests.find((request) => request.url === resource.name)
+            ) {
               requests.push({
-                type: "RESOURCE",
+                type: 'RESOURCE',
                 date: new Date(this.startTimestamp + resource.startTime),
                 url: resource.name,
                 duration: Math.round(resource.duration),
-                initiatorType: resource.initiatorType
+                initiatorType: resource.initiatorType,
               });
             }
           }
         }
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
     var blacklist = this.blacklist.concat(this.defaultBlacklist);
     if (blacklist && blacklist.length > 0) {
@@ -125,7 +128,7 @@ class GleapNetworkIntercepter {
           }
           return true;
         });
-      } catch (exp) { }
+      } catch (exp) {}
     }
 
     return requests;
@@ -165,10 +168,9 @@ class GleapNetworkIntercepter {
       return;
     }
 
-    var startDate = this.requests[bbRequestId]["date"];
+    var startDate = this.requests[bbRequestId]['date'];
     if (startDate) {
-      this.requests[bbRequestId]["duration"] =
-        new Date().getTime() - startDate.getTime();
+      this.requests[bbRequestId]['duration'] = new Date().getTime() - startDate.getTime();
     }
   }
 
@@ -196,7 +198,7 @@ class GleapNetworkIntercepter {
   cleanupContentSize(text) {
     const contentSize = this.getTextContentSize(text);
     if (contentSize > 0.15) {
-      return "<content_too_large>";
+      return '<content_too_large>';
     }
 
     return text;
@@ -204,7 +206,7 @@ class GleapNetworkIntercepter {
 
   cleanupPayload(payload) {
     if (payload === undefined || payload === null) {
-      return "{}";
+      return '{}';
     }
 
     try {
@@ -212,7 +214,7 @@ class GleapNetworkIntercepter {
         let value = new TextDecoder().decode(payload);
         return value;
       }
-    } catch (exp) { }
+    } catch (exp) {}
 
     return payload;
   }
@@ -235,28 +237,19 @@ class GleapNetworkIntercepter {
           return;
         }
 
-        if (
-          params.length > 0 &&
-          typeof params[0] !== "undefined" &&
-          typeof params[0].url !== "undefined"
-        ) {
+        if (params.length > 0 && typeof params[0] !== 'undefined' && typeof params[0].url !== 'undefined') {
           this.requests[bbRequestId] = {
             url: params[0].url,
             date: new Date(),
             request: {
-              payload: "",
-              headers:
-                typeof params[0].headers !== "undefined"
-                  ? Object.fromEntries(params[0].headers.entries())
-                  : {},
+              payload: '',
+              headers: typeof params[0].headers !== 'undefined' ? Object.fromEntries(params[0].headers.entries()) : {},
             },
-            type:
-              typeof params[0].method !== "undefined" ? params[0].method : "",
+            type: typeof params[0].method !== 'undefined' ? params[0].method : '',
           };
         } else {
           if (params.length >= 2 && params[1]) {
-            var method =
-              params[1] && params[1].method ? params[1].method : "GET";
+            var method = params[1] && params[1].method ? params[1].method : 'GET';
             this.requests[bbRequestId] = {
               request: {
                 payload: self.preparePayload(params[1].body),
@@ -277,29 +270,24 @@ class GleapNetworkIntercepter {
         this.cleanRequests();
       },
       onFetchLoad: (req, bbRequestId) => {
-        if (
-          this.stopped ||
-          !bbRequestId ||
-          !this.requests ||
-          !this.requests[bbRequestId]
-        ) {
+        if (this.stopped || !bbRequestId || !this.requests || !this.requests[bbRequestId]) {
           return;
         }
 
         try {
-          this.requests[bbRequestId]["success"] = true;
-          this.requests[bbRequestId]["response"] = {
+          this.requests[bbRequestId]['success'] = true;
+          this.requests[bbRequestId]['response'] = {
             status: req.status,
-            statusText: "",
-            responseText: "<request_still_open>",
+            statusText: '',
+            responseText: '<request_still_open>',
           };
           this.calcRequestTime(bbRequestId);
-        } catch (exp) { }
+        } catch (exp) {}
 
         try {
-          var contentType = "";
-          if (req.headers && typeof req.headers.get !== "undefined") {
-            contentType = req.headers.get("content-type");
+          var contentType = '';
+          if (req.headers && typeof req.headers.get !== 'undefined') {
+            contentType = req.headers.get('content-type');
           }
 
           if (this.isContentTypeSupported(contentType)) {
@@ -307,11 +295,11 @@ class GleapNetworkIntercepter {
               .text()
               .then((responseText) => {
                 if (this.requests[bbRequestId]) {
-                  this.requests[bbRequestId]["success"] = true;
-                  this.requests[bbRequestId]["response"] = {
+                  this.requests[bbRequestId]['success'] = true;
+                  this.requests[bbRequestId]['response'] = {
                     status: req.status,
                     statusText: req.statusText,
-                    responseText: self.cleanupContentSize(responseText)
+                    responseText: self.cleanupContentSize(responseText),
                   };
                 }
                 this.calcRequestTime(bbRequestId);
@@ -322,29 +310,24 @@ class GleapNetworkIntercepter {
               });
           } else {
             if (this.requests[bbRequestId]) {
-              this.requests[bbRequestId]["success"] = true;
-              this.requests[bbRequestId]["response"] = {
+              this.requests[bbRequestId]['success'] = true;
+              this.requests[bbRequestId]['response'] = {
                 status: req.status,
                 statusText: req.statusText,
-                responseText: "<content_type_not_supported>",
+                responseText: '<content_type_not_supported>',
               };
             }
             this.calcRequestTime(bbRequestId);
             this.cleanRequests();
           }
-        } catch (exp) { }
+        } catch (exp) {}
       },
       onFetchFailed: (err, bbRequestId) => {
-        if (
-          this.stopped ||
-          !bbRequestId ||
-          !this.requests ||
-          !this.requests[bbRequestId]
-        ) {
+        if (this.stopped || !bbRequestId || !this.requests || !this.requests[bbRequestId]) {
           return;
         }
 
-        this.requests[bbRequestId]["success"] = false;
+        this.requests[bbRequestId]['success'] = false;
         this.calcRequestTime(bbRequestId);
         this.cleanRequests();
       },
@@ -353,12 +336,7 @@ class GleapNetworkIntercepter {
           return;
         }
 
-        if (
-          request &&
-          request.bbRequestId &&
-          args.length >= 2 &&
-          this.requests
-        ) {
+        if (request && request.bbRequestId && args.length >= 2 && this.requests) {
           this.requests[request.bbRequestId] = {
             type: args[0],
             url: args[1],
@@ -373,14 +351,9 @@ class GleapNetworkIntercepter {
           return;
         }
 
-        if (
-          request &&
-          request.bbRequestId &&
-          this.requests &&
-          this.requests[request.bbRequestId]
-        ) {
-          this.requests[request.bbRequestId]["request"] = {
-            payload: this.preparePayload(args.length > 0 ? args[0] : "{}"),
+        if (request && request.bbRequestId && this.requests && this.requests[request.bbRequestId]) {
+          this.requests[request.bbRequestId]['request'] = {
+            payload: this.preparePayload(args.length > 0 ? args[0] : '{}'),
             headers: request.requestHeaders,
           };
         }
@@ -396,7 +369,7 @@ class GleapNetworkIntercepter {
           request.currentTarget.bbRequestId &&
           this.requests[request.currentTarget.bbRequestId]
         ) {
-          this.requests[request.currentTarget.bbRequestId]["success"] = false;
+          this.requests[request.currentTarget.bbRequestId]['success'] = false;
           this.calcRequestTime(request.bbRequestId);
         }
 
@@ -416,13 +389,13 @@ class GleapNetworkIntercepter {
         ) {
           var target = request.currentTarget;
           var responseType = target.responseType;
-          var responseText = "<" + responseType + ">";
-          if (responseType === "" || responseType === "text") {
+          var responseText = '<' + responseType + '>';
+          if (responseType === '' || responseType === 'text') {
             responseText = this.cleanupContentSize(target.responseText);
           }
 
-          this.requests[target.bbRequestId]["success"] = true;
-          this.requests[target.bbRequestId]["response"] = {
+          this.requests[target.bbRequestId]['success'] = true;
+          this.requests[target.bbRequestId]['response'] = {
             status: target.status,
             statusText: target.statusText,
             responseText: responseText,
@@ -443,8 +416,7 @@ class GleapNetworkIntercepter {
 
     // Only override open and send if they haven't been overridden already.
     if (XMLHttpRequest.prototype.gleapSetRequestHeader === undefined) {
-      XMLHttpRequest.prototype.gleapSetRequestHeader =
-        XMLHttpRequest.prototype.setRequestHeader;
+      XMLHttpRequest.prototype.gleapSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
     }
 
     if (XMLHttpRequest.prototype.gleapSetRequestHeader) {
@@ -467,13 +439,13 @@ class GleapNetworkIntercepter {
     }
 
     XMLHttpRequest.prototype.open = function () {
-      this["bbRequestId"] = ++self.requestId;
+      this['bbRequestId'] = ++self.requestId;
       callback.onOpen && callback.onOpen(this, arguments);
       if (callback.onLoad) {
-        this.addEventListener("load", callback.onLoad.bind(callback));
+        this.addEventListener('load', callback.onLoad.bind(callback));
       }
       if (callback.onError) {
-        this.addEventListener("error", callback.onError.bind(callback));
+        this.addEventListener('error', callback.onError.bind(callback));
       }
       return open.apply(this, arguments);
     };
@@ -492,7 +464,7 @@ class GleapNetworkIntercepter {
           return originalFetch
             .apply(this, arguments)
             .then(function (response) {
-              if (response && typeof response.clone === "function") {
+              if (response && typeof response.clone === 'function') {
                 const data = response.clone();
                 callback.onFetchLoad(data, bbRequestId);
               }

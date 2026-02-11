@@ -1,47 +1,42 @@
-import { injectStyledCSS } from "./UI";
-import GleapNetworkIntercepter from "./GleapNetworkIntercepter";
-import {
-  fixGleapHeight,
-  gleapDataParser,
-  runFunctionWhenDomIsReady,
-} from "./GleapHelper";
-import GleapSession from "./GleapSession";
-import GleapStreamedEvent from "./GleapStreamedEvent";
-import GleapConfigManager from "./GleapConfigManager";
-import GleapFeedback from "./GleapFeedback";
-import GleapFrameManager from "./GleapFrameManager";
-import GleapMetaDataManager from "./GleapMetaDataManager";
-import GleapConsoleLogManager from "./GleapConsoleLogManager";
-import GleapClickListener from "./GleapClickListener";
-import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
-import GleapCustomDataManager from "./GleapCustomDataManager";
-import GleapEventManager from "./GleapEventManager";
-import GleapCustomActionManager from "./GleapCustomActionManager";
-import GleapReplayRecorder from "./GleapReplayRecorder";
-import GleapMarkerManager from "./GleapMarkerManager";
-import GleapTranslationManager from "./GleapTranslationManager";
-import GleapShortcutListener from "./GleapShortcutListener";
-import GleapPreFillManager from "./GleapPreFillManager";
-import GleapNotificationManager from "./GleapNotificationManager";
-import GleapAiChatbarManager from "./GleapAiChatbarManager";
-import GleapBannerManager from "./GleapBannerManager";
-import GleapModalManager from "./GleapModalManager";
-import GleapAudioManager from "./GleapAudioManager";
-import GleapTagManager from "./GleapTagManager";
-import GleapAdminManager from "./GleapAdminManager";
-import GleapProductTours from "./GleapProductTours";
-import { checkPageFilter } from "./GleapPageFilter";
-import { registerGleapChecklist } from "./GleapChecklist";
-import ChecklistNetworkManager from "./ChecklistNetworkManager";
+import { injectStyledCSS } from './UI';
+import GleapNetworkIntercepter from './GleapNetworkIntercepter';
+import { fixGleapHeight, gleapDataParser, runFunctionWhenDomIsReady } from './GleapHelper';
+import GleapSession from './GleapSession';
+import GleapStreamedEvent from './GleapStreamedEvent';
+import GleapConfigManager from './GleapConfigManager';
+import GleapFeedback from './GleapFeedback';
+import GleapFrameManager from './GleapFrameManager';
+import GleapMetaDataManager from './GleapMetaDataManager';
+import GleapConsoleLogManager from './GleapConsoleLogManager';
+import GleapClickListener from './GleapClickListener';
+import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import GleapCustomDataManager from './GleapCustomDataManager';
+import GleapEventManager from './GleapEventManager';
+import GleapCustomActionManager from './GleapCustomActionManager';
+import GleapReplayRecorder from './GleapReplayRecorder';
+import GleapMarkerManager from './GleapMarkerManager';
+import GleapTranslationManager from './GleapTranslationManager';
+import GleapShortcutListener from './GleapShortcutListener';
+import GleapPreFillManager from './GleapPreFillManager';
+import GleapNotificationManager from './GleapNotificationManager';
+import GleapAiChatbarManager from './GleapAiChatbarManager';
+import GleapBannerManager from './GleapBannerManager';
+import GleapModalManager from './GleapModalManager';
+import GleapAudioManager from './GleapAudioManager';
+import GleapTagManager from './GleapTagManager';
+import GleapAdminManager from './GleapAdminManager';
+import GleapProductTours from './GleapProductTours';
+import { checkPageFilter } from './GleapPageFilter';
+import { registerGleapChecklist } from './GleapChecklist';
+import ChecklistNetworkManager from './ChecklistNetworkManager';
 
 if (
-  typeof window !== "undefined" &&
-  typeof HTMLCanvasElement !== "undefined" &&
+  typeof window !== 'undefined' &&
+  typeof HTMLCanvasElement !== 'undefined' &&
   HTMLCanvasElement.prototype &&
   HTMLCanvasElement.prototype.__originalGetContext === undefined
 ) {
-  HTMLCanvasElement.prototype.__originalGetContext =
-    HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.__originalGetContext = HTMLCanvasElement.prototype.getContext;
   HTMLCanvasElement.prototype.getContext = function (type, options) {
     return this.__originalGetContext(type, {
       ...options,
@@ -50,11 +45,7 @@ if (
   };
 }
 
-if (
-  typeof customElements !== "undefined" &&
-  typeof HTMLElement !== "undefined" &&
-  typeof window !== "undefined"
-) {
+if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
   registerGleapChecklist();
 }
 
@@ -92,7 +83,7 @@ class Gleap {
    * Main constructor
    */
   constructor() {
-    if (typeof window !== "undefined") {
+    if (typeof window !== 'undefined') {
       // Make sure all instances are ready.
       GleapMetaDataManager.getInstance();
       GleapConsoleLogManager.getInstance().start();
@@ -175,8 +166,7 @@ class Gleap {
    * Attaches external network logs.
    */
   static attachNetworkLogs(networkLogs) {
-    GleapNetworkIntercepter.getInstance().externalRequests =
-      gleapDataParser(networkLogs);
+    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
   }
 
   /**
@@ -185,7 +175,7 @@ class Gleap {
    * @param {*} logLevel
    * @returns
    */
-  static log(message, logLevel = "INFO") {
+  static log(message, logLevel = 'INFO') {
     GleapConsoleLogManager.getInstance().addLog(message, logLevel);
   }
 
@@ -196,7 +186,7 @@ class Gleap {
   static initialize(sdkKey) {
     const instance = this.getInstance();
     if (instance.initialized) {
-      console.warn("Gleap already initialized.");
+      console.warn('Gleap already initialized.');
       return;
     }
 
@@ -204,7 +194,7 @@ class Gleap {
 
     try {
       fixGleapHeight();
-    } catch (error) { }
+    } catch (error) {}
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
@@ -234,11 +224,11 @@ class Gleap {
               Gleap.checkForUrlParams();
 
               // Notify event.
-              GleapEventManager.notifyEvent("initialized");
+              GleapEventManager.notifyEvent('initialized');
             });
           })
           .catch(function (err) {
-            console.warn("Failed to initialize Gleap.");
+            console.warn('Failed to initialize Gleap.');
           });
       }, 0);
     });
@@ -255,46 +245,43 @@ class Gleap {
 
   static checkForUrlParams() {
     if (this.getInstance().disableQueryParams) {
-      console.log("Query params are disabled.");
+      console.log('Query params are disabled.');
       return;
     }
 
-    if (typeof window === "undefined" || !window.location.search) {
+    if (typeof window === 'undefined' || !window.location.search) {
       return;
     }
 
     try {
       const urlParams = new URLSearchParams(window.location.search);
 
-      const widget = urlParams.get("gleap_widget");
+      const widget = urlParams.get('gleap_widget');
       if (widget && widget.length > 0) {
         Gleap.open();
       }
 
-      const conversationFlow = urlParams.get("gleap_conversation");
+      const conversationFlow = urlParams.get('gleap_conversation');
       if (conversationFlow && conversationFlow.length > 0) {
-        if (conversationFlow === "true") {
+        if (conversationFlow === 'true') {
           Gleap.startConversation(true);
         } else {
           Gleap.startBot(conversationFlow, true);
         }
       }
 
-      const feedbackFlow = urlParams.get("gleap_feedback");
+      const feedbackFlow = urlParams.get('gleap_feedback');
       if (feedbackFlow && feedbackFlow.length > 0) {
         Gleap.startFeedbackFlow(feedbackFlow);
       }
-      const surveyFlow = urlParams.get("gleap_survey");
-      const surveyFlowFormat = urlParams.get("gleap_survey_format");
+      const surveyFlow = urlParams.get('gleap_survey');
+      const surveyFlowFormat = urlParams.get('gleap_survey_format');
       if (surveyFlow && surveyFlow.length > 0) {
-        Gleap.showSurvey(
-          surveyFlow,
-          surveyFlowFormat === "survey_full" ? "survey_full" : "survey"
-        );
+        Gleap.showSurvey(surveyFlow, surveyFlowFormat === 'survey_full' ? 'survey_full' : 'survey');
       }
-      const tourId = urlParams.get("gleap_tour");
+      const tourId = urlParams.get('gleap_tour');
       if (tourId && tourId.length > 0) {
-        var tourDelay = parseInt(urlParams.get("gleap_tour_delay"));
+        var tourDelay = parseInt(urlParams.get('gleap_tour_delay'));
         if (isNaN(tourDelay)) {
           tourDelay = 2;
         }
@@ -303,7 +290,7 @@ class Gleap {
           Gleap.startProductTour(tourId);
         }, tourDelay * 1000);
       }
-    } catch (exp) { }
+    } catch (exp) {}
   }
 
   /**
@@ -384,11 +371,7 @@ class Gleap {
    * @param {*} userData
    */
   static identify(userId, userData, userHash) {
-    return GleapSession.getInstance().identifySession(
-      userId,
-      gleapDataParser(userData),
-      userHash
-    );
+    return GleapSession.getInstance().identifySession(userId, gleapDataParser(userData), userHash);
   }
 
   /**
@@ -489,7 +472,7 @@ class Gleap {
    * Starts the Gleap flow.
    */
   static open() {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
     GleapFrameManager.getInstance().showWidget();
   }
 
@@ -522,7 +505,7 @@ class Gleap {
     GleapPreFillManager.getInstance().formPreFill = cleanedData;
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "prefill-form-data",
+        name: 'prefill-form-data',
         data: cleanedData,
       },
       true
@@ -733,23 +716,14 @@ class Gleap {
     primaryColor,
     headerColor,
     buttonColor,
-    backgroundColor = "#ffffff",
+    backgroundColor = '#ffffff',
     borderRadius = 20,
     buttonX = 20,
     buttonY = 20,
     buttonStyle = GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
   ) {
     runFunctionWhenDomIsReady(() => {
-      injectStyledCSS(
-        primaryColor,
-        headerColor,
-        buttonColor,
-        borderRadius,
-        backgroundColor,
-        buttonX,
-        buttonY,
-        buttonStyle
-      );
+      injectStyledCSS(primaryColor, headerColor, buttonColor, borderRadius, backgroundColor, buttonX, buttonY, buttonStyle);
     });
   }
 
@@ -760,8 +734,8 @@ class Gleap {
    * @param {*} excludeData
    */
   static sendSilentCrashReport(
-    description = "",
-    priority = "MEDIUM",
+    description = '',
+    priority = 'MEDIUM',
     excludeData = {
       screenshot: true,
       replays: true,
@@ -785,7 +759,7 @@ class Gleap {
    */
   static sendSilentCrashReportWithFormData(
     formData,
-    priority = "MEDIUM",
+    priority = 'MEDIUM',
     excludeData = {
       screenshot: true,
       replays: true,
@@ -812,17 +786,11 @@ class Gleap {
       newFormData.reportedBy = sessionInstance.session.email;
     }
 
-    const feedback = new GleapFeedback(
-      "CRASH",
-      priority,
-      newFormData,
-      true,
-      excludeDataCleaned
-    );
+    const feedback = new GleapFeedback('CRASH', priority, newFormData, true, excludeDataCleaned);
     feedback
       .sendFeedback()
-      .then(() => { })
-      .catch((error) => { });
+      .then(() => {})
+      .catch((error) => {});
   }
 
   /**
@@ -830,7 +798,7 @@ class Gleap {
    * @param {*} actionType
    * @param {*} format
    */
-  static showSurvey(actionType, format = "survey") {
+  static showSurvey(actionType, format = 'survey') {
     Gleap.startFeedbackFlowWithOptions(
       actionType,
       {
@@ -862,11 +830,7 @@ class Gleap {
   /**
    * Starts the bug reporting flow.
    */
-  static startFeedbackFlowWithOptions(
-    feedbackFlow,
-    options = {},
-    isSurvey = false
-  ) {
+  static startFeedbackFlowWithOptions(feedbackFlow, options = {}, isSurvey = false) {
     const { autostartDrawing, hideBackButton, format } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
@@ -874,17 +838,17 @@ class Gleap {
     }
 
     // Initially set scroll position
-    Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
+    Gleap.getInstance().setGlobalDataItem('snapshotPosition', {
       x: window.scrollX,
       y: window.scrollY,
     });
 
-    var action = "start-feedbackflow";
+    var action = 'start-feedbackflow';
     if (isSurvey) {
-      action = "start-survey";
+      action = 'start-survey';
     }
 
-    GleapFrameManager.getInstance().setAppMode(isSurvey ? format : "widget");
+    GleapFrameManager.getInstance().setAppMode(isSurvey ? format : 'widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
@@ -899,7 +863,7 @@ class Gleap {
     );
 
     if (autostartDrawing) {
-      GleapFrameManager.getInstance().showDrawingScreen("screenshot");
+      GleapFrameManager.getInstance().showDrawingScreen('screenshot');
     } else {
       GleapFrameManager.getInstance().showWidget();
     }
@@ -909,11 +873,11 @@ class Gleap {
    * Opens the conversations overview.
    */
   static openConversations(showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-conversations",
+        name: 'open-conversations',
         data: {
           hideBackButton: !showBackButton,
         },
@@ -932,11 +896,11 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-conversation",
+        name: 'open-conversation',
         data: {
           shareToken,
           hideBackButton: !showBackButton,
@@ -952,19 +916,19 @@ class Gleap {
    * Starts a new conversation
    */
   static startConversation(showBackButton = true) {
-    Gleap.startBot("", showBackButton);
+    Gleap.startBot('', showBackButton);
   }
 
   /**
    * Starts a new conversation and attaches the bot with the given id.
    */
   static startBot(botId, showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "start-bot",
+        name: 'start-bot',
         data: {
-          botId: botId ? botId : "",
+          botId: botId ? botId : '',
           hideBackButton: !showBackButton,
         },
       },
@@ -978,10 +942,10 @@ class Gleap {
    * Starts a new conversation and attaches the bot with the given id.
    */
   static askAI(question, showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "ask-ai",
+        name: 'ask-ai',
         data: {
           question,
           hideBackButton: !showBackButton,
@@ -1001,11 +965,11 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-help-collection",
+        name: 'open-help-collection',
         data: {
           collectionId,
           hideBackButton: !showBackButton,
@@ -1025,11 +989,11 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-help-article",
+        name: 'open-help-article',
         data: {
           articleId,
           hideBackButton: !showBackButton,
@@ -1045,11 +1009,11 @@ class Gleap {
    * Opens the help center.
    */
   static openHelpCenter(showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-helpcenter",
+        name: 'open-helpcenter',
         data: {
           hideBackButton: !showBackButton,
         },
@@ -1068,11 +1032,11 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-helpcenter-search",
+        name: 'open-helpcenter-search',
         data: {
           term,
           hideBackButton: !showBackButton,
@@ -1092,11 +1056,11 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-news-article",
+        name: 'open-news-article',
         data: {
           id,
         },
@@ -1111,11 +1075,11 @@ class Gleap {
    * Open the checklists overview.
    */
   static openChecklists(showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-checklists",
+        name: 'open-checklists',
         data: {},
       },
       true
@@ -1127,19 +1091,15 @@ class Gleap {
   /**
    * Starts a new checklist and opens it.
    */
-  static startChecklist(
-    outboundId,
-    showBackButton = true,
-    sharedKey = undefined
-  ) {
+  static startChecklist(outboundId, showBackButton = true, sharedKey = undefined) {
     if (!outboundId) {
       return false;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "start-checklist",
+        name: 'start-checklist',
         data: {
           outboundId: outboundId,
           hideBackButton: !showBackButton,
@@ -1162,10 +1122,10 @@ class Gleap {
       return;
     }
 
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-checklist",
+        name: 'open-checklist',
         data: {
           id: checklistId,
           hideBackButton: !showBackButton,
@@ -1191,29 +1151,27 @@ class Gleap {
    */
   static getChecklistData(outboundId, sharedKey) {
     if (!outboundId) {
-      return Promise.reject(new Error("outboundId is required"));
+      return Promise.reject(new Error('outboundId is required'));
     }
 
     const networkManager = ChecklistNetworkManager.getInstance();
 
     // First validate the checklist to get the internal ID
-    return networkManager
-      .validateChecklist(outboundId, sharedKey)
-      .then((internalId) => {
-        // Then fetch the full checklist data
-        return networkManager.fetchChecklist(internalId);
-      });
+    return networkManager.validateChecklist(outboundId, sharedKey).then((internalId) => {
+      // Then fetch the full checklist data
+      return networkManager.fetchChecklist(internalId);
+    });
   }
 
   /**
    * Opens the news overview.
    */
   static openNews(showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-news",
+        name: 'open-news',
         data: {
           hideBackButton: !showBackButton,
         },
@@ -1228,11 +1186,11 @@ class Gleap {
    * Opens the feature requests overview.
    */
   static openFeatureRequests(showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode("widget");
+    GleapFrameManager.getInstance().setAppMode('widget');
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "open-feature-requests",
+        name: 'open-feature-requests',
         data: {},
       },
       true
@@ -1248,11 +1206,11 @@ class Gleap {
 
     var hostname = window.location.hostname;
     const isLocalHost =
-      ["localhost", "127.0.0.1", "0.0.0.0", "", "::1"].includes(hostname) ||
-      hostname.startsWith("192.168.") ||
-      hostname.startsWith("10.0.") ||
-      hostname.endsWith(".local") ||
-      !hostname.includes(".");
+      ['localhost', '127.0.0.1', '0.0.0.0', '', '::1'].includes(hostname) ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.0.') ||
+      hostname.endsWith('.local') ||
+      !hostname.includes('.');
     return !isLocalHost;
   }
 
@@ -1271,7 +1229,7 @@ class Gleap {
         GleapAiChatbarManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
-        console.warn("Failed to initialize Gleap.");
+        console.warn('Failed to initialize Gleap.');
       });
   }
 
@@ -1284,30 +1242,26 @@ class Gleap {
       const action = actions[i];
       if (action && action.actionType) {
         if (action.pageFilter && window && window.location) {
-          const passed = checkPageFilter(
-            window.location.href,
-            action.pageFilter,
-            action.pageFilterType
-          );
+          const passed = checkPageFilter(window.location.href, action.pageFilter, action.pageFilterType);
 
           if (!passed) {
             continue;
           }
         }
 
-        if (action.actionType === "notification") {
-          if (action?.data?.checklist?.popupType === "widget") {
+        if (action.actionType === 'notification') {
+          if (action?.data?.checklist?.popupType === 'widget') {
             Gleap.openChecklist(action.data.checklist.id, true);
           } else {
             if (!this.disableInAppNotifications) {
               Gleap.showNotification(action);
             }
           }
-        } else if (action.actionType === "banner") {
+        } else if (action.actionType === 'banner') {
           Gleap.showBanner(action);
-        } else if (action.actionType === "modal") {
+        } else if (action.actionType === 'modal') {
           Gleap.showModal(action);
-        } else if (action.actionType === "tour") {
+        } else if (action.actionType === 'tour') {
           Gleap.startProductTourWithConfig(action.outbound, action.data, false);
         } else {
           Gleap.showSurvey(action.actionType, action.format);
@@ -1321,50 +1275,37 @@ class Gleap {
     GleapSession.getInstance()
       .startProductTourConfig(tourId)
       .then((config) => {
-        if (
-          checkStartUrl &&
-          config?.startURL &&
-          !window?.location?.href?.includes(config?.baseURL)
-        ) {
+        if (checkStartUrl && config?.startURL && !window?.location?.href?.includes(config?.baseURL)) {
           window.location.href = `${config.startURL}?gleap_tour=${tourId}&gleap_tour_delay=1`;
           return;
         }
 
         self.startProductTourWithConfig(tourId, config, true);
       })
-      .catch((error) => { });
+      .catch((error) => {});
   }
 
   static checkForUncompletedTour() {
     const tourData = GleapProductTours.getInstance().loadUncompletedTour();
     if (tourData) {
-      GleapProductTours.getInstance().startWithConfig(
-        tourData.tourId,
-        tourData.tourData,
-        500
-      );
+      GleapProductTours.getInstance().startWithConfig(tourData.tourId, tourData.tourData, 500);
     }
   }
 
   static startProductTourWithConfig(tourId, config, manually = false) {
-    GleapProductTours.getInstance().startWithConfig(
-      tourId,
-      config,
-      0,
-      manually
-    );
+    GleapProductTours.getInstance().startWithConfig(tourId, config, 0, manually);
   }
 
   static showBanner(data) {
     try {
       GleapBannerManager.getInstance().showBanner(data);
-    } catch (e) { }
+    } catch (e) {}
   }
 
   static showModal(data) {
     try {
       GleapModalManager.getInstance().showModal(data);
-    } catch (e) { }
+    } catch (e) {}
   }
 
   static showNotification(data) {
@@ -1394,12 +1335,12 @@ class Gleap {
    */
   takeCurrentReplay() {
     const replayData = GleapReplayRecorder.getInstance().getReplayData();
-    this.setGlobalDataItem("webReplay", replayData);
+    this.setGlobalDataItem('webReplay', replayData);
   }
 }
 
 // Check for unperformed Gleap actions.
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   const GleapActions = window.GleapActions;
   if (GleapActions && GleapActions.length > 0) {
     for (var i = 0; i < GleapActions.length; i++) {
@@ -1413,49 +1354,49 @@ if (typeof window !== "undefined") {
 
 const handleGleapLink = (href) => {
   try {
-    const urlParts = href.split("/");
+    const urlParts = href.split('/');
     const type = urlParts[2];
-    if (type === "article") {
+    if (type === 'article') {
       const identifier = urlParts[3];
       Gleap.openHelpCenterArticle(identifier, true);
     }
 
-    if (type === "collection") {
+    if (type === 'collection') {
       const identifier = urlParts[3];
       Gleap.openHelpCenterCollection(identifier, true);
     }
 
-    if (type === "flow") {
+    if (type === 'flow') {
       const identifier = urlParts[3];
       Gleap.startFeedbackFlow(identifier, true);
     }
 
-    if (type === "survey") {
+    if (type === 'survey') {
       const identifier = urlParts[3];
       Gleap.showSurvey(identifier);
     }
 
-    if (type === "bot") {
+    if (type === 'bot') {
       const identifier = urlParts[3];
       Gleap.startBot(identifier, true);
     }
 
-    if (type === "news") {
+    if (type === 'news') {
       const identifier = urlParts[3];
       Gleap.openNewsArticle(identifier, true);
     }
 
-    if (type === "checklist") {
+    if (type === 'checklist') {
       const identifier = urlParts[3];
       Gleap.startChecklist(identifier, true, urlParts[4]);
     }
 
-    if (type === "tour") {
+    if (type === 'tour') {
       const identifier = urlParts[3];
       Gleap.startProductTour(identifier);
     }
   } catch (e) {
-    console.error("Failed to handle Gleap link: ", href);
+    console.error('Failed to handle Gleap link: ', href);
   }
 };
 

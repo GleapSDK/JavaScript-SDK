@@ -1,4 +1,4 @@
-import { gleapDataParser } from "./GleapHelper";
+import { gleapDataParser } from './GleapHelper';
 
 export default class GleapCustomDataManager {
   customData = {};
@@ -26,10 +26,7 @@ export default class GleapCustomDataManager {
    * @param {*} data
    */
   attachCustomData(data) {
-    this.customData = Object.assign(
-      this.customData,
-      gleapDataParser(data)
-    );
+    this.customData = Object.assign(this.customData, gleapDataParser(data));
   }
 
   /**

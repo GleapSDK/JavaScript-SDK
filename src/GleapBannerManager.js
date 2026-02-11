@@ -1,7 +1,7 @@
-import Gleap, { GleapFrameManager } from "./Gleap";
+import Gleap, { GleapFrameManager } from './Gleap';
 
 export default class GleapBannerManager {
-  bannerUrl = "https://outboundmedia.gleap.io";
+  bannerUrl = 'https://outboundmedia.gleap.io';
   bannerContainer = null;
   bannerData = null;
   disabled = false;
@@ -25,7 +25,7 @@ export default class GleapBannerManager {
 
   startCommunication() {
     // Add window message listener.
-    window.addEventListener("message", (event) => {
+    window.addEventListener('message', (event) => {
       if (!this.bannerUrl?.includes(event.origin)) {
         return;
       }
@@ -33,64 +33,57 @@ export default class GleapBannerManager {
       try {
         const data = JSON.parse(event.data);
 
-        if (data?.type !== "BANNER") {
+        if (data?.type !== 'BANNER') {
           return;
         }
 
-        if (data.name === "banner-loaded" && this.bannerData) {
+        if (data.name === 'banner-loaded' && this.bannerData) {
           this.sendMessage({
-            name: "banner-data",
+            name: 'banner-data',
             data: this.bannerData,
           });
         }
-        if (data.name === "banner-height") {
-          document.documentElement.style.setProperty(
-            "--gleap-margin-top",
-            data.data.height + "px"
-          );
+        if (data.name === 'banner-height') {
+          document.documentElement.style.setProperty('--gleap-margin-top', data.data.height + 'px');
         }
-        if (data.name === "banner-data-set") {
-          document.body.classList.add("gleap-b-shown");
+        if (data.name === 'banner-data-set') {
+          document.body.classList.add('gleap-b-shown');
 
-          if (this.bannerData?.format === "floating") {
-            document.body.classList.add("gleap-b-f");
+          if (this.bannerData?.format === 'floating') {
+            document.body.classList.add('gleap-b-f');
           }
         }
-        if (data.name === "banner-close") {
+        if (data.name === 'banner-close') {
           this.removeBannerUI();
         }
-        if (data.name === "start-conversation") {
+        if (data.name === 'start-conversation') {
           Gleap.startBot(data.data?.botId);
         }
-        if (data.name === "start-custom-action") {
+        if (data.name === 'start-custom-action') {
           Gleap.triggerCustomAction(data.data?.action);
         }
-        if (data.name === "start-product-tour") {
+        if (data.name === 'start-product-tour') {
           Gleap.startProductTour(data.data?.tourId, true);
         }
-        if (data.name === "open-url") {
+        if (data.name === 'open-url') {
           const url = data.data;
           const newTab = data.newTab ? true : false;
           GleapFrameManager.getInstance().urlHandler(url, newTab);
         }
-        if (data.name === "show-form") {
+        if (data.name === 'show-form') {
           Gleap.startFeedbackFlow(data.data?.formId);
         }
-        if (data.name === "show-survey") {
+        if (data.name === 'show-survey') {
           Gleap.showSurvey(data.data?.formId, data.data?.surveyFormat);
         }
-        if (data.name === "show-news-article") {
+        if (data.name === 'show-news-article') {
           Gleap.openNewsArticle(data.data?.articleId);
         }
-        if (data.name === "show-help-article") {
+        if (data.name === 'show-help-article') {
           Gleap.openHelpCenterArticle(data.data?.articleId);
         }
-        if (data.name === "show-checklist") {
-          Gleap.startChecklist(
-            data.data?.checklistId,
-            true,
-            data.data?.sharedKey
-          );
+        if (data.name === 'show-checklist') {
+          Gleap.startChecklist(data.data?.checklistId, true, data.data?.sharedKey);
         }
       } catch (exp) {}
     });
@@ -102,8 +95,8 @@ export default class GleapBannerManager {
       this.bannerContainer = null;
     }
 
-    document.body.classList.remove("gleap-b-shown");
-    document.body.classList.remove("gleap-b-f");
+    document.body.classList.remove('gleap-b-shown');
+    document.body.classList.remove('gleap-b-f');
   }
 
   disable() {
@@ -129,8 +122,8 @@ export default class GleapBannerManager {
 
     this.bannerData = bannerData;
 
-    var elem = document.createElement("div");
-    elem.className = "gleap-b";
+    var elem = document.createElement('div');
+    elem.className = 'gleap-b';
     elem.innerHTML = `<iframe src="${this.bannerUrl}" class="gleap-b-frame" scrolling="no" title="Gleap Banner" role="dialog" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
     this.bannerContainer = elem;
@@ -138,14 +131,14 @@ export default class GleapBannerManager {
 
   sendMessage(data) {
     try {
-      const gleapBFrame = document.querySelector(".gleap-b-frame");
+      const gleapBFrame = document.querySelector('.gleap-b-frame');
       if (gleapBFrame && gleapBFrame.contentWindow) {
         gleapBFrame.contentWindow.postMessage(
           JSON.stringify({
             ...data,
-            type: "banner",
+            type: 'banner',
           }),
-          "*"
+          '*'
         );
       }
     } catch (e) {}

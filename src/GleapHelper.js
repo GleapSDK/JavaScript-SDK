@@ -1,13 +1,13 @@
 export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
   return new Promise((resolve, reject) => {
-    var isJPEG = base64Str.indexOf("data:image/jpeg") === 0;
+    var isJPEG = base64Str.indexOf('data:image/jpeg') === 0;
     var img = new Image();
     img.src = base64Str;
     img.onerror = () => {
       reject();
     };
     img.onload = () => {
-      var canvas = document.createElement("canvas");
+      var canvas = document.createElement('canvas');
       var MAX_WIDTH = maxWidth;
       var MAX_HEIGHT = maxHeight;
 
@@ -36,11 +36,11 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
       }
       canvas.width = width;
       canvas.height = height;
-      var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, width, height);
 
       if (isJPEG) {
-        resolve(canvas.toDataURL("image/jpeg", 0.7));
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
       } else {
         resolve(canvas.toDataURL());
       }
@@ -48,37 +48,30 @@ export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
   });
 };
 
-const MOBILE_UA_REGEX =
-  /(android|iphone|ipod|ipad|blackberry|iemobile|opera mini|webos)/i;
+const MOBILE_UA_REGEX = /(android|iphone|ipod|ipad|blackberry|iemobile|opera mini|webos)/i;
 
 export const getDeviceType = () => {
-  return isMobile() ? "mobile" : "desktop";
+  return isMobile() ? 'mobile' : 'desktop';
 };
 
 export const isMobile = () => {
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     return false;
   }
 
   try {
-    const nav = typeof navigator !== "undefined" ? navigator : undefined;
+    const nav = typeof navigator !== 'undefined' ? navigator : undefined;
 
-    if (
-      nav?.userAgentData &&
-      typeof nav.userAgentData.mobile === "boolean" &&
-      nav.userAgentData.mobile !== null
-    ) {
+    if (nav?.userAgentData && typeof nav.userAgentData.mobile === 'boolean' && nav.userAgentData.mobile !== null) {
       return nav.userAgentData.mobile;
     }
 
-    if (nav && MOBILE_UA_REGEX.test(nav.userAgent || nav.vendor || "")) {
+    if (nav && MOBILE_UA_REGEX.test(nav.userAgent || nav.vendor || '')) {
       return true;
     }
 
     if (nav?.maxTouchPoints > 1 && window.matchMedia) {
-      const coarsePointer = window.matchMedia(
-        "(hover: none) and (pointer: coarse)"
-      );
+      const coarsePointer = window.matchMedia('(hover: none) and (pointer: coarse)');
       if (coarsePointer?.matches) {
         return true;
       }
@@ -94,7 +87,7 @@ export const gleapDataParser = function (data) {
   if (!data) {
     return {};
   }
-  if (typeof data === "string" || data instanceof String) {
+  if (typeof data === 'string' || data instanceof String) {
     try {
       return JSON.parse(data);
     } catch (e) {
@@ -106,7 +99,7 @@ export const gleapDataParser = function (data) {
 
 export const truncateString = (str, num) => {
   if (str.length > num) {
-    return str.slice(0, num) + "...";
+    return str.slice(0, num) + '...';
   } else {
     return str;
   }
@@ -114,24 +107,24 @@ export const truncateString = (str, num) => {
 
 const removeSubDomain = (v) => {
   try {
-    var parts = v.split(".");
+    var parts = v.split('.');
     var is2ndLevelDomain = false;
     const secondLevel = parts[parts.length - 2];
     if (
-      secondLevel === "co" ||
-      secondLevel === "com" ||
-      secondLevel === "gv" ||
-      secondLevel === "ac" ||
-      secondLevel === "edu" ||
-      secondLevel === "gov" ||
-      secondLevel === "mil" ||
-      secondLevel === "net" ||
-      secondLevel === "org"
+      secondLevel === 'co' ||
+      secondLevel === 'com' ||
+      secondLevel === 'gv' ||
+      secondLevel === 'ac' ||
+      secondLevel === 'edu' ||
+      secondLevel === 'gov' ||
+      secondLevel === 'mil' ||
+      secondLevel === 'net' ||
+      secondLevel === 'org'
     ) {
       is2ndLevelDomain = true;
     }
     parts = parts.slice(is2ndLevelDomain ? -3 : -2);
-    return parts.join(".");
+    return parts.join('.');
   } catch (exp) {}
   return v;
 };
@@ -167,25 +160,24 @@ export const clearGleapCache = (key) => {
 
 export const setGleapCookie = (name, value, days) => {
   try {
-    var expires = "";
+    var expires = '';
     if (days) {
       var date = new Date();
       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-      expires = "; expires=" + date.toUTCString();
+      expires = '; expires=' + date.toUTCString();
     }
-    const host = removeSubDomain(window.location.host.split(":")[0]);
-    document.cookie =
-      name + "=" + (value || "") + expires + "; path=/; domain=" + host;
+    const host = removeSubDomain(window.location.host.split(':')[0]);
+    document.cookie = name + '=' + (value || '') + expires + '; path=/; domain=' + host;
   } catch (exp) {}
 };
 
 export const getGleapCookie = (name) => {
   try {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(";");
+    var nameEQ = name + '=';
+    var ca = document.cookie.split(';');
     for (var i = 0; i < ca.length; i++) {
       var c = ca[i];
-      while (c.charAt(0) == " ") c = c.substring(1, c.length);
+      while (c.charAt(0) == ' ') c = c.substring(1, c.length);
       if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
     }
   } catch (exp) {}
@@ -194,49 +186,44 @@ export const getGleapCookie = (name) => {
 
 export const eraseGleapCookie = (name) => {
   try {
-    const host = removeSubDomain(window.location.host.split(":")[0]);
-    document.cookie =
-      name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=" + host;
+    const host = removeSubDomain(window.location.host.split(':')[0]);
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + host;
   } catch (exp) {}
 };
 
 export const getDOMElementDescription = (element, html = true) => {
-  var innerText = truncateString(element.innerText || "", 40)
-    .replace(/(\r\n|\n|\r)/gm, "")
-    .replace(/ +(?= )/g, "");
-  var elementId = "";
-  var elementClass = "";
-  if (typeof element.getAttribute !== "undefined") {
-    const elemId = element.getAttribute("id");
+  var innerText = truncateString(element.innerText || '', 40)
+    .replace(/(\r\n|\n|\r)/gm, '')
+    .replace(/ +(?= )/g, '');
+  var elementId = '';
+  var elementClass = '';
+  if (typeof element.getAttribute !== 'undefined') {
+    const elemId = element.getAttribute('id');
     if (elemId) {
       elementId = ` id="${elemId}"`;
     }
-    const elemClass = element.getAttribute("class");
+    const elemClass = element.getAttribute('class');
     if (elemClass) {
       elementClass = ` class="${elemClass}"`;
     }
   }
-  const elementTag = (element.tagName || "").toLowerCase();
+  const elementTag = (element.tagName || '').toLowerCase();
 
-  var htmlPre = "<";
-  var htmlPost = ">";
+  var htmlPre = '<';
+  var htmlPost = '>';
   if (!html) {
-    htmlPre = "[";
-    htmlPost = "]";
+    htmlPre = '[';
+    htmlPost = ']';
   }
 
   return `${htmlPre}${elementTag}${elementId}${elementClass}${htmlPost}${innerText}${htmlPre}/${elementTag}${htmlPost}`;
 };
 
 export const runFunctionWhenDomIsReady = (callback) => {
-  if (
-    document.readyState === "complete" ||
-    document.readyState === "loaded" ||
-    document.readyState === "interactive"
-  ) {
+  if (document.readyState === 'complete' || document.readyState === 'loaded' || document.readyState === 'interactive') {
     callback();
   } else {
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener('DOMContentLoaded', () => {
       callback();
     });
   }
@@ -244,17 +231,12 @@ export const runFunctionWhenDomIsReady = (callback) => {
 
 export const fixGleapHeight = () => {
   try {
-    if (
-      "visualViewport" in window &&
-      /iPad|iPhone|iPod/.test(navigator.userAgent)
-    ) {
+    if ('visualViewport' in window && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
       let initialHeight = window.innerHeight;
 
       function updateContainerHeight() {
         try {
-          const gleapFrameContainer = document.querySelector(
-            ".gleap-frame-container-inner iframe"
-          );
+          const gleapFrameContainer = document.querySelector('.gleap-frame-container-inner iframe');
 
           if (!gleapFrameContainer) {
             return;
@@ -262,14 +244,10 @@ export const fixGleapHeight = () => {
 
           // Check if the keyboard is open
           if (window.visualViewport.height < initialHeight) {
-            gleapFrameContainer.style.setProperty(
-              "max-height",
-              window.visualViewport.height + "px",
-              "important"
-            );
+            gleapFrameContainer.style.setProperty('max-height', window.visualViewport.height + 'px', 'important');
           } else {
             // Remove the padding bottom
-            gleapFrameContainer.style.removeProperty("max-height");
+            gleapFrameContainer.style.removeProperty('max-height');
           }
         } catch (error) {}
       }
@@ -283,10 +261,10 @@ export const fixGleapHeight = () => {
       }
 
       // Update on resize (keyboard show/hide and viewport resize)
-      window.visualViewport.addEventListener("resize", updateContainerHeight);
+      window.visualViewport.addEventListener('resize', updateContainerHeight);
 
       // Handle orientation changes
-      window.addEventListener("orientationchange", handleOrientationChange);
+      window.addEventListener('orientationchange', handleOrientationChange);
 
       // Update initially
       updateContainerHeight();

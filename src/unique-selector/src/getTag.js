@@ -3,7 +3,6 @@
  * @param  { Object } element
  * @return { String }
  */
-export function getTag( el )
-{
+export function getTag(el) {
   return el.tagName.toLowerCase().replace(/:/g, '\\:');
 }

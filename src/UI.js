@@ -1,24 +1,19 @@
-import GleapFeedbackButtonManager from "./GleapFeedbackButtonManager";
+import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
 
 const calculateShadeColor = function (col, amt) {
-  col = col.replace(/^#/, "");
-  if (col.length === 3)
-    col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
+  col = col.replace(/^#/, '');
+  if (col.length === 3) col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2];
 
   let [r, g, b] = col.match(/.{2}/g);
-  [r, g, b] = [
-    parseInt(r, 16) + amt,
-    parseInt(g, 16) + amt,
-    parseInt(b, 16) + amt,
-  ];
+  [r, g, b] = [parseInt(r, 16) + amt, parseInt(g, 16) + amt, parseInt(b, 16) + amt];
 
   r = Math.max(Math.min(255, r), 0).toString(16);
   g = Math.max(Math.min(255, g), 0).toString(16);
   b = Math.max(Math.min(255, b), 0).toString(16);
 
-  const rr = (r.length < 2 ? "0" : "") + r;
-  const gg = (g.length < 2 ? "0" : "") + g;
-  const bb = (b.length < 2 ? "0" : "") + b;
+  const rr = (r.length < 2 ? '0' : '') + r;
+  const gg = (g.length < 2 ? '0' : '') + g;
+  const bb = (b.length < 2 ? '0' : '') + b;
 
   return `#${rr}${gg}${bb}`;
 };
@@ -28,7 +23,7 @@ export const calculateContrast = (hex) => {
     g = parseInt(hex.substr(3, 2), 16),
     b = parseInt(hex.substr(5, 2), 16),
     yiq = (r * 299 + g * 587 + b * 114) / 1000;
-  return yiq >= 160 ? "#000000" : "#ffffff";
+  return yiq >= 160 ? '#000000' : '#ffffff';
 };
 
 export const widgetMaxHeight = 700;
@@ -47,20 +42,13 @@ export const injectStyledCSS = (
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
   const contrastHeaderColor = calculateContrast(headerColor);
-  const isDarkMode = contrastBackgroundColor === "#ffffff";
-  const headerDarkColor = calculateShadeColor(
-    headerColor,
-    contrastHeaderColor === "#ffffff" ? -35 : -15
-  );
-  const subTextColor = isDarkMode
-    ? calculateShadeColor(backgroundColor, 100)
-    : calculateShadeColor(backgroundColor, -120);
+  const isDarkMode = contrastBackgroundColor === '#ffffff';
+  const headerDarkColor = calculateShadeColor(headerColor, contrastHeaderColor === '#ffffff' ? -35 : -15);
+  const subTextColor = isDarkMode ? calculateShadeColor(backgroundColor, 100) : calculateShadeColor(backgroundColor, -120);
   const backgroundColorHover = isDarkMode
     ? calculateShadeColor(backgroundColor, 30)
     : calculateShadeColor(backgroundColor, -12);
-  const hoverHoverColor = isDarkMode
-    ? calculateShadeColor(backgroundColor, 80)
-    : calculateShadeColor(backgroundColor, -30);
+  const hoverHoverColor = isDarkMode ? calculateShadeColor(backgroundColor, 80) : calculateShadeColor(backgroundColor, -30);
 
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
@@ -71,11 +59,9 @@ export const injectStyledCSS = (
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
-  if (
-    buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
-  ) {
+  if (buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM) {
     bottomInfoOffset = buttonY + 15;
-  } else if (buttonStyle && buttonStyle.includes("CLASSIC")) {
+  } else if (buttonStyle && buttonStyle.includes('CLASSIC')) {
     bottomInfoOffset = buttonY;
   } else if (buttonStyle === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
     bottomInfoOffset = buttonY;
@@ -2425,52 +2411,52 @@ export const injectStyledCSS = (
     }
     `;
 
-  const oldNode = document.querySelector(".gleap-styles");
+  const oldNode = document.querySelector('.gleap-styles');
   if (oldNode) {
     oldNode.remove();
   }
-  const node = document.createElement("style");
+  const node = document.createElement('style');
   node.innerHTML = colorStyleSheet;
-  node.className = "gleap-styles";
+  node.className = 'gleap-styles';
   document.body.appendChild(node);
 };
 
 export const loadIcon = function (name, color) {
-  if (name === "button") {
+  if (name === 'button') {
     return `<svg class="bb-logo-logo bb-logo-logo--default" width="145" height="144" viewBox="0 0 145 144" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path fill-rule="evenodd" clip-rule="evenodd" d="M38.9534 15H105.047C113.857 15 121 22.1426 121 30.9534L121 89.5238L121 96.015L121 125.541C121 128.759 117.393 130.66 114.739 128.84L90.1188 111.968H38.9534C30.1426 111.968 23 104.826 23 96.015V30.9534C23 22.1426 30.1426 15 38.9534 15Z" fill="white"/>
     </svg>`;
   }
 
-  if (name === "drag") {
+  if (name === 'drag') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 512"><!--!Font Awesome Pro 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2025 Fonticons, Inc.--><path d="M64 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm0 160a32 32 0 1 0 0-64 32 32 0 1 0 0 64zM96 416a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zm96-288a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm32 128a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM192 448a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>`;
   }
 
-  if (name === "unmute") {
+  if (name === 'unmute') {
     return `<svg id="tooltip-svg-unmute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-unmute-path" d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.1 386.2C556.7 352 576 306.3 576 256c0-60.1-27.7-113.8-70.9-149c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C507.3 170.7 528 210.9 528 256c0 39.1-15.6 74.5-40.9 100.5L449 326.6c19-17.5 31-42.7 31-70.6c0-30.1-13.9-56.9-35.4-74.5c-10.3-8.4-25.4-6.8-33.8 3.5s-6.8 25.4 3.5 33.8C425.1 227.6 432 241 432 256s-6.9 28.4-17.7 37.3c-1.3 1-2.4 2.2-3.4 3.4L352 250.6V64c0-12.6-7.4-24-18.9-29.2s-25-3.1-34.4 5.3L197.8 129.8 38.8 5.1zM352 373.3L82.9 161.3C53.8 167.4 32 193.1 32 224v64c0 35.3 28.7 64 64 64h67.8L298.7 471.9c9.4 8.4 22.9 10.4 34.4 5.3S352 460.6 352 448V373.3z"/></svg>`;
   }
 
-  if (name === "mute") {
+  if (name === 'mute') {
     return `<svg id="tooltip-svg-mute" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path id="tooltip-svg-mute-path" d="M533.6 32.5C598.5 85.3 640 165.8 640 256s-41.5 170.8-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64V448c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352H64c-35.3 0-64-28.7-64-64V224c0-35.3 28.7-64 64-64h67.8L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"/></svg>`;
   }
 
-  if (name === "replay") {
+  if (name === 'replay') {
     return `<svg id="tooltip-svg-replay" width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path id="tooltip-svg-replay-path" d="M48.5 224H40C26.7 224 16 213.3 16 200V72C16 62.3 21.8 53.5 30.8 49.8C39.8 46.1 50.1 48.1 57 55L98.6 96.6C186.2 10.1 327.3 10.4 414.4 97.6C501.9 185.1 501.9 326.9 414.4 414.4C326.9 501.9 185.1 501.9 97.6 414.4C85.1 401.9 85.1 381.6 97.6 369.1C110.1 356.6 130.4 356.6 142.9 369.1C205.4 431.6 306.7 431.6 369.2 369.1C431.7 306.6 431.7 205.3 369.2 142.8C307 80.6 206.5 80.3 143.9 141.8L185 183C191.9 189.9 193.9 200.2 190.2 209.2C186.5 218.2 177.7 224 168 224H48.5Z" />
     </svg>`;
   }
 
-  if (name === "dismiss") {
+  if (name === 'dismiss') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><path d="M294.6 166.6L317.3 144 272 98.7l-22.6 22.6L160 210.7 70.6 121.4 48 98.7 2.7 144l22.6 22.6L114.7 256 25.4 345.4 2.7 368 48 413.3l22.6-22.6L160 301.3l89.4 89.4L272 413.3 317.3 368l-22.6-22.6L205.3 256l89.4-89.4z"/></svg>`;
   }
 
-  if (name === "blur") {
+  if (name === 'blur') {
     return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
  <path class="bb-svg-path" d="m602.25 1200c238.2 0 435.95-193.26 435.95-435.95 0-269.66-220.23-615.73-435.95-764.05-220.23 161.8-440.45 485.39-440.45 764.05 0 242.7 197.75 435.95 440.45 435.95zm-260.68-382.02c0 112.36 89.887 206.74 206.74 206.74v62.922c-148.32 0-274.16-121.35-274.16-269.66z" fill="#333"/>
 </svg>`;
   }
 
-  if (name === "pen") {
+  if (name === 'pen') {
     return `<svg width="1072px" height="1034px" viewBox="0 0 1072 1034" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-907.000000, -217.000000)" fill-rule="nonzero">
@@ -2487,7 +2473,7 @@ export const loadIcon = function (name, color) {
 </svg>`;
   }
 
-  if (name === "rect") {
+  if (name === 'rect') {
     return `<svg width="339px" height="241px" viewBox="0 0 339 241" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-0.000865, 0.000000)" fill-rule="nonzero">
@@ -2502,13 +2488,13 @@ export const loadIcon = function (name, color) {
 </svg>`;
   }
 
-  if (name === "pointer") {
+  if (name === 'pointer') {
     return `<svg width="1200pt" height="1200pt" version="1.1" viewBox="0 0 1200 1200" xmlns="http://www.w3.org/2000/svg">
     <path d="m1050.7 508.95-225.94 157.5 160.31 160.31c4.4531 4.4531 6.9141 10.43 6.9141 16.758s-2.4609 12.305-6.9141 16.758l-126.09 126.09c-4.4531 4.4531-10.43 6.9141-16.758 6.9141-6.3281 0-12.188-2.4609-16.758-6.9141l-160.2-160.43-157.62 225.94c-3.3984 4.9219-9.0234 7.8516-14.883 7.8516-0.70313 0-1.5234 0-2.2266-0.11719-6.7969-0.82031-12.422-5.2734-14.766-11.719l-333.16-880.55c-2.5781-6.6797-0.9375-14.297 4.2188-19.336 5.0391-5.0391 12.656-6.6797 19.336-4.2188l880.66 333.05c6.3281 2.3438 10.781 8.0859 11.602 14.766 0.82031 6.7969-2.1094 13.359-7.7344 17.344z" fill="#333"/>
    </svg>`;
   }
 
-  if (name === "clip") {
+  if (name === 'clip') {
     return `<svg width="600px" height="1126px" viewBox="0 0 600 1126" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g transform="translate(-0.002000, 0.501000)" fill="#333333" fill-rule="nonzero">
@@ -2518,7 +2504,7 @@ export const loadIcon = function (name, color) {
 </svg>`;
   }
 
-  if (name === "mic") {
+  if (name === 'mic') {
     return `<svg
     width="1200pt"
     height="1200pt"
@@ -2537,7 +2523,7 @@ export const loadIcon = function (name, color) {
   </svg>`;
   }
 
-  if (name === "camera") {
+  if (name === 'camera') {
     return `<svg width="1155px" height="1004px" viewBox="0 0 1155 1004" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g fill="#333333" fill-rule="nonzero">
@@ -2556,7 +2542,7 @@ export const loadIcon = function (name, color) {
 </svg>`;
   }
 
-  if (name === "recorderon") {
+  if (name === 'recorderon') {
     return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
         <g>
@@ -2572,7 +2558,7 @@ export const loadIcon = function (name, color) {
 </svg>`;
   }
 
-  if (name === "recorderoff") {
+  if (name === 'recorderoff') {
     return `<svg width="1251px" height="1251px" viewBox="0 0 1251 1251" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
           <g class="bb-rec-on-circle" fill="#EEEEEE" fill-rule="nonzero">
@@ -2585,25 +2571,25 @@ export const loadIcon = function (name, color) {
   </svg>`;
   }
 
-  if (name === "arrowdown") {
+  if (name === 'arrowdown') {
     return `<svg class="bb-logo-arrowdown" fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m50 77.637c-1.3477 0-2.6953-0.51562-3.7266-1.543l-44.73-44.73c-2.0586-2.0586-2.0586-5.3945 0-7.4531 2.0586-2.0586 5.3945-2.0586 7.4531 0l41.004 41 41.004-41c2.0586-2.0586 5.3945-2.0586 7.4531 0 2.0586 2.0586 2.0586 5.3945 0 7.4531l-44.73 44.727c-1.0312 1.0312-2.3789 1.5469-3.7266 1.5469z"/>
    </svg>`;
   }
 
-  if (name === "arrowleft") {
+  if (name === 'arrowleft') {
     return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m70.988 1.6211c2.1875-2.168 5.7344-2.168 7.9297 0 2.1836 2.168 2.1836 5.7227 0 7.8906l-46.016 40.445 46.016 40.5c2.1836 2.168 2.1836 5.668 0 7.8906-2.1953 2.168-5.7383 2.168-7.9297 0l-50.039-44.109c-1.168-1.168-1.668-2.7227-1.5898-4.2773-0.078125-1.5 0.42188-3.0547 1.5898-4.2227l50.039-44.109z" fill-rule="evenodd"/>
    </svg>`;
   }
 
-  if (name === "close") {
+  if (name === 'close') {
     return `<svg fill="${color}" width="100pt" height="100pt" version="1.1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <path d="m72.812 33.02l-5.832-5.832-16.98 16.875-16.98-16.875-5.832 5.832 16.875 16.98-16.875 16.98 5.832 5.832 16.98-16.875 16.98 16.875 5.832-5.832-16.875-16.98z"/>
    </svg>`;
   }
 
-  if (name === "undo") {
+  if (name === 'undo') {
     return `<svg width="62px" height="60px" viewBox="0 0 62 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
       <g class="bb-svg-path" transform="translate(-0.000500, 0.001926)" fill-rule="nonzero">
@@ -2617,29 +2603,29 @@ export const loadIcon = function (name, color) {
   </svg>`;
   }
 
-  if (name === "circle-dot") {
+  if (name === 'circle-dot') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M464 256A208 208 0 1 0 48 256a208 208 0 1 0 416 0zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256zm256-96a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg>`;
   }
 
-  if (name === "circle-question") {
+  if (name === 'circle-question') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1c0-8.4-6.8-15.1-15.1-15.1H222.6c-3.4 0-6.4 2.1-7.5 5.3l-.4 1.2c-4.4 12.5-18.2 19-30.6 14.6s-19-18.2-14.6-30.6l.4-1.2zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></svg>`;
   }
 
-  if (name === "circle-info") {
+  if (name === 'circle-info') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216 192V224h24 48 24v24 88h8 24v48H296 216 192V336h24zm72-144H224V128h64v64z"/></svg>`;
   }
 
-  if (name === "circle-exclamation") {
+  if (name === 'circle-exclamation') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm24-384v24V264v24H232V264 152 128h48zM232 368V320h48v48H232z"/></svg>`;
   }
 
-  if (name === "circle-up") {
+  if (name === 'circle-up') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM384 256H304V384H208V256H128V224L256 96 384 224v32z"/></svg>`;
   }
 
-  if (name === "circle-right") {
+  if (name === 'circle-right') {
     return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="${color}" d="M0 256a256 256 0 1 0 512 0A256 256 0 1 0 0 256zM256 384l0-80-128 0 0-96 128 0 0-80 32 0L416 256 288 384l-32 0z"/></svg>`;
   }
 
-  return "";
+  return '';
 };

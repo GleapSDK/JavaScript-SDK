@@ -25,40 +25,29 @@ class ElementOverlay {
    */
   constructor(options) {
     // Create and style the overlay element.
-    this.overlay = document.createElement("div");
-    this.overlay.className = options.className || "_ext-element-overlay";
-    this.overlay.style.background =
-      (options.style && options.style.background) || "rgba(250, 240, 202, 0.2)";
-    this.overlay.style.borderColor =
-      (options.style && options.style.borderColor) || "#F95738";
-    this.overlay.style.borderStyle =
-      (options.style && options.style.borderStyle) || "solid";
-    this.overlay.style.borderRadius =
-      (options.style && options.style.borderRadius) || "1px";
-    this.overlay.style.borderWidth =
-      (options.style && options.style.borderWidth) || "1px";
-    this.overlay.style.boxSizing =
-      (options.style && options.style.boxSizing) || "border-box";
-    this.overlay.style.cursor =
-      (options.style && options.style.cursor) || "crosshair";
-    this.overlay.style.position =
-      (options.style && options.style.position) || "absolute";
-    this.overlay.style.zIndex =
-      (options.style && options.style.zIndex) || "2147483647";
-    this.overlay.style.margin =
-      (options.style && options.style.margin) || "0px";
-    this.overlay.style.padding =
-      (options.style && options.style.padding) || "0px";
+    this.overlay = document.createElement('div');
+    this.overlay.className = options.className || '_ext-element-overlay';
+    this.overlay.style.background = (options.style && options.style.background) || 'rgba(250, 240, 202, 0.2)';
+    this.overlay.style.borderColor = (options.style && options.style.borderColor) || '#F95738';
+    this.overlay.style.borderStyle = (options.style && options.style.borderStyle) || 'solid';
+    this.overlay.style.borderRadius = (options.style && options.style.borderRadius) || '1px';
+    this.overlay.style.borderWidth = (options.style && options.style.borderWidth) || '1px';
+    this.overlay.style.boxSizing = (options.style && options.style.boxSizing) || 'border-box';
+    this.overlay.style.cursor = (options.style && options.style.cursor) || 'crosshair';
+    this.overlay.style.position = (options.style && options.style.position) || 'absolute';
+    this.overlay.style.zIndex = (options.style && options.style.zIndex) || '2147483647';
+    this.overlay.style.margin = (options.style && options.style.margin) || '0px';
+    this.overlay.style.padding = (options.style && options.style.padding) || '0px';
 
     // Create a container that will host a Shadow DOM.
-    this.shadowContainer = document.createElement("div");
-    this.shadowContainer.className = "_ext-element-overlay-container";
-    this.shadowContainer.style.position = "absolute";
-    this.shadowContainer.style.top = "0px";
-    this.shadowContainer.style.left = "0px";
-    this.shadowContainer.style.margin = "0px";
-    this.shadowContainer.style.padding = "0px";
-    this.shadowRoot = this.shadowContainer.attachShadow({ mode: "open" });
+    this.shadowContainer = document.createElement('div');
+    this.shadowContainer.className = '_ext-element-overlay-container';
+    this.shadowContainer.style.position = 'absolute';
+    this.shadowContainer.style.top = '0px';
+    this.shadowContainer.style.left = '0px';
+    this.shadowContainer.style.margin = '0px';
+    this.shadowContainer.style.padding = '0px';
+    this.shadowRoot = this.shadowContainer.attachShadow({ mode: 'open' });
   }
 
   /**
@@ -99,14 +88,14 @@ class ElementOverlay {
    * Enables pointer events on the overlay.
    */
   captureCursor() {
-    this.overlay.style.pointerEvents = "auto";
+    this.overlay.style.pointerEvents = 'auto';
   }
 
   /**
    * Disables pointer events on the overlay.
    */
   ignoreCursor() {
-    this.overlay.style.pointerEvents = "none";
+    this.overlay.style.pointerEvents = 'none';
   }
 
   /**
@@ -119,10 +108,10 @@ class ElementOverlay {
    */
   setBounds(bounds) {
     const { x, y, width, height } = bounds;
-    this.overlay.style.left = x + "px";
-    this.overlay.style.top = y + "px";
-    this.overlay.style.width = width + "px";
-    this.overlay.style.height = height + "px";
+    this.overlay.style.left = x + 'px';
+    this.overlay.style.top = y + 'px';
+    this.overlay.style.width = width + 'px';
+    this.overlay.style.height = height + 'px';
   }
 }
 
@@ -159,12 +148,11 @@ class ElementPicker {
     this.active = true;
     this.options = options;
 
-    document.addEventListener("mousemove", this.handleMouseMove, true);
-    document.addEventListener("click", this.handleClick, true);
+    document.addEventListener('mousemove', this.handleMouseMove, true);
+    document.addEventListener('click', this.handleClick, true);
 
     const parentElement = options.parentElement || document.body;
-    const useShadowDOM =
-      options.useShadowDOM !== undefined ? options.useShadowDOM : true;
+    const useShadowDOM = options.useShadowDOM !== undefined ? options.useShadowDOM : true;
     this.overlay.addToDOM(parentElement, useShadowDOM);
     this.tick();
 
@@ -178,8 +166,8 @@ class ElementPicker {
     this.active = false;
     this.options = undefined;
 
-    document.removeEventListener("mousemove", this.handleMouseMove, true);
-    document.removeEventListener("click", this.handleClick, true);
+    document.removeEventListener('mousemove', this.handleMouseMove, true);
+    document.removeEventListener('click', this.handleClick, true);
 
     this.overlay.removeFromDOM();
     this.target = undefined;
@@ -206,12 +194,7 @@ class ElementPicker {
    */
   handleClick(event) {
     const clickedEl = document.elementFromPoint(event.clientX, event.clientY);
-    if (
-      this.options &&
-      this.options.elementFilter &&
-      clickedEl &&
-      !this.options.elementFilter(clickedEl)
-    ) {
+    if (this.options && this.options.elementFilter && clickedEl && !this.options.elementFilter(clickedEl)) {
       return;
     }
 

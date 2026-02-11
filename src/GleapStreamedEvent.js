@@ -6,8 +6,8 @@ import Gleap, {
   GleapSession,
   GleapAdminManager,
   GleapEventManager,
-} from "./Gleap";
-import { gleapDataParser } from "./GleapHelper";
+} from './Gleap';
+import { gleapDataParser } from './GleapHelper';
 
 export default class GleapStreamedEvent {
   eventArray = [];
@@ -55,10 +55,10 @@ export default class GleapStreamedEvent {
     }
 
     if (this.socket) {
-      this.socket.removeEventListener("open", this.handleOpenBound);
-      this.socket.removeEventListener("error", this.handleErrorBound);
-      this.socket.removeEventListener("message", this.handleMessageBound);
-      this.socket.removeEventListener("close", this.handleCloseBound);
+      this.socket.removeEventListener('open', this.handleOpenBound);
+      this.socket.removeEventListener('error', this.handleErrorBound);
+      this.socket.removeEventListener('message', this.handleMessageBound);
+      this.socket.removeEventListener('close', this.handleCloseBound);
       this.socket.close();
       this.socket = null;
     }
@@ -69,10 +69,7 @@ export default class GleapStreamedEvent {
 
     this.connectedWebSocketGleapId = GleapSession.getInstance().session.gleapId;
 
-    if (
-      !GleapSession.getInstance().session ||
-      !GleapSession.getInstance().sdkKey
-    ) {
+    if (!GleapSession.getInstance().session || !GleapSession.getInstance().sdkKey) {
       return;
     }
 
@@ -83,16 +80,16 @@ export default class GleapStreamedEvent {
         GleapSession.getInstance().sdkKey
       }&sdkVersion=${SDK_VERSION}`
     );
-    this.socket.addEventListener("open", this.handleOpenBound);
-    this.socket.addEventListener("message", this.handleMessageBound);
-    this.socket.addEventListener("error", this.handleErrorBound);
-    this.socket.addEventListener("close", this.handleCloseBound);
+    this.socket.addEventListener('open', this.handleOpenBound);
+    this.socket.addEventListener('message', this.handleMessageBound);
+    this.socket.addEventListener('error', this.handleErrorBound);
+    this.socket.addEventListener('close', this.handleCloseBound);
   }
 
   handleOpen(event) {
     this.pingWS = setInterval(() => {
       if (this.socket.readyState === this.socket.OPEN) {
-        this.socket.send("PING");
+        this.socket.send('PING');
         this.socket.send(0x9);
       }
     }, 10000);
@@ -121,19 +118,15 @@ export default class GleapStreamedEvent {
         return;
       }
 
-      if (message.name === "update") {
+      if (message.name === 'update') {
         const { a, u, ai } = message.data;
 
         const isOpened = GleapFrameManager.getInstance().isOpened();
 
         if (a) {
-          const listOfActionsWhereIgnoreOpened = ["banner", "modal"];
+          const listOfActionsWhereIgnoreOpened = ['banner', 'modal'];
           const filteredActions = a.filter(
-            (action) =>
-              !isOpened ||
-              listOfActionsWhereIgnoreOpened.includes(
-                action?.actionType?.toLowerCase()
-              )
+            (action) => !isOpened || listOfActionsWhereIgnoreOpened.includes(action?.actionType?.toLowerCase())
           );
 
           Gleap.getInstance().performActions(filteredActions);
@@ -153,19 +146,19 @@ export default class GleapStreamedEvent {
         }
       }
 
-      if (message.name === "checklist" && message?.data && window) {
+      if (message.name === 'checklist' && message?.data && window) {
         const checklistData = message.data;
         const completedSteps = checklistData.completedSteps ?? [];
         const completedStepsBefore = checklistData.completedStepsBefore ?? [];
         if (completedSteps.length > completedStepsBefore.length) {
           for (let i = 0; i < completedSteps.length; i++) {
-            const step = checklistData?.steps?.find(step => step.id === completedSteps[i]);
+            const step = checklistData?.steps?.find((step) => step.id === completedSteps[i]);
             if (!step) {
               continue;
             }
             const stepIndex = i;
             if (!completedStepsBefore.includes(step)) {
-              GleapEventManager.notifyEvent("checklist-step-completed", {
+              GleapEventManager.notifyEvent('checklist-step-completed', {
                 checklistId: checklistData.id,
                 outboundId: checklistData.outboundId,
                 stepId: step.id,
@@ -178,8 +171,8 @@ export default class GleapStreamedEvent {
             }
           }
         }
-        if (checklistData.status === "done") {
-          GleapEventManager.notifyEvent("checklist-completed", {
+        if (checklistData.status === 'done') {
+          GleapEventManager.notifyEvent('checklist-completed', {
             checklistId: checklistData.id,
             outboundId: checklistData.outboundId,
             completedSteps: checklistData.completedSteps,
@@ -187,10 +180,8 @@ export default class GleapStreamedEvent {
             data: checklistData,
           });
         }
-        if (typeof window.dispatchEvent === "function") {
-          window.dispatchEvent(
-            new CustomEvent("checkListUpdate", { detail: message.data })
-          );
+        if (typeof window.dispatchEvent === 'function') {
+          window.dispatchEvent(new CustomEvent('checkListUpdate', { detail: message.data }));
         }
       }
     } catch (exp) {}
@@ -219,10 +210,7 @@ export default class GleapStreamedEvent {
 
   restart() {
     // Only reconnect websockets when needed.
-    if (
-      this.connectedWebSocketGleapId !==
-      GleapSession.getInstance().session.gleapId
-    ) {
+    if (this.connectedWebSocketGleapId !== GleapSession.getInstance().session.gleapId) {
       this.initWebSocket();
     }
 
@@ -237,7 +225,7 @@ export default class GleapStreamedEvent {
   }
 
   trackInitialEvents() {
-    GleapStreamedEvent.getInstance().logEvent("sessionStarted");
+    GleapStreamedEvent.getInstance().logEvent('sessionStarted');
     GleapStreamedEvent.getInstance().logCurrentPage();
   }
 
@@ -249,7 +237,7 @@ export default class GleapStreamedEvent {
     const currentUrl = window.location.href;
     if (currentUrl && currentUrl !== this.lastUrl) {
       this.lastUrl = currentUrl;
-      this.logEvent("pageView", {
+      this.logEvent('pageView', {
         page: currentUrl,
       });
     }
@@ -294,11 +282,7 @@ export default class GleapStreamedEvent {
   };
 
   streamEvents = () => {
-    if (
-      !GleapSession.getInstance().ready ||
-      this.streamingEvents ||
-      this.errorCount > 2
-    ) {
+    if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 2) {
       return;
     }
 
@@ -316,8 +300,8 @@ export default class GleapStreamedEvent {
     this.streamingEvents = true;
 
     const http = new XMLHttpRequest();
-    http.open("POST", GleapSession.getInstance().apiUrl + "/sessions/events");
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    http.open('POST', GleapSession.getInstance().apiUrl + '/sessions/events');
+    http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
     GleapSession.getInstance().injectSession(http);
     http.onerror = () => {
       self.errorCount++;
@@ -335,14 +319,13 @@ export default class GleapStreamedEvent {
       }
     };
 
-    const sessionDuration =
-      GleapMetaDataManager.getInstance().getSessionDuration();
+    const sessionDuration = GleapMetaDataManager.getInstance().getSessionDuration();
     http.send(
       JSON.stringify({
         time: sessionDuration,
         events: this.streamedEventArray,
         opened: GleapFrameManager.getInstance().isOpened(),
-        type: "js",
+        type: 'js',
         sdkVersion: SDK_VERSION,
         ws: true,
       })

@@ -5,8 +5,8 @@ import {
   GleapTranslationManager,
   GleapAiChatbarManager,
   GleapSession,
-} from "./Gleap";
-import { loadIcon } from "./UI";
+} from './Gleap';
+import { loadIcon } from './UI';
 
 export default class GleapFeedbackButtonManager {
   feedbackButton = null;
@@ -16,12 +16,12 @@ export default class GleapFeedbackButtonManager {
   showingRedDot = false;
 
   // Feedback button types
-  static FEEDBACK_BUTTON_BOTTOM_RIGHT = "BOTTOM_RIGHT";
-  static FEEDBACK_BUTTON_BOTTOM_LEFT = "BOTTOM_LEFT";
-  static FEEDBACK_BUTTON_CLASSIC = "BUTTON_CLASSIC";
-  static FEEDBACK_BUTTON_CLASSIC_LEFT = "BUTTON_CLASSIC_LEFT";
-  static FEEDBACK_BUTTON_CLASSIC_BOTTOM = "BUTTON_CLASSIC_BOTTOM";
-  static FEEDBACK_BUTTON_NONE = "BUTTON_NONE";
+  static FEEDBACK_BUTTON_BOTTOM_RIGHT = 'BOTTOM_RIGHT';
+  static FEEDBACK_BUTTON_BOTTOM_LEFT = 'BOTTOM_LEFT';
+  static FEEDBACK_BUTTON_CLASSIC = 'BUTTON_CLASSIC';
+  static FEEDBACK_BUTTON_CLASSIC_LEFT = 'BUTTON_CLASSIC_LEFT';
+  static FEEDBACK_BUTTON_CLASSIC_BOTTOM = 'BUTTON_CLASSIC_BOTTOM';
+  static FEEDBACK_BUTTON_NONE = 'BUTTON_NONE';
 
   // GleapFeedbackButtonManager singleton
   static instance;
@@ -62,12 +62,12 @@ export default class GleapFeedbackButtonManager {
       return;
     }
 
-    const redDotClass = "bb-feedback-button--red-dot";
+    const redDotClass = 'bb-feedback-button--red-dot';
     const existingDot = this.feedbackButton.querySelector(`.${redDotClass}`);
 
     if (show) {
       if (!existingDot) {
-        const dot = document.createElement("div");
+        const dot = document.createElement('div');
         dot.className = redDotClass;
         this.feedbackButton.appendChild(dot);
       }
@@ -84,7 +84,7 @@ export default class GleapFeedbackButtonManager {
       frameManager.hideWidget();
       this.updateRedDot(this.showingRedDot);
     } else {
-      frameManager.setAppMode("widget");
+      frameManager.setAppMode('widget');
       frameManager.showWidget();
       this.updateRedDot(false);
     }
@@ -99,8 +99,8 @@ export default class GleapFeedbackButtonManager {
     }
     this.injectedFeedbackButton = true;
 
-    var elem = document.createElement("div");
-    elem.addEventListener("click", () => {
+    var elem = document.createElement('div');
+    elem.addEventListener('click', () => {
       this.feedbackButtonPressed();
     });
     document.body.appendChild(elem);
@@ -110,12 +110,12 @@ export default class GleapFeedbackButtonManager {
   }
 
   updateNotificationBadge(count) {
-    const notificationBadge = document.querySelector(".bb-notification-bubble");
+    const notificationBadge = document.querySelector('.bb-notification-bubble');
     if (!notificationBadge) {
       return;
     }
 
-    const notificationHiddenClass = "bb-notification-bubble--hidden";
+    const notificationHiddenClass = 'bb-notification-bubble--hidden';
     if (count > 0 && !GleapFrameManager.getInstance().isOpened()) {
       notificationBadge.classList.remove(notificationHiddenClass);
       notificationBadge.innerText = count;
@@ -125,7 +125,7 @@ export default class GleapFeedbackButtonManager {
   }
 
   refresh() {
-    const feedbackButton = document.querySelector(".bb-feedback-button");
+    const feedbackButton = document.querySelector('.bb-feedback-button');
     if (feedbackButton) {
       this.updateFeedbackButtonText();
       this.updateFeedbackButtonState();
@@ -143,20 +143,15 @@ export default class GleapFeedbackButtonManager {
 
     if (
       !(
-        flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-        flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-        flowConfig.feedbackButtonPosition ===
-          GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+        flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+        flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+        flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
       )
     ) {
       return;
     }
 
-    const feedbackButton = document.querySelector(
-      ".bb-feedback-button-classic"
-    );
+    const feedbackButton = document.querySelector('.bb-feedback-button-classic');
     if (!feedbackButton) {
       return;
     }
@@ -177,47 +172,37 @@ export default class GleapFeedbackButtonManager {
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
 
-    var buttonIcon = "";
+    var buttonIcon = '';
     if (flowConfig.buttonLogo) {
       buttonIcon = `<img class="bb-logo-logo" src="${flowConfig.buttonLogo}" alt="Feedback Button" />`;
     } else {
-      buttonIcon = loadIcon("button", "#fff");
+      buttonIcon = loadIcon('button', '#fff');
     }
 
-    this.feedbackButton.className = "bb-feedback-button gleap-font gl-block";
-    this.feedbackButton.setAttribute(
-      "dir",
-      GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr"
-    );
+    this.feedbackButton.className = 'bb-feedback-button gleap-font gl-block';
+    this.feedbackButton.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
 
     if (
-      flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
-      flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
-      flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
+      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM ||
+      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
     ) {
-      this.feedbackButton.classList.add(
-        "bb-feedback-button--classic-button-style"
-      );
+      this.feedbackButton.classList.add('bb-feedback-button--classic-button-style');
 
       this.feedbackButton.innerHTML = `<div class="bb-feedback-button-classic ${
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
-          ? "bb-feedback-button-classic--left"
-          : ""
+        flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT
+          ? 'bb-feedback-button-classic--left'
+          : ''
       }${
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
-          ? "bb-feedback-button-classic--bottom"
-          : ""
+        flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_BOTTOM
+          ? 'bb-feedback-button-classic--bottom'
+          : ''
       }">${flowConfig.widgetButtonText}</div>`;
     } else {
       if (buttonIcon !== this.lastButtonIcon) {
         this.feedbackButton.innerHTML = `<div class="bb-feedback-button-icon">${buttonIcon}${loadIcon(
-          "arrowdown",
-          "#fff"
+          'arrowdown',
+          '#fff'
         )}</div><div class="bb-notification-bubble bb-notification-bubble--hidden"></div>`;
       }
     }
@@ -227,10 +212,7 @@ export default class GleapFeedbackButtonManager {
 
     var hideButton = false;
     if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
-      if (
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE
-      ) {
+      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
         hideButton = true;
       }
     } else {
@@ -239,34 +221,24 @@ export default class GleapFeedbackButtonManager {
       }
     }
     if (hideButton) {
-      this.feedbackButton.classList.add("bb-feedback-button--disabled");
+      this.feedbackButton.classList.add('bb-feedback-button--disabled');
     }
 
-    if (
-      flowConfig.feedbackButtonPosition ===
-      GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
-    ) {
-      this.feedbackButton.classList.add("bb-feedback-button--bottomleft");
+    if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT) {
+      this.feedbackButton.classList.add('bb-feedback-button--bottomleft');
     }
 
     if (GleapFrameManager.getInstance().isOpened()) {
-      this.feedbackButton.classList.add("bb-feedback-button--open");
+      this.feedbackButton.classList.add('bb-feedback-button--open');
     }
 
     const appMode = GleapFrameManager.getInstance().appMode;
-    if (
-      appMode === "survey" ||
-      appMode === "survey_full" ||
-      appMode === "survey_web"
-    ) {
-      this.feedbackButton.classList.add("bb-feedback-button--survey");
+    if (appMode === 'survey' || appMode === 'survey_full' || appMode === 'survey_web') {
+      this.feedbackButton.classList.add('bb-feedback-button--survey');
     }
 
-    if (
-      flowConfig.hideForGuests === true &&
-      !GleapSession.getInstance().isUser()
-    ) {
-      this.feedbackButton.classList.add("bb-feedback-button--hidden");
+    if (flowConfig.hideForGuests === true && !GleapSession.getInstance().isUser()) {
+      this.feedbackButton.classList.add('bb-feedback-button--hidden');
     }
   }
 }

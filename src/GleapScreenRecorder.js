@@ -1,4 +1,4 @@
-import GleapSession from "./GleapSession";
+import GleapSession from './GleapSession';
 
 export class GleapScreenRecorder {
   // Constants
@@ -13,18 +13,18 @@ export class GleapScreenRecorder {
 
   // MIME types in order of preference
   static MIME_TYPES = [
-    "video/webm;codecs=vp9,opus",
-    "video/webm;codecs=vp8,opus",
-    "video/webm;codecs=vp9",
-    "video/webm;codecs=vp8",
-    "video/webm",
-    "video/mp4",
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4',
   ];
 
   // CSS selectors
   static SELECTORS = {
-    PREVIEW_VIDEO: ".bb-capture-preview video",
-    TIMER_LABEL: ".bb-capture-toolbar-item-timer",
+    PREVIEW_VIDEO: '.bb-capture-preview video',
+    TIMER_LABEL: '.bb-capture-toolbar-item-timer',
   };
 
   // Instance properties
@@ -39,7 +39,7 @@ export class GleapScreenRecorder {
   maxRecordTime = GleapScreenRecorder.MAX_RECORD_TIME;
   recordTime = 0;
   recordingTimer = null;
-  permissionErrorText = "";
+  permissionErrorText = '';
 
   // Internals for composed capture
   _displayVideoTrack = null;
@@ -66,11 +66,11 @@ export class GleapScreenRecorder {
       }
     }
 
-    return "video/webm";
+    return 'video/webm';
   }
 
   formatTime(s) {
-    return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
+    return (s - (s %= 60)) / 60 + (9 < s ? ':' : ':0') + s;
   }
 
   stopStreamTracks(stream) {
@@ -98,11 +98,7 @@ export class GleapScreenRecorder {
   }
 
   async startScreenRecording() {
-    if (
-      !navigator.mediaDevices ||
-      !navigator.mediaDevices.getDisplayMedia ||
-      this.isRecording
-    ) {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || this.isRecording) {
       this.available = false;
       this.rerender();
       return;
@@ -115,19 +111,16 @@ export class GleapScreenRecorder {
             ideal: Math.min(window.screen.width, GleapScreenRecorder.MAX_WIDTH),
           },
           height: {
-            ideal: Math.min(
-              window.screen.height,
-              GleapScreenRecorder.MAX_HEIGHT
-            ),
+            ideal: Math.min(window.screen.height, GleapScreenRecorder.MAX_HEIGHT),
           },
           frameRate: {
             ideal: GleapScreenRecorder.IDEAL_FRAME_RATE,
             max: GleapScreenRecorder.MAX_FRAME_RATE,
           },
-          displaySurface: "monitor",
+          displaySurface: 'monitor',
         },
         audio: false,
-        selfBrowserSurface: "include",
+        selfBrowserSurface: 'include',
       });
 
       // Keep references to both the original stream and video track
@@ -207,10 +200,7 @@ export class GleapScreenRecorder {
       this.audioAvailable = !!micTrack;
 
       // Compose a NEW stream with exactly one video track + (optional) one mic track
-      const composed = this.createMediaStream([
-        this._displayVideoTrack,
-        micTrack,
-      ]);
+      const composed = this.createMediaStream([this._displayVideoTrack, micTrack]);
 
       this.stream = composed;
       this.handleRecord({ stream: composed });
@@ -249,14 +239,14 @@ export class GleapScreenRecorder {
 
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", GleapSession.getInstance().apiUrl + "/uploads/sdk");
+      xhr.open('POST', GleapSession.getInstance().apiUrl + '/uploads/sdk');
       GleapSession.getInstance().injectSession(xhr);
 
       const formData = new FormData();
-      formData.append("file", screenRecordingData);
+      formData.append('file', screenRecordingData);
 
       xhr.onerror = function () {
-        reject(new Error("Network error during file upload"));
+        reject(new Error('Network error during file upload'));
       };
       xhr.onreadystatechange = function () {
         if (xhr.readyState == 4) {
@@ -272,9 +262,7 @@ export class GleapScreenRecorder {
   }
 
   clearPreview() {
-    const videoEl = document.querySelector(
-      GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO
-    );
+    const videoEl = document.querySelector(GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO);
     if (videoEl) {
       videoEl.src = null;
     }
@@ -293,9 +281,7 @@ export class GleapScreenRecorder {
     this.recordTime = 0;
 
     // Set timer (guard if label isn't present)
-    const timerLabel = document.querySelector(
-      GleapScreenRecorder.SELECTORS.TIMER_LABEL
-    );
+    const timerLabel = document.querySelector(GleapScreenRecorder.SELECTORS.TIMER_LABEL);
     if (this.recordingTimer) {
       clearInterval(this.recordingTimer);
       this.recordingTimer = null;
@@ -307,7 +293,7 @@ export class GleapScreenRecorder {
         if (remainingTime > 0) {
           timerLabel.innerHTML = self.formatTime(remainingTime);
         } else {
-          timerLabel.innerHTML = "2:00";
+          timerLabel.innerHTML = '2:00';
           self.stopScreenRecording();
         }
       } else if (remainingTime <= 0) {
@@ -342,19 +328,15 @@ export class GleapScreenRecorder {
     const mimeType = this.getSupportedMimeType();
     const completeBlob = new Blob(recordedChunks, { type: mimeType });
 
-    const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
     this.file = new File([completeBlob], `screen-recording.${extension}`, {
       type: mimeType,
     });
 
-    const previewVideoElement = document.querySelector(
-      GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO
-    );
+    const previewVideoElement = document.querySelector(GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO);
     if (previewVideoElement) {
       previewVideoElement.src = URL.createObjectURL(completeBlob);
-      this.audioAvailable = this.stream
-        ? this.stream.getAudioTracks().length > 0
-        : this.audioAvailable;
+      this.audioAvailable = this.stream ? this.stream.getAudioTracks().length > 0 : this.audioAvailable;
       this.isRecording = false;
       this.rerender();
     }

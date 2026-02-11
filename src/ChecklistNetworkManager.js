@@ -1,10 +1,10 @@
-import { GleapSession, GleapTranslationManager } from "./Gleap"; // Adjust path if needed
+import { GleapSession, GleapTranslationManager } from './Gleap'; // Adjust path if needed
 
 // Enum for request states
 const RequestStatus = {
-  PENDING: "pending",
-  SUCCESS: "success",
-  ERROR: "error",
+  PENDING: 'pending',
+  SUCCESS: 'success',
+  ERROR: 'error',
 };
 
 class ChecklistNetworkManager {
@@ -54,11 +54,8 @@ class ChecklistNetworkManager {
   _getQueryParams() {
     const gleapSessionInstance = GleapSession.getInstance();
     const session = gleapSessionInstance?.session;
-    const lang =
-      GleapTranslationManager.getInstance().getActiveLanguage() || "en";
-    return `gleapId=${session?.gleapId || ""}&gleapHash=${
-      session?.gleapHash || ""
-    }&lang=${lang}`;
+    const lang = GleapTranslationManager.getInstance().getActiveLanguage() || 'en';
+    return `gleapId=${session?.gleapId || ''}&gleapHash=${session?.gleapHash || ''}&lang=${lang}`;
   }
 
   /**
@@ -88,7 +85,7 @@ class ChecklistNetworkManager {
       gleapSessionInstance?.injectSession(xhr); // Inject session headers
 
       if (data) {
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
       }
 
       xhr.onreadystatechange = () => {
@@ -96,14 +93,12 @@ class ChecklistNetworkManager {
           if (xhr.status >= 200 && xhr.status < 300) {
             try {
               // Handle potential empty success responses (e.g., 204)
-              const responseData = xhr.responseText
-                ? JSON.parse(xhr.responseText)
-                : null;
+              const responseData = xhr.responseText ? JSON.parse(xhr.responseText) : null;
               resolve(responseData);
             } catch (err) {
               reject({
                 status: xhr.status,
-                statusText: "JSON Parse Error",
+                statusText: 'JSON Parse Error',
                 responseText: xhr.responseText,
                 error: err,
               });
@@ -119,7 +114,7 @@ class ChecklistNetworkManager {
       };
 
       xhr.onerror = () => {
-        reject({ status: 0, statusText: "Network Error", responseText: null });
+        reject({ status: 0, statusText: 'Network Error', responseText: null });
       };
 
       xhr.send(data ? JSON.stringify(data) : null);
@@ -165,9 +160,7 @@ class ChecklistNetworkManager {
     // 3. Start a new request
     const apiUrl = this._getApiUrl();
     if (!apiUrl) {
-      const error = new Error(
-        "ChecklistNetworkManager: Gleap API URL not configured."
-      );
+      const error = new Error('ChecklistNetworkManager: Gleap API URL not configured.');
       this.validationCache.set(cacheKey, {
         status: RequestStatus.ERROR,
         error,
@@ -176,7 +169,7 @@ class ChecklistNetworkManager {
     }
 
     const url = `${apiUrl}/outbound/checklists?${this._getQueryParams()}`;
-    const requestPromise = this._makeRequest("POST", url, {
+    const requestPromise = this._makeRequest('POST', url, {
       outboundId,
       sharedKey,
     })
@@ -188,7 +181,7 @@ class ChecklistNetworkManager {
           });
           return responseData.id;
         } else {
-          const error = new Error("Validation response missing checklist ID.");
+          const error = new Error('Validation response missing checklist ID.');
           this.validationCache.set(cacheKey, {
             status: RequestStatus.ERROR,
             error: responseData || error,
@@ -235,23 +228,19 @@ class ChecklistNetworkManager {
     // 2. Check for an ongoing request
     if (this.fetchRequests.has(internalId)) {
       // Return a promise that resolves with a deep copy
-      return this.fetchRequests
-        .get(internalId)
-        .then((data) => JSON.parse(JSON.stringify(data)));
+      return this.fetchRequests.get(internalId).then((data) => JSON.parse(JSON.stringify(data)));
     }
 
     // 3. Start a new request
     const apiUrl = this._getApiUrl();
     if (!apiUrl) {
-      const error = new Error(
-        "ChecklistNetworkManager: Gleap API URL not configured."
-      );
+      const error = new Error('ChecklistNetworkManager: Gleap API URL not configured.');
       this.fetchCache.set(internalId, { status: RequestStatus.ERROR, error });
       return Promise.reject(error);
     }
 
     const url = `${apiUrl}/outbound/checklists/${internalId}?convertTipTap=true&${this._getQueryParams()}`;
-    const requestPromise = this._makeRequest("GET", url, null)
+    const requestPromise = this._makeRequest('GET', url, null)
       .then((responseData) => {
         if (responseData) {
           // Cache the successful data
@@ -263,9 +252,7 @@ class ChecklistNetworkManager {
           return JSON.parse(JSON.stringify(responseData));
         } else {
           // Should not happen with successful GET usually, but handle defensively
-          const error = new Error(
-            "Empty response received for checklist fetch."
-          );
+          const error = new Error('Empty response received for checklist fetch.');
           this.fetchCache.set(internalId, {
             status: RequestStatus.ERROR,
             error: responseData || error,

@@ -1,3 +1,3 @@
-import Gleap from "./Gleap";
+import Gleap from './Gleap';
 
 export default Gleap;

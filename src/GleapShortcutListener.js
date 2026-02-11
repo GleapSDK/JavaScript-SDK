@@ -1,4 +1,4 @@
-import Gleap from "./Gleap";
+import Gleap from './Gleap';
 
 export default class GleapShortcutListener {
   shortCutListener = undefined;
@@ -30,14 +30,11 @@ export default class GleapShortcutListener {
       return code;
     };
 
-    this.shortCutListener = document.addEventListener("keyup", function (e) {
+    this.shortCutListener = document.addEventListener('keyup', function (e) {
       const char = charForEvent(e);
-      if (
-        e.ctrlKey &&
-        (char === "u" || char === "U" || char === 85)
-      ) {
-        Gleap.startFeedbackFlowWithOptions("bugreporting", {
-          autostartDrawing: true
+      if (e.ctrlKey && (char === 'u' || char === 'U' || char === 85)) {
+        Gleap.startFeedbackFlowWithOptions('bugreporting', {
+          autostartDrawing: true,
         });
       }
     });
@@ -45,7 +42,7 @@ export default class GleapShortcutListener {
 
   stop() {
     if (this.shortCutListener) {
-      document.removeEventListener("keyup", this.shortCutListener);
+      document.removeEventListener('keyup', this.shortCutListener);
       this.shortCutListener = undefined;
     }
   }

@@ -1,8 +1,4 @@
-import {
-  loadFromGleapCache,
-  saveToGleapCache,
-  clearGleapCache,
-} from "./GleapHelper";
+import { loadFromGleapCache, saveToGleapCache, clearGleapCache } from './GleapHelper';
 import Gleap, {
   GleapFrameManager,
   GleapFeedbackButtonManager,
@@ -12,7 +8,7 @@ import Gleap, {
   GleapReplayRecorder,
   GleapNotificationManager,
   GleapAiChatbarManager,
-} from "./Gleap";
+} from './Gleap';
 
 const parseIntWithDefault = (val, def) => {
   const parsed = parseInt(val);
@@ -69,9 +65,7 @@ export default class GleapConfigManager {
   start = () => {
     const session = GleapSession.getInstance();
     const cachedConfig = loadFromGleapCache(
-      `config-${
-        session.sdkKey
-      }-${GleapTranslationManager.getInstance().getActiveLanguage()}`
+      `config-${session.sdkKey}-${GleapTranslationManager.getInstance().getActiveLanguage()}`
     );
     if (cachedConfig) {
       this.applyConfig(cachedConfig);
@@ -88,11 +82,8 @@ export default class GleapConfigManager {
       const session = GleapSession.getInstance();
       const http = new XMLHttpRequest();
       const lang = GleapTranslationManager.getInstance().getActiveLanguage();
-      http.open(
-        "GET",
-        session.apiUrl + "/config/" + session.sdkKey + "?lang=" + lang
-      );
-      http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      http.open('GET', session.apiUrl + '/config/' + session.sdkKey + '?lang=' + lang);
+      http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
       session.injectSession(http);
       http.onerror = function () {
         reject();
@@ -124,10 +115,10 @@ export default class GleapConfigManager {
     const flowConfig = this.flowConfig;
 
     Gleap.setStyles(
-      flowConfig.color ? flowConfig.color : "#485BFF",
-      flowConfig.headerColor ? flowConfig.headerColor : "#485BFF",
-      flowConfig.buttonColor ? flowConfig.buttonColor : "#485BFF",
-      flowConfig.backgroundColor ? flowConfig.backgroundColor : "#FFFFFF",
+      flowConfig.color ? flowConfig.color : '#485BFF',
+      flowConfig.headerColor ? flowConfig.headerColor : '#485BFF',
+      flowConfig.buttonColor ? flowConfig.buttonColor : '#485BFF',
+      flowConfig.backgroundColor ? flowConfig.backgroundColor : '#FFFFFF',
       parseIntWithDefault(flowConfig.borderRadius, 20),
       parseIntWithDefault(flowConfig.buttonX, 20),
       parseIntWithDefault(flowConfig.buttonY, 20),
@@ -171,20 +162,14 @@ export default class GleapConfigManager {
         GleapNetworkIntercepter.getInstance().start();
       }
 
-      GleapNetworkIntercepter.getInstance().setLoadAllResources(
-        flowConfig.sendNetworkResources ? true : false
-      );
+      GleapNetworkIntercepter.getInstance().setLoadAllResources(flowConfig.sendNetworkResources ? true : false);
 
       if (flowConfig.networkLogPropsToIgnore) {
-        GleapNetworkIntercepter.getInstance().setFilters(
-          flowConfig.networkLogPropsToIgnore
-        );
+        GleapNetworkIntercepter.getInstance().setFilters(flowConfig.networkLogPropsToIgnore);
       }
 
       if (flowConfig.networkLogBlacklist) {
-        GleapNetworkIntercepter.getInstance().setBlacklist(
-          flowConfig.networkLogBlacklist
-        );
+        GleapNetworkIntercepter.getInstance().setBlacklist(flowConfig.networkLogBlacklist);
       }
 
       GleapTranslationManager.getInstance().updateRTLSupport();

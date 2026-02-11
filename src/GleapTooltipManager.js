@@ -1,14 +1,7 @@
-import {
-  arrow,
-  autoUpdate,
-  computePosition,
-  flip,
-  offset,
-  shift,
-} from "@floating-ui/dom";
-import { GleapSession } from "./Gleap";
-import { loadIcon } from "./UI";
-import { checkPageFilter } from "./GleapPageFilter";
+import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
+import { GleapSession } from './Gleap';
+import { loadIcon } from './UI';
+import { checkPageFilter } from './GleapPageFilter';
 
 export default class GleapTooltipManager {
   tooltips = [];
@@ -75,11 +68,8 @@ export default class GleapTooltipManager {
       };
     };
 
-    const handleResizeThrottled = throttle(
-      self.updateHotspotPositions.bind(self),
-      250
-    );
-    window.addEventListener("resize", handleResizeThrottled);
+    const handleResizeThrottled = throttle(self.updateHotspotPositions.bind(self), 250);
+    window.addEventListener('resize', handleResizeThrottled);
 
     window.requestAnimationFrame(() => {
       this.observer = new MutationObserver((mutations) => {
@@ -90,18 +80,14 @@ export default class GleapTooltipManager {
 
         mutations.forEach((mutation) => {
           // Check for attribute changes that might affect hotspot positioning
-          if (mutation.type === "attributes") {
+          if (mutation.type === 'attributes') {
             const target = mutation.target;
             if (target.nodeType === Node.ELEMENT_NODE) {
               // Check if the changed element has tooltip hotspots or is a parent of tooltip elements
               const hasTooltipHotspots =
-                target.querySelector("[data-gleap-tooltip-hotspot]") ||
-                target.hasAttribute("data-gleap-tooltip-mode");
+                target.querySelector('[data-gleap-tooltip-hotspot]') || target.hasAttribute('data-gleap-tooltip-mode');
 
-              if (
-                hasTooltipHotspots ||
-                target.hasAttribute("data-gleap-tooltip")
-              ) {
+              if (hasTooltipHotspots || target.hasAttribute('data-gleap-tooltip')) {
                 self.updateHotspotPositions();
               }
             }
@@ -116,10 +102,7 @@ export default class GleapTooltipManager {
 
           // Check for removed nodes
           mutation.removedNodes.forEach((node) => {
-            if (
-              node.nodeType === Node.ELEMENT_NODE &&
-              this.elementToFloatingUIMap.has(node)
-            ) {
+            if (node.nodeType === Node.ELEMENT_NODE && this.elementToFloatingUIMap.has(node)) {
               const floatingUI = this.elementToFloatingUIMap.get(node);
               if (floatingUI) {
                 if (floatingUI.tooltip) {
@@ -143,15 +126,13 @@ export default class GleapTooltipManager {
         childList: true,
         subtree: true,
         attributes: true,
-        attributeFilter: ["style", "class"],
+        attributeFilter: ['style', 'class'],
       });
     });
   }
 
   updateHotspotPositions() {
-    const elements = document.querySelectorAll(
-      `[data-gleap-tooltip-mode='hotspot']`
-    );
+    const elements = document.querySelectorAll(`[data-gleap-tooltip-mode='hotspot']`);
     elements.forEach((element) => {
       const tooltip = this.elementToTooltipMap.get(element);
       if (tooltip) {
@@ -162,8 +143,8 @@ export default class GleapTooltipManager {
 
   createTooltip(element, tooltipText, tooltipData) {
     // Create tooltip element
-    const tooltip = document.createElement("div");
-    tooltip.className = "gleap-tooltip";
+    const tooltip = document.createElement('div');
+    tooltip.className = 'gleap-tooltip';
     tooltip.innerHTML = `<div class="gleap-tooltip-inner">
             ${tooltipText}
             <div class="gleap-tooltip-arrow">
@@ -176,10 +157,10 @@ export default class GleapTooltipManager {
 
     // Create a Popper instance with arrow and offset
 
-    const arrowEl = tooltip.querySelector(".gleap-tooltip-arrow");
+    const arrowEl = tooltip.querySelector('.gleap-tooltip-arrow');
     const cleanup = autoUpdate(element, tooltip, () => {
       computePosition(element, tooltip, {
-        placement: tooltipData.posX === "left" ? "left" : "right",
+        placement: tooltipData.posX === 'left' ? 'left' : 'right',
         middleware: [offset(10), flip(), shift(), arrow({ element: arrowEl })],
       }).then(({ x, y, middlewareData, placement }) => {
         try {
@@ -190,25 +171,25 @@ export default class GleapTooltipManager {
 
           if (middlewareData.arrow) {
             let arrowSize = 20; // Arrow size should be consistent with the border width used in CSS
-            let arrowPos = { left: "", top: "", transform: "" };
+            let arrowPos = { left: '', top: '', transform: '' };
 
             if (middlewareData.arrow.x != null) {
               arrowPos.left = `${middlewareData.arrow.x}px`;
-              if (placement === "bottom") {
-                arrowPos.transform = "translateY(-7px) rotate(180deg)";
+              if (placement === 'bottom') {
+                arrowPos.transform = 'translateY(-7px) rotate(180deg)';
                 arrowPos.top = `${-arrowSize}px`; // Move arrow outside the tooltip
-              } else if (placement === "top") {
-                arrowPos.transform = "translateY(7px) rotate(0deg)";
+              } else if (placement === 'top') {
+                arrowPos.transform = 'translateY(7px) rotate(0deg)';
                 arrowPos.top = `100%`; // Adjust based on the tooltip's height
               }
             }
             if (middlewareData.arrow.y != null) {
               arrowPos.top = `${middlewareData.arrow.y}px`;
-              if (placement === "right") {
-                arrowPos.transform = "translateX(-7px) rotate(90deg)";
+              if (placement === 'right') {
+                arrowPos.transform = 'translateX(-7px) rotate(90deg)';
                 arrowPos.left = `${-arrowSize}px`; // Move arrow outside the tooltip
-              } else if (placement === "left") {
-                arrowPos.transform = "translateX(7px) rotate(270deg)";
+              } else if (placement === 'left') {
+                arrowPos.transform = 'translateX(7px) rotate(270deg)';
                 arrowPos.left = `100%`; // Adjust based on the tooltip's width
               }
             }
@@ -223,30 +204,30 @@ export default class GleapTooltipManager {
 
     function show() {
       clearTimeout(hideTimeout);
-      tooltip.style.visibility = "visible";
-      tooltip.style.opacity = "1";
-      tooltip.style.pointerEvents = "auto";
+      tooltip.style.visibility = 'visible';
+      tooltip.style.opacity = '1';
+      tooltip.style.pointerEvents = 'auto';
     }
 
     function hide() {
       hideTimeout = setTimeout(() => {
-        tooltip.style.opacity = "0";
+        tooltip.style.opacity = '0';
 
         setTimeout(() => {
-          tooltip.style.visibility = "hidden";
-          tooltip.style.pointerEvents = "none";
+          tooltip.style.visibility = 'hidden';
+          tooltip.style.pointerEvents = 'none';
         }, 200);
       }, 500);
     }
 
     // Event listeners to show/hide the tooltip
-    element.addEventListener("mouseenter", show);
-    element.addEventListener("mouseleave", hide);
-    tooltip.addEventListener("mouseenter", show);
-    tooltip.addEventListener("mouseleave", hide);
+    element.addEventListener('mouseenter', show);
+    element.addEventListener('mouseleave', hide);
+    tooltip.addEventListener('mouseenter', show);
+    tooltip.addEventListener('mouseleave', hide);
 
-    element.addEventListener("click", hide);
-    tooltip.addEventListener("click", hide);
+    element.addEventListener('click', hide);
+    tooltip.addEventListener('click', hide);
 
     return {
       cleanup,
@@ -255,39 +236,27 @@ export default class GleapTooltipManager {
   }
 
   canEmbed(element) {
-    const voidElements = new Set([
-      "area",
-      "base",
-      "br",
-      "embed",
-      "hr",
-      "img",
-      "input",
-      "source",
-      "track",
-      "wbr",
-      "canvas",
-    ]);
+    const voidElements = new Set(['area', 'base', 'br', 'embed', 'hr', 'img', 'input', 'source', 'track', 'wbr', 'canvas']);
 
     return element && !voidElements.has(element.tagName.toLowerCase());
   }
 
   linkTooltip = (element, tooltip) => {
-    if (element.hasAttribute("data-gleap-tooltip")) {
+    if (element.hasAttribute('data-gleap-tooltip')) {
       return;
     }
 
     const nextId = this.nextId++;
-    element.setAttribute("data-gleap-tooltip", nextId);
+    element.setAttribute('data-gleap-tooltip', nextId);
     if (element) {
       var tooltipElem = null;
 
-      if (tooltip.mode === "hotspot") {
+      if (tooltip.mode === 'hotspot') {
         // Create hotspot container.
-        const hotspotContainer = document.createElement("div");
-        hotspotContainer.setAttribute("data-gleap-tooltip-anchor", nextId);
-        hotspotContainer.classList.add("gleap-tooltip-anchor");
-        element.setAttribute("data-gleap-tooltip-mode", "hotspot");
+        const hotspotContainer = document.createElement('div');
+        hotspotContainer.setAttribute('data-gleap-tooltip-anchor', nextId);
+        hotspotContainer.classList.add('gleap-tooltip-anchor');
+        element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
 
         if (this.canEmbed(element)) {
           if (element.firstChild) {
@@ -296,21 +265,18 @@ export default class GleapTooltipManager {
             element.appendChild(hotspotContainer);
           }
         } else {
-          element.parentNode.insertBefore(
-            hotspotContainer,
-            element.nextSibling
-          );
+          element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
         }
 
         // Create hotspot.
-        const hotspot = document.createElement("div");
-        hotspot.classList.add("gleap-tooltip-hotspot");
-        hotspot.setAttribute("data-gleap-tooltip-hotspot", nextId);
+        const hotspot = document.createElement('div');
+        hotspot.classList.add('gleap-tooltip-hotspot');
+        hotspot.setAttribute('data-gleap-tooltip-hotspot', nextId);
 
         hotspot.innerHTML = `${loadIcon(tooltip.icon, tooltip.color)}${
           tooltip.animated
             ? `<div style="background-color: ${tooltip.color}" class="gleap-tooltip-hotspot-animation"></div>`
-            : ""
+            : ''
         }`;
         hotspotContainer.appendChild(hotspot);
 
@@ -323,11 +289,7 @@ export default class GleapTooltipManager {
         tooltipElem = element;
       }
 
-      const floatingUIInstance = this.createTooltip(
-        tooltipElem,
-        tooltip.html,
-        tooltip
-      );
+      const floatingUIInstance = this.createTooltip(tooltipElem, tooltip.html, tooltip);
 
       this.elementToFloatingUIMap.set(element, floatingUIInstance);
     }
@@ -343,31 +305,27 @@ export default class GleapTooltipManager {
     // Remove the window resize event listener if it was stored.
     // (In start() you can assign the listener to a class property, e.g., this.resizeListener.)
     if (this.resizeListener) {
-      window.removeEventListener("resize", this.resizeListener);
+      window.removeEventListener('resize', this.resizeListener);
       this.resizeListener = null;
     }
 
     // Remove all tooltip elements created by Gleap.
-    const tooltipElements = document.querySelectorAll(".gleap-tooltip");
+    const tooltipElements = document.querySelectorAll('.gleap-tooltip');
     tooltipElements.forEach((tooltip) => tooltip.remove());
 
     // Remove any tooltip anchors and hotspots.
-    const anchors = document.querySelectorAll("[data-gleap-tooltip-anchor]");
+    const anchors = document.querySelectorAll('[data-gleap-tooltip-anchor]');
     anchors.forEach((anchor) => anchor.remove());
-    const hotspots = document.querySelectorAll("[data-gleap-tooltip-hotspot]");
+    const hotspots = document.querySelectorAll('[data-gleap-tooltip-hotspot]');
     hotspots.forEach((hotspot) => hotspot.remove());
 
     // Remove all attributes from elements.
-    const elements = document.querySelectorAll("[data-gleap-tooltip]");
-    elements.forEach((element) =>
-      element.removeAttribute("data-gleap-tooltip")
-    );
+    const elements = document.querySelectorAll('[data-gleap-tooltip]');
+    elements.forEach((element) => element.removeAttribute('data-gleap-tooltip'));
 
     // Remove all attributes from elements.
-    const modeElements = document.querySelectorAll("[data-gleap-tooltip-mode]");
-    modeElements.forEach((element) =>
-      element.removeAttribute("data-gleap-tooltip-mode")
-    );
+    const modeElements = document.querySelectorAll('[data-gleap-tooltip-mode]');
+    modeElements.forEach((element) => element.removeAttribute('data-gleap-tooltip-mode'));
 
     // Clear internal references.
     this.elementToFloatingUIMap = new WeakMap();
@@ -381,23 +339,21 @@ export default class GleapTooltipManager {
       return;
     }
 
-    const tooltipId = element.getAttribute("data-gleap-tooltip");
+    const tooltipId = element.getAttribute('data-gleap-tooltip');
     if (!tooltipId) {
       return;
     }
 
-    const hotspot = document.querySelector(
-      `[data-gleap-tooltip-hotspot="${tooltipId}"]`
-    );
+    const hotspot = document.querySelector(`[data-gleap-tooltip-hotspot="${tooltipId}"]`);
     if (!hotspot) {
       return;
     }
 
     if (!tooltip.posX) {
-      tooltip.posX = "right";
+      tooltip.posX = 'right';
     }
     if (!tooltip.posY) {
-      tooltip.posY = "center";
+      tooltip.posY = 'center';
     }
     if (!tooltip.offsetX) {
       tooltip.offsetX = 4;
@@ -413,16 +369,13 @@ export default class GleapTooltipManager {
       var range = document.createRange();
       range.selectNodeContents(element);
       const style = window.getComputedStyle(element);
-      const fixedWidth =
-        range.getBoundingClientRect().width + parseFloat(style.paddingLeft);
+      const fixedWidth = range.getBoundingClientRect().width + parseFloat(style.paddingLeft);
       if (fixedWidth < elementRect.width) {
         elementRect.width = fixedWidth;
       }
     } catch (exp) {}
 
-    const anchorElement = document.querySelector(
-      `[data-gleap-tooltip-anchor="${tooltipId}"]`
-    );
+    const anchorElement = document.querySelector(`[data-gleap-tooltip-anchor="${tooltipId}"]`);
     const anchorRect = anchorElement.getBoundingClientRect();
 
     // Offset calculation for hotspot position.
@@ -434,30 +387,30 @@ export default class GleapTooltipManager {
     let tooltipSize = 17 / 2;
 
     switch (tooltip.posX) {
-      case "left":
+      case 'left':
         left = (tooltip.offsetX + tooltipSize * 2) * -1;
         break;
-      case "right":
+      case 'right':
         left = elementRect.width + tooltip.offsetX;
         break;
     }
 
     switch (tooltip.posY) {
-      case "top":
+      case 'top':
         top = 0 + tooltip.offsetY;
         break;
-      case "bottom":
+      case 'bottom':
         top = elementRect.height - tooltipSize * 2 + tooltip.offsetY;
         break;
-      case "center":
+      case 'center':
         top = elementRect.height / 2 - tooltipSize + tooltip.offsetY;
         break;
     }
 
     if (hotspot) {
-      hotspot.style.position = "absolute";
-      hotspot.style.top = top - offsetY + "px";
-      hotspot.style.left = left - offsetX + "px";
+      hotspot.style.position = 'absolute';
+      hotspot.style.top = top - offsetY + 'px';
+      hotspot.style.left = left - offsetX + 'px';
     }
   }
 
@@ -478,11 +431,7 @@ export default class GleapTooltipManager {
         return true;
       }
 
-      const passed = checkPageFilter(
-        currentUrl,
-        tooltip.page,
-        tooltip.pageType
-      );
+      const passed = checkPageFilter(currentUrl, tooltip.page, tooltip.pageType);
 
       if (!passed) {
         return false;
@@ -514,19 +463,16 @@ export default class GleapTooltipManager {
     const sessionInstance = GleapSession.getInstance();
 
     const http = new XMLHttpRequest();
-    http.open(
-      "GET",
-      sessionInstance.apiUrl + "/config/" + sessionInstance.sdkKey + "/tooltips"
-    );
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    http.setRequestHeader("Api-Token", sessionInstance.sdkKey);
+    http.open('GET', sessionInstance.apiUrl + '/config/' + sessionInstance.sdkKey + '/tooltips');
+    http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    http.setRequestHeader('Api-Token', sessionInstance.sdkKey);
     try {
-      http.setRequestHeader("Gleap-Id", sessionInstance.session.gleapId);
-      http.setRequestHeader("Gleap-Hash", sessionInstance.session.gleapHash);
+      http.setRequestHeader('Gleap-Id', sessionInstance.session.gleapId);
+      http.setRequestHeader('Gleap-Hash', sessionInstance.session.gleapHash);
     } catch (exp) {}
 
     http.onerror = () => {
-      console.error("Failed to fetch tooltips");
+      console.error('Failed to fetch tooltips');
     };
     http.onreadystatechange = function (e) {
       if (http.readyState === 4) {
@@ -535,7 +481,7 @@ export default class GleapTooltipManager {
             self.tooltips = JSON.parse(http.responseText);
             self.updateFilteredTooltips();
           } catch (exp) {
-            console.error("Failed to parse tooltips", exp);
+            console.error('Failed to parse tooltips', exp);
           }
         }
       }
