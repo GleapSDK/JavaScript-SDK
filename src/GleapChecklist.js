@@ -111,15 +111,15 @@ export const registerGleapChecklist = () => {
       connectedCallback() {
         window.addEventListener(
           "checkListUpdate",
-          this._boundHandleChecklistUpdate
+          this._boundHandleChecklistUpdate,
         );
         window.addEventListener(
           "session-updated",
-          this._boundHandleSessionUpdate
+          this._boundHandleSessionUpdate,
         );
         window.addEventListener(
           "resize",
-          (this._boundResizeHandler = this.handleResize.bind(this))
+          (this._boundResizeHandler = this.handleResize.bind(this)),
         );
         this._checkSessionAndLoad();
       }
@@ -127,11 +127,11 @@ export const registerGleapChecklist = () => {
       disconnectedCallback() {
         window.removeEventListener(
           "checkListUpdate",
-          this._boundHandleChecklistUpdate
+          this._boundHandleChecklistUpdate,
         );
         window.removeEventListener(
           "session-updated",
-          this._boundHandleSessionUpdate
+          this._boundHandleSessionUpdate,
         );
         window.removeEventListener("resize", this._boundResizeHandler);
         this.removeFloatingClickListeners();
@@ -285,7 +285,7 @@ export const registerGleapChecklist = () => {
         if (data) {
           xhr.setRequestHeader(
             "Content-Type",
-            "application/json;charset=UTF-8"
+            "application/json;charset=UTF-8",
           );
         }
         xhr.onreadystatechange = () => {
@@ -347,7 +347,7 @@ export const registerGleapChecklist = () => {
               const steps = data.outbound?.config?.steps || [];
               const completedSteps = data.completedSteps || [];
               const firstIncompleteIndex = steps.findIndex(
-                (step) => !completedSteps.includes(step.id)
+                (step) => !completedSteps.includes(step.id),
               );
               this.activeStep =
                 firstIncompleteIndex >= 0 ? firstIncompleteIndex : -1;
@@ -356,14 +356,14 @@ export const registerGleapChecklist = () => {
               }
             }
             this.renderChecklist(this.checklistData);
-            
+
             // Notify external listeners about the initial checklist load
             GleapEventManager.notifyEvent("checklist-loaded", {
               checklistId: this.checklistData.id,
               outboundId: this.checklistData.outbound?.id,
               completedSteps: this.checklistData.completedSteps,
               status: this.checklistData.status,
-              data: this.checklistData
+              data: this.checklistData,
             });
           })
           .catch((error) => {
@@ -464,14 +464,14 @@ export const registerGleapChecklist = () => {
         }
         if (dataChanged) {
           this.renderChecklist(this.checklistData);
-          
+
           // Notify external listeners about the checklist update
           GleapEventManager.notifyEvent("checklist-update", {
             checklistId: this.checklistData.id,
             outboundId: this.checklistData.outbound?.id,
             completedSteps: this.checklistData.completedSteps,
             status: this.checklistData.status,
-            data: this.checklistData
+            data: this.checklistData,
           });
         }
       }
@@ -501,13 +501,13 @@ export const registerGleapChecklist = () => {
 
       addFloatingClickListeners() {
         const launcher = this.shadowRoot.querySelector(
-          ".checklist-floating-launcher"
+          ".checklist-floating-launcher",
         );
         if (launcher) {
           launcher.addEventListener("click", this._boundFloatingLauncherClick);
         }
         const header = this.shadowRoot.querySelector(
-          ".checklist-floating-header"
+          ".checklist-floating-header",
         );
         if (header) {
           header.addEventListener("click", this._boundFloatingCloseClick);
@@ -516,16 +516,16 @@ export const registerGleapChecklist = () => {
 
       removeFloatingClickListeners() {
         const launcher = this.shadowRoot.querySelector(
-          ".checklist-floating-launcher"
+          ".checklist-floating-launcher",
         );
         if (launcher) {
           launcher.removeEventListener(
             "click",
-            this._boundFloatingLauncherClick
+            this._boundFloatingLauncherClick,
           );
         }
         const header = this.shadowRoot.querySelector(
-          ".checklist-floating-header"
+          ".checklist-floating-header",
         );
         if (header) {
           header.removeEventListener("click", this._boundFloatingCloseClick);
@@ -544,7 +544,7 @@ export const registerGleapChecklist = () => {
       renderFloatingLauncher(
         outbound,
         className = "checklist-floating",
-        renderDoneState = false
+        renderDoneState = false,
       ) {
         const steps = outbound.config?.steps || [];
         const completedSteps = this.checklistData?.completedSteps || [];
@@ -557,7 +557,7 @@ export const registerGleapChecklist = () => {
 
         // Determine the next incomplete step
         const nextIncompleteStep = steps.find(
-          (step) => !completedSteps.includes(step.id)
+          (step) => !completedSteps.includes(step.id),
         );
         let titleText =
           steps.length > 0
@@ -566,7 +566,7 @@ export const registerGleapChecklist = () => {
                 this._translateWithVars(
                   "stepDefaultTitle",
                   { index: steps.indexOf(nextIncompleteStep) + 1 },
-                  `Step ${steps.indexOf(nextIncompleteStep) + 1}`
+                  `Step ${steps.indexOf(nextIncompleteStep) + 1}`,
                 )
               : ""
             : outbound.subject || "";
@@ -599,14 +599,16 @@ export const registerGleapChecklist = () => {
 
         return `
           <div part="${className}" class="${
-          isHeader ? "checklist-floating-header" : "checklist-floating-launcher"
-        } ${renderDoneState ? "checklist-floating-launcher--done" : ""}">
+            isHeader
+              ? "checklist-floating-header"
+              : "checklist-floating-launcher"
+          } ${renderDoneState ? "checklist-floating-launcher--done" : ""}">
             <div class="floating-header">
               <div class="floating-circular-progress">
                 <svg viewBox="0 0 20 20">
                   <circle class="track" cx="10" cy="10" r="7"></circle>
                   <circle class="progress" cx="10" cy="10" r="7" stroke-dasharray="${circumference.toFixed(
-                    2
+                    2,
                   )}" stroke-dashoffset="${computedOffset.toFixed(2)}"></circle>
                 </svg>
               </div>
@@ -635,8 +637,8 @@ export const registerGleapChecklist = () => {
               <img part="sender-image" src="${
                 outbound.sender.profileImageUrl
               }" alt="${
-            outbound.sender.firstName || "Sender"
-          }'s profile picture" style="object-fit: cover;" />
+                outbound.sender.firstName || "Sender"
+              }'s profile picture" style="object-fit: cover;" />
               <span part="sender-name">${outbound.sender.firstName || ""}</span>
             </div>`;
         }
@@ -670,14 +672,14 @@ export const registerGleapChecklist = () => {
         const progressLabel = this._translateWithVars(
           "taskProgress",
           { a: doneSteps, b: totalSteps },
-          `${doneSteps} of ${totalSteps} done`
+          `${doneSteps} of ${totalSteps} done`,
         );
         const durationLabel =
           duration > 0
             ? this._translateWithVars(
                 "aboutMinutes",
                 { a: duration },
-                `About ${duration} min left`
+                `About ${duration} min left`,
               )
             : "";
         return `
@@ -698,7 +700,7 @@ export const registerGleapChecklist = () => {
         if (!steps || steps.length === 0)
           return `<p>${this._translate(
             "noStepsDefined",
-            "No steps defined."
+            "No steps defined.",
           )}</p>`;
         return steps
           .map((step, index) => {
@@ -714,7 +716,7 @@ export const registerGleapChecklist = () => {
               this._translateWithVars(
                 "stepDefaultTitle",
                 { index: index + 1 },
-                `Step ${index + 1}`
+                `Step ${index + 1}`,
               );
             const stepDescription = step.description || "";
             const actionButtonText =
@@ -787,7 +789,7 @@ export const registerGleapChecklist = () => {
             content = this.renderFloatingLauncher(
               outbound,
               "checklist-floating-launcher",
-              true
+              true,
             );
           } else {
             content = `
@@ -819,7 +821,7 @@ export const registerGleapChecklist = () => {
                   this.floatingEnabled
                     ? this.renderFloatingLauncher(
                         outbound,
-                        "checklist-floating-header"
+                        "checklist-floating-header",
                       )
                     : ""
                 }
@@ -915,6 +917,7 @@ export const registerGleapChecklist = () => {
             .checklist-task-body-content { margin-bottom: 16px; }
             .checklist-task-body-content p:first-child { margin-top: 0; }
             .checklist-task-body-content p:last-child { margin-bottom: 0; }
+            .checklist-task-body-content iframe { width: 100%; height: 315px; object-fit: contain; border: none; }
             .checklist-task-body-action { margin-top: 16px; }
             .action-button { display: inline-flex; align-items: center; justify-content: center; background-color: var(--color-primary); color: var(--color-primary-contrast); padding: 10px 18px; font-size: 0.875rem; font-weight: 500; border-radius: var(--radius-lg); border: none; text-align: center; cursor: pointer; transition: background-color var(--animation-duration) var(--animation-timing), box-shadow var(--animation-duration) var(--animation-timing); box-shadow: var(--shadow-sm); }
             .action-button:hover { background-color: color-mix(in srgb, var(--color-primary) 90%, black); box-shadow: var(--shadow-md); }
@@ -1065,16 +1068,16 @@ export const registerGleapChecklist = () => {
       updateActiveTaskMaxHeight() {
         if (this.activeStep !== -1) {
           const taskBodyInner = this.shadowRoot.querySelector(
-            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body-inner`
+            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body-inner`,
           );
           const container = this.shadowRoot.querySelector(
-            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body`
+            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body`,
           );
           if (taskBodyInner && container) {
             const height = taskBodyInner.offsetHeight;
             container.style.setProperty(
               "--task-body-active-height",
-              `${height}px`
+              `${height}px`,
             );
           }
         }
@@ -1093,7 +1096,7 @@ export const registerGleapChecklist = () => {
             });
           }
           const markDoneBtn = task.querySelector(
-            ".checklist-task-body-markdone"
+            ".checklist-task-body-markdone",
           );
           if (markDoneBtn) {
             markDoneBtn.addEventListener("click", (e) => {
@@ -1112,7 +1115,7 @@ export const registerGleapChecklist = () => {
                   for (let i = index + 1; i < allSteps.length; i++) {
                     if (
                       !this.checklistData.completedSteps.includes(
-                        allSteps[i].id
+                        allSteps[i].id,
                       )
                     ) {
                       nextActiveStep = i;
@@ -1150,7 +1153,7 @@ export const registerGleapChecklist = () => {
             });
           }
           const actionBtn = task.querySelector(
-            ".checklist-task-body-action .action-button"
+            ".checklist-task-body-action .action-button",
           );
           if (actionBtn) {
             actionBtn.addEventListener("click", (e) => {
@@ -1208,18 +1211,20 @@ export const registerGleapChecklist = () => {
 
       toggleTask(index, forceOpen = null) {
         const taskElement = this.shadowRoot.querySelector(
-          `.checklist-task[data-task-index="${index}"]`
+          `.checklist-task[data-task-index="${index}"]`,
         );
         if (!taskElement) return;
         const header = taskElement.querySelector(".checklist-task-header");
         if (!header) return;
         const isOpen = taskElement.classList.contains("checklist-task--active");
         const shouldOpen = forceOpen !== null ? forceOpen : !isOpen;
-        if (shouldOpen && !isOpen) {
-          taskElement.classList.add("checklist-task--active");
-          header.setAttribute("aria-expanded", "true");
+        if (shouldOpen) {
+          if (!isOpen) {
+            taskElement.classList.add("checklist-task--active");
+            header.setAttribute("aria-expanded", "true");
+          }
           const taskBodyInner = taskElement.querySelector(
-            ".checklist-task-body-inner"
+            ".checklist-task-body-inner",
           );
           if (taskBodyInner) {
             const height = taskBodyInner.offsetHeight;
@@ -1227,10 +1232,22 @@ export const registerGleapChecklist = () => {
             if (taskBody) {
               taskBody.style.setProperty(
                 "--task-body-active-height",
-                `${height}px`
+                `${height}px`,
               );
             }
           }
+          // Recalculate height when iframes finish loading
+          const iframes = taskElement.querySelectorAll("iframe");
+          iframes.forEach((iframe) => {
+            if (!iframe._heightListenerAdded) {
+              iframe._heightListenerAdded = true;
+              iframe.addEventListener("load", () => {
+                if (this.activeStep === index) {
+                  this.updateActiveTaskMaxHeight();
+                }
+              });
+            }
+          });
         } else if (!shouldOpen && isOpen) {
           taskElement.classList.remove("checklist-task--active");
           header.setAttribute("aria-expanded", "false");
