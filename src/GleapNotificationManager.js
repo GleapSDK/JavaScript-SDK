@@ -5,15 +5,15 @@ import Gleap, {
   GleapAudioManager,
   GleapTranslationManager,
   GleapEventManager,
-} from "./Gleap";
-import { loadFromGleapCache, saveToGleapCache } from "./GleapHelper";
-import { loadIcon } from "./UI";
+} from './Gleap';
+import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
+import { loadIcon } from './UI';
 
 export default class GleapNotificationManager {
   notificationContainer = null;
   notifications = [];
   unreadCount = 0;
-  unreadNotificationsKey = "unread-notifications";
+  unreadNotificationsKey = 'unread-notifications';
   isTabActive = true;
   showNotificationBadge = true;
 
@@ -31,7 +31,7 @@ export default class GleapNotificationManager {
   constructor() {}
 
   updateTabBarNotificationCount() {
-    GleapEventManager.notifyEvent("unread-count-changed", this.unreadCount);
+    GleapEventManager.notifyEvent('unread-count-changed', this.unreadCount);
   }
 
   injectNotificationUI() {
@@ -39,8 +39,8 @@ export default class GleapNotificationManager {
       return;
     }
 
-    var elem = document.createElement("div");
-    elem.className = "gleap-notification-container gleap-font";
+    var elem = document.createElement('div');
+    elem.className = 'gleap-notification-container gleap-font';
     document.body.appendChild(elem);
     this.notificationContainer = elem;
 
@@ -50,14 +50,10 @@ export default class GleapNotificationManager {
 
   reloadNotificationsFromCache() {
     try {
-      const notificationsFromCache = loadFromGleapCache(
-        this.unreadNotificationsKey
-      );
+      const notificationsFromCache = loadFromGleapCache(this.unreadNotificationsKey);
       if (notificationsFromCache && notificationsFromCache.length > 0) {
         let nots = notificationsFromCache.filter(
-          (notification) =>
-            new Date(notification.createdAt) >
-            new Date(Date.now() - 1 * 60 * 60 * 1000)
+          (notification) => new Date(notification.createdAt) > new Date(Date.now() - 1 * 60 * 60 * 1000)
         );
 
         if (nots.length > 2) {
@@ -75,9 +71,7 @@ export default class GleapNotificationManager {
     this.updateTabBarNotificationCount();
 
     // Update the badge counter.
-    GleapFeedbackButtonManager.getInstance().updateNotificationBadge(
-      this.unreadCount
-    );
+    GleapFeedbackButtonManager.getInstance().updateNotificationBadge(this.unreadCount);
   }
 
   showNotification(notification) {
@@ -85,9 +79,7 @@ export default class GleapNotificationManager {
       return;
     }
 
-    const notificationsForOutbound = this.notifications.find(
-      (e) => notification.outbound === e.outbound
-    );
+    const notificationsForOutbound = this.notifications.find((e) => notification.outbound === e.outbound);
     if (!notificationsForOutbound) {
       this.notifications.push(notification);
 
@@ -123,14 +115,14 @@ export default class GleapNotificationManager {
     this.clearAllNotifications(true);
 
     // Append a close button (which clears everything).
-    const clearElem = document.createElement("div");
+    const clearElem = document.createElement('div');
     clearElem.onclick = () => {
       this.clearAllNotifications();
       // Reset the news index when everything is closed
       this.currentNewsIndex = 0;
     };
-    clearElem.className = "gleap-notification-close";
-    clearElem.innerHTML = loadIcon("dismiss");
+    clearElem.className = 'gleap-notification-close';
+    clearElem.innerHTML = loadIcon('dismiss');
     this.notificationContainer.appendChild(clearElem);
 
     // Separate out news notifications vs. others, then sort news by date ascending
@@ -143,28 +135,25 @@ export default class GleapNotificationManager {
     // --- Render NEWS notifications (with pagination) ---
     if (newsNotifications.length > 0) {
       // We only show ONE news item at a time if there's more than one
-      const currentIndex =
-        this.currentNewsIndex < newsNotifications.length
-          ? this.currentNewsIndex
-          : 0;
+      const currentIndex = this.currentNewsIndex < newsNotifications.length ? this.currentNewsIndex : 0;
       const currentNews = newsNotifications[currentIndex];
 
       // Main wrapper for the news notification
-      const newsElem = document.createElement("div");
-      newsElem.className = "gleap-notification-item-news";
+      const newsElem = document.createElement('div');
+      newsElem.className = 'gleap-notification-item-news';
 
       // The container that holds image + content
-      const newsContainerElem = document.createElement("div");
-      newsContainerElem.className = "gleap-notification-item-news-container";
+      const newsContainerElem = document.createElement('div');
+      newsContainerElem.className = 'gleap-notification-item-news-container';
 
       // Create the image element (clickable)
       if (
         currentNews.data.coverImageUrl &&
-        currentNews.data.coverImageUrl !== "" &&
-        !currentNews.data.coverImageUrl.includes("NewsImagePlaceholder")
+        currentNews.data.coverImageUrl !== '' &&
+        !currentNews.data.coverImageUrl.includes('NewsImagePlaceholder')
       ) {
-        const newsImageElem = document.createElement("img");
-        newsImageElem.className = "gleap-notification-item-news-image";
+        const newsImageElem = document.createElement('img');
+        newsImageElem.className = 'gleap-notification-item-news-image';
         newsImageElem.src = currentNews.data.coverImageUrl;
 
         // Only the image is clickable
@@ -176,18 +165,15 @@ export default class GleapNotificationManager {
       }
 
       // The content container
-      const newsContentElem = document.createElement("div");
-      newsContentElem.className = "gleap-notification-item-news-content";
+      const newsContentElem = document.createElement('div');
+      newsContentElem.className = 'gleap-notification-item-news-content';
 
       // Title (clickable)
-      const newsTitleElem = document.createElement("div");
-      newsTitleElem.className = "gleap-notification-item-news-content-title";
+      const newsTitleElem = document.createElement('div');
+      newsTitleElem.className = 'gleap-notification-item-news-content-title';
 
-      let content = currentNews.data.text || "";
-      content = content.replaceAll(
-        "{{name}}",
-        GleapSession.getInstance().getName()
-      );
+      let content = currentNews.data.text || '';
+      content = content.replaceAll('{{name}}', GleapSession.getInstance().getName());
       newsTitleElem.innerText = content;
 
       // Only the title is clickable
@@ -201,8 +187,8 @@ export default class GleapNotificationManager {
       // Description / Sender
       const descHTML = this.renderDescription(currentNews);
       if (descHTML) {
-        const descElem = document.createElement("div");
-        descElem.className = "gleap-notification-item-news-preview";
+        const descElem = document.createElement('div');
+        descElem.className = 'gleap-notification-item-news-preview';
         descElem.innerHTML = descHTML;
         newsContentElem.appendChild(descElem);
       }
@@ -210,20 +196,18 @@ export default class GleapNotificationManager {
       // If there's more than one news item, show pagination + next/done button
       if (newsNotifications.length > 1) {
         // Pagination container (still inside .gleap-notification-item-news-content)
-        const paginationElem = document.createElement("div");
-        paginationElem.className = "gleap-news-pagination";
+        const paginationElem = document.createElement('div');
+        paginationElem.className = 'gleap-news-pagination';
 
         // Show current item / total
-        const pageIndicator = document.createElement("span");
-        pageIndicator.className = "gleap-news-page-indicator";
-        pageIndicator.innerText = `${currentIndex + 1} / ${
-          newsNotifications.length
-        }`;
+        const pageIndicator = document.createElement('span');
+        pageIndicator.className = 'gleap-news-page-indicator';
+        pageIndicator.innerText = `${currentIndex + 1} / ${newsNotifications.length}`;
         paginationElem.appendChild(pageIndicator);
 
         // Next or Done button
-        const nextBtn = document.createElement("button");
-        nextBtn.className = "gleap-news-next-button";
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'gleap-news-next-button';
 
         if (currentIndex < newsNotifications.length - 1) {
           nextBtn.innerText = GleapTranslationManager.translateText(`next`);
@@ -255,20 +239,14 @@ export default class GleapNotificationManager {
     // --- Render OTHER notifications normally ---
     for (let i = 0; i < otherNotifications.length; i++) {
       const notification = otherNotifications[i];
-      let content = notification.data.text || "";
+      let content = notification.data.text || '';
       // Replace placeholders
-      content = content.replaceAll(
-        "{{name}}",
-        GleapSession.getInstance().getName()
-      );
+      content = content.replaceAll('{{name}}', GleapSession.getInstance().getName());
 
-      const elem = document.createElement("div");
+      const elem = document.createElement('div');
       elem.onclick = () => {
         if (notification.data.conversation) {
-          Gleap.openConversation(
-            notification.data.conversation.shareToken,
-            true
-          );
+          Gleap.openConversation(notification.data.conversation.shareToken, true);
         } else if (notification.data.checklist) {
           Gleap.openChecklist(notification.data.checklist.id, true);
         } else {
@@ -278,14 +256,12 @@ export default class GleapNotificationManager {
 
       // Check if it's a checklist type
       if (notification.data.checklist) {
-        let progress = Math.round(
-          (notification.data.currentStep / notification.data.totalSteps) * 100
-        );
+        let progress = Math.round((notification.data.currentStep / notification.data.totalSteps) * 100);
         if (progress < 100) {
           progress += 4;
         }
 
-        elem.className = "gleap-notification-item-checklist";
+        elem.className = 'gleap-notification-item-checklist';
         elem.innerHTML = `
           <div class="gleap-notification-item-checklist-container">
             <div class="gleap-notification-item-checklist-content">
@@ -308,7 +284,7 @@ export default class GleapNotificationManager {
           </div>`;
       } else {
         // Standard non-news notification
-        elem.className = "gleap-notification-item";
+        elem.className = 'gleap-notification-item';
         elem.innerHTML = `
           ${
             notification.data.sender &&
@@ -321,7 +297,7 @@ export default class GleapNotificationManager {
                 ? `<div class="gleap-notification-item-sender">
                      ${notification.data.sender.name}
                    </div>`
-                : ""
+                : ''
             }
             <div class="gleap-notification-item-content">${content}</div>
           </div>`;
@@ -329,8 +305,7 @@ export default class GleapNotificationManager {
       this.notificationContainer.appendChild(elem);
     }
 
-    const hasNotifications =
-      newsNotifications.length > 0 || otherNotifications.length > 0;
+    const hasNotifications = newsNotifications.length > 0 || otherNotifications.length > 0;
     if (!hasNotifications) {
       // Clear the notification container
       this.clearAllNotifications(true);
@@ -359,16 +334,12 @@ export default class GleapNotificationManager {
       // Return HTML for the sender name + optional image
       return `
         <div class="gleap-notification-item-news-sender">
-          ${
-            sender.profileImageUrl
-              ? `<img src="${sender.profileImageUrl}" alt="${sender.name}" />`
-              : ""
-          }
+          ${sender.profileImageUrl ? `<img src="${sender.profileImageUrl}" alt="${sender.name}" />` : ''}
           ${sender.name}
         </div>
       `;
     }
-    return "";
+    return '';
   }
 
   /**
@@ -389,9 +360,7 @@ export default class GleapNotificationManager {
     }
 
     while (this.notificationContainer.firstChild) {
-      this.notificationContainer.removeChild(
-        this.notificationContainer.firstChild
-      );
+      this.notificationContainer.removeChild(this.notificationContainer.firstChild);
     }
   }
 
@@ -401,25 +370,20 @@ export default class GleapNotificationManager {
     }
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-    const classLeft = "gleap-notification-container--left";
-    const classNoButton = "gleap-notification-container--no-button";
+    const classLeft = 'gleap-notification-container--left';
+    const classNoButton = 'gleap-notification-container--no-button';
     this.notificationContainer.classList.remove(classLeft);
     this.notificationContainer.classList.remove(classNoButton);
 
     if (
-      flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
-      flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC_LEFT ||
+      flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
     ) {
       this.notificationContainer.classList.add(classLeft);
     }
 
     if (GleapFeedbackButtonManager.getInstance().buttonHidden === null) {
-      if (
-        flowConfig.feedbackButtonPosition ===
-        GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE
-      ) {
+      if (flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_NONE) {
         this.notificationContainer.classList.add(classNoButton);
       }
     } else {
@@ -428,9 +392,6 @@ export default class GleapNotificationManager {
       }
     }
 
-    this.notificationContainer.setAttribute(
-      "dir",
-      GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr"
-    );
+    this.notificationContainer.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
   }
 }

@@ -1,13 +1,13 @@
 export const isBlacklisted = function (url) {
   const blacklist = [
-    "//fonts.googleapis.com",
-    "//cdn.jsdelivr.net",
-    "//cdnjs.cloudflare.com",
-    "//ajax.googleapis.com",
-    "//use.typekit.net",
-    ".amazonaws.com",
-    "//jssdk.gleap.io",
-    ".gstatic.com",
+    '//fonts.googleapis.com',
+    '//cdn.jsdelivr.net',
+    '//cdnjs.cloudflare.com',
+    '//ajax.googleapis.com',
+    '//use.typekit.net',
+    '.amazonaws.com',
+    '//jssdk.gleap.io',
+    '.gstatic.com',
   ];
 
   if (!url) {

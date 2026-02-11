@@ -8,8 +8,8 @@ export class ScreenDrawer {
   bufferSize = 4;
   buffer = [];
   startPoint = null;
-  tool = "rect";
-  color = "#EB144C";
+  tool = 'rect';
+  color = '#EB144C';
   mouseDown = null;
   mouseMove = null;
   mouseUp = null;
@@ -21,40 +21,38 @@ export class ScreenDrawer {
 
     this.rerender = rerender;
 
-    this.svgElement = document.querySelector(".bb-capture-svg");
+    this.svgElement = document.querySelector('.bb-capture-svg');
     this.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
 
     // Window resize listener.
     this.resizeListener = function (e) {
       self.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
     };
-    window.addEventListener("resize", this.resizeListener, true);
+    window.addEventListener('resize', this.resizeListener, true);
 
     this.mouseDown = function (e) {
       e.preventDefault();
 
-      const colorpicker = document.querySelector(
-        ".bb-capture-toolbar-item-colorpicker"
-      );
+      const colorpicker = document.querySelector('.bb-capture-toolbar-item-colorpicker');
       if (colorpicker) {
-        colorpicker.style.display = "none";
+        colorpicker.style.display = 'none';
       }
 
       self.fadeOutToolbar();
-      if (self.tool === "pen" || self.tool === "blur") {
+      if (self.tool === 'pen' || self.tool === 'blur') {
         self.mouseDownPen(e);
       }
-      if (self.tool === "rect") {
+      if (self.tool === 'rect') {
         self.mouseDownRect(e);
       }
     };
 
     this.mouseMove = function (e) {
       e.preventDefault();
-      if (self.tool === "pen" || self.tool === "blur") {
+      if (self.tool === 'pen' || self.tool === 'blur') {
         self.mouseMovePen(e);
       }
-      if (self.tool === "rect") {
+      if (self.tool === 'rect') {
         self.mouseMoveRect(e);
       }
     };
@@ -62,20 +60,20 @@ export class ScreenDrawer {
     this.mouseUp = function (e) {
       e.preventDefault();
       self.fadeInToolbar();
-      if (self.tool === "pen" || self.tool === "blur") {
+      if (self.tool === 'pen' || self.tool === 'blur') {
         self.mouseUpPen(e);
       }
-      if (self.tool === "rect") {
+      if (self.tool === 'rect') {
         self.mouseUpRect(e);
       }
     };
 
-    this.svgElement.addEventListener("mousedown", this.mouseDown);
-    this.svgElement.addEventListener("mousemove", this.mouseMove);
-    this.svgElement.addEventListener("mouseup", this.mouseUp);
-    this.svgElement.addEventListener("touchstart", this.mouseDown, false);
-    this.svgElement.addEventListener("touchmove", this.mouseMove, false);
-    this.svgElement.addEventListener("touchend", this.mouseUp, false);
+    this.svgElement.addEventListener('mousedown', this.mouseDown);
+    this.svgElement.addEventListener('mousemove', this.mouseMove);
+    this.svgElement.addEventListener('mouseup', this.mouseUp);
+    this.svgElement.addEventListener('touchstart', this.mouseDown, false);
+    this.svgElement.addEventListener('touchmove', this.mouseMove, false);
+    this.svgElement.addEventListener('touchend', this.mouseUp, false);
 
     setTimeout(() => {
       this.rerender();
@@ -91,13 +89,13 @@ export class ScreenDrawer {
   }
 
   destroy() {
-    this.svgElement.removeEventListener("mousedown", this.mouseDown);
-    this.svgElement.removeEventListener("mousemove", this.mouseMove);
-    this.svgElement.removeEventListener("mouseup", this.mouseUp);
-    this.svgElement.removeEventListener("touchstart", this.mouseDown);
-    this.svgElement.removeEventListener("touchmove", this.mouseMove);
-    this.svgElement.removeEventListener("touchend", this.mouseUp);
-    window.removeEventListener("resize", this.resizeListener);
+    this.svgElement.removeEventListener('mousedown', this.mouseDown);
+    this.svgElement.removeEventListener('mousemove', this.mouseMove);
+    this.svgElement.removeEventListener('mouseup', this.mouseUp);
+    this.svgElement.removeEventListener('touchstart', this.mouseDown);
+    this.svgElement.removeEventListener('touchmove', this.mouseMove);
+    this.svgElement.removeEventListener('touchend', this.mouseUp);
+    window.removeEventListener('resize', this.resizeListener);
   }
 
   mouseUpPen() {
@@ -133,43 +131,43 @@ export class ScreenDrawer {
         y = this.startPoint.y;
       }
 
-      this.path.setAttributeNS(null, "x", x);
-      this.path.setAttributeNS(null, "y", y);
-      this.path.setAttributeNS(null, "width", w);
-      this.path.setAttributeNS(null, "height", h);
+      this.path.setAttributeNS(null, 'x', x);
+      this.path.setAttributeNS(null, 'y', y);
+      this.path.setAttributeNS(null, 'width', w);
+      this.path.setAttributeNS(null, 'height', h);
     }
   }
 
   mouseDownRect(e) {
-    this.path = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-    this.path.setAttribute("fill", "none");
-    this.path.setAttribute("stroke", this.color);
-    this.path.setAttribute("stroke-linecap", "round");
-    this.path.setAttribute("stroke-width", this.strokeWidthRect);
+    this.path = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    this.path.setAttribute('fill', 'none');
+    this.path.setAttribute('stroke', this.color);
+    this.path.setAttribute('stroke-linecap', 'round');
+    this.path.setAttribute('stroke-width', this.strokeWidthRect);
 
     this.startPoint = this.getMousePosition(e);
     this.appendPathToSvg(this.path);
   }
 
   mouseDownPen(e) {
-    var color = this.color + "AA";
+    var color = this.color + 'AA';
     var strokeWidth = this.strokeWidth;
 
-    if (this.tool === "blur") {
-      color = "#000000";
+    if (this.tool === 'blur') {
+      color = '#000000';
       strokeWidth = 40;
     }
 
-    this.path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    this.path.setAttribute("fill", "none");
-    this.path.setAttribute("stroke", color);
-    this.path.setAttribute("stroke-linecap", "round");
-    this.path.setAttribute("stroke-width", strokeWidth);
+    this.path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    this.path.setAttribute('fill', 'none');
+    this.path.setAttribute('stroke', color);
+    this.path.setAttribute('stroke-linecap', 'round');
+    this.path.setAttribute('stroke-width', strokeWidth);
     this.buffer = [];
     var pt = this.getMousePosition(e);
     this.appendToBuffer(pt);
-    this.strPath = "M" + pt.x + " " + pt.y;
-    this.path.setAttribute("d", this.strPath);
+    this.strPath = 'M' + pt.x + ' ' + pt.y;
+    this.path.setAttribute('d', this.strPath);
     this.appendPathToSvg(this.path);
   }
 
@@ -222,18 +220,18 @@ export class ScreenDrawer {
 
     if (pt) {
       // Get the smoothed part of the path that will not change
-      this.strPath += " L" + pt.x + " " + pt.y;
+      this.strPath += ' L' + pt.x + ' ' + pt.y;
 
       // Get the last part of the path (close to the current mouse position)
       // This part will change if the mouse moves again
-      var tmpPath = "";
+      var tmpPath = '';
       for (var offset = 2; offset < this.buffer.length; offset += 2) {
         pt = this.getAveragePoint(offset);
-        tmpPath += " L" + pt.x + " " + pt.y;
+        tmpPath += ' L' + pt.x + ' ' + pt.y;
       }
 
       // Set the complete current path coordinates
-      this.path.setAttribute("d", this.strPath + tmpPath);
+      this.path.setAttribute('d', this.strPath + tmpPath);
     }
   }
 
@@ -263,18 +261,18 @@ export class ScreenDrawer {
   }
 
   fadeOutToolbar() {
-    var fadeTarget = document.querySelector(".bb-capture-toolbar");
+    var fadeTarget = document.querySelector('.bb-capture-toolbar');
     if (fadeTarget) {
       fadeTarget.style.opacity = 0;
-      fadeTarget.style.pointerEvents = "none";
+      fadeTarget.style.pointerEvents = 'none';
     }
   }
 
   fadeInToolbar() {
-    var fadeTarget = document.querySelector(".bb-capture-toolbar");
+    var fadeTarget = document.querySelector('.bb-capture-toolbar');
     if (fadeTarget) {
       fadeTarget.style.opacity = 1;
-      fadeTarget.style.pointerEvents = "auto";
+      fadeTarget.style.pointerEvents = 'auto';
     }
   }
 }

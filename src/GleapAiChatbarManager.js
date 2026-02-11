@@ -1,7 +1,4 @@
-import {
-  GleapFrameManager,
-  GleapConfigManager,
-} from "./Gleap";
+import { GleapFrameManager, GleapConfigManager } from './Gleap';
 
 export default class GleapAiChatbarManager {
   aiUIContainer = null;
@@ -113,7 +110,7 @@ export default class GleapAiChatbarManager {
     }
 
     this.isHidden = false;
-    this.aiUIContainer.style.display = "block";
+    this.aiUIContainer.style.display = 'block';
     this.aiUIContainer.setAttribute('aria-hidden', 'false');
     // Remove fade-out from inner container and reset animation
     if (this.innerContainer) {
@@ -127,9 +124,9 @@ export default class GleapAiChatbarManager {
       this.innerContainer.classList.remove('gleap-ai-ui-container--bottom-left');
 
       // Add the appropriate positioning class based on config
-      if (flowConfig?.feedbackButtonPosition === "BOTTOM_RIGHT") {
+      if (flowConfig?.feedbackButtonPosition === 'BOTTOM_RIGHT') {
         this.innerContainer.classList.add('gleap-ai-ui-container--bottom-right');
-      } else if (flowConfig?.feedbackButtonPosition === "BOTTOM_LEFT") {
+      } else if (flowConfig?.feedbackButtonPosition === 'BOTTOM_LEFT') {
         this.innerContainer.classList.add('gleap-ai-ui-container--bottom-left');
       }
     }
@@ -154,7 +151,7 @@ export default class GleapAiChatbarManager {
     // Hide the whole component after animation
     const timeoutId = setTimeout(() => {
       if (this.aiUIContainer) {
-        this.aiUIContainer.style.display = "none";
+        this.aiUIContainer.style.display = 'none';
         this.aiUIContainer.setAttribute('aria-hidden', 'true');
       }
       this.animationTimeouts.delete(timeoutId);
@@ -211,12 +208,15 @@ export default class GleapAiChatbarManager {
       this.quickActionsContainer.appendChild(actionElement);
 
       // Trigger animation with delay
-      const timeoutId = setTimeout(() => {
-        if (actionElement.parentNode) {
-          actionElement.classList.add('animate-in');
-        }
-        this.animationTimeouts.delete(timeoutId);
-      }, index * 150 + 500);
+      const timeoutId = setTimeout(
+        () => {
+          if (actionElement.parentNode) {
+            actionElement.classList.add('animate-in');
+          }
+          this.animationTimeouts.delete(timeoutId);
+        },
+        index * 150 + 500
+      );
 
       this.animationTimeouts.add(timeoutId);
     });
@@ -233,8 +233,8 @@ export default class GleapAiChatbarManager {
     }
 
     // Create the host element (this will be in the main document)
-    const elem = document.createElement("div");
-    elem.className = "gleap-ai-ui-widget";
+    const elem = document.createElement('div');
+    elem.className = 'gleap-ai-ui-widget';
     elem.setAttribute('role', 'dialog');
     elem.setAttribute('aria-label', 'AI Assistant');
     elem.setAttribute('aria-hidden', 'true');
@@ -652,8 +652,8 @@ export default class GleapAiChatbarManager {
     }
 
     // Create the main container div inside shadow DOM
-    this.innerContainer = document.createElement("div");
-    this.innerContainer.className = "gleap-ai-ui-container" + extraClasses;
+    this.innerContainer = document.createElement('div');
+    this.innerContainer.className = 'gleap-ai-ui-container' + extraClasses;
 
     // Create the HTML structure inside shadow DOM
     this.innerContainer.innerHTML = `
@@ -680,11 +680,11 @@ export default class GleapAiChatbarManager {
     this.shadowRoot.appendChild(this.innerContainer);
 
     // Get the quick actions container
-    this.quickActionsContainer = this.shadowRoot.querySelector(".gleap-ai-ui-quick-actions");
+    this.quickActionsContainer = this.shadowRoot.querySelector('.gleap-ai-ui-quick-actions');
 
     // Get input and send button elements
-    this.inputElement = this.shadowRoot.querySelector("input");
-    this.sendButton = this.shadowRoot.querySelector(".gleap-ai-ui-input-send-button");
+    this.inputElement = this.shadowRoot.querySelector('input');
+    this.sendButton = this.shadowRoot.querySelector('.gleap-ai-ui-input-send-button');
 
     // Add input event listener
     this.setupInputListener();
@@ -751,7 +751,7 @@ export default class GleapAiChatbarManager {
 
   destroy() {
     // Clear all pending timeouts
-    this.animationTimeouts.forEach(timeoutId => {
+    this.animationTimeouts.forEach((timeoutId) => {
       clearTimeout(timeoutId);
     });
     this.animationTimeouts.clear();

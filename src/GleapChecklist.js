@@ -38,20 +38,11 @@
  * @cssprop --animation-duration - Duration for animations (e.g., accordion).
  * @cssprop --animation-timing - Timing function for animations.
  */
-import ChecklistNetworkManager from "./ChecklistNetworkManager";
-import Gleap, {
-  GleapConfigManager,
-  GleapSession,
-  GleapTranslationManager,
-  GleapEventManager,
-} from "./Gleap";
+import ChecklistNetworkManager from './ChecklistNetworkManager';
+import Gleap, { GleapConfigManager, GleapSession, GleapTranslationManager, GleapEventManager } from './Gleap';
 
 export const registerGleapChecklist = () => {
-  if (
-    typeof customElements !== "undefined" &&
-    typeof HTMLElement !== "undefined" &&
-    typeof window !== "undefined"
-  ) {
+  if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
     class GleapChecklist extends HTMLElement {
       /** @private {number} */
       activeStep = -1;
@@ -73,13 +64,10 @@ export const registerGleapChecklist = () => {
 
       constructor() {
         super();
-        this.attachShadow({ mode: "open" });
+        this.attachShadow({ mode: 'open' });
         // Ensure NetworkManager instance is created only if Gleap is available
         try {
-          if (
-            typeof GleapSession !== "undefined" &&
-            typeof ChecklistNetworkManager !== "undefined"
-          ) {
+          if (typeof GleapSession !== 'undefined' && typeof ChecklistNetworkManager !== 'undefined') {
             this._networkManager = ChecklistNetworkManager.getInstance();
           } else {
             this._networkManager = null;
@@ -88,52 +76,28 @@ export const registerGleapChecklist = () => {
           this._networkManager = null;
         }
         // Bind click handlers for floating mode.
-        this._boundFloatingLauncherClick =
-          this.handleFloatingLauncherClick.bind(this);
-        this._boundFloatingCloseClick =
-          this.handleFloatingCloseClick.bind(this);
+        this._boundFloatingLauncherClick = this.handleFloatingLauncherClick.bind(this);
+        this._boundFloatingCloseClick = this.handleFloatingCloseClick.bind(this);
         this._floatingHideTimeout = null;
       }
 
       // --- Observed Attributes ---
       static get observedAttributes() {
-        return [
-          "checklistId",
-          "info",
-          "progressbar",
-          "dark",
-          "floating",
-          "sharedKey",
-        ];
+        return ['checklistId', 'info', 'progressbar', 'dark', 'floating', 'sharedKey'];
       }
 
       // --- Lifecycle Callbacks ---
       connectedCallback() {
-        window.addEventListener(
-          "checkListUpdate",
-          this._boundHandleChecklistUpdate,
-        );
-        window.addEventListener(
-          "session-updated",
-          this._boundHandleSessionUpdate,
-        );
-        window.addEventListener(
-          "resize",
-          (this._boundResizeHandler = this.handleResize.bind(this)),
-        );
+        window.addEventListener('checkListUpdate', this._boundHandleChecklistUpdate);
+        window.addEventListener('session-updated', this._boundHandleSessionUpdate);
+        window.addEventListener('resize', (this._boundResizeHandler = this.handleResize.bind(this)));
         this._checkSessionAndLoad();
       }
 
       disconnectedCallback() {
-        window.removeEventListener(
-          "checkListUpdate",
-          this._boundHandleChecklistUpdate,
-        );
-        window.removeEventListener(
-          "session-updated",
-          this._boundHandleSessionUpdate,
-        );
-        window.removeEventListener("resize", this._boundResizeHandler);
+        window.removeEventListener('checkListUpdate', this._boundHandleChecklistUpdate);
+        window.removeEventListener('session-updated', this._boundHandleSessionUpdate);
+        window.removeEventListener('resize', this._boundResizeHandler);
         this.removeFloatingClickListeners();
         if (this._floatingHideTimeout) {
           clearTimeout(this._floatingHideTimeout);
@@ -153,9 +117,9 @@ export const registerGleapChecklist = () => {
 
       attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue !== newValue) {
-          if (name === "checklistId" && this._isSessionReady) {
+          if (name === 'checklistId' && this._isSessionReady) {
             this.loadChecklist();
-          } else if (name !== "checklistId" && this._hasLoaded) {
+          } else if (name !== 'checklistId' && this._hasLoaded) {
             if (this.checklistData) {
               this.renderChecklist(this.checklistData);
             }
@@ -166,7 +130,7 @@ export const registerGleapChecklist = () => {
       // --- Session Handling ---
       _checkSessionAndLoad() {
         const gleapSessionInstance = this._getGleapSessionInstance();
-        const hasChecklistId = this.getAttribute("checklistId");
+        const hasChecklistId = this.getAttribute('checklistId');
 
         if (gleapSessionInstance.ready && hasChecklistId) {
           this._isSessionReady = true;
@@ -188,9 +152,7 @@ export const registerGleapChecklist = () => {
 
       _getGleapSessionInstance() {
         try {
-          return typeof GleapSession !== "undefined"
-            ? GleapSession.getInstance()
-            : null;
+          return typeof GleapSession !== 'undefined' ? GleapSession.getInstance() : null;
         } catch (e) {
           return null;
         }
@@ -198,29 +160,26 @@ export const registerGleapChecklist = () => {
 
       // --- Getters for Configuration ---
       get infoEnabled() {
-        const attr = this.getAttribute("info");
-        return attr === null || attr.toLowerCase() !== "false";
+        const attr = this.getAttribute('info');
+        return attr === null || attr.toLowerCase() !== 'false';
       }
 
       get progressbarEnabled() {
-        const attr = this.getAttribute("progressbar");
-        return attr === null || attr.toLowerCase() !== "false";
+        const attr = this.getAttribute('progressbar');
+        return attr === null || attr.toLowerCase() !== 'false';
       }
 
       get floatingEnabled() {
-        return this.getAttribute("floating") === "true";
+        return this.getAttribute('floating') === 'true';
       }
 
       // --- Translation Helpers ---
-      _translate(key, defaultValue = "") {
+      _translate(key, defaultValue = '') {
         return GleapTranslationManager.translateText(key) || defaultValue;
       }
 
-      _translateWithVars(key, vars, defaultValue = "") {
-        return (
-          GleapTranslationManager.translateTextWithVars(key, vars) ||
-          defaultValue
-        );
+      _translateWithVars(key, vars, defaultValue = '') {
+        return GleapTranslationManager.translateTextWithVars(key, vars) || defaultValue;
       }
 
       // --- SVG Icons ---
@@ -235,7 +194,7 @@ export const registerGleapChecklist = () => {
         if (!this._isSessionReady || !this._networkManager) {
           return;
         }
-        const checklistId = this.getAttribute("checklistId");
+        const checklistId = this.getAttribute('checklistId');
         if (checklistId) {
           this.activeStep = -1;
           this._initialActiveSet = false;
@@ -250,19 +209,16 @@ export const registerGleapChecklist = () => {
       getQueryParams() {
         const gleapSessionInstance = this._getGleapSessionInstance();
         if (!gleapSessionInstance?.session) {
-          return "";
+          return '';
         }
         const session = gleapSessionInstance.session;
-        let lang = "en";
+        let lang = 'en';
         try {
-          if (typeof GleapTranslationManager !== "undefined") {
-            lang =
-              GleapTranslationManager.getInstance().getActiveLanguage() || "en";
+          if (typeof GleapTranslationManager !== 'undefined') {
+            lang = GleapTranslationManager.getInstance().getActiveLanguage() || 'en';
           }
         } catch (e) {}
-        return `gleapId=${session.gleapId || ""}&gleapHash=${
-          session.gleapHash || ""
-        }&lang=${lang}`;
+        return `gleapId=${session.gleapId || ''}&gleapHash=${session.gleapHash || ''}&lang=${lang}`;
       }
 
       makeRequest(method, url, data, callback) {
@@ -271,7 +227,7 @@ export const registerGleapChecklist = () => {
           const mockXhr = {
             readyState: 4,
             status: 0,
-            responseText: "Session unavailable",
+            responseText: 'Session unavailable',
             _isMock: true,
           };
           callback(mockXhr);
@@ -283,10 +239,7 @@ export const registerGleapChecklist = () => {
           gleapSessionInstance.injectSession(xhr);
         } catch (e) {}
         if (data) {
-          xhr.setRequestHeader(
-            "Content-Type",
-            "application/json;charset=UTF-8",
-          );
+          xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
         }
         xhr.onreadystatechange = () => {
           if (xhr.readyState === 4) {
@@ -306,7 +259,7 @@ export const registerGleapChecklist = () => {
         this.checklistData = null;
         this._hasLoaded = false;
         this.renderResponse();
-        const sharedKey = this.getAttribute("sharedKey");
+        const sharedKey = this.getAttribute('sharedKey');
 
         this._networkManager
           .validateChecklist(outboundId, sharedKey)
@@ -339,18 +292,15 @@ export const registerGleapChecklist = () => {
             }
             this.checklistData = data;
             this._hasLoaded = true;
-            if (data.status === "done") {
+            if (data.status === 'done') {
               this.renderResponse();
               return;
             }
             if (this._isInitialLoad && !this._initialActiveSet) {
               const steps = data.outbound?.config?.steps || [];
               const completedSteps = data.completedSteps || [];
-              const firstIncompleteIndex = steps.findIndex(
-                (step) => !completedSteps.includes(step.id),
-              );
-              this.activeStep =
-                firstIncompleteIndex >= 0 ? firstIncompleteIndex : -1;
+              const firstIncompleteIndex = steps.findIndex((step) => !completedSteps.includes(step.id));
+              this.activeStep = firstIncompleteIndex >= 0 ? firstIncompleteIndex : -1;
               if (this.activeStep !== -1) {
                 this._initialActiveSet = true;
               }
@@ -358,7 +308,7 @@ export const registerGleapChecklist = () => {
             this.renderChecklist(this.checklistData);
 
             // Notify external listeners about the initial checklist load
-            GleapEventManager.notifyEvent("checklist-loaded", {
+            GleapEventManager.notifyEvent('checklist-loaded', {
               checklistId: this.checklistData.id,
               outboundId: this.checklistData.outbound?.id,
               completedSteps: this.checklistData.completedSteps,
@@ -383,13 +333,12 @@ export const registerGleapChecklist = () => {
           return;
         }
         const session = gleapSessionInstance.session;
-        const gleapId = session?.gleapId ?? "";
-        const gleapHash = session?.gleapHash ?? "";
-        let lang = "en";
+        const gleapId = session?.gleapId ?? '';
+        const gleapHash = session?.gleapHash ?? '';
+        let lang = 'en';
         try {
-          if (typeof GleapTranslationManager !== "undefined") {
-            lang =
-              GleapTranslationManager.getInstance().getActiveLanguage() || "en";
+          if (typeof GleapTranslationManager !== 'undefined') {
+            lang = GleapTranslationManager.getInstance().getActiveLanguage() || 'en';
           }
         } catch (e) {}
         let url = `${apiUrl}/outbound/checklists/${id}`;
@@ -397,7 +346,7 @@ export const registerGleapChecklist = () => {
           url += `/increment/${data.checkedStep}`;
         }
         url += `?gleapId=${gleapId}&gleapHash=${gleapHash}&lang=${lang}`;
-        this.makeRequest("PUT", url, data, (xhr) => {
+        this.makeRequest('PUT', url, data, (xhr) => {
           if (xhr._isMock) return;
           if (!(xhr.status === 200 || xhr.status === 204)) {
             // Update failed
@@ -414,24 +363,18 @@ export const registerGleapChecklist = () => {
         if (!updateData || updateData.id !== this.checklistData.id) {
           return;
         }
-        const previousCompletedSteps = [
-          ...(this.checklistData.completedSteps || []),
-        ];
+        const previousCompletedSteps = [...(this.checklistData.completedSteps || [])];
         let dataChanged = false;
         let activeStepCompleted = false;
         const currentlyActiveStepIndex = this.activeStep;
         if (
           updateData.completedSteps &&
-          JSON.stringify(updateData.completedSteps) !==
-            JSON.stringify(previousCompletedSteps)
+          JSON.stringify(updateData.completedSteps) !== JSON.stringify(previousCompletedSteps)
         ) {
           this.checklistData.completedSteps = [...updateData.completedSteps];
           dataChanged = true;
           if (currentlyActiveStepIndex !== -1) {
-            const activeStepId =
-              this.checklistData.outbound?.config?.steps?.[
-                currentlyActiveStepIndex
-              ]?.id;
+            const activeStepId = this.checklistData.outbound?.config?.steps?.[currentlyActiveStepIndex]?.id;
             if (
               activeStepId &&
               this.checklistData.completedSteps.includes(activeStepId) &&
@@ -441,10 +384,7 @@ export const registerGleapChecklist = () => {
             }
           }
         }
-        if (
-          updateData.status &&
-          updateData.status !== this.checklistData.status
-        ) {
+        if (updateData.status && updateData.status !== this.checklistData.status) {
           this.checklistData.status = updateData.status;
           dataChanged = true;
         }
@@ -466,7 +406,7 @@ export const registerGleapChecklist = () => {
           this.renderChecklist(this.checklistData);
 
           // Notify external listeners about the checklist update
-          GleapEventManager.notifyEvent("checklist-update", {
+          GleapEventManager.notifyEvent('checklist-update', {
             checklistId: this.checklistData.id,
             outboundId: this.checklistData.outbound?.id,
             completedSteps: this.checklistData.completedSteps,
@@ -480,72 +420,56 @@ export const registerGleapChecklist = () => {
       handleFloatingLauncherClick(event) {
         event.stopPropagation();
 
-        if (this.checklistData.status === "done") {
+        if (this.checklistData.status === 'done') {
           return;
         }
 
-        const tasks = this.shadowRoot.querySelector(".checklist-tasks");
+        const tasks = this.shadowRoot.querySelector('.checklist-tasks');
         if (tasks) {
-          tasks.style.display =
-            tasks.style.display === "block" ? "none" : "block";
+          tasks.style.display = tasks.style.display === 'block' ? 'none' : 'block';
         }
       }
 
       handleFloatingCloseClick(event) {
         event.stopPropagation();
-        const tasks = this.shadowRoot.querySelector(".checklist-tasks");
+        const tasks = this.shadowRoot.querySelector('.checklist-tasks');
         if (tasks) {
-          tasks.style.display = "none";
+          tasks.style.display = 'none';
         }
       }
 
       addFloatingClickListeners() {
-        const launcher = this.shadowRoot.querySelector(
-          ".checklist-floating-launcher",
-        );
+        const launcher = this.shadowRoot.querySelector('.checklist-floating-launcher');
         if (launcher) {
-          launcher.addEventListener("click", this._boundFloatingLauncherClick);
+          launcher.addEventListener('click', this._boundFloatingLauncherClick);
         }
-        const header = this.shadowRoot.querySelector(
-          ".checklist-floating-header",
-        );
+        const header = this.shadowRoot.querySelector('.checklist-floating-header');
         if (header) {
-          header.addEventListener("click", this._boundFloatingCloseClick);
+          header.addEventListener('click', this._boundFloatingCloseClick);
         }
       }
 
       removeFloatingClickListeners() {
-        const launcher = this.shadowRoot.querySelector(
-          ".checklist-floating-launcher",
-        );
+        const launcher = this.shadowRoot.querySelector('.checklist-floating-launcher');
         if (launcher) {
-          launcher.removeEventListener(
-            "click",
-            this._boundFloatingLauncherClick,
-          );
+          launcher.removeEventListener('click', this._boundFloatingLauncherClick);
         }
-        const header = this.shadowRoot.querySelector(
-          ".checklist-floating-header",
-        );
+        const header = this.shadowRoot.querySelector('.checklist-floating-header');
         if (header) {
-          header.removeEventListener("click", this._boundFloatingCloseClick);
+          header.removeEventListener('click', this._boundFloatingCloseClick);
         }
       }
 
       // --- Rendering Logic ---
       renderResponse() {
-        this.shadowRoot.innerHTML = "";
+        this.shadowRoot.innerHTML = '';
       }
 
       /**
        * Renders the floating launcher. When called with the default class ("checklist-floating")
        * it shows a chevron icon; when called with "checklist-floating-header" it shows a close icon.
        */
-      renderFloatingLauncher(
-        outbound,
-        className = "checklist-floating",
-        renderDoneState = false,
-      ) {
+      renderFloatingLauncher(outbound, className = 'checklist-floating', renderDoneState = false) {
         const steps = outbound.config?.steps || [];
         const completedSteps = this.checklistData?.completedSteps || [];
         let progress = 0;
@@ -556,38 +480,32 @@ export const registerGleapChecklist = () => {
         }
 
         // Determine the next incomplete step
-        const nextIncompleteStep = steps.find(
-          (step) => !completedSteps.includes(step.id),
-        );
+        const nextIncompleteStep = steps.find((step) => !completedSteps.includes(step.id));
         let titleText =
           steps.length > 0
             ? nextIncompleteStep
               ? nextIncompleteStep.title ||
                 this._translateWithVars(
-                  "stepDefaultTitle",
+                  'stepDefaultTitle',
                   { index: steps.indexOf(nextIncompleteStep) + 1 },
-                  `Step ${steps.indexOf(nextIncompleteStep) + 1}`,
+                  `Step ${steps.indexOf(nextIncompleteStep) + 1}`
                 )
-              : ""
-            : outbound.subject || "";
+              : ''
+            : outbound.subject || '';
 
         let subtitleText =
-          steps.length > 0
-            ? nextIncompleteStep
-              ? nextIncompleteStep.description || ""
-              : ""
-            : outbound.message || "";
+          steps.length > 0 ? (nextIncompleteStep ? nextIncompleteStep.description || '' : '') : outbound.message || '';
 
         if (renderDoneState) {
-          titleText = outbound.config?.successTitle || "";
-          subtitleText = outbound.config?.successMessage || "";
+          titleText = outbound.config?.successTitle || '';
+          subtitleText = outbound.config?.successMessage || '';
           progress = 100;
         }
 
         const circumference = 2 * Math.PI * 7;
         const computedOffset = circumference - (progress / 100) * circumference;
 
-        const isHeader = className === "checklist-floating-header";
+        const isHeader = className === 'checklist-floating-header';
         const icon = isHeader
           ? `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -599,25 +517,19 @@ export const registerGleapChecklist = () => {
 
         return `
           <div part="${className}" class="${
-            isHeader
-              ? "checklist-floating-header"
-              : "checklist-floating-launcher"
-          } ${renderDoneState ? "checklist-floating-launcher--done" : ""}">
+            isHeader ? 'checklist-floating-header' : 'checklist-floating-launcher'
+          } ${renderDoneState ? 'checklist-floating-launcher--done' : ''}">
             <div class="floating-header">
               <div class="floating-circular-progress">
                 <svg viewBox="0 0 20 20">
                   <circle class="track" cx="10" cy="10" r="7"></circle>
                   <circle class="progress" cx="10" cy="10" r="7" stroke-dasharray="${circumference.toFixed(
-                    2,
+                    2
                   )}" stroke-dashoffset="${computedOffset.toFixed(2)}"></circle>
                 </svg>
               </div>
               <div class="floating-title">${titleText}</div>
-              ${
-                renderDoneState
-                  ? ""
-                  : `<span class="floating-icon">${icon}</span>`
-              }
+              ${renderDoneState ? '' : `<span class="floating-icon">${icon}</span>`}
             </div>
             <div class="floating-subtitle">${subtitleText}</div>
           </div>
@@ -625,41 +537,29 @@ export const registerGleapChecklist = () => {
       }
 
       renderInfoSection(outbound) {
-        if (!this.infoEnabled || !outbound) return "";
-        const subject =
-          outbound.subject ||
-          this._translate("checklistDefaultTitle", "Checklist");
-        const message = outbound.message || "";
-        let senderHtml = "";
+        if (!this.infoEnabled || !outbound) return '';
+        const subject = outbound.subject || this._translate('checklistDefaultTitle', 'Checklist');
+        const message = outbound.message || '';
+        let senderHtml = '';
         if (outbound.sender?.profileImageUrl) {
           senderHtml = `
             <div part="sender" class="checklists-sender">
-              <img part="sender-image" src="${
-                outbound.sender.profileImageUrl
-              }" alt="${
-                outbound.sender.firstName || "Sender"
+              <img part="sender-image" src="${outbound.sender.profileImageUrl}" alt="${
+                outbound.sender.firstName || 'Sender'
               }'s profile picture" style="object-fit: cover;" />
-              <span part="sender-name">${outbound.sender.firstName || ""}</span>
+              <span part="sender-name">${outbound.sender.firstName || ''}</span>
             </div>`;
         }
         return `
           <div part="info" class="checklists-info">
-            ${
-              subject
-                ? `<div part="info-title" class="checklists-title">${subject}</div>`
-                : ""
-            }
-            ${
-              message
-                ? `<div part="info-description" class="checklists-description">${message}</div>`
-                : ""
-            }
+            ${subject ? `<div part="info-title" class="checklists-title">${subject}</div>` : ''}
+            ${message ? `<div part="info-description" class="checklists-description">${message}</div>` : ''}
             ${senderHtml}
           </div>`;
       }
 
       renderProgressSection(steps = [], completedSteps = []) {
-        if (!this.progressbarEnabled || !steps.length) return "";
+        if (!this.progressbarEnabled || !steps.length) return '';
         const totalSteps = steps.length;
         const doneSteps = completedSteps.length;
         const progress = totalSteps > 0 ? (doneSteps / totalSteps) * 100 : 0;
@@ -670,25 +570,19 @@ export const registerGleapChecklist = () => {
           }
         });
         const progressLabel = this._translateWithVars(
-          "taskProgress",
+          'taskProgress',
           { a: doneSteps, b: totalSteps },
-          `${doneSteps} of ${totalSteps} done`,
+          `${doneSteps} of ${totalSteps} done`
         );
         const durationLabel =
-          duration > 0
-            ? this._translateWithVars(
-                "aboutMinutes",
-                { a: duration },
-                `About ${duration} min left`,
-              )
-            : "";
+          duration > 0 ? this._translateWithVars('aboutMinutes', { a: duration }, `About ${duration} min left`) : '';
         return `
           <div part="progress-labels" class="checklist-progress-labels">
             <div part="progress-label-primary" class="checklist-progress-label">${progressLabel}</div>
             ${
               durationLabel
                 ? `<div part="progress-label-secondary" class="checklist-progress-label">${durationLabel}</div>`
-                : ""
+                : ''
             }
           </div>
           <div part="progress-bar" class="checklist-progress-bar">
@@ -697,52 +591,39 @@ export const registerGleapChecklist = () => {
       }
 
       renderTasks(steps = [], completedSteps = []) {
-        if (!steps || steps.length === 0)
-          return `<p>${this._translate(
-            "noStepsDefined",
-            "No steps defined.",
-          )}</p>`;
+        if (!steps || steps.length === 0) return `<p>${this._translate('noStepsDefined', 'No steps defined.')}</p>`;
         return steps
           .map((step, index) => {
             const isTaskDone = completedSteps.includes(step.id);
             const isActive = this.activeStep === index;
             const badge = isTaskDone
               ? `<span part="task-badge" class="checklist-task-header--badge checklist-task-header--badge-done">${this.getCheckIcon()}</span>`
-              : `<span part="task-badge" class="checklist-task-header--badge">${
-                  index + 1
-                }</span>`;
+              : `<span part="task-badge" class="checklist-task-header--badge">${index + 1}</span>`;
             const stepTitle =
-              step.title ||
-              this._translateWithVars(
-                "stepDefaultTitle",
-                { index: index + 1 },
-                `Step ${index + 1}`,
-              );
-            const stepDescription = step.description || "";
-            const actionButtonText =
-              step.actionTitle ||
-              this._translate("actionDefaultTitle", "Action");
+              step.title || this._translateWithVars('stepDefaultTitle', { index: index + 1 }, `Step ${index + 1}`);
+            const stepDescription = step.description || '';
+            const actionButtonText = step.actionTitle || this._translate('actionDefaultTitle', 'Action');
             const actionHtml =
-              step.action && step.action !== "none"
+              step.action && step.action !== 'none'
                 ? `<div part="task-action" class="checklist-task-body-action" data-action-index="${index}">
                       <button type="button" class="action-button form-send-button">${actionButtonText}</button>
                    </div>`
-                : "";
-            const markDoneLabel = this._translate("markAsDone", "Mark as done");
+                : '';
+            const markDoneLabel = this._translate('markAsDone', 'Mark as done');
             const markDoneHtml =
               step.allowMarkDone && !isTaskDone
                 ? `<div part="task-mark-done" class="checklist-task-body-markdone" data-markdone-index="${index}">
                       ${this.getCheckIcon()}
                       <div class="checklist-task-body-markdone-label">${markDoneLabel}</div>
                    </div>`
-                : "";
+                : '';
             const taskClasses = [
-              "checklist-task",
-              isTaskDone ? "checklist-task--done" : "",
-              isActive ? "checklist-task--active" : "",
+              'checklist-task',
+              isTaskDone ? 'checklist-task--done' : '',
+              isActive ? 'checklist-task--active' : '',
             ]
               .filter(Boolean)
-              .join(" ");
+              .join(' ');
             return `
               <div part="task" class="${taskClasses}" data-task-index="${index}">
                 <div part="task-header" class="checklist-task-header" role="button" aria-expanded="${isActive}" aria-controls="task-body-${index}">
@@ -759,7 +640,7 @@ export const registerGleapChecklist = () => {
                     ${
                       stepDescription
                         ? `<div part="task-body-content" class="checklist-task-body-content">${stepDescription}</div>`
-                        : ""
+                        : ''
                     }
                     ${actionHtml}
                     ${markDoneHtml}
@@ -767,7 +648,7 @@ export const registerGleapChecklist = () => {
                 </div>
               </div>`;
           })
-          .join("");
+          .join('');
       }
 
       renderChecklist(data) {
@@ -778,19 +659,13 @@ export const registerGleapChecklist = () => {
         const { outbound } = data;
         const steps = outbound.config?.steps || [];
         const completedSteps = data.completedSteps || [];
-        const isDone =
-          data.status === "done" ||
-          (steps.length > 0 && completedSteps.length >= steps.length);
-        let content = "";
+        const isDone = data.status === 'done' || (steps.length > 0 && completedSteps.length >= steps.length);
+        let content = '';
         if (isDone) {
-          const successTitle = outbound.config?.successTitle || "";
-          const successMessage = outbound.config?.successMessage || "";
+          const successTitle = outbound.config?.successTitle || '';
+          const successMessage = outbound.config?.successMessage || '';
           if (this.floatingEnabled) {
-            content = this.renderFloatingLauncher(
-              outbound,
-              "checklist-floating-launcher",
-              true,
-            );
+            content = this.renderFloatingLauncher(outbound, 'checklist-floating-launcher', true);
           } else {
             content = `
               <div part="content" class="checklists-content checklists-content--done">
@@ -805,33 +680,18 @@ export const registerGleapChecklist = () => {
         } else {
           content = `
             <div part="content" class="checklists-content">
-              ${!this.floatingEnabled ? this.renderInfoSection(outbound) : ""}
-              ${
-                !this.floatingEnabled
-                  ? this.renderProgressSection(steps, completedSteps)
-                  : ""
-              }
-              ${
-                this.floatingEnabled
-                  ? this.renderFloatingLauncher(outbound)
-                  : ""
-              }
+              ${!this.floatingEnabled ? this.renderInfoSection(outbound) : ''}
+              ${!this.floatingEnabled ? this.renderProgressSection(steps, completedSteps) : ''}
+              ${this.floatingEnabled ? this.renderFloatingLauncher(outbound) : ''}
               <div part="tasks" class="checklist-tasks">
-                ${
-                  this.floatingEnabled
-                    ? this.renderFloatingLauncher(
-                        outbound,
-                        "checklist-floating-header",
-                      )
-                    : ""
-                }
+                ${this.floatingEnabled ? this.renderFloatingLauncher(outbound, 'checklist-floating-header') : ''}
                 ${this.renderTasks(steps, completedSteps)}
               </div>
             </div>`;
         }
 
         const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-        const primaryColor = flowConfig.color ? flowConfig.color : "#485BFF";
+        const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
 
         const styles = `
           <style>
@@ -1068,56 +928,46 @@ export const registerGleapChecklist = () => {
       updateActiveTaskMaxHeight() {
         if (this.activeStep !== -1) {
           const taskBodyInner = this.shadowRoot.querySelector(
-            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body-inner`,
+            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body-inner`
           );
           const container = this.shadowRoot.querySelector(
-            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body`,
+            `.checklist-task[data-task-index="${this.activeStep}"] .checklist-task-body`
           );
           if (taskBodyInner && container) {
             const height = taskBodyInner.offsetHeight;
-            container.style.setProperty(
-              "--task-body-active-height",
-              `${height}px`,
-            );
+            container.style.setProperty('--task-body-active-height', `${height}px`);
           }
         }
       }
 
       // --- Event Listener Setup ---
       addTaskEventListeners() {
-        const tasks = this.shadowRoot.querySelectorAll(".checklist-task");
+        const tasks = this.shadowRoot.querySelectorAll('.checklist-task');
         tasks.forEach((task) => {
-          const header = task.querySelector(".checklist-task-header");
-          const index = parseInt(task.getAttribute("data-task-index"), 10);
+          const header = task.querySelector('.checklist-task-header');
+          const index = parseInt(task.getAttribute('data-task-index'), 10);
           if (header) {
-            header.addEventListener("click", () => {
+            header.addEventListener('click', () => {
               const newActiveStep = this.activeStep === index ? -1 : index;
               this.setActiveStep(newActiveStep);
             });
           }
-          const markDoneBtn = task.querySelector(
-            ".checklist-task-body-markdone",
-          );
+          const markDoneBtn = task.querySelector('.checklist-task-body-markdone');
           if (markDoneBtn) {
-            markDoneBtn.addEventListener("click", (e) => {
+            markDoneBtn.addEventListener('click', (e) => {
               e.stopPropagation();
               if (!this.checklistData?.outbound?.config?.steps) return;
               const step = this.checklistData.outbound.config.steps[index];
               if (!step) return;
               const previouslyActiveStep = this.activeStep;
-              if (!this.checklistData.completedSteps)
-                this.checklistData.completedSteps = [];
+              if (!this.checklistData.completedSteps) this.checklistData.completedSteps = [];
               if (!this.checklistData.completedSteps.includes(step.id)) {
                 this.checklistData.completedSteps.push(step.id);
                 const allSteps = this.checklistData.outbound.config.steps;
                 let nextActiveStep = -1;
                 if (previouslyActiveStep === index) {
                   for (let i = index + 1; i < allSteps.length; i++) {
-                    if (
-                      !this.checklistData.completedSteps.includes(
-                        allSteps[i].id,
-                      )
-                    ) {
+                    if (!this.checklistData.completedSteps.includes(allSteps[i].id)) {
                       nextActiveStep = i;
                       break;
                     }
@@ -1128,62 +978,44 @@ export const registerGleapChecklist = () => {
                 setTimeout(() => {
                   let isModalOpen = false;
                   if (this.floatingEnabled) {
-                    const tasksModal =
-                      this.shadowRoot.querySelector(".checklist-tasks");
-                    isModalOpen =
-                      tasksModal && tasksModal.style.display === "block";
+                    const tasksModal = this.shadowRoot.querySelector('.checklist-tasks');
+                    isModalOpen = tasksModal && tasksModal.style.display === 'block';
                   }
                   this.renderChecklist(this.checklistData);
                   if (this.floatingEnabled && isModalOpen) {
-                    const tasksModal =
-                      this.shadowRoot.querySelector(".checklist-tasks");
-                    if (tasksModal) tasksModal.style.display = "block";
+                    const tasksModal = this.shadowRoot.querySelector('.checklist-tasks');
+                    if (tasksModal) tasksModal.style.display = 'block';
                   }
                 }, 300);
                 const updateData = { checkedStep: step.id };
-                if (
-                  allSteps.length > 0 &&
-                  this.checklistData.completedSteps.length >= allSteps.length
-                ) {
-                  this.checklistData.status = "done";
-                  updateData.status = "done";
+                if (allSteps.length > 0 && this.checklistData.completedSteps.length >= allSteps.length) {
+                  this.checklistData.status = 'done';
+                  updateData.status = 'done';
                 }
                 this.updateChecklist(this.checklistData.id, updateData);
               }
             });
           }
-          const actionBtn = task.querySelector(
-            ".checklist-task-body-action .action-button",
-          );
+          const actionBtn = task.querySelector('.checklist-task-body-action .action-button');
           if (actionBtn) {
-            actionBtn.addEventListener("click", (e) => {
+            actionBtn.addEventListener('click', (e) => {
               e.stopPropagation();
-              if (
-                !this.checklistData?.outbound?.config?.steps ||
-                typeof Gleap === "undefined"
-              )
-                return;
+              if (!this.checklistData?.outbound?.config?.steps || typeof Gleap === 'undefined') return;
               const step = this.checklistData.outbound.config.steps[index];
-              if (!step || !step.action || step.action === "none") return;
+              if (!step || !step.action || step.action === 'none') return;
               try {
-                if (step.action === "BOT") Gleap.startBot(step.botId);
-                else if (step.action === "CUSTOM_ACTION")
-                  Gleap.triggerCustomAction(step.actionBody);
-                else if (step.action === "REDIRECT_URL") {
+                if (step.action === 'BOT') Gleap.startBot(step.botId);
+                else if (step.action === 'CUSTOM_ACTION') Gleap.triggerCustomAction(step.actionBody);
+                else if (step.action === 'REDIRECT_URL') {
                   e.preventDefault();
                   e.stopPropagation();
                   e.stopImmediatePropagation();
                   Gleap.openURL(step.actionBody, !!step.actionOpenInNewTab);
-                } else if (step.action === "FEEDBACK_FLOW")
-                  Gleap.startFeedbackFlow(step.formId);
-                else if (step.action === "NEWS_ARTICLE")
-                  Gleap.openNewsArticle(step.articleId);
-                else if (step.action === "HELP_ARTICLE")
-                  Gleap.openHelpCenterArticle(step.articleId);
-                else if (step.action === "CHECKLIST")
-                  Gleap.startChecklist(step.outboundId, true, step?.sharedKey);
-                else if (step.action === "PRODUCT_TOUR")
-                  Gleap.startProductTour(step.productTourId, true);
+                } else if (step.action === 'FEEDBACK_FLOW') Gleap.startFeedbackFlow(step.formId);
+                else if (step.action === 'NEWS_ARTICLE') Gleap.openNewsArticle(step.articleId);
+                else if (step.action === 'HELP_ARTICLE') Gleap.openHelpCenterArticle(step.articleId);
+                else if (step.action === 'CHECKLIST') Gleap.startChecklist(step.outboundId, true, step?.sharedKey);
+                else if (step.action === 'PRODUCT_TOUR') Gleap.startProductTour(step.productTourId, true);
               } catch (gleapError) {}
             });
           }
@@ -1195,10 +1027,7 @@ export const registerGleapChecklist = () => {
         const previousActiveStep = this.activeStep;
         this.activeStep = index;
         const tasksToToggle = [];
-        if (
-          previousActiveStep !== -1 &&
-          previousActiveStep !== this.activeStep
-        ) {
+        if (previousActiveStep !== -1 && previousActiveStep !== this.activeStep) {
           tasksToToggle.push({ index: previousActiveStep, open: false });
         }
         if (this.activeStep !== -1 && this.activeStep !== previousActiveStep) {
@@ -1210,38 +1039,31 @@ export const registerGleapChecklist = () => {
       }
 
       toggleTask(index, forceOpen = null) {
-        const taskElement = this.shadowRoot.querySelector(
-          `.checklist-task[data-task-index="${index}"]`,
-        );
+        const taskElement = this.shadowRoot.querySelector(`.checklist-task[data-task-index="${index}"]`);
         if (!taskElement) return;
-        const header = taskElement.querySelector(".checklist-task-header");
+        const header = taskElement.querySelector('.checklist-task-header');
         if (!header) return;
-        const isOpen = taskElement.classList.contains("checklist-task--active");
+        const isOpen = taskElement.classList.contains('checklist-task--active');
         const shouldOpen = forceOpen !== null ? forceOpen : !isOpen;
         if (shouldOpen) {
           if (!isOpen) {
-            taskElement.classList.add("checklist-task--active");
-            header.setAttribute("aria-expanded", "true");
+            taskElement.classList.add('checklist-task--active');
+            header.setAttribute('aria-expanded', 'true');
           }
-          const taskBodyInner = taskElement.querySelector(
-            ".checklist-task-body-inner",
-          );
+          const taskBodyInner = taskElement.querySelector('.checklist-task-body-inner');
           if (taskBodyInner) {
             const height = taskBodyInner.offsetHeight;
-            const taskBody = taskElement.querySelector(".checklist-task-body");
+            const taskBody = taskElement.querySelector('.checklist-task-body');
             if (taskBody) {
-              taskBody.style.setProperty(
-                "--task-body-active-height",
-                `${height}px`,
-              );
+              taskBody.style.setProperty('--task-body-active-height', `${height}px`);
             }
           }
           // Recalculate height when iframes finish loading
-          const iframes = taskElement.querySelectorAll("iframe");
+          const iframes = taskElement.querySelectorAll('iframe');
           iframes.forEach((iframe) => {
             if (!iframe._heightListenerAdded) {
               iframe._heightListenerAdded = true;
-              iframe.addEventListener("load", () => {
+              iframe.addEventListener('load', () => {
                 if (this.activeStep === index) {
                   this.updateActiveTaskMaxHeight();
                 }
@@ -1249,17 +1071,14 @@ export const registerGleapChecklist = () => {
             }
           });
         } else if (!shouldOpen && isOpen) {
-          taskElement.classList.remove("checklist-task--active");
-          header.setAttribute("aria-expanded", "false");
+          taskElement.classList.remove('checklist-task--active');
+          header.setAttribute('aria-expanded', 'false');
         }
       }
     }
 
-    if (
-      typeof customElements !== "undefined" &&
-      !customElements.get("gleap-checklist")
-    ) {
-      customElements.define("gleap-checklist", GleapChecklist);
+    if (typeof customElements !== 'undefined' && !customElements.get('gleap-checklist')) {
+      customElements.define('gleap-checklist', GleapChecklist);
     }
   }
 };

@@ -1,0 +1,12 @@
+published
+build
+node_modules
+.git
+.gitignore
+.prettierignore
+.prettierrc.json
+.prettierrc.js
+.prettierrc.yaml
+.prettierrc.yml
+.prettierrc.toml
+.prettierrc.toml

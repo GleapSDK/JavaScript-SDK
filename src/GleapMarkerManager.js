@@ -1,11 +1,11 @@
-import Gleap, { GleapTranslationManager, GleapFrameManager } from "./Gleap";
-import { ScreenDrawer } from "./ScreenDrawer";
-import { GleapScrollStopper } from "./GleapScrollStopper";
-import { GleapScreenRecorder } from "./GleapScreenRecorder";
-import { loadIcon } from "./UI";
+import Gleap, { GleapTranslationManager, GleapFrameManager } from './Gleap';
+import { ScreenDrawer } from './ScreenDrawer';
+import { GleapScrollStopper } from './GleapScrollStopper';
+import { GleapScreenRecorder } from './GleapScreenRecorder';
+import { loadIcon } from './UI';
 
 export default class GleapMarkerManager {
-  type = "screenshot";
+  type = 'screenshot';
   dragCursor = null;
   screenRecorder = null;
   callback = null;
@@ -19,19 +19,19 @@ export default class GleapMarkerManager {
   }
 
   hideWidgetUI() {
-    const feedbackButton = document.querySelector(".bb-feedback-button");
+    const feedbackButton = document.querySelector('.bb-feedback-button');
     if (feedbackButton) {
-      feedbackButton.style.display = "none";
+      feedbackButton.style.display = 'none';
     }
 
-    const dialogUI = document.querySelector(".bb-feedback-dialog-container");
+    const dialogUI = document.querySelector('.bb-feedback-dialog-container');
     if (dialogUI) {
-      dialogUI.style.display = "none";
+      dialogUI.style.display = 'none';
     }
   }
 
   showWidgetUI() {
-    if (this.type === "screenshot") {
+    if (this.type === 'screenshot') {
       GleapScrollStopper.enableScroll();
     }
 
@@ -51,60 +51,56 @@ export default class GleapMarkerManager {
     }
 
     // Remove the toolbar UI
-    const dialog = document.querySelector(".bb-capture-toolbar");
+    const dialog = document.querySelector('.bb-capture-toolbar');
     if (dialog) {
       dialog.remove();
     }
 
     // Capture SVG ref
-    const captureSVG = document.querySelector(".bb-capture-svg");
+    const captureSVG = document.querySelector('.bb-capture-svg');
     if (captureSVG) {
-      captureSVG.classList.add("bb-capture-svg--preview");
+      captureSVG.classList.add('bb-capture-svg--preview');
     }
 
     // Remove the preview UI
-    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
+    const videoPreviewContainer = document.querySelector('.bb-capture-preview');
     if (videoPreviewContainer) {
       videoPreviewContainer.remove();
     }
 
     // Feedback button
-    const feedbackButton = document.querySelector(".bb-feedback-button");
+    const feedbackButton = document.querySelector('.bb-feedback-button');
     if (feedbackButton) {
-      feedbackButton.style.display = "flex";
+      feedbackButton.style.display = 'flex';
     }
 
     // Feedback dialog container
-    const dialogUI = document.querySelector(".bb-feedback-dialog-container");
+    const dialogUI = document.querySelector('.bb-feedback-dialog-container');
     if (dialogUI) {
-      dialogUI.style.display = "block";
+      dialogUI.style.display = 'block';
     }
 
     // Dismiss button
-    const dismissUI = document.querySelector(".bb-capture-dismiss");
+    const dismissUI = document.querySelector('.bb-capture-dismiss');
     if (dismissUI) {
-      dismissUI.style.display = "none";
+      dismissUI.style.display = 'none';
     }
 
     // Hide the color picker
-    const colorPicker = document.querySelector(
-      ".bb-capture-toolbar-item-colorpicker"
-    );
+    const colorPicker = document.querySelector('.bb-capture-toolbar-item-colorpicker');
     if (colorPicker) {
-      colorPicker.style.display = "none";
+      colorPicker.style.display = 'none';
     }
 
     // Border layer
-    const borderLayer = document.querySelector(
-      ".bb-capture-editor-borderlayer"
-    );
+    const borderLayer = document.querySelector('.bb-capture-editor-borderlayer');
     if (borderLayer) {
-      borderLayer.style.display = "none";
+      borderLayer.style.display = 'none';
     }
   }
 
   clear() {
-    const captureEditor = document.querySelector(".bb-capture-editor");
+    const captureEditor = document.querySelector('.bb-capture-editor');
     if (captureEditor) {
       captureEditor.remove();
     }
@@ -134,45 +130,33 @@ export default class GleapMarkerManager {
 
   setupMousePointer() {
     const self = this;
-    this.dragCursor = document.querySelector(".bb-capture-editor-drag-info");
-    const captureSVG = document.querySelector(".bb-capture-svg");
-    captureSVG.addEventListener("mouseenter", (e) => {
+    this.dragCursor = document.querySelector('.bb-capture-editor-drag-info');
+    const captureSVG = document.querySelector('.bb-capture-svg');
+    captureSVG.addEventListener('mouseenter', (e) => {
       self.dragCursor.style.opacity = 1;
     });
 
-    captureSVG.addEventListener("mouseleave", (e) => {
+    captureSVG.addEventListener('mouseleave', (e) => {
       self.dragCursor.style.opacity = 0;
     });
 
-    document.documentElement.addEventListener(
-      "mousemove",
-      this.mouseMoveEventHandler.bind(this)
-    );
-    document.documentElement.addEventListener(
-      "touchmove",
-      this.touchMoveEventHandler.bind(this)
-    );
+    document.documentElement.addEventListener('mousemove', this.mouseMoveEventHandler.bind(this));
+    document.documentElement.addEventListener('touchmove', this.touchMoveEventHandler.bind(this));
   }
 
   cleanupMousePointer() {
-    document.documentElement.removeEventListener(
-      "mousemove",
-      this.mouseMoveEventHandler
-    );
-    document.documentElement.removeEventListener(
-      "touchmove",
-      this.touchMoveEventHandler
-    );
+    document.documentElement.removeEventListener('mousemove', this.mouseMoveEventHandler);
+    document.documentElement.removeEventListener('touchmove', this.touchMoveEventHandler);
 
     // Clean up toolbar drag listeners
     const dragHandle = document.querySelector(".bb-capture-toolbar-item[data-type='drag']");
     if (dragHandle) {
-      dragHandle.removeEventListener("mousedown", this.dragStart);
-      dragHandle.removeEventListener("touchstart", this.dragStart);
-      document.removeEventListener("mousemove", this.drag);
-      document.removeEventListener("touchmove", this.drag);
-      document.removeEventListener("mouseup", this.dragEnd);
-      document.removeEventListener("touchend", this.dragEnd);
+      dragHandle.removeEventListener('mousedown', this.dragStart);
+      dragHandle.removeEventListener('touchstart', this.dragStart);
+      document.removeEventListener('mousemove', this.drag);
+      document.removeEventListener('touchmove', this.drag);
+      document.removeEventListener('mouseup', this.dragEnd);
+      document.removeEventListener('touchend', this.dragEnd);
     }
 
     if (this.dragCursor) {
@@ -182,61 +166,57 @@ export default class GleapMarkerManager {
 
   createEditorUI() {
     // Add HTML for drawing and recording
-    var bugReportingEditor = document.createElement("div");
-    bugReportingEditor.className = "bb-capture-editor";
+    var bugReportingEditor = document.createElement('div');
+    bugReportingEditor.className = 'bb-capture-editor';
     bugReportingEditor.innerHTML = `
           <div class="bb-capture-editor-borderlayer"></div>
           <svg class="bb-capture-svg" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" xml:space="preserve"></svg>
-          <div class="bb-capture-dismiss">${loadIcon("dismiss")}</div>
-          <div class='bb-capture-editor-drag-info'>${loadIcon("rect")}</div>
+          <div class="bb-capture-dismiss">${loadIcon('dismiss')}</div>
+          <div class='bb-capture-editor-drag-info'>${loadIcon('rect')}</div>
           <div class="bb-capture-toolbar">
             <div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-tool drag-handle-item" data-type="drag">
-              ${loadIcon("drag")}
+              ${loadIcon('drag')}
             </div>
-            ${this.type === "capture"
-        ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
-                  ${loadIcon("recorderon")}
-                  ${loadIcon("recorderoff")}
+            ${
+              this.type === 'capture'
+                ? `<div class="bb-capture-toolbar-item bb-capture-item-rec bb-capture-toolbar-item-recording" data-type="recording">
+                  ${loadIcon('recorderon')}
+                  ${loadIcon('recorderoff')}
                   <span class="bb-tooltip bb-tooltip-screen-recording"></span>
                 </div>
                 <div class="bb-capture-toolbar-item bb-capture-item-rec" data-type="mic">
-                  ${loadIcon("mic")}
+                  ${loadIcon('mic')}
                   <span class="bb-tooltip bb-tooltip-audio-recording"></span>
                 </div>
                 <div class="bb-capture-toolbar-item-timer bb-capture-item-rec">2:00</div>
                 <div class="bb-capture-toolbar-item-spacer"></div>
                 <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="pointer">
-                  ${loadIcon("pointer")}
+                  ${loadIcon('pointer')}
                 </div>`
-        : ""
-      }
+                : ''
+            }
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool bb-capture-toolbar-item--active" data-type="rect">
-              ${loadIcon("rect")}
+              ${loadIcon('rect')}
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="pen">
-              ${loadIcon("pen")}
+              ${loadIcon('pen')}
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="blur">
-              ${loadIcon("blur")}
+              ${loadIcon('blur')}
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem" data-type="colorpicker">
               <div class="bb-capture-toolbar-item-selectedcolor"></div>
-              <span class="bb-tooltip">${GleapTranslationManager.translateText(
-        `pickAColor`
-      )}</span>
+              <span class="bb-tooltip">${GleapTranslationManager.translateText(`pickAColor`)}</span>
             </div>
             <div class="bb-capture-toolbar-item bb-capture-toolbar-drawingitem bb-capture-toolbar-item-tool" data-type="undo">
-              ${loadIcon("undo")}
-              <span class="bb-tooltip">${GleapTranslationManager.translateText(
-        `undo`
-      )}</span>
+              ${loadIcon('undo')}
+              <span class="bb-tooltip">${GleapTranslationManager.translateText(`undo`)}</span>
             </div>
-            ${this.type !== "capture"
-        ? `<div class="bb-capture-button-next">${GleapTranslationManager.translateText(
-          `next`
-        )}</div>`
-        : ""
-      }
+            ${
+              this.type !== 'capture'
+                ? `<div class="bb-capture-button-next">${GleapTranslationManager.translateText(`next`)}</div>`
+                : ''
+            }
           </div>
           <div class="bb-capture-toolbar-item-colorpicker">
             <div class="bb-capture-toolbar-item-color" data-color="#EB144C"></div>
@@ -251,12 +231,8 @@ export default class GleapMarkerManager {
             <div class="bb-capture-preview-inner">
               <video controls muted autoplay></video>
               <div class="bb-capture-preview-buttons">
-                <div class="bb-capture-preview-retrybutton">${GleapTranslationManager.translateText(
-        `retry`
-      )}</div>
-                <div class="bb-capture-preview-sendbutton">${GleapTranslationManager.translateText(
-        `next`
-      )}</div>
+                <div class="bb-capture-preview-retrybutton">${GleapTranslationManager.translateText(`retry`)}</div>
+                <div class="bb-capture-preview-sendbutton">${GleapTranslationManager.translateText(`next`)}</div>
               </div>
             </div>
           </div>
@@ -264,7 +240,7 @@ export default class GleapMarkerManager {
     document.body.appendChild(bugReportingEditor);
 
     // Set RTL layout
-    bugReportingEditor.setAttribute("dir", GleapTranslationManager.getInstance().isRTLLayout ? "rtl" : "ltr");
+    bugReportingEditor.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
   }
 
   showNextStep = function () {
@@ -273,14 +249,14 @@ export default class GleapMarkerManager {
 
     if (this.callback) {
       GleapFrameManager.getInstance().sendMessage({
-        name: "set-form-data",
+        name: 'set-form-data',
         data: {
-          formKey: "capture",
+          formKey: 'capture',
           data: {
             value: this.type,
             dirty: true,
-          }
-        }
+          },
+        },
       });
       this.callback(true);
     }
@@ -288,11 +264,11 @@ export default class GleapMarkerManager {
 
   unregisterListeners() {
     if (this.escListener) {
-      document.removeEventListener("keydown", this.escListener);
+      document.removeEventListener('keydown', this.escListener);
     }
 
     if (this.pageLeaveListener) {
-      window.removeEventListener("beforeunload", this.pageLeaveListener);
+      window.removeEventListener('beforeunload', this.pageLeaveListener);
     }
   }
 
@@ -304,25 +280,25 @@ export default class GleapMarkerManager {
       evt = evt || window.event;
       var isEscape = false;
       var isEnter = false;
-      if ("key" in evt) {
-        isEscape = evt.key === "Escape";
-        isEnter = evt.key === "Enter";
+      if ('key' in evt) {
+        isEscape = evt.key === 'Escape';
+        isEnter = evt.key === 'Enter';
       }
       if (isEscape) {
         self.dismiss();
       }
-      if (self.type === "screenshot" && isEnter) {
+      if (self.type === 'screenshot' && isEnter) {
         self.showNextStep();
       }
     };
-    document.addEventListener("keydown", this.escListener);
+    document.addEventListener('keydown', this.escListener);
 
     // Page leave listener
     this.pageLeaveListener = function (event) {
       event.preventDefault();
-      event.returnValue = "";
+      event.returnValue = '';
     };
-    window.addEventListener("beforeunload", this.pageLeaveListener);
+    window.addEventListener('beforeunload', this.pageLeaveListener);
   }
 
   show(callback) {
@@ -342,9 +318,9 @@ export default class GleapMarkerManager {
     this.setupMousePointer();
 
     // Setup screenshot data
-    if (this.type === "screenshot") {
+    if (this.type === 'screenshot') {
       // Overwrite snapshot position
-      Gleap.getInstance().setGlobalDataItem("snapshotPosition", {
+      Gleap.getInstance().setGlobalDataItem('snapshotPosition', {
         x: window.scrollX,
         y: window.scrollY,
       });
@@ -357,9 +333,7 @@ export default class GleapMarkerManager {
     }
 
     // Hook up the drawing.
-    this.screenDrawer = new ScreenDrawer(
-      this.captureScreenDrawerRerender.bind(this)
-    );
+    this.screenDrawer = new ScreenDrawer(this.captureScreenDrawerRerender.bind(this));
 
     this.setupColorPicker();
     this.setupToolbar();
@@ -367,25 +341,19 @@ export default class GleapMarkerManager {
 
   setupColorPicker() {
     const self = this;
-    const selectedColor = document.querySelector(
-      ".bb-capture-toolbar-item-selectedcolor"
-    );
-    const colorItems = document.querySelectorAll(
-      ".bb-capture-toolbar-item-color"
-    );
-    const colorpicker = document.querySelector(
-      ".bb-capture-toolbar-item-colorpicker"
-    );
+    const selectedColor = document.querySelector('.bb-capture-toolbar-item-selectedcolor');
+    const colorItems = document.querySelectorAll('.bb-capture-toolbar-item-color');
+    const colorpicker = document.querySelector('.bb-capture-toolbar-item-colorpicker');
 
     for (var i = 0; i < colorItems.length; i++) {
       const colorItem = colorItems[i];
-      const hexColor = colorItem.getAttribute("data-color");
+      const hexColor = colorItem.getAttribute('data-color');
       colorItem.style.backgroundColor = hexColor;
       colorItem.onclick = function () {
         if (colorItem) {
           self.screenDrawer.setColor(hexColor);
           if (colorpicker) {
-            colorpicker.style.display = "none";
+            colorpicker.style.display = 'none';
           }
           selectedColor.style.backgroundColor = colorItem.style.backgroundColor;
           GleapMarkerManager.setPenColor(hexColor);
@@ -395,7 +363,7 @@ export default class GleapMarkerManager {
   }
 
   static setPenColor(hexColor) {
-    const penTips = document.querySelectorAll(".bb-pen-tip");
+    const penTips = document.querySelectorAll('.bb-pen-tip');
     for (var j = 0; j < penTips.length; j++) {
       penTips[j].style.fill = hexColor;
     }
@@ -411,7 +379,7 @@ export default class GleapMarkerManager {
 
   setupToolbar() {
     const self = this;
-    const toolbar = document.querySelector(".bb-capture-toolbar");
+    const toolbar = document.querySelector('.bb-capture-toolbar');
     let isDragging = false;
     let currentX;
     let currentY;
@@ -432,7 +400,7 @@ export default class GleapMarkerManager {
       xOffset = x;
       yOffset = y;
 
-      if (e.type === "mousedown") {
+      if (e.type === 'mousedown') {
         initialX = e.clientX - xOffset;
         initialY = e.clientY - yOffset;
       } else {
@@ -449,7 +417,7 @@ export default class GleapMarkerManager {
     this.drag = (e) => {
       if (isDragging) {
         e.preventDefault();
-        if (e.type === "mousemove") {
+        if (e.type === 'mousemove') {
           currentX = e.clientX - initialX;
           currentY = e.clientY - initialY;
         } else {
@@ -466,99 +434,90 @@ export default class GleapMarkerManager {
 
     const dragHandle = document.querySelector(".bb-capture-toolbar-item[data-type='drag']");
 
-    dragHandle.addEventListener("mousedown", this.dragStart);
-    dragHandle.addEventListener("touchstart", this.dragStart);
-    document.addEventListener("mousemove", this.drag);
-    document.addEventListener("touchmove", this.drag);
-    document.addEventListener("mouseup", this.dragEnd);
-    document.addEventListener("touchend", this.dragEnd);
+    dragHandle.addEventListener('mousedown', this.dragStart);
+    dragHandle.addEventListener('touchstart', this.dragStart);
+    document.addEventListener('mousemove', this.drag);
+    document.addEventListener('touchmove', this.drag);
+    document.addEventListener('mouseup', this.dragEnd);
+    document.addEventListener('touchend', this.dragEnd);
 
     // Hook up dismiss button
-    const dismissButton = document.querySelector(".bb-capture-dismiss");
+    const dismissButton = document.querySelector('.bb-capture-dismiss');
     dismissButton.onclick = function () {
       self.dismiss();
     };
 
     // Hook up send button
-    const nextButton = document.querySelector(".bb-capture-button-next");
+    const nextButton = document.querySelector('.bb-capture-button-next');
     if (nextButton) {
       nextButton.onclick = this.showNextStep.bind(this);
     }
 
-    const colorpicker = document.querySelector(
-      ".bb-capture-toolbar-item-colorpicker"
-    );
+    const colorpicker = document.querySelector('.bb-capture-toolbar-item-colorpicker');
 
     // Capture SVG ref
-    const captureSVG = document.querySelector(".bb-capture-svg");
+    const captureSVG = document.querySelector('.bb-capture-svg');
 
     const chooseTool = function (type, toolbarItem) {
-      const toolbarTools = document.querySelectorAll(
-        ".bb-capture-toolbar-item-tool"
-      );
+      const toolbarTools = document.querySelectorAll('.bb-capture-toolbar-item-tool');
       for (let j = 0; j < toolbarTools.length; j++) {
-        toolbarTools[j].classList.remove("bb-capture-toolbar-item--active");
+        toolbarTools[j].classList.remove('bb-capture-toolbar-item--active');
       }
-      toolbarItem.classList.add("bb-capture-toolbar-item--active");
+      toolbarItem.classList.add('bb-capture-toolbar-item--active');
       self.screenDrawer.setTool(type);
-      self.dragCursor.innerHTML = "";
-      if (type === "pointer") {
-        captureSVG.style.pointerEvents = "none";
+      self.dragCursor.innerHTML = '';
+      if (type === 'pointer') {
+        captureSVG.style.pointerEvents = 'none';
       } else {
-        captureSVG.style.pointerEvents = "auto";
+        captureSVG.style.pointerEvents = 'auto';
         try {
-          var svgClone = toolbarItem.querySelector("svg").cloneNode(true);
+          var svgClone = toolbarItem.querySelector('svg').cloneNode(true);
           if (svgClone && self.dragCursor) {
             self.dragCursor.appendChild(svgClone);
           }
-        } catch (exp) { }
+        } catch (exp) {}
       }
-    }
+    };
 
     // Setup toolbar items
-    var toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+    var toolbarItems = document.querySelectorAll('.bb-capture-toolbar-item');
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
       toolbarItem.onclick = function () {
-        const type = toolbarItem.getAttribute("data-type");
-        if (colorpicker && type !== "colorpicker") {
-          colorpicker.style.display = "none";
+        const type = toolbarItem.getAttribute('data-type');
+        if (colorpicker && type !== 'colorpicker') {
+          colorpicker.style.display = 'none';
         }
 
         // Mic & recording buttons
-        if (type === "mic") {
+        if (type === 'mic') {
           self.screenRecorder.toggleAudio();
         }
-        if (type === "recording") {
+        if (type === 'recording') {
           if (self.screenRecorder.isRecording) {
             self.screenRecorder.stopScreenRecording();
           } else {
             self.screenRecorder.startScreenRecording();
-            chooseTool("pointer", document.querySelector(".bb-capture-toolbar-item[data-type='pointer']"));
+            chooseTool('pointer', document.querySelector(".bb-capture-toolbar-item[data-type='pointer']"));
           }
         }
 
         // Marker buttons
-        if (self.type === "capture" && !self.screenRecorder.isRecording) {
+        if (self.type === 'capture' && !self.screenRecorder.isRecording) {
           // Inactivate buttons.
           return;
         }
-        if (
-          type === "pen" ||
-          type === "blur" ||
-          type === "rect" ||
-          type === "pointer"
-        ) {
+        if (type === 'pen' || type === 'blur' || type === 'rect' || type === 'pointer') {
           chooseTool(type, toolbarItem);
         }
-        if (type === "colorpicker") {
-          if (colorpicker.style.display === "flex") {
-            colorpicker.style.display = "none";
+        if (type === 'colorpicker') {
+          if (colorpicker.style.display === 'flex') {
+            colorpicker.style.display = 'none';
           } else {
-            colorpicker.style.display = "flex";
+            colorpicker.style.display = 'flex';
           }
         }
-        if (type === "undo") {
+        if (type === 'undo') {
           self.screenDrawer.removeLastAddedPathFromSvg();
         }
       };
@@ -570,17 +529,14 @@ export default class GleapMarkerManager {
       return;
     }
 
-    const itemInactiveClass = "bb-capture-editor-item-inactive";
-    const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
+    const itemInactiveClass = 'bb-capture-editor-item-inactive';
+    const toolbarItems = document.querySelectorAll('.bb-capture-toolbar-item');
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
-      const type = toolbarItem.getAttribute("data-type");
+      const type = toolbarItem.getAttribute('data-type');
       switch (type) {
-        case "undo":
-          if (
-            this.screenDrawer.pathBuffer != null &&
-            this.screenDrawer.pathBuffer.length > 0
-          ) {
+        case 'undo':
+          if (this.screenDrawer.pathBuffer != null && this.screenDrawer.pathBuffer.length > 0) {
             toolbarItem.classList.remove(itemInactiveClass);
           } else {
             toolbarItem.classList.add(itemInactiveClass);
@@ -598,21 +554,17 @@ export default class GleapMarkerManager {
     }
 
     if (this.screenRecorder.file) {
-      Gleap.getInstance().setGlobalDataItem("screenRecordingData", this.screenRecorder.file);
+      Gleap.getInstance().setGlobalDataItem('screenRecordingData', this.screenRecorder.file);
     }
 
-    const itemInactiveClass = "bb-capture-editor-item-inactive";
-    const timerLabel = document.querySelector(".bb-capture-toolbar-item-timer");
-    const toolbarItems = document.querySelectorAll(".bb-capture-toolbar-item");
-    const screenRecordingTooltip = document.querySelector(
-      ".bb-tooltip-screen-recording"
-    );
-    const audioRecordingTooltip = document.querySelector(
-      ".bb-tooltip-audio-recording"
-    );
-    const captureEditor = document.querySelector(".bb-capture-editor");
-    const recordingClass = "bb-capture-editor-recording";
-    const notRecordingClass = "bb-capture-editor-notrecording";
+    const itemInactiveClass = 'bb-capture-editor-item-inactive';
+    const timerLabel = document.querySelector('.bb-capture-toolbar-item-timer');
+    const toolbarItems = document.querySelectorAll('.bb-capture-toolbar-item');
+    const screenRecordingTooltip = document.querySelector('.bb-tooltip-screen-recording');
+    const audioRecordingTooltip = document.querySelector('.bb-tooltip-audio-recording');
+    const captureEditor = document.querySelector('.bb-capture-editor');
+    const recordingClass = 'bb-capture-editor-recording';
+    const notRecordingClass = 'bb-capture-editor-notrecording';
     if (this.screenRecorder.isRecording) {
       captureEditor.classList.add(recordingClass);
       captureEditor.classList.remove(notRecordingClass);
@@ -620,71 +572,50 @@ export default class GleapMarkerManager {
       captureEditor.classList.add(notRecordingClass);
       captureEditor.classList.remove(recordingClass);
     }
-    
+
     // Update UI.
-    const dialog = document.querySelector(".bb-capture-toolbar");
-    const videoPreviewContainer = document.querySelector(".bb-capture-preview");
-    videoPreviewContainer.style.display = this.screenRecorder.file
-      ? "flex"
-      : "none";
-    dialog.style.display = !this.screenRecorder.file ? "flex" : "none";
+    const dialog = document.querySelector('.bb-capture-toolbar');
+    const videoPreviewContainer = document.querySelector('.bb-capture-preview');
+    videoPreviewContainer.style.display = this.screenRecorder.file ? 'flex' : 'none';
+    dialog.style.display = !this.screenRecorder.file ? 'flex' : 'none';
 
     for (var i = 0; i < toolbarItems.length; i++) {
       const toolbarItem = toolbarItems[i];
-      const type = toolbarItem.getAttribute("data-type");
+      const type = toolbarItem.getAttribute('data-type');
       switch (type) {
-        case "mic":
-          if (
-            this.screenRecorder.audioAvailable &&
-            this.screenRecorder.available
-          ) {
+        case 'mic':
+          if (this.screenRecorder.audioAvailable && this.screenRecorder.available) {
             toolbarItem.classList.remove(itemInactiveClass);
             if (!this.screenRecorder.audioMuted) {
-              toolbarItem.classList.remove(
-                "bb-capture-toolbar-item--inactivecross"
-              );
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "mute"
-              );
+              toolbarItem.classList.remove('bb-capture-toolbar-item--inactivecross');
+              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('mute');
             } else {
-              toolbarItem.classList.add(
-                "bb-capture-toolbar-item--inactivecross"
-              );
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "unmute"
-              );
+              toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
+              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('unmute');
             }
           } else {
             toolbarItem.classList.add(itemInactiveClass);
-            toolbarItem.classList.add("bb-capture-toolbar-item--inactivecross");
-            audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-              "browserNotSupported"
-            );
+            toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
+            audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('browserNotSupported');
           }
           break;
 
-        case "recording":
+        case 'recording':
           if (this.screenRecorder.available) {
             toolbarItem.classList.remove(itemInactiveClass);
             if (this.screenRecorder.isRecording) {
-              toolbarItem.setAttribute("data-active", "true");
-              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "stopRecording"
-              );
-              timerLabel.style.display = "block";
+              toolbarItem.setAttribute('data-active', 'true');
+              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText('stopRecording');
+              timerLabel.style.display = 'block';
             } else {
-              toolbarItem.setAttribute("data-active", "false");
-              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-                "startRecording"
-              );
-              timerLabel.style.display = "none";
+              toolbarItem.setAttribute('data-active', 'false');
+              screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText('startRecording');
+              timerLabel.style.display = 'none';
             }
           } else {
             // Recording is not available.
             toolbarItem.classList.add(itemInactiveClass);
-            screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText(
-              "browserNotSupported"
-            );
+            screenRecordingTooltip.innerHTML = GleapTranslationManager.translateText('browserNotSupported');
           }
           break;
 
@@ -698,15 +629,11 @@ export default class GleapMarkerManager {
     const self = this;
 
     // Hook preview next button
-    const nextButtonPreview = document.querySelector(
-      ".bb-capture-preview-sendbutton"
-    );
+    const nextButtonPreview = document.querySelector('.bb-capture-preview-sendbutton');
     nextButtonPreview.onclick = this.showNextStep.bind(this);
 
     // Hook retry button
-    const retryButton = document.querySelector(
-      ".bb-capture-preview-retrybutton"
-    );
+    const retryButton = document.querySelector('.bb-capture-preview-retrybutton');
     retryButton.onclick = function () {
       self.screenRecorder.clearPreview();
       if (self.screenDrawer) {
@@ -717,9 +644,7 @@ export default class GleapMarkerManager {
     // Setup screen recorder
     this.screenRecorder = new GleapScreenRecorder(
       this.captureRenderer.bind(this),
-      GleapTranslationManager.translateText(
-        "accessToScreenSharingDenied"
-      )
+      GleapTranslationManager.translateText('accessToScreenSharingDenied')
     );
   }
 }

@@ -1,21 +1,21 @@
-import { isMobile, resizeImage } from "./GleapHelper";
-import { isBlacklisted } from "./ResourceExclusionList";
+import { isMobile, resizeImage } from './GleapHelper';
+import { isBlacklisted } from './ResourceExclusionList';
 
 export const startScreenCapture = (isLiveSite) => {
   return prepareScreenshotData(isLiveSite);
 };
 
 const documentToHTML = (clone) => {
-  var html = "";
+  var html = '';
   var node = window.document.doctype;
   if (node) {
     html =
-      "<!DOCTYPE " +
+      '<!DOCTYPE ' +
       node.name +
-      (node.publicId ? ' PUBLIC "' + node.publicId + '"' : "") +
-      (!node.publicId && node.systemId ? " SYSTEM" : "") +
-      (node.systemId ? ' "' + node.systemId + '"' : "") +
-      ">";
+      (node.publicId ? ' PUBLIC "' + node.publicId + '"' : '') +
+      (!node.publicId && node.systemId ? ' SYSTEM' : '') +
+      (node.systemId ? ' "' + node.systemId + '"' : '') +
+      '>';
   }
 
   if (clone && clone.childNodes && clone.childNodes.length > 0) {
@@ -58,31 +58,27 @@ const loadCSSUrlResources = (data, basePath, remote) => {
 
         var matchedUrl = matchedData
           .substr(4, matchedData.length - 5)
-          .replaceAll("'", "")
-          .replaceAll('"', "");
+          .replaceAll("'", '')
+          .replaceAll('"', '');
 
         // Remote file or data
-        if (
-          matchedUrl.indexOf("http") === 0 ||
-          matchedUrl.indexOf("//") === 0 ||
-          matchedUrl.indexOf("data") === 0
-        ) {
+        if (matchedUrl.indexOf('http') === 0 || matchedUrl.indexOf('//') === 0 || matchedUrl.indexOf('data') === 0) {
           return resolve(matchedData);
         }
 
         try {
           var resourcePath = matchedUrl;
           if (basePath) {
-            resourcePath = new URL(matchedUrl, basePath + "/").href;
+            resourcePath = new URL(matchedUrl, basePath + '/').href;
           }
 
           // Try to fetch external resource.
           if (!remote) {
             return fetchCSSResource(resourcePath).then((resourceData) => {
-              return resolve("url(" + resourceData + ")");
+              return resolve('url(' + resourceData + ')');
             });
           } else {
-            return resolve("url(" + resourcePath + ")");
+            return resolve('url(' + resourcePath + ')');
           }
         } catch (exp) {
           return resolve(matchedData);
@@ -108,8 +104,8 @@ const fetchCSSResource = (url) => {
       xhr.onerror = function (err) {
         resolve();
       };
-      xhr.open("GET", url);
-      xhr.responseType = "blob";
+      xhr.open('GET', url);
+      xhr.responseType = 'blob';
       xhr.send();
     } else {
       resolve();
@@ -124,7 +120,7 @@ const progressResource = (data, elem, resolve, reject) => {
       resolve();
     })
     .catch(() => {
-      console.warn("BB: Image resize failed.");
+      console.warn('BB: Image resize failed.');
       resolve();
     });
 };
@@ -151,8 +147,8 @@ const fetchItemResource = (elem) => {
         resolve();
       };
       var url = elem.src;
-      xhr.open("GET", url);
-      xhr.responseType = "blob";
+      xhr.open('GET', url);
+      xhr.responseType = 'blob';
       xhr.send();
     } else {
       resolve();
@@ -161,7 +157,7 @@ const fetchItemResource = (elem) => {
 };
 
 const downloadAllImages = (dom) => {
-  const imgItems = dom.querySelectorAll("img");
+  const imgItems = dom.querySelectorAll('img');
   const imgItemsPromises = [];
   for (var i = 0; i < imgItems.length; i++) {
     const item = imgItems[i];
@@ -181,23 +177,21 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
     try {
       if (cloneTargetNode) {
         var replacementNode = null;
-        if (cssTextContent != "") {
+        if (cssTextContent != '') {
           // Create node.
-          const head = clone.querySelector("head");
-          var styleNode = window.document.createElement("style");
+          const head = clone.querySelector('head');
+          var styleNode = window.document.createElement('style');
           head.appendChild(styleNode);
-          styleNode.type = "text/css";
+          styleNode.type = 'text/css';
           if (styleNode.styleSheet) {
             styleNode.styleSheet.cssText = cssTextContent;
           } else {
-            styleNode.appendChild(
-              window.document.createTextNode(cssTextContent)
-            );
+            styleNode.appendChild(window.document.createTextNode(cssTextContent));
           }
           replacementNode = styleNode;
         } else {
-          var linkNode = window.document.createElement("link");
-          linkNode.rel = "stylesheet";
+          var linkNode = window.document.createElement('link');
+          linkNode.rel = 'stylesheet';
           linkNode.type = styleSheet.type;
           linkNode.href = styleSheet.href;
           linkNode.media = styleSheet.media;
@@ -205,10 +199,7 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
         }
 
         if (replacementNode) {
-          cloneTargetNode.parentNode.insertBefore(
-            replacementNode,
-            cloneTargetNode
-          );
+          cloneTargetNode.parentNode.insertBefore(replacementNode, cloneTargetNode);
           cloneTargetNode.remove();
         }
       }
@@ -226,7 +217,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
     }
   } catch (exp) {}
 
-  var cssTextContent = "";
+  var cssTextContent = '';
   if (cssRules) {
     for (var cssRuleItem in cssRules) {
       if (cssRules[cssRuleItem].cssText) {
@@ -244,15 +235,15 @@ const downloadAllCSSUrlResources = (clone, remote) => {
     const styleSheet = document.styleSheets[i];
 
     // Skip if the stylesheet is meant for print
-    if (styleSheet.media && styleSheet.media.mediaText === "print") {
+    if (styleSheet.media && styleSheet.media.mediaText === 'print') {
       continue;
     }
 
     const cssTextContent = getTextContentFromStyleSheet(styleSheet);
     if (styleSheet && styleSheet.ownerNode) {
-      if (cssTextContent != "") {
+      if (cssTextContent != '') {
         // Resolve resources.
-        const baseTags = document.getElementsByTagName("base");
+        const baseTags = document.getElementsByTagName('base');
         var basePathURL = baseTags.length
           ? baseTags[0].href.substr(location.origin.length, 999)
           : window.location.href.split(/[?#]/)[0];
@@ -261,25 +252,23 @@ const downloadAllCSSUrlResources = (clone, remote) => {
           basePathURL = styleSheet.href;
         }
 
-        const basePath = basePathURL.substring(0, basePathURL.lastIndexOf("/"));
+        const basePath = basePathURL.substring(0, basePathURL.lastIndexOf('/'));
 
         promises.push(
-          loadCSSUrlResources(cssTextContent, basePath, remote).then(
-            (replacedStyle) => {
-              return {
-                styletext: replacedStyle,
-                stylesheet: styleSheet,
-                styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
-              };
-            }
-          )
+          loadCSSUrlResources(cssTextContent, basePath, remote).then((replacedStyle) => {
+            return {
+              styletext: replacedStyle,
+              stylesheet: styleSheet,
+              styleId: styleSheet.ownerNode.getAttribute('bb-styleid'),
+            };
+          })
         );
       } else {
         promises.push(
           Promise.resolve({
             styletext: cssTextContent,
             stylesheet: styleSheet,
-            styleId: styleSheet.ownerNode.getAttribute("bb-styleid"),
+            styleId: styleSheet.ownerNode.getAttribute('bb-styleid'),
           })
         );
       }
@@ -289,12 +278,7 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   return Promise.all(promises).then((results) => {
     if (results) {
       for (var i = 0; i < results.length; i++) {
-        replaceStyleNodes(
-          clone,
-          results[i].stylesheet,
-          results[i].styletext,
-          results[i].styleId
-        );
+        replaceStyleNodes(clone, results[i].stylesheet, results[i].styletext, results[i].styleId);
       }
     }
     return true;
@@ -320,9 +304,7 @@ const prepareRemoteData = (clone, remote) => {
           });
         })
         .catch(() => {
-          console.warn(
-            "Gleap: Failed with resolving local resources. Please contact the Gleap support team."
-          );
+          console.warn('Gleap: Failed with resolving local resources. Please contact the Gleap support team.');
           resolve();
         });
     }
@@ -330,23 +312,21 @@ const prepareRemoteData = (clone, remote) => {
 };
 
 const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
-  if (typeof doc.adoptedStyleSheets !== "undefined") {
+  if (typeof doc.adoptedStyleSheets !== 'undefined') {
     for (let i = 0; i < doc.adoptedStyleSheets.length; i++) {
       const styleSheet = doc.adoptedStyleSheets[i];
       const cssTextContent = getTextContentFromStyleSheet(styleSheet);
 
-      var shadowStyleNode = window.document.createElement("style");
-      shadowStyleNode.type = "text/css";
+      var shadowStyleNode = window.document.createElement('style');
+      shadowStyleNode.type = 'text/css';
       if (shadowStyleNode.styleSheet) {
         shadowStyleNode.styleSheet.cssText = cssTextContent;
       } else {
-        shadowStyleNode.appendChild(
-          window.document.createTextNode(cssTextContent)
-        );
+        shadowStyleNode.appendChild(window.document.createTextNode(cssTextContent));
       }
 
       if (shadowNodeId) {
-        shadowStyleNode.setAttribute("bb-shadow-child", shadowNodeId);
+        shadowStyleNode.setAttribute('bb-shadow-child', shadowNodeId);
       }
 
       clone.insertBefore(shadowStyleNode, clone.firstElementChild);
@@ -355,7 +335,7 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
 };
 
 const extractFinalCSSState = (element) => {
-  if (element && typeof element.getAnimations === "function") {
+  if (element && typeof element.getAnimations === 'function') {
     const animations = element.getAnimations();
     const finalCSSState = {};
 
@@ -365,7 +345,7 @@ const extractFinalCSSState = (element) => {
 
       // Extract only the keys (CSS properties) from the final keyframe
       Object.keys(finalKeyframe).forEach((property) => {
-        if (property !== "offset") {
+        if (property !== 'offset') {
           // Store the computed style for each animated property
           finalCSSState[property] = getComputedStyle(element)[property];
         }
@@ -393,8 +373,7 @@ const deepClone = async (host) => {
         // Fix missing element nodes.
         if (
           nextn.nextElementSibling &&
-          (nextn.nextElementSibling.nextSibling === nextn.nextSibling ||
-            nextn.nextSibling === null)
+          (nextn.nextElementSibling.nextSibling === nextn.nextSibling || nextn.nextSibling === null)
         ) {
           nextn = nextn.nextElementSibling;
         } else {
@@ -407,12 +386,12 @@ const deepClone = async (host) => {
 
     const webAnimations = extractFinalCSSState(node);
     if (webAnimations != null) {
-      clone.setAttribute("bb-web-animations", webAnimations);
+      clone.setAttribute('bb-web-animations', webAnimations);
     }
 
-    if (typeof clone.setAttribute !== "undefined") {
+    if (typeof clone.setAttribute !== 'undefined') {
       if (shadowRoot) {
-        clone.setAttribute("bb-shadow-child", shadowRoot);
+        clone.setAttribute('bb-shadow-child', shadowRoot);
       }
 
       if (node instanceof HTMLCanvasElement) {
@@ -420,55 +399,39 @@ const deepClone = async (host) => {
           const boundingRect = node.getBoundingClientRect();
           const resizedImage = await resizeImage(node.toDataURL(), 1400, 1400);
 
-          clone.setAttribute("bb-canvas-data", resizedImage);
-          clone.setAttribute("bb-canvas-height", boundingRect.height);
-          clone.setAttribute("bb-canvas-width", boundingRect.width);
+          clone.setAttribute('bb-canvas-data', resizedImage);
+          clone.setAttribute('bb-canvas-height', boundingRect.height);
+          clone.setAttribute('bb-canvas-width', boundingRect.width);
         } catch (exp) {
-          console.warn("Gleap: Failed to clone canvas data.", exp);
+          console.warn('Gleap: Failed to clone canvas data.', exp);
         }
       }
     }
 
     if (node.nodeType == Node.ELEMENT_NODE) {
       const tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
-      if (
-        tagName == "IFRAME" ||
-        tagName == "VIDEO" ||
-        tagName == "EMBED" ||
-        tagName == "IMG" ||
-        tagName == "SVG"
-      ) {
+      if (tagName == 'IFRAME' || tagName == 'VIDEO' || tagName == 'EMBED' || tagName == 'IMG' || tagName == 'SVG') {
         const boundingRect = node.getBoundingClientRect();
-        clone.setAttribute("bb-element", true);
-        clone.setAttribute("bb-height", boundingRect.height);
-        clone.setAttribute("bb-width", boundingRect.width);
+        clone.setAttribute('bb-element', true);
+        clone.setAttribute('bb-height', boundingRect.height);
+        clone.setAttribute('bb-width', boundingRect.width);
       }
 
       if (node.scrollTop > 0 || node.scrollLeft > 0) {
-        clone.setAttribute("bb-scrollpos", true);
-        clone.setAttribute("bb-scrolltop", node.scrollTop);
-        clone.setAttribute("bb-scrollleft", node.scrollLeft);
+        clone.setAttribute('bb-scrollpos', true);
+        clone.setAttribute('bb-scrolltop', node.scrollTop);
+        clone.setAttribute('bb-scrollleft', node.scrollLeft);
       }
 
-      if (
-        tagName === "SELECT" ||
-        tagName === "TEXTAREA" ||
-        tagName === "INPUT"
-      ) {
+      if (tagName === 'SELECT' || tagName === 'TEXTAREA' || tagName === 'INPUT') {
         var val = node.value;
-        if (
-          node.getAttribute("gleap-ignore") === "value" ||
-          node.classList.contains("gl-mask")
-        ) {
-          val = new Array(val.length + 1).join("*");
+        if (node.getAttribute('gleap-ignore') === 'value' || node.classList.contains('gl-mask')) {
+          val = new Array(val.length + 1).join('*');
         }
 
-        clone.setAttribute("bb-data-value", val);
-        if (
-          (node.type === "checkbox" || node.type === "radio") &&
-          node.checked
-        ) {
-          clone.setAttribute("bb-data-checked", true);
+        clone.setAttribute('bb-data-value', val);
+        if ((node.type === 'checkbox' || node.type === 'radio') && node.checked) {
+          clone.setAttribute('bb-data-checked', true);
         }
       }
     }
@@ -481,8 +444,8 @@ const deepClone = async (host) => {
       await walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
       handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
-      if (typeof clone.setAttribute !== "undefined") {
-        clone.setAttribute("bb-shadow-parent", rootShadowNodeId);
+      if (typeof clone.setAttribute !== 'undefined') {
+        clone.setAttribute('bb-shadow-parent', rootShadowNodeId);
       }
     }
 
@@ -493,7 +456,7 @@ const deepClone = async (host) => {
   await cloneNode(host, fragment);
 
   // Work on adopted stylesheets.
-  var clonedHead = fragment.querySelector("head");
+  var clonedHead = fragment.querySelector('head');
   if (!clonedHead) {
     clonedHead = fragment;
   }
@@ -504,22 +467,18 @@ const deepClone = async (host) => {
 
 const prepareScreenshotData = (remote) => {
   return new Promise(async (resolve, reject) => {
-    const styleTags = window.document.querySelectorAll("style, link");
+    const styleTags = window.document.querySelectorAll('style, link');
     for (var i = 0; i < styleTags.length; ++i) {
-      styleTags[i].setAttribute("bb-styleid", i);
+      styleTags[i].setAttribute('bb-styleid', i);
     }
 
     const clone = await deepClone(window.document.documentElement);
 
     // Fix for web imports (depracted).
-    const linkImportElems = clone.querySelectorAll("link[rel=import]");
+    const linkImportElems = clone.querySelectorAll('link[rel=import]');
     for (var i = 0; i < linkImportElems.length; ++i) {
       const referenceNode = linkImportElems[i];
-      if (
-        referenceNode &&
-        referenceNode.childNodes &&
-        referenceNode.childNodes.length > 0
-      ) {
+      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
         const childNodes = referenceNode.childNodes;
         while (childNodes.length > 0) {
           referenceNode.parentNode.insertBefore(childNodes[0], referenceNode);
@@ -529,14 +488,14 @@ const prepareScreenshotData = (remote) => {
     }
 
     // Remove all scripts & style
-    const scriptElems = clone.querySelectorAll("script, noscript");
+    const scriptElems = clone.querySelectorAll('script, noscript');
     for (var i = 0; i < scriptElems.length; ++i) {
       scriptElems[i].remove();
     }
 
     // Cleanup base path
-    var existingBasePath = "";
-    const baseElems = clone.querySelectorAll("base");
+    var existingBasePath = '';
+    const baseElems = clone.querySelectorAll('base');
     for (var i = 0; i < baseElems.length; ++i) {
       if (baseElems[i].href) {
         existingBasePath = baseElems[i].href;
@@ -545,42 +504,37 @@ const prepareScreenshotData = (remote) => {
     }
 
     // Adjust the base node
-    const baseUrl = window.location.href.substring(
-      0,
-      window.location.href.lastIndexOf("/")
-    );
-    var newBaseUrl = baseUrl + "/";
+    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
+    var newBaseUrl = baseUrl + '/';
     if (existingBasePath) {
-      if (existingBasePath.startsWith("http")) {
+      if (existingBasePath.startsWith('http')) {
         // Absolute path.
         newBaseUrl = existingBasePath;
       } else {
         // Relative path.
         newBaseUrl = baseUrl + existingBasePath;
-        if (!newBaseUrl.endsWith("/")) {
-          newBaseUrl += "/";
+        if (!newBaseUrl.endsWith('/')) {
+          newBaseUrl += '/';
         }
       }
     }
 
-    const baseNode = window.document.createElement("base");
+    const baseNode = window.document.createElement('base');
     baseNode.href = newBaseUrl;
-    const head = clone.querySelector("head");
+    const head = clone.querySelector('head');
     head.insertBefore(baseNode, head.firstChild);
 
     // Do further cleanup.
-    const dialogElems = clone.querySelectorAll(
-      ".bb-feedback-dialog-container, .bb-capture-editor-borderlayer"
-    );
+    const dialogElems = clone.querySelectorAll('.bb-feedback-dialog-container, .bb-capture-editor-borderlayer');
     for (var i = 0; i < dialogElems.length; ++i) {
       dialogElems[i].remove();
     }
 
     // Calculate heights
-    const bbElems = clone.querySelectorAll("[bb-element=true]");
+    const bbElems = clone.querySelectorAll('[bb-element=true]');
     for (var i = 0; i < bbElems.length; ++i) {
       if (bbElems[i]) {
-        bbElems[i].style.height = bbElems[i].getAttribute("bb-height") + "px";
+        bbElems[i].style.height = bbElems[i].getAttribute('bb-height') + 'px';
       }
     }
 

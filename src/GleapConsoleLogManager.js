@@ -1,4 +1,4 @@
-import { truncateString } from "./GleapHelper";
+import { truncateString } from './GleapHelper';
 
 export default class GleapConsoleLogManager {
   logArray = [];
@@ -39,7 +39,7 @@ export default class GleapConsoleLogManager {
    * @param {*} logLevel
    * @returns
    */
-  addLog(message, logLevel = "INFO") {
+  addLog(message, logLevel = 'INFO') {
     if (!message || message.length <= 0) {
       return;
     }
@@ -66,10 +66,10 @@ export default class GleapConsoleLogManager {
       return;
     }
 
-    var log = "";
+    var log = '';
     try {
       for (var i = 0; i < args.length; i++) {
-        log += args[i] + " ";
+        log += args[i] + ' ';
       }
     } catch (exp) {}
 
@@ -95,19 +95,19 @@ export default class GleapConsoleLogManager {
       return {
         ...origConsole,
         log: function () {
-          self.addLogWithArgs(arguments, "INFO");
+          self.addLogWithArgs(arguments, 'INFO');
           origConsole.log && origConsole.log.apply(origConsole, arguments);
         },
         warn: function () {
-          self.addLogWithArgs(arguments, "WARNING");
+          self.addLogWithArgs(arguments, 'WARNING');
           origConsole.warn && origConsole.warn.apply(origConsole, arguments);
         },
         error: function () {
-          self.addLogWithArgs(arguments, "ERROR");
+          self.addLogWithArgs(arguments, 'ERROR');
           origConsole.error && origConsole.error.apply(origConsole, arguments);
         },
         info: function (v) {
-          self.addLogWithArgs(arguments, "INFO");
+          self.addLogWithArgs(arguments, 'INFO');
           origConsole.info && origConsole.info.apply(origConsole, arguments);
         },
       };

@@ -1,4 +1,4 @@
-import ChecklistNetworkManager from "./ChecklistNetworkManager";
+import ChecklistNetworkManager from './ChecklistNetworkManager';
 import {
   GleapBannerManager,
   GleapEventManager,
@@ -7,7 +7,7 @@ import {
   GleapNotificationManager,
   GleapStreamedEvent,
   GleapTranslationManager,
-} from "./Gleap";
+} from './Gleap';
 import {
   eraseGleapCookie,
   getDeviceType,
@@ -15,22 +15,22 @@ import {
   loadFromGleapCache,
   saveToGleapCache,
   setGleapCookie,
-} from "./GleapHelper";
-import GleapTooltipManager from "./GleapTooltipManager";
+} from './GleapHelper';
+import GleapTooltipManager from './GleapTooltipManager';
 
 export default class GleapSession {
-  apiUrl = "https://api.gleap.io";
-  wsApiUrl = "wss://ws.gleap.io";
+  apiUrl = 'https://api.gleap.io';
+  wsApiUrl = 'wss://ws.gleap.io';
   sdkKey = null;
   updatingSession = false;
   useCookies = false;
   session = {
     gleapId: null,
     gleapHash: null,
-    name: "",
-    email: "",
-    userId: "",
-    phone: "",
+    name: '',
+    email: '',
+    userId: '',
+    phone: '',
     value: 0,
   };
   ready = false;
@@ -53,13 +53,7 @@ export default class GleapSession {
    */
   getName() {
     try {
-      return this.session.name
-        ? this.session.name
-            .split(" ")[0]
-            .split("@")[0]
-            .split(".")[0]
-            .split("+")[0]
-        : "";
+      return this.session.name ? this.session.name.split(' ')[0].split('@')[0].split('.')[0].split('+')[0] : '';
     } catch (exp) {
       return this.session.name;
     }
@@ -108,18 +102,15 @@ export default class GleapSession {
 
   injectSession = (http) => {
     if (http && this.session) {
-      http.setRequestHeader("Api-Token", this.sdkKey);
-      http.setRequestHeader("Gleap-Id", this.session.gleapId);
-      http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
+      http.setRequestHeader('Api-Token', this.sdkKey);
+      http.setRequestHeader('Gleap-Id', this.session.gleapId);
+      http.setRequestHeader('Gleap-Hash', this.session.gleapHash);
     }
   };
 
   clearSession = (attemp = 0, retry = true) => {
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent(
-        "unregister-pushmessage-group",
-        `gleapuser-${this.session.gleapHash}`
-      );
+      GleapEventManager.notifyEvent('unregister-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
 
     try {
@@ -136,16 +127,16 @@ export default class GleapSession {
     this.session = {
       gleapId: null,
       gleapHash: null,
-      name: "",
-      email: "",
-      userId: "",
-      phone: "",
+      name: '',
+      email: '',
+      userId: '',
+      phone: '',
       value: 0,
     };
 
     GleapFrameManager.getInstance().sendMessage(
       {
-        name: "session-cleared",
+        name: 'session-cleared',
       },
       true
     );
@@ -177,19 +168,12 @@ export default class GleapSession {
 
     // Unregister previous group.
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent(
-        "unregister-pushmessage-group",
-        `gleapuser-${this.session.gleapHash}`
-      );
+      GleapEventManager.notifyEvent('unregister-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
 
     saveToGleapCache(`session-${this.sdkKey}`, session);
     if (this.useCookies) {
-      setGleapCookie(
-        `session-${this.sdkKey}`,
-        encodeURIComponent(JSON.stringify(session)),
-        365
-      );
+      setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
     }
 
     this.session = session;
@@ -197,10 +181,7 @@ export default class GleapSession {
 
     // Register new push group.
     if (this.session && this.session.gleapHash) {
-      GleapEventManager.notifyEvent(
-        "register-pushmessage-group",
-        `gleapuser-${this.session.gleapHash}`
-      );
+      GleapEventManager.notifyEvent('register-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
 
     if (sessionChanged) {
@@ -222,8 +203,8 @@ export default class GleapSession {
         }
       }, 0);
 
-      if (typeof window.dispatchEvent === "function") {
-        window.dispatchEvent(new CustomEvent("session-updated"));
+      if (typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent('session-updated'));
       }
     }
 
@@ -243,9 +224,7 @@ export default class GleapSession {
     } catch (exp) {}
 
     // Try to load session from local storage, if not already loaded.
-    if (
-      !(this.session && this.session.gleapId && this.session.gleapId.length > 0)
-    ) {
+    if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
       const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
       if (cachedSession) {
         this.validateSession(cachedSession);
@@ -254,13 +233,13 @@ export default class GleapSession {
 
     const self = this;
     const http = new XMLHttpRequest();
-    http.open("POST", self.apiUrl + "/sessions");
-    http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-    http.setRequestHeader("Api-Token", self.sdkKey);
+    http.open('POST', self.apiUrl + '/sessions');
+    http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    http.setRequestHeader('Api-Token', self.sdkKey);
     try {
       if (this.session && this.session.gleapId && this.session.gleapHash) {
-        http.setRequestHeader("Gleap-Id", this.session.gleapId);
-        http.setRequestHeader("Gleap-Hash", this.session.gleapHash);
+        http.setRequestHeader('Gleap-Id', this.session.gleapId);
+        http.setRequestHeader('Gleap-Hash', this.session.gleapHash);
       }
     } catch (exp) {}
     http.onreadystatechange = function (e) {
@@ -317,16 +296,12 @@ export default class GleapSession {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
         var userDataKey = userDataKeys[i];
-        if (
-          JSON.stringify(this.session[userDataKey]) !==
-          JSON.stringify(userData[userDataKey])
-        ) {
+        if (JSON.stringify(this.session[userDataKey]) !== JSON.stringify(userData[userDataKey])) {
           // Check custom data for a match.
           if (
             !(
               this.session.customData &&
-              JSON.stringify(this.session.customData[userDataKey]) ===
-                JSON.stringify(userData[userDataKey])
+              JSON.stringify(this.session.customData[userDataKey]) === JSON.stringify(userData[userDataKey])
             )
           ) {
             return true;
@@ -350,16 +325,16 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject("Session not ready yet.");
+          return reject('Session not ready yet.');
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/sessions/partialupdate");
-        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        http.setRequestHeader("Api-Token", self.sdkKey);
+        http.open('POST', self.apiUrl + '/sessions/partialupdate');
+        http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        http.setRequestHeader('Api-Token', self.sdkKey);
         try {
-          http.setRequestHeader("Gleap-Id", self.session.gleapId);
-          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+          http.setRequestHeader('Gleap-Id', self.session.gleapId);
+          http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -389,7 +364,7 @@ export default class GleapSession {
               deviceType: getDeviceType(),
               platform: 'web',
             },
-            type: "js",
+            type: 'js',
             sdkVersion: SDK_VERSION,
             ws: true,
           })
@@ -409,16 +384,16 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject("Session not ready yet.");
+          return reject('Session not ready yet.');
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/sessions/identify");
-        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        http.setRequestHeader("Api-Token", self.sdkKey);
+        http.open('POST', self.apiUrl + '/sessions/identify');
+        http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        http.setRequestHeader('Api-Token', self.sdkKey);
         try {
-          http.setRequestHeader("Gleap-Id", self.session.gleapId);
-          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+          http.setRequestHeader('Gleap-Id', self.session.gleapId);
+          http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -445,7 +420,7 @@ export default class GleapSession {
         };
 
         if (userData.customData) {
-          delete dataToSend["customData"];
+          delete dataToSend['customData'];
           dataToSend = {
             ...dataToSend,
             ...userData.customData,
@@ -471,16 +446,16 @@ export default class GleapSession {
     return new Promise((resolve, reject) => {
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject("Session not ready yet.");
+          return reject('Session not ready yet.');
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/outbound/producttours");
-        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        http.setRequestHeader("Api-Token", self.sdkKey);
+        http.open('POST', self.apiUrl + '/outbound/producttours');
+        http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        http.setRequestHeader('Api-Token', self.sdkKey);
         try {
-          http.setRequestHeader("Gleap-Id", self.session.gleapId);
-          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+          http.setRequestHeader('Gleap-Id', self.session.gleapId);
+          http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -516,16 +491,16 @@ export default class GleapSession {
     return new Promise((resolve, reject) => {
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject("Session not ready yet.");
+          return reject('Session not ready yet.');
         }
 
         const http = new XMLHttpRequest();
-        http.open("POST", self.apiUrl + "/outbound/producttourvalidation");
-        http.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        http.setRequestHeader("Api-Token", self.sdkKey);
+        http.open('POST', self.apiUrl + '/outbound/producttourvalidation');
+        http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        http.setRequestHeader('Api-Token', self.sdkKey);
         try {
-          http.setRequestHeader("Gleap-Id", self.session.gleapId);
-          http.setRequestHeader("Gleap-Hash", self.session.gleapHash);
+          http.setRequestHeader('Gleap-Id', self.session.gleapId);
+          http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -536,11 +511,7 @@ export default class GleapSession {
             if (http.status === 200 || http.status === 201) {
               try {
                 const tourData = JSON.parse(http.responseText);
-                if (
-                  tourData &&
-                  tourData.status === "live" &&
-                  tourData.passedPageFilter
-                ) {
+                if (tourData && tourData.status === 'live' && tourData.passedPageFilter) {
                   resolve(tourData.config);
                 } else {
                   reject();
