@@ -23,7 +23,7 @@ export default class GleapSession {
   wsApiUrl = 'wss://ws.gleap.io';
   sdkKey = null;
   updatingSession = false;
-  useCookies = false;
+  useCookies = true;
   session = {
     gleapId: null,
     gleapHash: null,
