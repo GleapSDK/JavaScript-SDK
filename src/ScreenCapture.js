@@ -368,7 +368,9 @@ const deepClone = async (host) => {
   const cloneNode = async (node, parent, shadowRoot) => {
     const walkTree = async (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
-        await cloneNode(nextn, nextp, innerShadowRoot);
+        try {
+          await cloneNode(nextn, nextp, innerShadowRoot);
+        } catch (exp) { }
 
         // Fix missing element nodes.
         if (
@@ -467,6 +469,7 @@ const deepClone = async (host) => {
 
 const prepareScreenshotData = (remote) => {
   return new Promise(async (resolve, reject) => {
+    try {
     const styleTags = window.document.querySelectorAll('style, link');
     for (var i = 0; i < styleTags.length; ++i) {
       styleTags[i].setAttribute('bb-styleid', i);
@@ -549,5 +552,9 @@ const prepareScreenshotData = (remote) => {
         isMobile: isMobile(),
       });
     });
+    } catch (exp) {
+      console.warn('Gleap: Failed to capture screenshot', exp);
+      resolve(null);
+    }
   });
 };
