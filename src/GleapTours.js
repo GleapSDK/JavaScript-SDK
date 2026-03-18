@@ -266,11 +266,30 @@ const GleapTours = (function () {
     transferHighlight(elemObj, step);
   }
   function refreshActiveHighlight() {
-    const activeHighlight = getState('__activeElement');
+    var activeHighlight = getState('__activeElement');
     const activeStep = getState('__activeStep');
-    if (!activeHighlight) {
+    if (!activeHighlight || !activeStep) {
       return;
     }
+
+    // Re-query the element if the cached reference is no longer in the DOM.
+    if (!document.body.contains(activeHighlight) && activeStep.element && typeof activeStep.element === 'string') {
+      try {
+        var freshEl = document.querySelector(activeStep.element);
+        if (!freshEl) {
+          var escaped = activeStep.element.replace(/(#[^#\s]+)/g, function (match) {
+            return match.replace(/:/g, '\\:');
+          });
+          freshEl = document.querySelector(escaped);
+        }
+        if (freshEl) {
+          activeHighlight = freshEl;
+          setState('__activeElement', freshEl);
+          freshEl.classList.add('gleap-tour-active-element');
+        }
+      } catch (e) {}
+    }
+
     trackActiveElement(activeHighlight);
     refreshOverlay();
     repositionPopover(activeHighlight, activeStep);
@@ -446,11 +465,30 @@ const GleapTours = (function () {
     window.addEventListener('keydown', trapFocus, false);
     window.addEventListener('resize', requireRefresh);
     window.addEventListener('scroll', requireRefresh);
+
+    const observer = new MutationObserver(function (mutations) {
+      const isTourMutation = mutations.every(function (m) {
+        return (
+          m.target.closest &&
+          (m.target.closest('.gleap-tour-popover') ||
+            m.target.closest('.gleap-tour-overlay') ||
+            m.target.closest('#gleap-tour-dummy-element'))
+        );
+      });
+      if (!isTourMutation) {
+        requireRefresh();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    setState('__mutationObserver', observer);
   }
   function destroyEvents() {
     window.removeEventListener('keyup', onKeyup);
     window.removeEventListener('resize', requireRefresh);
     window.removeEventListener('scroll', requireRefresh);
+
+    const observer = getState('__mutationObserver');
+    if (observer) observer.disconnect();
   }
   function hidePopover() {
     const popover = getState('popover');
