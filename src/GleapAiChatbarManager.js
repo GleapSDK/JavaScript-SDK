@@ -286,7 +286,7 @@ export default class GleapAiChatbarManager {
         transform: translateY(20px);
         animation: fadeUpInContainer 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
-      
+
       .gleap-ai-ui-quick-actions {
         display: flex;
         align-items: center;
@@ -298,7 +298,7 @@ export default class GleapAiChatbarManager {
         animation: fadeUpIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.5s forwards;
         max-width: 100%;
       }
-      
+
       .gleap-ai-ui-quick-action {
         background: #fff;
         color: #000;
@@ -317,26 +317,26 @@ export default class GleapAiChatbarManager {
         overflow: hidden;
         text-overflow: ellipsis;
       }
-      
+
       .gleap-ai-ui-quick-action.animate-in {
         animation: fadeUpInAction 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
       }
-      
+
       .gleap-ai-ui-quick-action:nth-child(1).animate-in {
         animation-delay: 0.5s;
       }
-      
+
       .gleap-ai-ui-quick-action:nth-child(2).animate-in {
         animation-delay: 0.65s;
       }
-      
+
       .gleap-ai-ui-quick-action:hover {
         background: #000;
         color: #fff;
         border: 1px solid #000000;
         transform: translateY(-2px) scale(1.02);
       }
-      
+
       .gleap-ai-ui-input-container {
         position: relative;
         width: auto;
@@ -347,7 +347,7 @@ export default class GleapAiChatbarManager {
         transform: translateY(15px);
         animation: fadeUpIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.45s forwards;
       }
-      
+
       .gleap-ai-ui-input-container:focus-within,
       .gleap-ai-ui-container.active .gleap-ai-ui-input-container {
         min-width: 430px;
@@ -388,7 +388,7 @@ export default class GleapAiChatbarManager {
           margin: 0px !important;
         }
       }
-      
+
       .animated-gradient-border-wrapper {
         position: absolute;
         overflow: hidden;
@@ -399,7 +399,7 @@ export default class GleapAiChatbarManager {
         right: -2px;
         bottom: -2px;
       }
-      
+
       .animated-gradient-border-wrapper-glow {
         position: absolute;
         overflow: hidden;
@@ -410,7 +410,7 @@ export default class GleapAiChatbarManager {
         right: -2px;
         bottom: -2px;
       }
-      
+
       .group:hover .animated-gradient-border-wrapper,
       .group:focus-within .animated-gradient-border-wrapper {
         left: -4px;
@@ -418,7 +418,7 @@ export default class GleapAiChatbarManager {
         right: -4px;
         bottom: -4px;
       }
-      
+
       .group:hover .animated-gradient-border-wrapper-glow,
       .group:focus-within .animated-gradient-border-wrapper-glow {
         left: -4px;
@@ -426,7 +426,7 @@ export default class GleapAiChatbarManager {
         right: -4px;
         bottom: -4px;
       }
-      
+
       .animated-gradient-border-wrapper:before,
       .animated-gradient-border-wrapper-glow:before {
         content: "";
@@ -452,11 +452,11 @@ export default class GleapAiChatbarManager {
         transition: opacity 0.5s ease-in-out;
         animation: border-spin 4s linear infinite;
       }
-      
+
       .group:hover .animated-gradient-border-wrapper-glow:before {
         opacity: 1;
       }
-      
+
       .bg-gradient-blur {
         position: relative;
         background: white;
@@ -465,7 +465,7 @@ export default class GleapAiChatbarManager {
         overflow: hidden;
         z-index: 1;
       }
-      
+
       .gleap-ai-ui-input {
         position: relative;
         z-index: 1;
@@ -481,7 +481,7 @@ export default class GleapAiChatbarManager {
         padding: 0px;
         height: 100%;
       }
-      
+
       .gleap-ai-ui-input input {
         flex-grow: 1;
         height: 100%;
@@ -495,6 +495,13 @@ export default class GleapAiChatbarManager {
         color: #000;
         outline: none;
         box-sizing: border-box;
+        max-width: 40vw;
+      }
+
+      @supports (field-sizing: content) {
+        .gleap-ai-ui-input input {
+          field-sizing: content;
+        }
       }
 
       .gleap-ai-ui-input-send-button {
@@ -528,7 +535,7 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-container.active .gleap-ai-ui-input-send-button svg {
         color: #fff;
       }
-      
+
       .gleap-ai-ui-input input::placeholder {
         color: rgba(0, 0, 0, 0.6);
         transition: color 0.2s ease;
@@ -551,7 +558,7 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-container--dark .gleap-ai-ui-input-send-button svg {
         color: rgba(0, 0, 0, 0.6);
       }
-      
+
       .gleap-ai-ui-container--dark .gleap-ai-ui-input input::placeholder {
         color: rgba(255, 255, 255, 0.44);
       }
@@ -569,7 +576,7 @@ export default class GleapAiChatbarManager {
       .gleap-ai-ui-container--dark.active .gleap-ai-ui-input-container .gleap-ai-ui-input-send-button svg {
         color: #000;
       }
-      
+
       @keyframes gradient-shift {
         0% {
           background-position: 0% 50%;
@@ -581,7 +588,7 @@ export default class GleapAiChatbarManager {
           background-position: 0% 50%;
         }
       }
-      
+
       @keyframes border-spin {
         0% {
           transform: translate(-50%, -50%) rotate(0deg);
@@ -590,7 +597,7 @@ export default class GleapAiChatbarManager {
           transform: translate(-50%, -50%) rotate(-360deg);
         }
       }
-      
+
       @keyframes fadeUpIn {
         0% {
           opacity: 0;
@@ -601,7 +608,7 @@ export default class GleapAiChatbarManager {
           transform: translateY(0) scale(1);
         }
       }
-      
+
       @keyframes fadeUpInAction {
         0% {
           opacity: 0;
@@ -612,7 +619,7 @@ export default class GleapAiChatbarManager {
           transform: translateY(0) scale(1);
         }
       }
-      
+
       @keyframes fadeUpInContainer {
         0% {
           opacity: 0;
@@ -623,7 +630,7 @@ export default class GleapAiChatbarManager {
           transform: translateY(0);
         }
       }
-      
+
       @keyframes fadeOutDownContainer {
         0% {
           opacity: 1;
@@ -634,10 +641,10 @@ export default class GleapAiChatbarManager {
           transform: translateY(20px);
         }
       }
-      
+
       .gleap-ai-ui-container.fade-out {
         animation: fadeOutDownContainer 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards !important;
-      }      
+      }
     `;
     this.shadowRoot.appendChild(style);
   }
@@ -653,20 +660,21 @@ export default class GleapAiChatbarManager {
 
     // Create the main container div inside shadow DOM
     this.innerContainer = document.createElement('div');
-    this.innerContainer.className = 'gleap-ai-ui-container' + extraClasses;
+    this.innerContainer.className = 'gleap-font gleap-ai-ui-container' + extraClasses;
+    this.innerContainer.setAttribute('part', 'container');
 
     // Create the HTML structure inside shadow DOM
     this.innerContainer.innerHTML = `
-      <div class="gleap-ai-ui-quick-actions"></div>
-      <div class="gleap-ai-ui-input-container">
+      <div class="gleap-ai-ui-quick-actions" part="quick-actions"></div>
+      <div class="gleap-ai-ui-input-container" part="input-container">
         <div class="relative group" style="--border-width: 2px; --border-width-hover: 4px;">
           <div class="animated-gradient-border-wrapper"></div>
           <div class="animated-gradient-border-wrapper animated-gradient-border-wrapper-glow"></div>
-          <div class="bg-gradient-blur">
+          <div class="bg-gradient-blur" part="input-background">
             <div class="gleap-ai-ui-input">
               <div class="gleap-ai-ui-input-content">
-                <input name="AI question" type="text" placeholder="${this.placeholder}" />
-                <div class="gleap-ai-ui-input-send-button">
+                <input part="input" name="AI question" type="text" placeholder="${this.placeholder}" />
+                <div class="gleap-ai-ui-input-send-button" part="send-button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M342.6 81.4C330.1 68.9 309.8 68.9 297.3 81.4L137.3 241.4C124.8 253.9 124.8 274.2 137.3 286.7C149.8 299.2 170.1 299.2 182.6 286.7L288 181.3L288 552C288 569.7 302.3 584 320 584C337.7 584 352 569.7 352 552L352 181.3L457.4 286.7C469.9 299.2 490.2 299.2 502.7 286.7C515.2 274.2 515.2 253.9 502.7 241.4L342.7 81.4z"/></svg>
                 </div>
               </div>
