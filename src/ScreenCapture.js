@@ -221,7 +221,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
   if (cssRules) {
     for (var cssRuleItem in cssRules) {
       if (cssRules[cssRuleItem].cssText) {
-        cssTextContent += cssRules[cssRuleItem].cssText;
+        cssTextContent += cssRules[cssRuleItem].cssText + '\n';
       }
     }
   }
