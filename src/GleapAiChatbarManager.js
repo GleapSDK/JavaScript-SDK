@@ -656,19 +656,20 @@ export default class GleapAiChatbarManager {
     // Create the main container div inside shadow DOM
     this.innerContainer = document.createElement('div');
     this.innerContainer.className = 'gleap-font gleap-ai-ui-container' + extraClasses;
+    this.innerContainer.setAttribute('part', 'container');
 
     // Create the HTML structure inside shadow DOM
     this.innerContainer.innerHTML = `
-      <div class="gleap-ai-ui-quick-actions"></div>
-      <div class="gleap-ai-ui-input-container">
+      <div class="gleap-ai-ui-quick-actions" part="quick-actions"></div>
+      <div class="gleap-ai-ui-input-container" part="input-container">
         <div class="relative group" style="--border-width: 2px; --border-width-hover: 4px;">
           <div class="animated-gradient-border-wrapper"></div>
           <div class="animated-gradient-border-wrapper animated-gradient-border-wrapper-glow"></div>
-          <div class="bg-gradient-blur">
+          <div class="bg-gradient-blur" part="input-background">
             <div class="gleap-ai-ui-input">
               <div class="gleap-ai-ui-input-content">
-                <input name="AI question" type="text" placeholder="${this.placeholder}" />
-                <div class="gleap-ai-ui-input-send-button">
+                <input part="input" name="AI question" type="text" placeholder="${this.placeholder}" />
+                <div class="gleap-ai-ui-input-send-button" part="send-button">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path fill="currentColor" d="M342.6 81.4C330.1 68.9 309.8 68.9 297.3 81.4L137.3 241.4C124.8 253.9 124.8 274.2 137.3 286.7C149.8 299.2 170.1 299.2 182.6 286.7L288 181.3L288 552C288 569.7 302.3 584 320 584C337.7 584 352 569.7 352 552L352 181.3L457.4 286.7C469.9 299.2 490.2 299.2 502.7 286.7C515.2 274.2 515.2 253.9 502.7 241.4L342.7 81.4z"/></svg>
                 </div>
               </div>
