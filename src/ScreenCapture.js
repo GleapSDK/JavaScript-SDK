@@ -207,6 +207,26 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
   }
 };
 
+const sanitizeCSSBraces = (css) => {
+  var result = '';
+  var depth = 0;
+  for (var i = 0; i < css.length; i++) {
+    if (css[i] === '{') {
+      depth++;
+      result += css[i];
+    } else if (css[i] === '}') {
+      if (depth > 0) {
+        depth--;
+        result += css[i];
+      }
+      // Skip stray closing braces at depth 0
+    } else {
+      result += css[i];
+    }
+  }
+  return result;
+};
+
 const getTextContentFromStyleSheet = (styleSheet) => {
   var cssRules = null;
   try {
@@ -226,7 +246,7 @@ const getTextContentFromStyleSheet = (styleSheet) => {
     }
   }
 
-  return cssTextContent;
+  return sanitizeCSSBraces(cssTextContent);
 };
 
 const downloadAllCSSUrlResources = (clone, remote) => {
