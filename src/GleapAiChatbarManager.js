@@ -495,8 +495,13 @@ export default class GleapAiChatbarManager {
         color: #000;
         outline: none;
         box-sizing: border-box;
-        field-sizing: content;
         max-width: 40vw;
+      }
+
+      @supports (field-sizing: content) {
+        .gleap-ai-ui-input input {
+          field-sizing: content;
+        }
       }
 
       .gleap-ai-ui-input-send-button {
