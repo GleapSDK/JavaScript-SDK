@@ -466,29 +466,19 @@ const GleapTours = (function () {
     window.addEventListener('resize', requireRefresh);
     window.addEventListener('scroll', requireRefresh);
 
-    const observer = new MutationObserver(function (mutations) {
-      const isTourMutation = mutations.every(function (m) {
-        return (
-          m.target.closest &&
-          (m.target.closest('.gleap-tour-popover') ||
-            m.target.closest('.gleap-tour-overlay') ||
-            m.target.closest('#gleap-tour-dummy-element'))
-        );
-      });
-      if (!isTourMutation) {
-        requireRefresh();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
-    setState('__mutationObserver', observer);
+    const interval = setInterval(function () {
+      if (!getState('isInitialized')) return;
+      requireRefresh();
+    }, 1000);
+    setState('__positionInterval', interval);
   }
   function destroyEvents() {
     window.removeEventListener('keyup', onKeyup);
     window.removeEventListener('resize', requireRefresh);
     window.removeEventListener('scroll', requireRefresh);
 
-    const observer = getState('__mutationObserver');
-    if (observer) observer.disconnect();
+    const interval = getState('__positionInterval');
+    if (interval) clearInterval(interval);
   }
   function hidePopover() {
     const popover = getState('popover');
