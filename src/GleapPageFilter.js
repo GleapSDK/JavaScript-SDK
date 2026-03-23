@@ -81,3 +81,11 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
 
   return matched;
 };
+
+export const checkPageRules = (currentUrl, action) => {
+  const rules = action.pageRules && action.pageRules.length > 0
+    ? action.pageRules
+    : (action.pageFilter ? [{ pageFilter: action.pageFilter, pageFilterType: action.pageFilterType }] : []);
+  if (rules.length === 0) return true;
+  return rules.every(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
+};

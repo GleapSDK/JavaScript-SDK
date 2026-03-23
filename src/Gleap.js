@@ -26,7 +26,7 @@ import GleapAudioManager from './GleapAudioManager';
 import GleapTagManager from './GleapTagManager';
 import GleapAdminManager from './GleapAdminManager';
 import GleapProductTours from './GleapProductTours';
-import { checkPageFilter } from './GleapPageFilter';
+import { checkPageFilter, checkPageRules } from './GleapPageFilter';
 import { registerGleapChecklist } from './GleapChecklist';
 import ChecklistNetworkManager from './ChecklistNetworkManager';
 
@@ -1241,8 +1241,8 @@ class Gleap {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       if (action && action.actionType) {
-        if (action.pageFilter && window && window.location) {
-          const passed = checkPageFilter(window.location.href, action.pageFilter, action.pageFilterType);
+        if ((action.pageRules?.length > 0 || action.pageFilter) && window && window.location) {
+          const passed = checkPageRules(window.location.href, action);
 
           if (!passed) {
             continue;
