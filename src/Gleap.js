@@ -29,6 +29,10 @@ import GleapProductTours from './GleapProductTours';
 import { checkPageFilter } from './GleapPageFilter';
 import { registerGleapChecklist } from './GleapChecklist';
 import ChecklistNetworkManager from './ChecklistNetworkManager';
+import { registerGleapAgentComponents } from './GleapAgentConversation';
+import AgentNetworkManager from './AgentNetworkManager';
+import GleapAgentChat from './GleapAgentChat';
+import { parseSSEStream, dispatchSSEEvent } from './GleapSSEParser';
 
 if (
   typeof window !== 'undefined' &&
@@ -47,6 +51,7 @@ if (
 
 if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
   registerGleapChecklist();
+  registerGleapAgentComponents();
 }
 
 class Gleap {
@@ -958,6 +963,71 @@ class Gleap {
   }
 
   /**
+   * Send a message to an agent programmatically.
+   * @param {string} agentId
+   * @param {string} message
+   * @param {{ conversationId?: string, additionalContext?: object }} [options={}]
+   * @returns {Promise<{ runId: string, status: string, response: string, conversationId?: string }>}
+   */
+  static sendAgentMessage(agentId, message, options = {}) {
+    if (!agentId || !message) {
+      return Promise.reject(new Error('agentId and message are required.'));
+    }
+
+    const body = {
+      messages: [{ role: 'user', content: message.trim() }],
+    };
+    if (options.conversationId) body.conversationId = options.conversationId;
+    if (options.additionalContext) body.additionalContext = options.additionalContext;
+
+    // Stream under the hood, collect and return full response
+    return new Promise((resolve, reject) => {
+      let fullResponse = '';
+      let conversationId = options.conversationId || null;
+      let runId = null;
+
+      AgentNetworkManager.getInstance().streamAgent(agentId, body, {
+        onMeta: (data) => {
+          if (data.conversationId) conversationId = data.conversationId;
+          if (data.runId) runId = data.runId;
+        },
+        onToken: (data) => {
+          fullResponse += data.content || '';
+          if (options.onToken) options.onToken(data);
+        },
+        onDone: (data) => {
+          resolve({
+            runId: runId || data?.runId,
+            status: data?.status || 'completed',
+            response: fullResponse || data?.response || '',
+            conversationId,
+          });
+        },
+        onError: (data) => { reject(data); },
+        onToolStart: () => {},
+        onToolEnd: () => {},
+      });
+    });
+  }
+
+  /**
+   * Clear agent conversation state from the cache.
+   */
+  static clearAgentConversation() {
+    AgentNetworkManager.getInstance().clearCache();
+  }
+
+  /**
+   * Create a headless agent chat instance.
+   * Framework-agnostic state manager for AI agent conversations.
+   * @param {object} options
+   * @returns {GleapAgentChat}
+   */
+  static createAgentChat(options) {
+    return new GleapAgentChat(options);
+  }
+
+  /**
    * Opens a help center collection
    */
   static openHelpCenterCollection(collectionId, showBackButton = true) {
@@ -1427,6 +1497,10 @@ export {
   GleapTagManager,
   GleapProductTours,
   GleapAdminManager,
+  AgentNetworkManager,
+  GleapAgentChat,
+  parseSSEStream,
+  dispatchSSEEvent,
   handleGleapLink,
 };
 

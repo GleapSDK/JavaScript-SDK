@@ -178,7 +178,98 @@ export namespace Gleap {
     showBackButton?: boolean
   ): void;
   function showSurvey(surveyId: string, format?: string): void;
-  function on(event: string, callback: (data?: any) => void): void;
+  function on(
+    event:
+      | "initialized"
+      | "open"
+      | "close"
+      | "flow-started"
+      | "checklist-loaded"
+      | "checklist-step-completed"
+      | "checklist-completed"
+      | "agent-message-sent"
+      | "agent-reply-received"
+      | "agent-error"
+      | "agent-conversation-created"
+      | string,
+    callback: (data?: any) => void
+  ): void;
+  function sendAgentMessage(
+    agentId: string,
+    message: string,
+    options?: {
+      conversationId?: string;
+      additionalContext?: Record<string, any>;
+    }
+  ): Promise<{
+    runId: string;
+    status: string;
+    response: string;
+    conversationId?: string;
+    outcome?: { type: string };
+  }>;
+  function clearAgentConversation(): void;
+
+  interface AgentChatMessage {
+    id: string;
+    role: 'user' | 'assistant';
+    content: string;
+    createdAt: string;
+  }
+
+  interface AgentChatState {
+    messages: AgentChatMessage[];
+    isExecuting: boolean;
+    error: any;
+    conversationId: string | null;
+  }
+
+  interface AgentChatOptions {
+    /** The agent ID to talk to. */
+    agentId: string;
+    /** Additional context sent with every message to the AI. */
+    context?: Record<string, any>;
+    /** Resume an existing conversation by ID. */
+    conversationId?: string;
+    /** Called on every state change (messages, loading, error). */
+    onChange?: (state: AgentChatState) => void;
+    /** Called when the agent replies. */
+    onReplyReceived?: (data: any) => void;
+    /** Called on error. */
+    onError?: (error: any) => void;
+    /** Called when a new conversation is created. */
+    onConversationCreated?: (conversationId: string) => void;
+  }
+
+  interface AgentChatInstance {
+    /** Send a message to the agent. */
+    sendMessage(content: string): Promise<void>;
+    /** Clear all messages and start a new conversation. */
+    clearMessages(): void;
+    /** Update the context sent with future messages. */
+    setContext(context: Record<string, any>): void;
+    /** Get the current state snapshot. */
+    getState(): AgentChatState;
+    /** Destroy this instance and stop all callbacks. */
+    destroy(): void;
+  }
+
+  /**
+   * Create a headless agent chat instance.
+   * Framework-agnostic — wire onChange to React setState, Vue ref, Svelte store, etc.
+   *
+   * @example
+   * ```js
+   * const chat = Gleap.createAgentChat({
+   *   agentId: 'abc123',
+   *   context: { page: '/billing' },
+   *   onChange: ({ messages, isExecuting }) => { ... },
+   * });
+   * chat.sendMessage('Hello!');
+   * ```
+   */
+  function createAgentChat(options: AgentChatOptions): AgentChatInstance;
+
   function getIdentity(): any;
   function isUserIdentified(): boolean;
   function setReplayOptions(options: {
@@ -220,3 +311,37 @@ export namespace Gleap {
   }): void;
 }
 export default Gleap;
+
+// Custom element type declarations — makes <gleap-*> work in JSX without extra setup
+// Covers both React 18 (global JSX) and React 19+ (React.JSX)
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      'gleap-agent-conversation': any;
+      'gleap-agent-input': any;
+      'gleap-agent-profile-image': any;
+      'gleap-agent-reply-bubble': any;
+      'gleap-agent-user-bubble': any;
+      'gleap-agent-typing-indicator': any;
+      'gleap-agent-send-button': any;
+      'gleap-agent-message-list': any;
+      'gleap-checklist': any;
+    }
+  }
+}
+
+declare module 'react' {
+  namespace JSX {
+    interface IntrinsicElements {
+      'gleap-agent-conversation': any;
+      'gleap-agent-input': any;
+      'gleap-agent-profile-image': any;
+      'gleap-agent-reply-bubble': any;
+      'gleap-agent-user-bubble': any;
+      'gleap-agent-typing-indicator': any;
+      'gleap-agent-send-button': any;
+      'gleap-agent-message-list': any;
+      'gleap-checklist': any;
+    }
+  }
+}

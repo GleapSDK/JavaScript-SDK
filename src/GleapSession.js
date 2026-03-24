@@ -1,4 +1,5 @@
 import ChecklistNetworkManager from './ChecklistNetworkManager';
+import AgentNetworkManager from './AgentNetworkManager';
 import {
   GleapBannerManager,
   GleapEventManager,
@@ -189,6 +190,7 @@ export default class GleapSession {
       setTimeout(() => {
         // Clear cache first, as the session context has changed.
         ChecklistNetworkManager.getInstance().clearCache();
+        AgentNetworkManager.getInstance().clearCache();
 
         // Initially track.
         GleapStreamedEvent.getInstance().restart();
