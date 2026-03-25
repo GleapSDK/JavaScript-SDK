@@ -22,6 +22,7 @@ import GleapNotificationManager from './GleapNotificationManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import GleapBannerManager from './GleapBannerManager';
 import GleapModalManager from './GleapModalManager';
+import GleapAgentPopupManager from './GleapAgentPopupManager';
 import GleapAudioManager from './GleapAudioManager';
 import GleapTagManager from './GleapTagManager';
 import GleapAdminManager from './GleapAdminManager';
@@ -1378,6 +1379,35 @@ class Gleap {
     } catch (e) {}
   }
 
+  /**
+   * Start an agent conversation in a popup overlay.
+   * @param {string} agentId - The agent ID to converse with.
+   * @param {object} [context] - Optional context object for the agent.
+   * @param {string} [conversationId] - Optional conversation ID to resume.
+   */
+  static startAgent(agentId, context, conversationId) {
+    try {
+      GleapAgentPopupManager.getInstance().showAgentPopup(agentId, context, conversationId);
+    } catch (e) {}
+  }
+
+  /**
+   * Close any open agent popup.
+   */
+  static closeAgentPopup() {
+    try {
+      GleapAgentPopupManager.getInstance().hideAgentPopup();
+    } catch (e) {}
+  }
+
+  /**
+   * Set a custom agent popup URL.
+   * @param {string} agentPopupUrl
+   */
+  static setAgentPopupUrl(agentPopupUrl) {
+    GleapAgentPopupManager.getInstance().setAgentPopupUrl(agentPopupUrl);
+  }
+
   static showNotification(data) {
     GleapNotificationManager.getInstance().showNotification(data);
   }
@@ -1499,6 +1529,7 @@ export {
   GleapAdminManager,
   AgentNetworkManager,
   GleapAgentChat,
+  GleapAgentPopupManager,
   parseSSEStream,
   dispatchSSEEvent,
   handleGleapLink,

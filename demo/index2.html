@@ -1,23 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <script src="/htmlimports.js"></script>
     <title>Gleap Demo</title>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, minimum-scale=1"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
     <link rel="preconnect" href="https://fonts.gstatic.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,500;0,700;0,800;1,400&display=swap"
       rel="stylesheet"
     />
     <link rel="icon" type="image/x-icon" href="fav.png" />
-    <script
-      src="https://kit.fontawesome.com/0a1af2edbf.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://kit.fontawesome.com/0a1af2edbf.js" crossorigin="anonymous"></script>
     <meta
       name="viewport"
       content="height=device-height, 
@@ -26,10 +20,7 @@
                       user-scalable=no, target-densitydpi=device-dpi"
     />
     <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- index.js as found in build/index.js -->
     <script src="build/cjs/index.js"></script>
     <script src="main.js"></script>
@@ -113,6 +104,10 @@
         margin-left: 30px;
         margin-right: 0px;
       }
+
+      gleap-agent-input::part(send-button) {
+        background-color: #10b981 !important;
+      }
     </style>
   </head>
 
@@ -121,33 +116,22 @@
     <div class="layout-container">
       <!-- Left sidebar placeholder -->
       <aside class="sidebar-placeholder">
-        <div class="sidebar-block" onclick="window.location.href='index.html'" style="width: 50%; margin-top: 160px"></div>
+        <div class="sidebar-block" onclick="window.location.href = 'index.html'" style="width: 50%; margin-top: 160px"></div>
         <div class="sidebar-block" style="width: 65%"></div>
         <div class="sidebar-block" style="width: 55%"></div>
         <div class="sidebar-block" style="width: 70%"></div>
         <div class="sidebar-block" style="width: 67%"></div>
         <div class="sidebar-block" style="width: 55%"></div>
       </aside>
-      
+
       <!-- Main content wireframe blocks -->
       <main class="main-placeholder">
-        <gleap-checklist checklistid="68f8a8e898390a38cfe7337f"></gleap-checklist>
         <div class="wireframe-block--title"></div>
         <div class="wireframe-block">
-          
-          <div class="wireframe-block--text" style="width: 80%"></div>
-          <div class="wireframe-block--text" style="width: 87%"></div>
-          <div class="wireframe-block--text" style="width: 85%"></div>
-          <div class="wireframe-block--text" style="width: 87%"></div>
-          <div class="wireframe-block--text" style="width: 85%"></div>
-          <div class="wireframe-block--text" style="width: 89%"></div>
-          <div class="wireframe-block--blank"></div>
-          <div class="wireframe-block--text" style="width: 85%"></div>
-          <div class="wireframe-block--text" style="width: 89%"></div>
-          <div class="wireframe-block--text" style="width: 80%"></div>
-          <div class="wireframe-block--text" style="width: 87%"></div>
-          <div class="wireframe-block--text" style="width: 85%"></div>
-          <div class="wireframe-block--text" style="width: 87%"></div>
+          <gleap-agent-conversation
+            context='{"currentPage": "/billing", "plan": "pro"}'
+            agentId="69c0ec168f3b6a7e435ee8f5"
+          ></gleap-agent-conversation>
         </div>
       </main>
     </div>

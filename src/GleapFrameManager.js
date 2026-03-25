@@ -267,7 +267,7 @@ export default class GleapFrameManager {
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     const loadingClass = 'gleap-frame-container--loading';
-    if (this.gleapFrameContainer.classList) {
+    if (this.gleapFrameContainer?.classList) {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
@@ -283,7 +283,7 @@ export default class GleapFrameManager {
       }
 
       setTimeout(() => {
-        this.gleapFrameContainer.classList.add('gleap-frame-container--animate');
+        this.gleapFrameContainer?.classList.add('gleap-frame-container--animate');
       }, 500);
     }
 

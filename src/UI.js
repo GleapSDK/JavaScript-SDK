@@ -2399,6 +2399,57 @@ export const injectStyledCSS = (
       overflow: hidden;
     }
 
+    /* Agent Popup styles */
+    .gleap-agent-popup-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: ${zIndexBase + 40};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .gleap-agent-popup-backdrop {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: ${zIndexBase + 41};
+    }
+
+    .gleap-agent-popup {
+      position: relative;
+      width: 95%;
+      max-width: 700px;
+      height: 85vh;
+      max-height: 800px;
+      z-index: ${zIndexBase + 100};
+      background-color: ${backgroundColor};
+      border-radius: ${containerRadius}px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      animation-duration: 0.3s;
+      animation-fill-mode: both;
+      animation-name: gleapFadeInUp;
+    }
+
+    .gleap-agent-popup-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      outline: none;
+    }
+
+    body.gleap-agent-popup-open {
+      overflow: hidden;
+    }
+
     @keyframes gleapFadeInUp {
       from {
         opacity: 0;

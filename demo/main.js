@@ -4,14 +4,14 @@ Gleap.setFrameUrl("http://0.0.0.0:3001");
 Gleap.setApiUrl("http://0.0.0.0:9000");
 Gleap.setWSApiUrl("ws://0.0.0.0:9000");
 
-Gleap.setLanguage("en");
-
 Gleap.initialize("GnhEkS8fdwxNVjyn3BnYwKzpCkiHgKWL");
 
 Gleap.identify("123921943", {
   name: "Luca",
   email: "luca@gleap.io",
 });
+
+// Gleap.startAgent("69c0ec168f3b6a7e435ee8f5");
 
 const userData = Gleap.getIdentity();
 
