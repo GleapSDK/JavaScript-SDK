@@ -285,6 +285,7 @@ const GleapTours = (function () {
         if (freshEl) {
           activeHighlight = freshEl;
           setState('__activeElement', freshEl);
+          setState('activeElement', freshEl);
           freshEl.classList.add('gleap-tour-active-element');
         }
       } catch (e) {}
