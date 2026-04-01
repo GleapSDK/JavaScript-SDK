@@ -22,7 +22,6 @@ import GleapNotificationManager from './GleapNotificationManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import GleapBannerManager from './GleapBannerManager';
 import GleapModalManager from './GleapModalManager';
-import GleapAgentPopupManager from './GleapAgentPopupManager';
 import GleapAudioManager from './GleapAudioManager';
 import GleapTagManager from './GleapTagManager';
 import GleapAdminManager from './GleapAdminManager';
@@ -219,9 +218,6 @@ class Gleap {
 
               // Inject the notification container
               GleapNotificationManager.getInstance().injectNotificationUI();
-
-              // Inject the AI UI container
-              GleapAiChatbarManager.getInstance().injectAIUI();
 
               // Check for uncompleted tour.
               Gleap.checkForUncompletedTour();
@@ -1295,9 +1291,6 @@ class Gleap {
 
         // Inject the notification container
         GleapNotificationManager.getInstance().injectNotificationUI();
-
-        // Inject the AI UI container
-        GleapAiChatbarManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
         console.warn('Failed to initialize Gleap.');
@@ -1380,32 +1373,27 @@ class Gleap {
   }
 
   /**
-   * Start an agent conversation in a popup overlay.
+   * Start an agent conversation in the inline chatbar.
    * @param {string} agentId - The agent ID to converse with.
-   * @param {object} [context] - Optional context object for the agent.
-   * @param {string} [conversationId] - Optional conversation ID to resume.
+   * @param {object} [options] - Optional config: { context?, primaryColor?, initialMessage? }
+   *   Also accepts a plain context object for backward compatibility.
    */
-  static startAgent(agentId, context, conversationId) {
+  static startAgent(agentId, options) {
     try {
-      GleapAgentPopupManager.getInstance().showAgentPopup(agentId, context, conversationId);
+      GleapAiChatbarManager.getInstance().showWithAgent(agentId, options);
     } catch (e) {}
   }
 
   /**
-   * Close any open agent popup.
+   * Set the AI agent for the chatbar without opening the conversation panel.
+   * The chatbar input bar will be shown, but the panel stays closed until the user interacts.
+   * @param {string} agentId - The agent ID to use. Pass empty/null/'default' for Kai.
+   * @param {object} [options] - Optional config: { context?, primaryColor? }
    */
-  static closeAgentPopup() {
+  static setAIAgent(agentId, options) {
     try {
-      GleapAgentPopupManager.getInstance().hideAgentPopup();
+      GleapAiChatbarManager.getInstance().setAgent(agentId, options);
     } catch (e) {}
-  }
-
-  /**
-   * Set a custom agent popup URL.
-   * @param {string} agentPopupUrl
-   */
-  static setAgentPopupUrl(agentPopupUrl) {
-    GleapAgentPopupManager.getInstance().setAgentPopupUrl(agentPopupUrl);
   }
 
   static showNotification(data) {
@@ -1529,7 +1517,6 @@ export {
   GleapAdminManager,
   AgentNetworkManager,
   GleapAgentChat,
-  GleapAgentPopupManager,
   parseSSEStream,
   dispatchSSEEvent,
   handleGleapLink,

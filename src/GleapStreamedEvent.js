@@ -138,6 +138,8 @@ export default class GleapStreamedEvent {
             placeholder: ai.p,
             quickActions: ai.a,
             style: ai.s,
+            agentId: ai.g,
+            agentName: ai.n,
           });
         }
 

@@ -156,6 +156,8 @@ class AgentNetworkManager {
   }
 
   getConversationMessages(agentId, conversationId, limit = 50, skip = 0) {
+    if (agentId === 'kai') return Promise.resolve({ messages: [] });
+
     const cacheKey = `${conversationId}:${limit}:${skip}`;
     const cached = this.messagesCache.get(cacheKey);
     if (cached) {
@@ -181,6 +183,8 @@ class AgentNetworkManager {
   }
 
   getConversations(agentId, limit = 10, skip = 0) {
+    if (agentId === 'kai') return Promise.resolve({ conversations: [] });
+
     const apiUrl = this._getApiUrl();
     if (!apiUrl) return Promise.reject(new Error('AgentNetworkManager: Gleap API URL not configured.'));
     return this._makeRequest('GET', `${apiUrl}/v3/shared/agents/${agentId}/conversations?limit=${limit}&skip=${skip}`, null);

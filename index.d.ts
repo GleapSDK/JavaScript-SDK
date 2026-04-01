@@ -59,10 +59,11 @@ export namespace Gleap {
   function setModalUrl(modalUrl: string): void;
   function startAgent(
     agentId: string,
-    context?: Record<string, any>,
-    conversationId?: string
+    context?: Record<string, any>
   ): void;
+  /** @deprecated Agent popup replaced by inline chatbar. No-op. */
   function closeAgentPopup(): void;
+  /** @deprecated Agent popup replaced by inline chatbar. No-op. */
   function setAgentPopupUrl(agentPopupUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;

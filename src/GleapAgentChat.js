@@ -15,7 +15,7 @@ import AgentNetworkManager from './AgentNetworkManager';
  */
 class GleapAgentChat {
   constructor(options = {}) {
-    this._agentId = options.agentId || null;
+    this._agentId = options.agentId || 'kai';
     this._context = options.context || null;
     this._onChange = options.onChange || null;
     this._onError = options.onError || null;
@@ -46,7 +46,7 @@ class GleapAgentChat {
    */
   async sendMessage(content) {
     const trimmed = (content || '').trim();
-    if (!trimmed || this._isExecuting || !this._agentId || this._destroyed) return;
+    if (!trimmed || this._isExecuting || this._destroyed) return;
 
     // Add user message optimistically
     this._messages = [...this._messages, {
@@ -70,7 +70,15 @@ class GleapAgentChat {
     this._error = null;
     this._notify();
 
-    const body = { messages: [{ role: 'user', content: trimmed }] };
+    // For Kai mode, send full message history since there's no server-side conversation persistence
+    const isKai = this._agentId === 'kai';
+    const messages = isKai
+      ? this._messages
+          .filter((m) => !m.isStreaming && m.content)
+          .map((m) => ({ role: m.role, content: m.content }))
+      : [{ role: 'user', content: trimmed }];
+
+    const body = { messages };
     if (this._conversationId) body.conversationId = this._conversationId;
     if (this._context) body.additionalContext = this._context;
 
