@@ -69,6 +69,9 @@ export default class GleapAiChatbarManager {
         if (data.name === 'chatbar-error') {
           GleapEventManager.notifyEvent('agent-error', data.data);
         }
+        if (data.name === 'chatbar-panel-blur' && data.data) {
+          this._updateBlurBackdrop(data.data);
+        }
       } catch (e) {}
     });
   }
@@ -136,6 +139,17 @@ export default class GleapAiChatbarManager {
     this.chatbarContainer.style.height = Math.ceil(height) + 'px';
     if (!this.isHidden) {
       this.chatbarContainer.style.display = 'block';
+    }
+  }
+
+  _updateBlurBackdrop({ visible, height, borderRadius }) {
+    if (!this.blurBackdrop) return;
+    if (visible) {
+      this.blurBackdrop.style.height = height + 'px';
+      this.blurBackdrop.style.borderRadius = borderRadius + 'px';
+      this.blurBackdrop.style.display = 'block';
+    } else {
+      this.blurBackdrop.style.display = 'none';
     }
   }
 
@@ -293,17 +307,36 @@ export default class GleapAiChatbarManager {
     frame.setAttribute('frameborder', '0');
     frame.setAttribute('allow', 'autoplay; encrypted-media; microphone *;');
     frame.style.cssText = `
+      position: relative;
       width: 100%;
       height: 100%;
       border: 0;
       background: transparent;
+      z-index: 1;
     `;
 
+    const blurBackdrop = document.createElement('div');
+    blurBackdrop.style.cssText = `
+      position: absolute;
+      bottom: 70px;
+      left: 20px;
+      right: 20px;
+      height: 0;
+      display: none;
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border-radius: 20px;
+      pointer-events: none;
+      z-index: 0;
+    `;
+
+    container.appendChild(blurBackdrop);
     container.appendChild(frame);
     document.body.appendChild(container);
 
     this.chatbarContainer = container;
     this.chatbarFrame = frame;
+    this.blurBackdrop = blurBackdrop;
   }
 
   destroy() {
