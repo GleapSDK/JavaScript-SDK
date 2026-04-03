@@ -17,6 +17,7 @@ import Gleap, {
   GleapTagManager,
   GleapTranslationManager,
 } from './Gleap';
+import GleapAgentToolManager from './GleapAgentToolManager';
 import { runFunctionWhenDomIsReady } from './GleapHelper';
 import { widgetMaxHeight } from './UI';
 
@@ -408,7 +409,8 @@ export default class GleapFrameManager {
       name: 'config-update',
       data: {
         config: GleapConfigManager.getInstance().getFlowConfig(),
-        aiTools: GleapConfigManager.getInstance().getAiTools(),
+        aiTools: GleapAgentToolManager.getInstance().getAgentTools(),
+        agentTools: GleapAgentToolManager.getInstance().getAgentTools(),
         overrideLanguage: GleapTranslationManager.getInstance().getOverrideLanguage(),
       },
     });
@@ -542,6 +544,7 @@ export default class GleapFrameManager {
 
       if (data.name === 'tool-execution') {
         GleapEventManager.notifyEvent('tool-execution', data.data);
+        GleapAgentToolManager.getInstance().triggerToolAction(data.data);
       }
 
       if (data.name === 'checklist-loaded') {

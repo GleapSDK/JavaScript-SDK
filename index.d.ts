@@ -59,7 +59,11 @@ export namespace Gleap {
   function setModalUrl(modalUrl: string): void;
   function startAgent(
     agentId: string,
-    context?: Record<string, any>
+    options?: { context?: any; primaryColor?: string; initialMessage?: string }
+  ): void;
+  function setAIAgent(
+    agentId: string,
+    options?: { context?: any; primaryColor?: string }
   ): void;
   /** @deprecated Agent popup replaced by inline chatbar. No-op. */
   function closeAgentPopup(): void;
@@ -69,6 +73,15 @@ export namespace Gleap {
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
   function setNetworkLogPropsToIgnore(filters: string[]): void;
+  function registerAgentToolAction(
+    callback: (toolAction: {
+      name: string;
+      params: Record<string, any>;
+      result: any;
+      message: string;
+      toolCallId: string;
+    }) => void
+  ): void;
   function registerCustomAction(
     customAction: (action: { name: string }) => void
   ): void;
@@ -98,14 +111,14 @@ export namespace Gleap {
   function setAiTools(tools: {
     name: string;
     description: string;
-    executionType?: 'button' | 'auto';
     response?: string;
-    parameters: {
+    executionType?: 'button' | 'auto';
+    parameters?: {
       name: string;
       description: string;
       type: "string" | "number" | "boolean";
       required: boolean;
-      enums?: string[];
+      enum?: string[];
     }[];
   }[]): void;
   function showTabNotificationBadge(showNotificationBadge: boolean): void;
@@ -199,6 +212,7 @@ export namespace Gleap {
       | "agent-reply-received"
       | "agent-error"
       | "agent-conversation-created"
+      | "agent-tool-executed"
       | string,
     callback: (data?: any) => void
   ): void;

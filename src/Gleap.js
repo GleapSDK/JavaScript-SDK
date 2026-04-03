@@ -20,6 +20,7 @@ import GleapShortcutListener from './GleapShortcutListener';
 import GleapPreFillManager from './GleapPreFillManager';
 import GleapNotificationManager from './GleapNotificationManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
+import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapBannerManager from './GleapBannerManager';
 import GleapModalManager from './GleapModalManager';
 import GleapAudioManager from './GleapAudioManager';
@@ -94,9 +95,6 @@ class Gleap {
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
       GleapAdminManager.getInstance().start();
-      GleapAiChatbarManager.getInstance().setOnMessageSend((question) => {
-        Gleap.askAI(question, true);
-      });
     }
   }
 
@@ -159,11 +157,12 @@ class Gleap {
   }
 
   /**
-   * Set the AI tools.
-   * @param {*} tools
+   * Set frontend-side tools that AI agents (including Kai) can call.
+   * @param {Array} tools - Tool definitions with name, description, response, parameters.
    */
   static setAiTools(tools) {
-    GleapConfigManager.getInstance().setAiTools(tools);
+    GleapAgentToolManager.getInstance().setAgentTools(tools);
+    GleapAiChatbarManager.getInstance().sendAgentToolsUpdate();
     GleapFrameManager.getInstance().sendConfigUpdate();
   }
 
@@ -692,6 +691,14 @@ class Gleap {
         });
       }, 1000);
     }
+  }
+
+  /**
+   * Register a callback for agent tool executions.
+   * @param {function} callback - Called with { name, params, result, message, toolCallId } when any tool finishes.
+   */
+  static registerAgentToolAction(callback) {
+    GleapAgentToolManager.getInstance().registerAgentToolAction(callback);
   }
 
   /**
@@ -1515,6 +1522,7 @@ export {
   GleapTagManager,
   GleapProductTours,
   GleapAdminManager,
+  GleapAgentToolManager,
   AgentNetworkManager,
   GleapAgentChat,
   parseSSEStream,

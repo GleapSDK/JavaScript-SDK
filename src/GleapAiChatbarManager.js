@@ -1,4 +1,5 @@
 import { GleapFrameManager, GleapConfigManager, GleapSession, GleapEventManager } from './Gleap';
+import GleapAgentToolManager from './GleapAgentToolManager';
 import { runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
@@ -7,11 +8,11 @@ export default class GleapAiChatbarManager {
   chatbarFrame = null;
   config = null;
   agentId = 'kai';
-  agentName = 'AI Agent';
   agentContext = null;
   isHidden = true;
   manuallyHidden = false;
-  onMessageSend = null; // kept for backward compat
+  iframeReady = false;
+  pendingMessages = [];
 
   static instance;
   static getInstance() {
@@ -30,6 +31,7 @@ export default class GleapAiChatbarManager {
     document.addEventListener('click', (event) => {
       if (!this.chatbarContainer) return;
       if (this.chatbarContainer.contains(event.target)) return;
+      if (this._suppressOutsideClick) return;
       this._postMessage({ name: 'chatbar-outside-click' });
     });
   }
@@ -45,7 +47,9 @@ export default class GleapAiChatbarManager {
         if (data?.type !== 'CHATBAR') return;
 
         if (data.name === 'chatbar-loaded') {
+          this.iframeReady = true;
           this._sendChatbarData();
+          this._flushPendingMessages();
         }
         if (data.name === 'chatbar-resize' && data.data) {
           this._resizeFrame(data.data);
@@ -59,6 +63,9 @@ export default class GleapAiChatbarManager {
         if (data.name === 'chatbar-reply-received') {
           GleapEventManager.notifyEvent('agent-reply-received', data.data);
         }
+        if (data.name === 'chatbar-tool-executed' && data.data) {
+          GleapAgentToolManager.getInstance().triggerToolAction(data.data);
+        }
         if (data.name === 'chatbar-error') {
           GleapEventManager.notifyEvent('agent-error', data.data);
         }
@@ -66,7 +73,25 @@ export default class GleapAiChatbarManager {
     });
   }
 
-  async _sendChatbarData() {
+  _postMessage(message) {
+    try {
+      if (!this.iframeReady || !this.chatbarFrame?.contentWindow) {
+        this.pendingMessages.push(message);
+        return;
+      }
+      this.chatbarFrame.contentWindow.postMessage(JSON.stringify({ ...message, type: 'chatbar' }), '*');
+    } catch (e) {}
+  }
+
+  _flushPendingMessages() {
+    const queued = this.pendingMessages;
+    this.pendingMessages = [];
+    for (const msg of queued) {
+      this._postMessage(msg);
+    }
+  }
+
+  _sendChatbarData() {
     let flowConfig = {};
     let apiUrl = 'https://api.gleap.io';
     let sdkKey = '';
@@ -85,19 +110,18 @@ export default class GleapAiChatbarManager {
       gleapHash = session.session?.gleapHash || '';
     } catch (e) {}
 
-    if (this.agentId && this.agentId !== 'kai' && !this.agentName) {
-      await this._validateAgent(this.agentId);
-    }
+    const defaultAgentName = flowConfig?.aiBar?.defaultAgentName || 'Kai';
 
     this._postMessage({
       name: 'chatbar-data',
       data: {
         agentId: this.agentId,
-        agentName: this.agentName,
+        defaultAgentName,
         placeholder: this.config?.placeholder || 'Ask me anything...',
         quickActions: this.config?.quickActions || [],
         style: this.config?.style || 'glow',
         primaryColor: flowConfig?.color || '#485BFF',
+        agentTools: GleapAgentToolManager.getInstance().getAgentTools(),
         apiUrl,
         sdkKey,
         gleapId,
@@ -106,89 +130,72 @@ export default class GleapAiChatbarManager {
     });
   }
 
-  _postMessage(message) {
-    try {
-      if (this.chatbarFrame?.contentWindow) {
-        this.chatbarFrame.contentWindow.postMessage(JSON.stringify({ ...message, type: 'chatbar' }), '*');
-      }
-    } catch (e) {}
-  }
-
   _resizeFrame({ width, height }) {
     if (!this.chatbarContainer) return;
     this.chatbarContainer.style.width = Math.ceil(width) + 'px';
     this.chatbarContainer.style.height = Math.ceil(height) + 'px';
+    if (!this.isHidden) {
+      this.chatbarContainer.style.display = 'block';
+    }
   }
 
   setConfig(config) {
     this.config = config;
 
-    if (!config.agentId || config.agentId === 'default') {
-      this.agentId = 'kai';
-    } else {
-      this.agentId = config.agentId;
+    if (this.agentId === 'kai' || !this.agentId) {
+      if (!config.agentId || config.agentId === 'default') {
+        this.agentId = 'kai';
+      } else {
+        this.agentId = config.agentId;
+      }
     }
 
-    if (config.agentName) this.agentName = config.agentName;
-
+    this._preloadIframe();
     if (config.enabled) {
       this.show();
     }
 
-    // Forward updated config to chatbar iframe if already loaded
-    if (this.chatbarFrame) {
-      this._sendChatbarData();
-    }
+    // Forward updated config to chatbar iframe (queued if not ready yet)
+    this._sendChatbarData();
   }
 
   setPlaceholder(placeholder) {
-    if (!this.config) {
-      this.config = {};
-    }
+    if (!this.config) this.config = {};
     this.config.placeholder = placeholder;
-
-    if (this.chatbarFrame) {
-      this._sendChatbarData();
-    }
+    this._sendChatbarData();
   }
 
   setQuickActions(quickActions) {
-    if (!this.config) {
-      this.config = {};
-    }
+    if (!this.config) this.config = {};
     this.config.quickActions = quickActions;
-
-    // Forward to chatbar iframe if already loaded
-    if (this.chatbarFrame) {
-      this._sendChatbarData();
-    }
+    this._sendChatbarData();
   }
 
-  setOnMessageSend(callback) {
-    this.onMessageSend = callback;
+  sendAgentToolsUpdate() {
+    this._postMessage({
+      name: 'chatbar-set-agent-tools',
+      data: { tools: GleapAgentToolManager.getInstance().getAgentTools() },
+    });
   }
 
   updateUIVisibility() {
-    if (!this.config?.enabled) return;
     const isOpened = GleapFrameManager.getInstance().isOpened();
     if (isOpened) {
       this.hide();
-    } else {
+    } else if (this.config?.enabled) {
       this.show();
     }
   }
 
   show() {
-    if (!this.config?.enabled) return;
-    if (this.manuallyHidden) return;
-
-    if (!this.chatbarContainer) {
-      runFunctionWhenDomIsReady(() => this._injectUI());
+    if (this.manuallyHidden) {
       return;
     }
-
     this.isHidden = false;
-    this.chatbarContainer.style.display = 'block';
+    this._preloadIframe();
+    if (this.chatbarContainer) {
+      this.chatbarContainer.style.display = 'block';
+    }
   }
 
   hide() {
@@ -198,136 +205,51 @@ export default class GleapAiChatbarManager {
     }
   }
 
-  async _validateAgent(agentId) {
-    try {
-      let apiUrl = 'https://api.gleap.io';
-      let sdkKey = '';
-      let gleapId = '';
-      let gleapHash = '';
-
-      try {
-        const session = GleapSession.getInstance();
-        apiUrl = session.apiUrl || apiUrl;
-        sdkKey = session.sdkKey || '';
-        gleapId = session.session?.gleapId || '';
-        gleapHash = session.session?.gleapHash || '';
-      } catch (e) {}
-
-      const headers = {};
-      if (sdkKey) headers['Api-Token'] = sdkKey;
-      if (gleapId) headers['Gleap-Id'] = gleapId;
-      if (gleapHash) headers['Gleap-Hash'] = gleapHash;
-
-      const res = await fetch(`${apiUrl}/v3/shared/agents/${agentId}`, { headers });
-      if (!res.ok) return null;
-
-      const agentInfo = await res.json();
-
-      if (!agentInfo || agentInfo.error) {
-        console.error('Agent not found!');
-        return;
-      }
-
-      this.agentId = agentId;
-      this.agentName = agentInfo.name || 'AI Agent';
-      return agentInfo;
-    } catch (e) {
-      return null;
+  _resolveAgentId(agentId) {
+    if (!agentId || agentId === 'default') {
+      return 'kai';
     }
+    return agentId;
   }
 
-  _getDefaultAgentId() {
-    try {
-      const flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
-      return flowConfig?.aiBar?.agentId || null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  async setAgent(agentId, options = {}) {
-    // Resolve to the project's default agent, or fall back to 'kai'
-    let resolvedAgentId = agentId;
-    if (!resolvedAgentId || resolvedAgentId === 'default') {
-      resolvedAgentId = this._getDefaultAgentId() || 'kai';
-    }
-
-    if (resolvedAgentId !== 'kai') {
-      await this._validateAgent(resolvedAgentId);
-    } else {
-      this.agentId = 'kai';
-    }
-
+  _sendAgentCommand(agentId, options = {}, openPanel = false) {
+    const resolvedAgentId = this._resolveAgentId(agentId);
+    this.agentId = resolvedAgentId;
     if (options.context) this.agentContext = options.context;
-
     this.manuallyHidden = false;
 
     const messageData = {
       agentId: this.agentId,
-      agentName: this.agentName,
-      context: this.agentContext,
-      primaryColor: options.primaryColor || undefined,
-    };
-
-    if (!this.chatbarContainer) {
-      runFunctionWhenDomIsReady(() => {
-        this._injectUI();
-        setTimeout(() => {
-          this._postMessage({ name: 'chatbar-set-agent', data: messageData });
-        }, 500);
-      });
-      return;
-    }
-
-    this.chatbarContainer.style.display = 'block';
-    this.isHidden = false;
-    this._postMessage({
-      name: 'chatbar-set-agent',
-      data: messageData,
-    });
-  }
-
-  async showWithAgent(agentId, options = {}) {
-    // Resolve to the project's default agent, or fall back to 'kai'
-    let resolvedAgentId = agentId;
-    if (!resolvedAgentId || resolvedAgentId === 'default') {
-      resolvedAgentId = this._getDefaultAgentId() || 'kai';
-    }
-
-    if (resolvedAgentId !== 'kai') {
-      await this._validateAgent(resolvedAgentId);
-    } else {
-      this.agentId = 'kai';
-    }
-
-    if (options.context) this.agentContext = options.context;
-
-    this.manuallyHidden = false;
-
-    const messageData = {
-      agentId: this.agentId,
-      agentName: this.agentName,
       context: this.agentContext,
       primaryColor: options.primaryColor || undefined,
       initialMessage: options.initialMessage || undefined,
     };
 
-    if (!this.chatbarContainer) {
-      runFunctionWhenDomIsReady(() => {
-        this._injectUI();
-        setTimeout(() => {
-          this._postMessage({ name: 'chatbar-show-agent', data: messageData });
-        }, 500);
-      });
-      return;
-    }
+    const messageName = openPanel ? 'chatbar-show-agent' : 'chatbar-set-agent';
 
-    this.chatbarContainer.style.display = 'block';
-    this.isHidden = false;
-    this._postMessage({
-      name: 'chatbar-show-agent',
-      data: messageData,
-    });
+    // Suppress outside-click for this tick so a button that calls
+    // startAgent() doesn't immediately close the conversation.
+    this._suppressOutsideClick = true;
+    setTimeout(() => { this._suppressOutsideClick = false; }, 0);
+
+    // Show the chatbar (preloads iframe if needed)
+    this.show();
+
+    // Post the agent command (queued automatically if iframe not ready yet)
+    this._postMessage({ name: messageName, data: messageData });
+  }
+
+  setAgent(agentId, options = {}) {
+    this._sendAgentCommand(agentId, options, false);
+  }
+
+  showWithAgent(agentId, options = {}) {
+    this._sendAgentCommand(agentId, options, true);
+  }
+
+  _preloadIframe() {
+    if (this.chatbarContainer) return;
+    runFunctionWhenDomIsReady(() => this._injectUI());
   }
 
   _injectUI() {
@@ -348,6 +270,7 @@ export default class GleapAiChatbarManager {
       width: 280px;
       overflow: hidden;
       height: 80px;
+      display: none;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
 
@@ -381,7 +304,6 @@ export default class GleapAiChatbarManager {
 
     this.chatbarContainer = container;
     this.chatbarFrame = frame;
-    this.isHidden = false;
   }
 
   destroy() {
@@ -394,6 +316,8 @@ export default class GleapAiChatbarManager {
     this.agentId = null;
     this.agentContext = null;
     this.isHidden = true;
+    this.iframeReady = false;
+    this.pendingMessages = [];
     GleapAiChatbarManager.instance = null;
   }
 }
