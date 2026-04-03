@@ -6,8 +6,4 @@ Gleap.setWSApiUrl('ws://0.0.0.0:9000');
 
 //Gleap.disableQueryParams(true);
 
-Gleap.initialize('ody3fTXIIbWfipYNLCeCxJBizXVVaX9J');
-
-Gleap.on('tool-execution', (tool) => {
-  console.log(tool);
-});
+Gleap.initialize('ogWhNhuiZcGWrva5nlDS8l7a78OfaLlV');
