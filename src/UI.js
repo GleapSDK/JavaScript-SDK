@@ -2409,6 +2409,15 @@ export const injectStyledCSS = (
         transform: translate3d(0, 0, 0);
       }
     }
+
+    .gleap-admin-frame-container,
+    .gleap-frame-container,
+    .bb-feedback-button,
+    .gleap-notification-container,
+    .gleap-tooltip,
+    .gleap-ai-ui-widget {
+      pointer-events: auto !important;
+    }
     `;
 
   const oldNode = document.querySelector('.gleap-styles');
