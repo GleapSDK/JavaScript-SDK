@@ -171,9 +171,10 @@ export default class GleapSession {
       GleapEventManager.notifyEvent('unregister-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
 
-    saveToGleapCache(`session-${this.sdkKey}`, session);
     if (this.useCookies) {
       setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
+    } else {
+      saveToGleapCache(`session-${this.sdkKey}`, session);
     }
 
     this.session = session;
@@ -224,7 +225,7 @@ export default class GleapSession {
     } catch (exp) {}
 
     // Try to load session from local storage, if not already loaded.
-    if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
+    if (!this.useCookies && !(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
       const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
       if (cachedSession) {
         this.validateSession(cachedSession);
