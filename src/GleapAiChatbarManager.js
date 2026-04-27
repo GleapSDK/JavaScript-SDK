@@ -3,7 +3,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = 'http://localhost:5173/chatbar';
+  chatbarUrl = 'https://outboundmedia.gleap.io/chatbar';
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;

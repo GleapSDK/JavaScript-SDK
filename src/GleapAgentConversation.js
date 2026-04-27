@@ -6,7 +6,7 @@ export const registerGleapAgentComponents = () => {
   if (!customElements.get('gleap-agent-conversation')) {
     class GleapAgentConversation extends HTMLElement {
       _iframe = null;
-      _agentConvUrl = 'http://localhost:5173/agent-conversation';
+      _agentConvUrl = 'https://outboundmedia.gleap.io/agent-conversation';
       _messageListener = null;
       _config = {};
 
