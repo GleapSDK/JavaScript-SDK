@@ -24,6 +24,7 @@ export default class GleapSession {
   sdkKey = null;
   updatingSession = false;
   useCookies = true;
+  localStorageDisabled = false;
   session = {
     gleapId: null,
     gleapHash: null,
@@ -171,7 +172,9 @@ export default class GleapSession {
       GleapEventManager.notifyEvent('unregister-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
 
-    saveToGleapCache(`session-${this.sdkKey}`, session);
+    if (!this.localStorageDisabled) {
+      saveToGleapCache(`session-${this.sdkKey}`, session);
+    }
     if (this.useCookies) {
       setGleapCookie(`session-${this.sdkKey}`, encodeURIComponent(JSON.stringify(session)), 365);
     }
@@ -224,7 +227,7 @@ export default class GleapSession {
     } catch (exp) {}
 
     // Try to load session from local storage, if not already loaded.
-    if (!(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
+    if (!this.localStorageDisabled && !(this.session && this.session.gleapId && this.session.gleapId.length > 0)) {
       const cachedSession = loadFromGleapCache(`session-${this.sdkKey}`);
       if (cachedSession) {
         this.validateSession(cachedSession);

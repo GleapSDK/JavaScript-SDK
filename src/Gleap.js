@@ -365,6 +365,10 @@ class Gleap {
     GleapSession.getInstance().useCookies = useCookies;
   }
 
+  static disableLocalStorage() {
+    GleapSession.getInstance().localStorageDisabled = true;
+  }
+
   /**
    * Indentifies the user session
    * @param {string} userId
