@@ -286,18 +286,9 @@ export default class GleapAiChatbarManager {
       height: 80px;
       display: none;
       transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      left: 50%;
+      transform: translateX(-50%);
     `;
-
-    if (flowConfig?.feedbackButtonPosition === 'BOTTOM_RIGHT') {
-      container.style.right = '20px';
-      container.style.left = 'auto';
-    } else if (flowConfig?.feedbackButtonPosition === 'BOTTOM_LEFT') {
-      container.style.left = '20px';
-      container.style.right = 'auto';
-    } else {
-      container.style.left = '50%';
-      container.style.transform = 'translateX(-50%)';
-    }
 
     const frame = document.createElement('iframe');
     frame.src = this.chatbarUrl;

@@ -65,10 +65,6 @@ export namespace Gleap {
     agentId: string,
     options?: { context?: any; primaryColor?: string }
   ): void;
-  /** @deprecated Agent popup replaced by inline chatbar. No-op. */
-  function closeAgentPopup(): void;
-  /** @deprecated Agent popup replaced by inline chatbar. No-op. */
-  function setAgentPopupUrl(agentPopupUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
