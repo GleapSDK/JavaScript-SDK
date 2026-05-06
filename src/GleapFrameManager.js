@@ -17,6 +17,7 @@ import Gleap, {
   GleapTagManager,
   GleapTranslationManager,
 } from './Gleap';
+import GleapAgentToolManager from './GleapAgentToolManager';
 import { runFunctionWhenDomIsReady } from './GleapHelper';
 import { widgetMaxHeight } from './UI';
 
@@ -267,7 +268,7 @@ export default class GleapFrameManager {
 
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     const loadingClass = 'gleap-frame-container--loading';
-    if (this.gleapFrameContainer.classList) {
+    if (this.gleapFrameContainer?.classList) {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
@@ -283,7 +284,7 @@ export default class GleapFrameManager {
       }
 
       setTimeout(() => {
-        this.gleapFrameContainer.classList.add('gleap-frame-container--animate');
+        this.gleapFrameContainer?.classList.add('gleap-frame-container--animate');
       }, 500);
     }
 
@@ -408,7 +409,8 @@ export default class GleapFrameManager {
       name: 'config-update',
       data: {
         config: GleapConfigManager.getInstance().getFlowConfig(),
-        aiTools: GleapConfigManager.getInstance().getAiTools(),
+        aiTools: GleapAgentToolManager.getInstance().getAgentTools(),
+        agentTools: GleapAgentToolManager.getInstance().getAgentTools(),
         overrideLanguage: GleapTranslationManager.getInstance().getOverrideLanguage(),
       },
     });
@@ -542,6 +544,7 @@ export default class GleapFrameManager {
 
       if (data.name === 'tool-execution') {
         GleapEventManager.notifyEvent('tool-execution', data.data);
+        GleapAgentToolManager.getInstance().triggerToolAction(data.data);
       }
 
       if (data.name === 'checklist-loaded') {

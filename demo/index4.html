@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="/htmlimports.js"></script>
+    <title>Gleap Demo - Fully Custom (No Components)</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+    <link rel="icon" type="image/x-icon" href="fav.png" />
+    <script src="build/cjs/index.js"></script>
+    <script src="main.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #111827;
+        color: #f9fafb;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 60px 20px;
+      }
+
+      .demo-container {
+        width: 100%;
+        max-width: 640px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .demo-header {
+        text-align: center;
+      }
+      .demo-header h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .demo-header p {
+        font-size: 0.9rem;
+        color: #9ca3af;
+        margin-top: 4px;
+      }
+
+      /* Fully custom chat UI — zero Gleap components */
+      .chat-box {
+        background: #1f2937;
+        border: 1px solid #374151;
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        height: 500px;
+        overflow: hidden;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .chat-messages::-webkit-scrollbar { width: 5px; }
+      .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+      .bubble {
+        max-width: 80%;
+        padding: 10px 14px;
+        border-radius: 16px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        word-wrap: break-word;
+        animation: slideIn 0.15s ease;
+      }
+      .bubble--user {
+        align-self: flex-end;
+        background: #6366f1;
+        color: #fff;
+        border-bottom-right-radius: 6px;
+      }
+      .bubble--assistant {
+        align-self: flex-start;
+        background: #374151;
+        color: #f3f4f6;
+        border-bottom-left-radius: 6px;
+      }
+      .bubble--error {
+        align-self: center;
+        background: #451a1a;
+        color: #fca5a5;
+        font-size: 0.85rem;
+        border-radius: 8px;
+      }
+
+      .typing {
+        align-self: flex-start;
+        display: flex;
+        gap: 5px;
+        padding: 12px 16px;
+        background: #374151;
+        border-radius: 16px 16px 16px 6px;
+      }
+      .typing span {
+        width: 7px; height: 7px;
+        border-radius: 50%;
+        background: #6b7280;
+        animation: bounce 1.4s ease-in-out infinite;
+      }
+      .typing span:nth-child(2) { animation-delay: 0.2s; }
+      .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+      .empty {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+
+      /* Custom input — plain HTML, no Gleap components */
+      .chat-input-area {
+        border-top: 1px solid #374151;
+        padding: 12px 16px;
+      }
+      .chat-input-box {
+        position: relative;
+        background: #374151;
+        border: 1px solid #4b5563;
+        border-radius: 22px;
+        transition: border-color 0.15s;
+      }
+      .chat-input-box:focus-within {
+        border-color: #6366f1;
+      }
+      .chat-editable {
+        outline: none;
+        color: #f9fafb;
+        font-size: 0.9rem;
+        font-family: inherit;
+        line-height: 1.5;
+        min-height: 24px;
+        max-height: 140px;
+        overflow-y: auto;
+        padding: 10px 48px 10px 16px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+      .chat-editable:empty::before {
+        content: attr(data-placeholder);
+        color: #6b7280;
+        pointer-events: none;
+      }
+      .chat-editable[data-disabled="true"] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .chat-send {
+        position: absolute;
+        bottom: 6px;
+        right: 6px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        background: #6366f1;
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.15s, transform 0.1s;
+      }
+      .chat-send:hover { opacity: 0.85; }
+      .chat-send:active { transform: scale(0.92); }
+      .chat-send:disabled {
+        background: #4b5563;
+        color: #6b7280;
+        cursor: not-allowed;
+      }
+      .chat-send svg { width: 16px; height: 16px; }
+
+      @keyframes slideIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+      .demo-badge {
+        text-align: center;
+        font-size: 0.75rem;
+        color: #6b7280;
+        padding: 8px;
+      }
+      .demo-badge code {
+        background: #374151;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        color: #d1d5db;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="demo-container">
+      <div class="demo-header">
+        <h1>Fully Custom Demo</h1>
+        <p>Zero pre-built components &mdash; only <code>Gleap.sendAgentMessage()</code></p>
+      </div>
+
+      <div class="chat-box">
+        <div class="chat-messages" id="messages">
+          <div class="empty" id="emptyState">Start typing to talk to the AI agent</div>
+        </div>
+
+        <div class="chat-input-area">
+          <div class="chat-input-box">
+            <div
+              class="chat-editable"
+              id="editable"
+              contenteditable="true"
+              role="textbox"
+              data-placeholder="Message the agent..."
+            ></div>
+            <button class="chat-send" id="sendBtn" disabled aria-label="Send">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 4L12 20M12 4L6 10M12 4L18 10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-badge">
+        Zero Gleap UI components &mdash; uses <code>Gleap.sendAgentMessage()</code> + custom HTML/CSS
+      </div>
+    </div>
+
+    <script>
+      const AGENT_ID = '69bbfcc283c7e579ee9b3660';
+      const messagesEl = document.getElementById('messages');
+      const editable = document.getElementById('editable');
+      const sendBtn = document.getElementById('sendBtn');
+      const emptyState = document.getElementById('emptyState');
+
+      let conversationId = null;
+      let isExecuting = false;
+
+      // --- Input handling ---
+      editable.addEventListener('input', () => {
+        sendBtn.disabled = isExecuting || !getText().trim();
+      });
+
+      editable.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          send();
+        }
+      });
+
+      editable.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+        document.execCommand('insertText', false, text);
+      });
+
+      sendBtn.addEventListener('click', () => send());
+
+      function getText() {
+        return (editable.innerText || '').replace(/\n$/, '');
+      }
+
+      // --- Rendering helpers ---
+      function addBubble(role, text) {
+        if (emptyState) { emptyState.remove(); }
+        const div = document.createElement('div');
+        div.className = `bubble bubble--${role}`;
+        div.textContent = text;
+        messagesEl.appendChild(div);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function showTyping() {
+        if (emptyState) { emptyState.remove(); }
+        const el = document.createElement('div');
+        el.className = 'typing';
+        el.id = 'typing';
+        el.innerHTML = '<span></span><span></span><span></span>';
+        messagesEl.appendChild(el);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      function hideTyping() {
+        const el = document.getElementById('typing');
+        if (el) el.remove();
+      }
+
+      function setDisabled(disabled) {
+        isExecuting = disabled;
+        editable.setAttribute('data-disabled', disabled);
+        editable.contentEditable = !disabled;
+        sendBtn.disabled = disabled || !getText().trim();
+      }
+
+      // --- Send logic: uses ONLY Gleap.sendAgentMessage() ---
+      async function send() {
+        const content = getText().trim();
+        if (!content || isExecuting) return;
+
+        editable.textContent = '';
+        setDisabled(true);
+        addBubble('user', content);
+        showTyping();
+
+        try {
+          const result = await Gleap.sendAgentMessage(AGENT_ID, content, {
+            conversationId: conversationId,
+            additionalContext: {
+              demo: 'index4 - fully custom UI',
+              timestamp: new Date().toISOString(),
+            },
+          });
+
+          hideTyping();
+
+          if (result?.conversationId) {
+            conversationId = result.conversationId;
+          }
+
+          if (result?.response) {
+            addBubble('assistant', result.response);
+          }
+        } catch (err) {
+          hideTyping();
+          addBubble('error', 'Failed to get a response. Please try again.');
+          console.error('Agent error:', err);
+        }
+
+        setDisabled(false);
+        editable.focus();
+      }
+
+      // --- Listen for SDK-level events too ---
+      Gleap.on('agent-reply-received', (data) => {
+        console.log('[Event] agent-reply-received:', data);
+      });
+
+      Gleap.on('agent-conversation-created', (data) => {
+        console.log('[Event] agent-conversation-created:', data);
+      });
+    </script>
+  </body>
+</html>

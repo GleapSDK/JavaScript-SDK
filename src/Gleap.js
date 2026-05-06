@@ -20,6 +20,7 @@ import GleapShortcutListener from './GleapShortcutListener';
 import GleapPreFillManager from './GleapPreFillManager';
 import GleapNotificationManager from './GleapNotificationManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
+import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapBannerManager from './GleapBannerManager';
 import GleapModalManager from './GleapModalManager';
 import GleapAudioManager from './GleapAudioManager';
@@ -29,6 +30,10 @@ import GleapProductTours from './GleapProductTours';
 import { checkPageFilter, checkPageRules } from './GleapPageFilter';
 import { registerGleapChecklist } from './GleapChecklist';
 import ChecklistNetworkManager from './ChecklistNetworkManager';
+import { registerGleapAgentComponents } from './GleapAgentConversation';
+import AgentNetworkManager from './AgentNetworkManager';
+import GleapAgentChat from './GleapAgentChat';
+import { parseSSEStream, dispatchSSEEvent } from './GleapSSEParser';
 
 if (
   typeof window !== 'undefined' &&
@@ -47,6 +52,7 @@ if (
 
 if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
   registerGleapChecklist();
+  registerGleapAgentComponents();
 }
 
 class Gleap {
@@ -89,9 +95,6 @@ class Gleap {
       GleapConsoleLogManager.getInstance().start();
       GleapClickListener.getInstance().start();
       GleapAdminManager.getInstance().start();
-      GleapAiChatbarManager.getInstance().setOnMessageSend((question) => {
-        Gleap.askAI(question, true);
-      });
     }
   }
 
@@ -154,11 +157,12 @@ class Gleap {
   }
 
   /**
-   * Set the AI tools.
-   * @param {*} tools
+   * Set frontend-side tools that AI agents (including Kai) can call.
+   * @param {Array} tools - Tool definitions with name, description, response, parameters.
    */
   static setAiTools(tools) {
-    GleapConfigManager.getInstance().setAiTools(tools);
+    GleapAgentToolManager.getInstance().setAgentTools(tools);
+    GleapAiChatbarManager.getInstance().sendAgentToolsUpdate();
     GleapFrameManager.getInstance().sendConfigUpdate();
   }
 
@@ -213,9 +217,6 @@ class Gleap {
 
               // Inject the notification container
               GleapNotificationManager.getInstance().injectNotificationUI();
-
-              // Inject the AI UI container
-              GleapAiChatbarManager.getInstance().injectAIUI();
 
               // Check for uncompleted tour.
               Gleap.checkForUncompletedTour();
@@ -697,6 +698,14 @@ class Gleap {
   }
 
   /**
+   * Register a callback for agent tool executions.
+   * @param {function} callback - Called with { name, params, result, message, toolCallId } when any tool finishes.
+   */
+  static registerAgentToolAction(callback) {
+    GleapAgentToolManager.getInstance().registerAgentToolAction(callback);
+  }
+
+  /**
    * Register custom action
    * @param {*} action
    */
@@ -959,6 +968,71 @@ class Gleap {
     );
 
     GleapFrameManager.getInstance().showWidget();
+  }
+
+  /**
+   * Send a message to an agent programmatically.
+   * @param {string} agentId
+   * @param {string} message
+   * @param {{ conversationId?: string, additionalContext?: object }} [options={}]
+   * @returns {Promise<{ runId: string, status: string, response: string, conversationId?: string }>}
+   */
+  static sendAgentMessage(agentId, message, options = {}) {
+    if (!agentId || !message) {
+      return Promise.reject(new Error('agentId and message are required.'));
+    }
+
+    const body = {
+      messages: [{ role: 'user', content: message.trim() }],
+    };
+    if (options.conversationId) body.conversationId = options.conversationId;
+    if (options.additionalContext) body.additionalContext = options.additionalContext;
+
+    // Stream under the hood, collect and return full response
+    return new Promise((resolve, reject) => {
+      let fullResponse = '';
+      let conversationId = options.conversationId || null;
+      let runId = null;
+
+      AgentNetworkManager.getInstance().streamAgent(agentId, body, {
+        onMeta: (data) => {
+          if (data.conversationId) conversationId = data.conversationId;
+          if (data.runId) runId = data.runId;
+        },
+        onToken: (data) => {
+          fullResponse += data.content || '';
+          if (options.onToken) options.onToken(data);
+        },
+        onDone: (data) => {
+          resolve({
+            runId: runId || data?.runId,
+            status: data?.status || 'completed',
+            response: fullResponse || data?.response || '',
+            conversationId,
+          });
+        },
+        onError: (data) => { reject(data); },
+        onToolStart: () => {},
+        onToolEnd: () => {},
+      });
+    });
+  }
+
+  /**
+   * Clear agent conversation state from the cache.
+   */
+  static clearAgentConversation() {
+    AgentNetworkManager.getInstance().clearCache();
+  }
+
+  /**
+   * Create a headless agent chat instance.
+   * Framework-agnostic state manager for AI agent conversations.
+   * @param {object} options
+   * @returns {GleapAgentChat}
+   */
+  static createAgentChat(options) {
+    return new GleapAgentChat(options);
   }
 
   /**
@@ -1228,9 +1302,6 @@ class Gleap {
 
         // Inject the notification container
         GleapNotificationManager.getInstance().injectNotificationUI();
-
-        // Inject the AI UI container
-        GleapAiChatbarManager.getInstance().injectAIUI();
       })
       .catch(function (err) {
         console.warn('Failed to initialize Gleap.');
@@ -1309,6 +1380,30 @@ class Gleap {
   static showModal(data) {
     try {
       GleapModalManager.getInstance().showModal(data);
+    } catch (e) {}
+  }
+
+  /**
+   * Start an agent conversation in the inline chatbar.
+   * @param {string} agentId - The agent ID to converse with.
+   * @param {object} [options] - Optional config: { context?, primaryColor?, initialMessage? }
+   *   Also accepts a plain context object for backward compatibility.
+   */
+  static startAgent(agentId, options) {
+    try {
+      GleapAiChatbarManager.getInstance().showWithAgent(agentId, options);
+    } catch (e) {}
+  }
+
+  /**
+   * Set the AI agent for the chatbar without opening the conversation panel.
+   * The chatbar input bar will be shown, but the panel stays closed until the user interacts.
+   * @param {string} agentId - The agent ID to use. Pass empty/null/'default' for Kai.
+   * @param {object} [options] - Optional config: { context?, primaryColor? }
+   */
+  static setAIAgent(agentId, options) {
+    try {
+      GleapAiChatbarManager.getInstance().setAgent(agentId, options);
     } catch (e) {}
   }
 
@@ -1431,6 +1526,11 @@ export {
   GleapTagManager,
   GleapProductTours,
   GleapAdminManager,
+  GleapAgentToolManager,
+  AgentNetworkManager,
+  GleapAgentChat,
+  parseSSEStream,
+  dispatchSSEEvent,
   handleGleapLink,
 };
 
