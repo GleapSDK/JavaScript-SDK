@@ -1,7 +1,7 @@
 import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floating-ui/dom';
 import { GleapSession } from './Gleap';
 import { loadIcon } from './UI';
-import { checkPageFilter } from './GleapPageFilter';
+import { checkPageFilter, checkPageRules } from './GleapPageFilter';
 
 export default class GleapTooltipManager {
   tooltips = [];
@@ -427,6 +427,10 @@ export default class GleapTooltipManager {
     const currentUrl = window.location.href;
 
     return this.tooltips.filter((tooltip) => {
+      if (tooltip.pageRules && tooltip.pageRules.length > 0) {
+        return checkPageRules(currentUrl, { pageRules: tooltip.pageRules });
+      }
+
       if (!tooltip.page || tooltip.page.length === 0) {
         return true;
       }
