@@ -96,6 +96,7 @@ export default class GleapAiChatbarManager {
   }
 
   _sendChatbarData() {
+    if (!this.chatbarContainer) return;
     let flowConfig = {};
     let apiUrl = 'https://api.gleap.io';
     let sdkKey = '';
@@ -165,7 +166,6 @@ export default class GleapAiChatbarManager {
       }
     }
 
-    this._preloadIframe();
     if (config.enabled) {
       this.show();
     } else if (!this.manuallyShown) {
@@ -219,9 +219,19 @@ export default class GleapAiChatbarManager {
 
   hide() {
     this.isHidden = true;
-    if (this.chatbarContainer) {
-      this.chatbarContainer.style.display = 'none';
+    this._removeUI();
+  }
+
+  _removeUI() {
+    if (!this.chatbarContainer) return;
+    if (document.body && document.body.contains(this.chatbarContainer)) {
+      document.body.removeChild(this.chatbarContainer);
     }
+    this.chatbarContainer = null;
+    this.chatbarFrame = null;
+    this.blurBackdrop = null;
+    this.iframeReady = false;
+    this.pendingMessages = [];
   }
 
   _resolveAgentId(agentId) {
@@ -336,11 +346,7 @@ export default class GleapAiChatbarManager {
   }
 
   destroy() {
-    if (this.chatbarContainer && document.body.contains(this.chatbarContainer)) {
-      document.body.removeChild(this.chatbarContainer);
-    }
-    this.chatbarContainer = null;
-    this.chatbarFrame = null;
+    this._removeUI();
     this.config = null;
     this.agentId = null;
     this.agentContext = null;
