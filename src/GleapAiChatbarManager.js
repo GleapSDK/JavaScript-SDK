@@ -11,6 +11,7 @@ export default class GleapAiChatbarManager {
   agentContext = null;
   isHidden = true;
   manuallyHidden = false;
+  manuallyShown = false;
   iframeReady = false;
   pendingMessages = [];
 
@@ -167,6 +168,8 @@ export default class GleapAiChatbarManager {
     this._preloadIframe();
     if (config.enabled) {
       this.show();
+    } else if (!this.manuallyShown) {
+      this.hide();
     }
 
     // Forward updated config to chatbar iframe (queued if not ready yet)
@@ -196,8 +199,10 @@ export default class GleapAiChatbarManager {
     const isOpened = GleapFrameManager.getInstance().isOpened();
     if (isOpened) {
       this.hide();
-    } else if (this.config?.enabled) {
+    } else if (this.config?.enabled || this.manuallyShown) {
       this.show();
+    } else {
+      this.hide();
     }
   }
 

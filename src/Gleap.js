@@ -330,16 +330,20 @@ class Gleap {
    * Show the AI bar.
    */
   static showAiChatbar() {
-    GleapAiChatbarManager.getInstance().manuallyHidden = false;
-    GleapAiChatbarManager.getInstance().show();
+    const instance = GleapAiChatbarManager.getInstance();
+    instance.manuallyHidden = false;
+    instance.manuallyShown = true;
+    instance.show();
   }
 
   /**
    * Hide the AI search.
    */
   static hideAiChatbar() {
-    GleapAiChatbarManager.getInstance().manuallyHidden = true;
-    GleapAiChatbarManager.getInstance().hide();
+    const instance = GleapAiChatbarManager.getInstance();
+    instance.manuallyHidden = true;
+    instance.manuallyShown = false;
+    instance.hide();
   }
 
   /**
