@@ -96,6 +96,7 @@ export default class GleapAiChatbarManager {
   }
 
   _sendChatbarData() {
+    if (!this.chatbarContainer) return;
     let flowConfig = {};
     let apiUrl = 'https://api.gleap.io';
     let sdkKey = '';
@@ -165,7 +166,6 @@ export default class GleapAiChatbarManager {
       }
     }
 
-    this._preloadIframe();
     if (config.enabled) {
       this.show();
     } else if (!this.manuallyShown) {
@@ -219,9 +219,19 @@ export default class GleapAiChatbarManager {
 
   hide() {
     this.isHidden = true;
-    if (this.chatbarContainer) {
-      this.chatbarContainer.style.display = 'none';
+    this._removeUI();
+  }
+
+  _removeUI() {
+    if (!this.chatbarContainer) return;
+    if (document.body && document.body.contains(this.chatbarContainer)) {
+      document.body.removeChild(this.chatbarContainer);
     }
+    this.chatbarContainer = null;
+    this.chatbarFrame = null;
+    this.blurBackdrop = null;
+    this.iframeReady = false;
+    this.pendingMessages = [];
   }
 
   _resolveAgentId(agentId) {
@@ -333,39 +343,10 @@ export default class GleapAiChatbarManager {
     this.chatbarContainer = container;
     this.chatbarFrame = frame;
     this.blurBackdrop = blurBackdrop;
-
-    this._observeContainerStyle();
-  }
-
-  // Defends against host pages (e.g. GoHighLevel's per-route custom-code
-  // tracker) that mutate the wrapper's inline style and force display values
-  // we never set. Reconciles back to our intended state — no-op for our own
-  // writes since they already match.
-  _observeContainerStyle() {
-    if (typeof MutationObserver === 'undefined' || !this.chatbarContainer) return;
-    this._styleObserver = new MutationObserver(() => {
-      if (!this.chatbarContainer) return;
-      const expected = this.isHidden ? 'none' : 'block';
-      if (this.chatbarContainer.style.display !== expected) {
-        this.chatbarContainer.style.display = expected;
-      }
-    });
-    this._styleObserver.observe(this.chatbarContainer, {
-      attributes: true,
-      attributeFilter: ['style'],
-    });
   }
 
   destroy() {
-    if (this._styleObserver) {
-      this._styleObserver.disconnect();
-      this._styleObserver = null;
-    }
-    if (this.chatbarContainer && document.body.contains(this.chatbarContainer)) {
-      document.body.removeChild(this.chatbarContainer);
-    }
-    this.chatbarContainer = null;
-    this.chatbarFrame = null;
+    this._removeUI();
     this.config = null;
     this.agentId = null;
     this.agentContext = null;
