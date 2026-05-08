@@ -87,5 +87,5 @@ export const checkPageRules = (currentUrl, action) => {
     ? action.pageRules
     : (action.pageFilter ? [{ pageFilter: action.pageFilter, pageFilterType: action.pageFilterType }] : []);
   if (rules.length === 0) return true;
-  return rules.every(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
+  return rules.some(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
 };
