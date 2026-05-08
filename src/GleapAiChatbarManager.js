@@ -115,7 +115,7 @@ export default class GleapAiChatbarManager {
       gleapHash = session.session?.gleapHash || '';
     } catch (e) {}
 
-    const defaultAgentName = flowConfig?.aiBar?.defaultAgentName || 'Kai';
+    const defaultAgentName = this.config?.agentName || 'Kai';
 
     this._postMessage({
       name: 'chatbar-data',
