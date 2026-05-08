@@ -3,7 +3,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = 'https://outboundmedia.gleap.io/chatbar';
+  chatbarUrl = 'http://localhost:5173/chatbar';
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;
@@ -115,7 +115,7 @@ export default class GleapAiChatbarManager {
       gleapHash = session.session?.gleapHash || '';
     } catch (e) {}
 
-    const defaultAgentName = flowConfig?.aiBar?.defaultAgentName || 'Kai';
+    const defaultAgentName = this.config?.agentName || 'Kai';
 
     this._postMessage({
       name: 'chatbar-data',
