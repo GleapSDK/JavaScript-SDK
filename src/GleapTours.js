@@ -254,12 +254,14 @@ const GleapTours = (function () {
     }
 
     if (!elemObj) {
-      if (step.mode === 'INPUT' || step.mode === 'CLICK') {
+      // A step that declared a selector but couldn't find it should fail,
+      // not silently re-anchor to a centered dummy element.
+      if (step.element) {
+        try {
+          console.warn('[Gleap] Product tour selector did not match:', step.element);
+        } catch (e) {}
         return getConfig('onElementNotFound')(step);
       }
-    }
-
-    if (!elemObj) {
       elemObj = mountDummyElement();
     }
 
