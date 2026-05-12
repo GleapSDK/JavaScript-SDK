@@ -29,8 +29,22 @@ class GleapAdminHelper {
       onClick: (el) => {
         try {
           let selector;
-          const tourId = el.getAttribute('data-gleap-tour');
-          if (tourId) {
+          // Walk a few ancestors so clicks on an inner icon/span inside an
+          // element tagged with `data-gleap-tour` still pick the tagged element.
+          // Bounded so a high-level layout wrapper carrying the attribute can't
+          // hijack clicks on an unrelated descendant.
+          const maxAncestorWalk = 3;
+          let anchor = null;
+          let cursor = el;
+          for (let i = 0; cursor && i <= maxAncestorWalk; i++) {
+            if (cursor.getAttribute && cursor.getAttribute('data-gleap-tour')) {
+              anchor = cursor;
+              break;
+            }
+            cursor = cursor.parentElement;
+          }
+          if (anchor) {
+            const tourId = anchor.getAttribute('data-gleap-tour');
             selector = `[data-gleap-tour="${tourId}"]`;
           } else {
             selector = unique(el);
