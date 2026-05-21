@@ -18,7 +18,7 @@ import Gleap, {
   GleapTranslationManager,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
-import { runFunctionWhenDomIsReady } from './GleapHelper';
+import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 import { widgetMaxHeight } from './UI';
 
 export default class GleapFrameManager {
@@ -152,13 +152,22 @@ export default class GleapFrameManager {
         GleapConfigManager.getInstance().applyStylesFromConfig();
 
         // Inject widget HTML.
+        // The iframe is created WITHOUT a src attribute so it becomes an about:blank document
+        // that inherits the parent page's origin. This avoids Safari ITP throttling iframes
+        // to classified tracker domains. The actual messenger app is then bootstrapped into the
+        // iframe via doc.write (see bootstrapGleapFrame in GleapHelper.js). If bootstrapping
+        // fails (e.g. CORS not available on the frameUrl), the helper falls back to direct
+        // src loading, preserving the original behavior.
         var elem = document.createElement('div');
         elem.className = 'gleap-frame-container gleap-frame-container--hidden gl-block';
-        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe src="${this.frameUrl}" class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
+        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
         document.body.appendChild(elem);
 
         this.gleapFrameContainer = elem;
         this.gleapFrame = document.querySelector('.gleap-frame');
+
+        // Bootstrap the iframe content from the Gleap origin via about:blank + doc.write.
+        bootstrapGleapFrame(this.gleapFrame, this.frameUrl);
 
         this.updateFrameStyle();
 
@@ -649,8 +658,22 @@ export default class GleapFrameManager {
     });
 
     // Add window message listener.
+    // With about:blank bootstrapping, the iframe inherits the parent's origin, so event.origin
+    // is no longer the Gleap frameUrl — it's the customer site's origin. We verify the message
+    // source via event.source (iframe.contentWindow) instead. For backwards compatibility with
+    // the legacy src-loaded iframe (fallback case), we also accept the original frameUrl origin.
     window.addEventListener('message', (event) => {
-      if (event.origin !== this.frameUrl && event.origin !== GleapBannerManager.getInstance().bannerUrl) {
+      const bannerManager = GleapBannerManager.getInstance();
+      const bannerFrame = bannerManager.bannerContainer
+        ? bannerManager.bannerContainer.querySelector('.gleap-b-frame')
+        : null;
+
+      const sourceMatchesGleapFrame = this.gleapFrame && event.source === this.gleapFrame.contentWindow;
+      const sourceMatchesBannerFrame = bannerFrame && event.source === bannerFrame.contentWindow;
+      const originMatchesGleapFrame = event.origin === this.frameUrl;
+      const originMatchesBannerFrame = event.origin === bannerManager.bannerUrl;
+
+      if (!sourceMatchesGleapFrame && !sourceMatchesBannerFrame && !originMatchesGleapFrame && !originMatchesBannerFrame) {
         return;
       }
 

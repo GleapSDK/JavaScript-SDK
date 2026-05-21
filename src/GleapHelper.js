@@ -1,3 +1,86 @@
+/**
+ * Bootstraps an iframe by injecting a Gleap-hosted HTML document via about:blank + doc.write,
+ * so the iframe inherits the parent page's origin instead of being a cross-site iframe to a
+ * classified tracker domain.
+ *
+ * Why: Safari ITP applies restrictions (storage block, classification-based heuristics) to
+ * iframes whose src is a classified tracker domain. By creating the iframe as about:blank and
+ * writing the document content from the parent, the iframe becomes same-origin to the parent,
+ * which Safari treats as first-party. The scripts inside the iframe still load from the
+ * original Gleap origin, but as cross-origin script loads (not iframe navigations), which
+ * ITP does not throttle.
+ *
+ * Requirements: the Gleap origin must serve the index.html with CORS (Access-Control-Allow-Origin).
+ * `messenger-app.gleap.io` already does. For `outboundmedia.gleap.io` the helper will fall back
+ * to direct iframe.src loading until CORS is enabled there.
+ *
+ * @param {HTMLIFrameElement} iframe - the iframe element (must already be appended to the DOM)
+ * @param {string} url - the Gleap origin URL (e.g. https://messenger-app.gleap.io). May include a path.
+ * @returns {void}
+ */
+export const bootstrapGleapFrame = (iframe, url) => {
+  if (!iframe || !url) {
+    return;
+  }
+
+  const fallbackToSrc = () => {
+    try {
+      iframe.src = url;
+    } catch (e) {}
+  };
+
+  let doc;
+  try {
+    doc = iframe.contentDocument;
+  } catch (e) {
+    return fallbackToSrc();
+  }
+  if (!doc) {
+    return fallbackToSrc();
+  }
+
+  // The asset base is the URL's origin + any path (e.g. https://outboundmedia.gleap.io/modal/).
+  // We need a trailing slash so root-relative URLs resolve correctly via <base>.
+  let baseHref;
+  try {
+    const parsed = new URL(url);
+    // For a URL like https://outboundmedia.gleap.io/modal, assets are served from the origin root,
+    // not from /modal/. So we use the origin as base. The path is just the entry HTML.
+    baseHref = parsed.origin + '/';
+  } catch (e) {
+    return fallbackToSrc();
+  }
+
+  fetch(url, { mode: 'cors', credentials: 'omit' })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('Bootstrap fetch failed: ' + response.status);
+      }
+      return response.text();
+    })
+    .then((html) => {
+      // Rewrite root-relative URLs (href="/x", src="/x") to absolute URLs on the Gleap origin,
+      // so that the about:blank document (which has no base URL) can still resolve them.
+      const absolutized = html.replace(
+        /(\s(?:href|src)\s*=\s*["'])\/([^"'/][^"']*)/g,
+        '$1' + baseHref + '$2'
+      );
+
+      try {
+        doc.open();
+        doc.write(absolutized);
+        doc.close();
+      } catch (e) {
+        fallbackToSrc();
+      }
+    })
+    .catch(() => {
+      // CORS error, network error, or non-OK status: fall back to direct iframe.src loading.
+      // This preserves the original behavior — the patch is a no-op when bootstrap can't work.
+      fallbackToSrc();
+    });
+};
+
 export const resizeImage = (base64Str, maxWidth = 400, maxHeight = 400) => {
   return new Promise((resolve, reject) => {
     var isJPEG = base64Str.indexOf('data:image/jpeg') === 0;

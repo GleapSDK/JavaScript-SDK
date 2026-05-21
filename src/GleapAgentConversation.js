@@ -1,4 +1,5 @@
 import { GleapSession } from './Gleap';
+import { bootstrapGleapFrame } from './GleapHelper';
 
 export const registerGleapAgentComponents = () => {
   if (typeof customElements === 'undefined' || typeof HTMLElement === 'undefined' || typeof window === 'undefined') return;
@@ -38,25 +39,37 @@ export const registerGleapAgentComponents = () => {
         this.style.width = '100%';
         this.style.height = '100%';
 
+        // Create iframe WITHOUT src so it becomes an about:blank document that inherits the
+        // parent's origin. bootstrapGleapFrame then injects the actual conversation app via
+        // doc.write — avoiding Safari ITP throttling for classified tracker domains. Falls back
+        // to direct src loading if bootstrap can't fetch (e.g. CORS not enabled on origin).
         const iframe = document.createElement('iframe');
-        iframe.src = this._agentConvUrl;
         iframe.style.cssText = 'width: 100%; height: 100%; border: 0; background: transparent;';
         iframe.setAttribute('frameborder', '0');
         iframe.setAttribute('allow', 'autoplay; encrypted-media; microphone *;');
         iframe.title = 'Gleap Agent Conversation';
         this.appendChild(iframe);
         this._iframe = iframe;
+
+        bootstrapGleapFrame(iframe, this._agentConvUrl);
       }
 
       _listenForMessages() {
         if (this._messageListener) return; // already listening — prevent duplicate on reconnect
         this._messageListener = (event) => {
+          // With about:blank bootstrapping, event.origin is the parent's origin (not the
+          // _agentConvUrl). We accept both: source-based match for the bootstrapped iframe,
+          // origin-based match for the legacy/fallback case.
+          let sourceMatches = false;
+          let originMatches = false;
           try {
+            sourceMatches = !!(this._iframe && event.source === this._iframe.contentWindow);
             const url = new URL(this._agentConvUrl);
-            if (event.origin !== url.origin) return;
+            originMatches = event.origin === url.origin;
           } catch (e) {
             return; // URL parse failed — reject message to be safe
           }
+          if (!sourceMatches && !originMatches) return;
 
           let data;
           try { data = JSON.parse(event.data); } catch (e) { return; }

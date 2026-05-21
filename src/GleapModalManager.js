@@ -1,4 +1,5 @@
 import Gleap, { GleapConfigManager, GleapFrameManager } from './Gleap';
+import { bootstrapGleapFrame } from './GleapHelper';
 
 export default class GleapModalManager {
   modalUrl = 'https://outboundmedia.gleap.io/modal';
@@ -29,8 +30,16 @@ export default class GleapModalManager {
   }
 
   _listenForMessages() {
+    // With about:blank bootstrapping (see _injectModalUI), event.origin is the parent's origin,
+    // not modalUrl. We accept both: source-based match for the bootstrapped iframe, origin-based
+    // match for the legacy / fallback case.
     window.addEventListener('message', (event) => {
-      if (!this.modalUrl?.includes(event.origin)) {
+      const modalFrame = this.modalContainer
+        ? this.modalContainer.querySelector('.gleap-modal-frame')
+        : null;
+      const sourceMatches = modalFrame && event.source === modalFrame.contentWindow;
+      const originMatches = this.modalUrl?.includes(event.origin);
+      if (!sourceMatches && !originMatches) {
         return;
       }
 
@@ -117,13 +126,15 @@ export default class GleapModalManager {
 
     this.modalData = modalData;
 
+    // The iframe is created without a src so it becomes an about:blank document (same-origin
+    // to parent). bootstrapGleapFrame then injects the actual modal content via doc.write.
+    // See bootstrapGleapFrame in GleapHelper for the why and the fallback behavior.
     const wrapper = document.createElement('div');
     wrapper.className = 'gleap-modal-wrapper';
     wrapper.innerHTML = `
       <div class="gleap-modal-backdrop"></div>
       <div class="gleap-modal">
         <iframe
-          src="${this.modalUrl}"
           class="gleap-modal-frame"
           scrolling="no"
           title="Gleap Modal"
@@ -135,6 +146,11 @@ export default class GleapModalManager {
     `;
     document.body.appendChild(wrapper);
     this.modalContainer = wrapper;
+
+    const iframe = wrapper.querySelector('.gleap-modal-frame');
+    if (iframe) {
+      bootstrapGleapFrame(iframe, this.modalUrl);
+    }
 
     // Add on backdrop click listener
     this.modalBackdropClickListener = this.modalContainer
@@ -153,7 +169,11 @@ export default class GleapModalManager {
     try {
       const frame = this.modalContainer.querySelector('.gleap-modal-frame');
       if (frame?.contentWindow) {
-        frame.contentWindow.postMessage(JSON.stringify({ ...message, type: 'modal' }), this.modalUrl);
+        // targetOrigin '*' because with about:blank bootstrapping the iframe inherits the
+        // parent's origin, not modalUrl. Using modalUrl here would cause the browser to drop
+        // the message. '*' is safe here: the message is intended for the iframe we created,
+        // and only contains non-sensitive UI config.
+        frame.contentWindow.postMessage(JSON.stringify({ ...message, type: 'modal' }), '*');
       }
     } catch (err) {}
   }
