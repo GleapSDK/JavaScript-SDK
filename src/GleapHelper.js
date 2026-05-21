@@ -29,13 +29,9 @@ export const bootstrapGleapFrame = (iframe, url) => {
     } catch (e) {}
   };
 
-  let doc;
   try {
-    doc = iframe.contentDocument;
+    if (!iframe.contentDocument) return fallbackToSrc();
   } catch (e) {
-    return fallbackToSrc();
-  }
-  if (!doc) {
     return fallbackToSrc();
   }
 
@@ -90,6 +86,18 @@ export const bootstrapGleapFrame = (iframe, url) => {
         withRouteScript = absolutized.replace(/<\/head>/i, routeScript + '</head>');
       } else {
         withRouteScript = absolutized;
+      }
+
+      // Re-grab contentDocument here — Firefox may have replaced the initial about:blank
+      // document during the fetch. Writing into the original reference would be a silent no-op.
+      let doc;
+      try {
+        doc = iframe.contentDocument;
+      } catch (e) {
+        return fallbackToSrc();
+      }
+      if (!doc) {
+        return fallbackToSrc();
       }
 
       try {
