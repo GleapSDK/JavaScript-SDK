@@ -1,4 +1,5 @@
 import Gleap, { GleapFrameManager } from './Gleap';
+import { bootstrapGleapFrame } from './GleapHelper';
 
 export default class GleapBannerManager {
   bannerUrl = 'https://outboundmedia.gleap.io';
@@ -25,8 +26,16 @@ export default class GleapBannerManager {
 
   startCommunication() {
     // Add window message listener.
+    // With about:blank bootstrapping (see injectBannerUI), event.origin is the parent's origin
+    // — not the bannerUrl. We accept both: source-based match for the bootstrapped iframe,
+    // origin-based match for the legacy / fallback case.
     window.addEventListener('message', (event) => {
-      if (!this.bannerUrl?.includes(event.origin)) {
+      const bannerFrame = this.bannerContainer
+        ? this.bannerContainer.querySelector('.gleap-b-frame')
+        : null;
+      const sourceMatches = bannerFrame && event.source === bannerFrame.contentWindow;
+      const originMatches = this.bannerUrl?.includes(event.origin);
+      if (!sourceMatches && !originMatches) {
         return;
       }
 
@@ -122,11 +131,20 @@ export default class GleapBannerManager {
 
     this.bannerData = bannerData;
 
+    // Create the iframe without a src so it becomes an about:blank document (same-origin to parent).
+    // Then bootstrap the actual banner content via doc.write. See bootstrapGleapFrame in GleapHelper.
+    // If the bootstrap fails (e.g. CORS not enabled on the bannerUrl), the helper falls back to
+    // setting iframe.src directly, preserving the original behavior.
     var elem = document.createElement('div');
     elem.className = 'gleap-b';
-    elem.innerHTML = `<iframe src="${this.bannerUrl}" class="gleap-b-frame" scrolling="no" title="Gleap Banner" role="dialog" frameborder="0"></iframe>`;
+    elem.innerHTML = `<iframe class="gleap-b-frame" scrolling="no" title="Gleap Banner" role="dialog" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
     this.bannerContainer = elem;
+
+    const iframe = elem.querySelector('.gleap-b-frame');
+    if (iframe) {
+      bootstrapGleapFrame(iframe, this.bannerUrl);
+    }
   }
 
   sendMessage(data) {
