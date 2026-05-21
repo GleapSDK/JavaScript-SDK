@@ -66,9 +66,35 @@ export const bootstrapGleapFrame = (iframe, url) => {
         '$1' + baseHref + '$2'
       );
 
+      // The Gleap apps (banner, modal, agent-conversation, chatbar) are SPAs that route based
+      // on window.location.pathname. Since the iframe inherits the parent's origin via about:blank,
+      // pathname would be the parent page's pathname — not the intended app route.
+      // We use history.replaceState() to set the iframe's URL to the intended path BEFORE the
+      // app's router initializes. replaceState is allowed because the iframe is same-origin to the parent.
+      let targetPath = '/';
+      try {
+        const parsedTarget = new URL(url);
+        targetPath = parsedTarget.pathname + parsedTarget.search + parsedTarget.hash;
+      } catch (e) {}
+      const routeScript =
+        '<script>try{history.replaceState(null,"",' +
+        JSON.stringify(targetPath) +
+        ');}catch(e){}</script>';
+
+      // Inject the route-setter script BEFORE the first existing <script> tag so it runs
+      // before any app bundle. If no <script> is found, inject just before </head> as a fallback.
+      let withRouteScript;
+      if (/<script\b/i.test(absolutized)) {
+        withRouteScript = absolutized.replace(/<script\b/i, routeScript + '<script');
+      } else if (/<\/head>/i.test(absolutized)) {
+        withRouteScript = absolutized.replace(/<\/head>/i, routeScript + '</head>');
+      } else {
+        withRouteScript = absolutized;
+      }
+
       try {
         doc.open();
-        doc.write(absolutized);
+        doc.write(withRouteScript);
         doc.close();
       } catch (e) {
         fallbackToSrc();
