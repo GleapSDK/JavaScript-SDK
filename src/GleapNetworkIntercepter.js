@@ -421,36 +421,42 @@ class GleapNetworkIntercepter {
 
     if (XMLHttpRequest.prototype.gleapSetRequestHeader) {
       XMLHttpRequest.prototype.setRequestHeader = function (header, value) {
-        if (!this.requestHeaders) {
-          this.requestHeaders = {};
-        }
+        // Track headers for logging only. Never let logging alter the request:
+        // always forward to the native setRequestHeader, including repeated
+        // headers (which the spec combines into a single comma-joined value).
+        try {
+          if (!this.requestHeaders) {
+            this.requestHeaders = {};
+          }
+          if (!this.requestHeaders[header]) {
+            this.requestHeaders[header] = [];
+          }
+          this.requestHeaders[header].push(value);
+        } catch (exp) {}
 
-        if (this.requestHeaders && this.requestHeaders.hasOwnProperty(header)) {
-          return;
-        }
-
-        if (!this.requestHeaders[header]) {
-          this.requestHeaders[header] = [];
-        }
-
-        this.requestHeaders[header].push(value);
-        this.gleapSetRequestHeader(header, value);
+        return this.gleapSetRequestHeader(header, value);
       };
     }
 
     XMLHttpRequest.prototype.open = function () {
-      this['bbRequestId'] = ++self.requestId;
-      callback.onOpen && callback.onOpen(this, arguments);
-      if (callback.onLoad) {
-        this.addEventListener('load', callback.onLoad.bind(callback));
-      }
-      if (callback.onError) {
-        this.addEventListener('error', callback.onError.bind(callback));
-      }
+      // Logging must never break the intercepted request, so guard every
+      // callback and always fall through to the native open.
+      try {
+        this['bbRequestId'] = ++self.requestId;
+        callback.onOpen && callback.onOpen(this, arguments);
+        if (callback.onLoad) {
+          this.addEventListener('load', callback.onLoad.bind(callback));
+        }
+        if (callback.onError) {
+          this.addEventListener('error', callback.onError.bind(callback));
+        }
+      } catch (exp) {}
       return open.apply(this, arguments);
     };
     XMLHttpRequest.prototype.send = function () {
-      callback.onSend && callback.onSend(this, arguments);
+      try {
+        callback.onSend && callback.onSend(this, arguments);
+      } catch (exp) {}
       return send.apply(this, arguments);
     };
 
@@ -459,20 +465,26 @@ class GleapNetworkIntercepter {
         var originalFetch = window.fetch;
         window.fetch = function () {
           var bbRequestId = ++self.requestId;
-          callback.onFetch(arguments, bbRequestId);
+          try {
+            callback.onFetch(arguments, bbRequestId);
+          } catch (exp) {}
 
           return originalFetch
             .apply(this, arguments)
             .then(function (response) {
-              if (response && typeof response.clone === 'function') {
-                const data = response.clone();
-                callback.onFetchLoad(data, bbRequestId);
-              }
+              try {
+                if (response && typeof response.clone === 'function') {
+                  const data = response.clone();
+                  callback.onFetchLoad(data, bbRequestId);
+                }
+              } catch (exp) {}
 
               return response;
             })
             .catch((err) => {
-              callback.onFetchFailed(err, bbRequestId);
+              try {
+                callback.onFetchFailed(err, bbRequestId);
+              } catch (exp) {}
               throw err;
             });
         };
