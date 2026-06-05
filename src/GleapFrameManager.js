@@ -679,6 +679,20 @@ export default class GleapFrameManager {
 
       try {
         const data = JSON.parse(event.data);
+
+        // Outbound-media iframes (banner, modal, chatbar, agent-conversation) share the
+        // outboundmedia.gleap.io origin and each has its own manager. They tag messages with a
+        // `type`; the messenger frame never does. Without this guard a modal/banner CTA (open-url,
+        // start-product-tour, ...) is handled here AND by its own manager → the action fires twice.
+        if (
+          data?.type === 'MODAL' ||
+          data?.type === 'BANNER' ||
+          data?.type === 'CHATBAR' ||
+          data?.type === 'AGENT_CONVERSATION'
+        ) {
+          return;
+        }
+
         for (var i = 0; i < this.listeners.length; i++) {
           if (this.listeners[i]) {
             this.listeners[i](data);
