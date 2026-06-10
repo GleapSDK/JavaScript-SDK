@@ -14,6 +14,7 @@ export default class GleapAiChatbarManager {
   manuallyShown = false;
   iframeReady = false;
   pendingMessages = [];
+  chatbarStyle = null;
 
   static instance;
   static getInstance() {
@@ -227,9 +228,13 @@ export default class GleapAiChatbarManager {
     if (document.body && document.body.contains(this.chatbarContainer)) {
       document.body.removeChild(this.chatbarContainer);
     }
+    if (this.chatbarStyle && this.chatbarStyle.parentNode) {
+      this.chatbarStyle.parentNode.removeChild(this.chatbarStyle);
+    }
     this.chatbarContainer = null;
     this.chatbarFrame = null;
     this.blurBackdrop = null;
+    this.chatbarStyle = null;
     this.iframeReady = false;
     this.pendingMessages = [];
   }
@@ -291,6 +296,15 @@ export default class GleapAiChatbarManager {
 
     const container = document.createElement('div');
     container.className = 'gleap-chatbar';
+    const style = document.createElement('style');
+    style.textContent = `
+      @media (max-width: 768px) {
+        .gleap-chatbar {
+          width: 70% !important;
+          left: 40% !important;
+        }
+      }
+    `;
     container.style.cssText = `
       position: fixed;
       bottom: 10px;
@@ -338,11 +352,13 @@ export default class GleapAiChatbarManager {
 
     container.appendChild(blurBackdrop);
     container.appendChild(frame);
+    (document.head || document.body).appendChild(style);
     document.body.appendChild(container);
 
     this.chatbarContainer = container;
     this.chatbarFrame = frame;
     this.blurBackdrop = blurBackdrop;
+    this.chatbarStyle = style;
   }
 
   destroy() {
