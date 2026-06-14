@@ -362,9 +362,15 @@ export const fixGleapHeight = () => {
           // Check if the keyboard is open
           if (window.visualViewport.height < initialHeight) {
             gleapFrameContainer.style.setProperty('max-height', window.visualViewport.height + 'px', 'important');
+            // When the keyboard opens, iOS pans the visual viewport up to reveal
+            // the focused field. The widget is position:fixed (anchored to the
+            // layout viewport), so without compensation it appears to "scroll up"
+            // behind the status bar. Translate it down by the viewport offset to
+            // keep it pinned to the visible area above the keyboard.
+            gleapFrameContainer.style.setProperty('transform', 'translateY(' + window.visualViewport.offsetTop + 'px)', 'important');
           } else {
-            // Remove the padding bottom
             gleapFrameContainer.style.removeProperty('max-height');
+            gleapFrameContainer.style.removeProperty('transform');
           }
         } catch (error) {}
       }
@@ -379,6 +385,10 @@ export const fixGleapHeight = () => {
 
       // Update on resize (keyboard show/hide and viewport resize)
       window.visualViewport.addEventListener('resize', updateContainerHeight);
+
+      // Track the visual-viewport pan (offsetTop changes) while the keyboard
+      // animates in/out so the widget stays aligned with the visible area.
+      window.visualViewport.addEventListener('scroll', updateContainerHeight);
 
       // Handle orientation changes
       window.addEventListener('orientationchange', handleOrientationChange);
