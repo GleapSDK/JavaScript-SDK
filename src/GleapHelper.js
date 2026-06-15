@@ -396,6 +396,18 @@ export const fixGleapHeight = () => {
     let settleTimer = null;
     let pendingUpdate = false;
 
+    // Set true when the composer loses focus (e.g. when a message is sent, which
+    // blurs the input) and no other input takes focus. While set, the keyboard is
+    // treated as closed regardless of the visual viewport — iOS 26 sometimes does
+    // NOT reset visualViewport.height/offsetTop after a dismiss (FB19889436), so
+    // the resize-driven reset never fires and the widget would stay shrunk. This
+    // is cleared the instant an input is focused again, so the keyboard can
+    // re-open normally.
+    let keyboardForcedClosed = false;
+
+    // The iframe document we've attached focus listeners to (same-origin case).
+    let keyboardFocusDoc = null;
+
     function measure() {
       try {
         const gleapFrameContainer = document.querySelector(
@@ -406,6 +418,10 @@ export const fixGleapHeight = () => {
           return;
         }
 
+        // Attach focus listeners to the (same-origin) iframe document so we get
+        // a reliable "keyboard is closing" signal independent of the viewport.
+        ensureKeyboardFocusListeners(gleapFrameContainer);
+
         const visualViewport = window.visualViewport;
 
         // Keyboard height = layout viewport - visual viewport. Read live every
@@ -413,7 +429,10 @@ export const fixGleapHeight = () => {
         // visualViewport.height can't sit a sub-pixel below innerHeight and read
         // as open. Toolbar moves both viewports together -> gap ~0 -> closed.
         const keyboardHeight = round(window.innerHeight) - round(visualViewport.height);
-        const keyboardIsOpen = keyboardHeight >= KEYBOARD_OPEN_THRESHOLD;
+        // keyboardForcedClosed wins so a stuck iOS 26 viewport can't keep the
+        // widget shrunk after a send/dismiss (it's cleared on the next focus).
+        const keyboardIsOpen =
+          !keyboardForcedClosed && keyboardHeight >= KEYBOARD_OPEN_THRESHOLD;
 
         if (keyboardIsOpen) {
           gleapFrameContainer.style.setProperty(
@@ -437,6 +456,65 @@ export const fixGleapHeight = () => {
           gleapFrameContainer.style.removeProperty('max-height');
           gleapFrameContainer.style.removeProperty('transform');
         }
+      } catch (error) {}
+    }
+
+    // When the composer loses focus (e.g. after sending a message, which blurs
+    // the input) the keyboard is closing. iOS 26 sometimes leaves the visual
+    // viewport shrunk/panned, so the resize-driven reset never fires and the
+    // widget stays in the small "keyboard" size. Force the reset here and latch
+    // keyboardForcedClosed so a stale viewport can't re-shrink until the next
+    // focus. The short delay lets focus settle (so a blur that immediately
+    // refocuses another field doesn't reset).
+    function handleComposerBlur() {
+      try {
+        window.setTimeout(() => {
+          try {
+            const active = keyboardFocusDoc && keyboardFocusDoc.activeElement;
+            if (
+              active &&
+              (active.tagName === 'INPUT' ||
+                active.tagName === 'TEXTAREA' ||
+                active.isContentEditable)
+            ) {
+              return; // focus moved to another field — keyboard stays open
+            }
+
+            keyboardForcedClosed = true;
+
+            const frame = document.querySelector(
+              '.gleap-frame-container-inner iframe'
+            );
+            if (frame) {
+              frame.style.removeProperty('max-height');
+              frame.style.removeProperty('transform');
+            }
+            scheduleUpdate();
+          } catch (innerError) {}
+        }, 100);
+      } catch (error) {}
+    }
+
+    function handleComposerFocus() {
+      // A real focus means the keyboard is (re)opening; release the latch so
+      // measure() is free to shrink again.
+      keyboardForcedClosed = false;
+      scheduleUpdate();
+    }
+
+    // Attach focus listeners to the iframe's own document. The widget iframe is
+    // bootstrapped same-origin (about:blank + doc.write), so this works in the
+    // common case; the legacy cross-origin src fallback throws on contentDocument
+    // access (caught) and there we just rely on the viewport detection.
+    function ensureKeyboardFocusListeners(frame) {
+      try {
+        const frameDoc = frame.contentDocument;
+        if (!frameDoc || frameDoc === keyboardFocusDoc) {
+          return;
+        }
+        keyboardFocusDoc = frameDoc;
+        frameDoc.addEventListener('focusout', handleComposerBlur, true);
+        frameDoc.addEventListener('focusin', handleComposerFocus, true);
       } catch (error) {}
     }
 
