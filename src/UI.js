@@ -95,7 +95,7 @@ export const injectStyledCSS = (
       z-index: ${zIndexBase + 31};
       visibility: visible;
       box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
-      border-radius: ${containerRadius}px;
+      border-radius: ${containerRadius * 1.5}px;
       overflow: hidden;
       animation-duration: .3s;
       animation-fill-mode: both;
