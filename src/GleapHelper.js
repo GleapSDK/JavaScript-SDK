@@ -346,55 +346,142 @@ export const runFunctionWhenDomIsReady = (callback) => {
   }
 };
 
+// Bind the iOS keyboard viewport fix at most once per page session. Even though
+// fixGleapHeight() is only called from Gleap.initialize() today, a SPA re-init
+// must never stack a second set of visualViewport listeners — duplicates would
+// fight each other on every event, which can leave the widget stuck shrunk.
+let gleapHeightFixInstalled = false;
+
 export const fixGleapHeight = () => {
   try {
-    if ('visualViewport' in window && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-      let initialHeight = window.innerHeight;
-
-      function updateContainerHeight() {
-        try {
-          const gleapFrameContainer = document.querySelector('.gleap-frame-container-inner iframe');
-
-          if (!gleapFrameContainer) {
-            return;
-          }
-
-          // Check if the keyboard is open
-          if (window.visualViewport.height < initialHeight) {
-            gleapFrameContainer.style.setProperty('max-height', window.visualViewport.height + 'px', 'important');
-            // When the keyboard opens, iOS pans the visual viewport up to reveal
-            // the focused field. The widget is position:fixed (anchored to the
-            // layout viewport), so without compensation it appears to "scroll up"
-            // behind the status bar. Translate it down by the viewport offset to
-            // keep it pinned to the visible area above the keyboard.
-            gleapFrameContainer.style.setProperty('transform', 'translateY(' + window.visualViewport.offsetTop + 'px)', 'important');
-          } else {
-            gleapFrameContainer.style.removeProperty('max-height');
-            gleapFrameContainer.style.removeProperty('transform');
-          }
-        } catch (error) {}
-      }
-
-      function handleOrientationChange() {
-        try {
-          // Update initial dimensions
-          initialHeight = window.innerHeight;
-          updateContainerHeight();
-        } catch (error) {}
-      }
-
-      // Update on resize (keyboard show/hide and viewport resize)
-      window.visualViewport.addEventListener('resize', updateContainerHeight);
-
-      // Track the visual-viewport pan (offsetTop changes) while the keyboard
-      // animates in/out so the widget stays aligned with the visible area.
-      window.visualViewport.addEventListener('scroll', updateContainerHeight);
-
-      // Handle orientation changes
-      window.addEventListener('orientationchange', handleOrientationChange);
-
-      // Update initially
-      updateContainerHeight();
+    // Strict no-op off iOS / when the VisualViewport API is unavailable.
+    if (
+      !('visualViewport' in window) ||
+      !window.visualViewport ||
+      !/iPad|iPhone|iPod/.test(navigator.userAgent)
+    ) {
+      return;
     }
+
+    // Idempotent: install the listeners only once.
+    if (gleapHeightFixInstalled) {
+      return;
+    }
+    gleapHeightFixInstalled = true;
+
+    // Minimum keyboard height that counts as "the keyboard is open". We detect
+    // the keyboard as the gap between the LAYOUT viewport (window.innerHeight)
+    // and the VISUAL viewport (visualViewport.height): on iOS the soft keyboard
+    // shrinks ONLY the visual viewport, so innerHeight - visualViewport.height is
+    // the keyboard height. Crucially, the iOS dynamic toolbar (address bar /
+    // bottom bar) shrinks BOTH viewports together, so it leaves this gap at ~0 —
+    // it can never be misread as a keyboard (measured on iPhone the toolbar moves
+    // the viewport by ~160px, which a naive "shrunk vs full height" check would
+    // wrongly treat as a keyboard and leave the widget stuck). Real iOS keyboards
+    // are ~260px+; 150px sits in the safe valley above toolbar/rounding noise and
+    // below the smallest real keyboard. Erring below the threshold always means
+    // "treat as closed" (full size) — the safe direction that can never stick.
+    const KEYBOARD_OPEN_THRESHOLD = 150;
+
+    // iOS usually fires a single visualViewport 'resize' at the END of the
+    // keyboard transition, and that value can still be mid-animation. Some
+    // dismiss gestures fire no final event at all. So after every event we also
+    // re-measure once, slightly later, to read the settled dimensions. This is
+    // the self-correcting safety net that removes the styles even if no further
+    // event arrives.
+    const SETTLE_DELAY = 350;
+
+    const round = (value) => Math.round(value);
+
+    let settleTimer = null;
+    let pendingUpdate = false;
+
+    function measure() {
+      try {
+        const gleapFrameContainer = document.querySelector(
+          '.gleap-frame-container-inner iframe'
+        );
+
+        if (!gleapFrameContainer) {
+          return;
+        }
+
+        const visualViewport = window.visualViewport;
+
+        // Keyboard height = layout viewport - visual viewport. Read live every
+        // time (never a stale once-captured baseline). Rounded so a fractional
+        // visualViewport.height can't sit a sub-pixel below innerHeight and read
+        // as open. Toolbar moves both viewports together -> gap ~0 -> closed.
+        const keyboardHeight = round(window.innerHeight) - round(visualViewport.height);
+        const keyboardIsOpen = keyboardHeight >= KEYBOARD_OPEN_THRESHOLD;
+
+        if (keyboardIsOpen) {
+          gleapFrameContainer.style.setProperty(
+            'max-height',
+            visualViewport.height + 'px',
+            'important'
+          );
+          // When the keyboard opens, iOS pans the visual viewport up to reveal
+          // the focused field. The widget is position:fixed (anchored to the
+          // layout viewport), so without compensation it appears to "scroll up"
+          // behind the status bar. Translate it down by the viewport offset to
+          // keep it pinned to the visible area above the keyboard.
+          gleapFrameContainer.style.setProperty(
+            'transform',
+            'translateY(' + visualViewport.offsetTop + 'px)',
+            'important'
+          );
+        } else {
+          // Reset in EVERY non-open path. removeProperty is idempotent and safe
+          // even when nothing was set.
+          gleapFrameContainer.style.removeProperty('max-height');
+          gleapFrameContainer.style.removeProperty('transform');
+        }
+      } catch (error) {}
+    }
+
+    // Coalesce simultaneous resize + scroll into a single update per frame
+    // (canonical VisualViewport pattern), then arm a delayed settle re-check to
+    // read the final post-animation dimensions.
+    function scheduleUpdate() {
+      try {
+        if (!pendingUpdate) {
+          pendingUpdate = true;
+          window.requestAnimationFrame(() => {
+            pendingUpdate = false;
+            measure();
+          });
+        }
+
+        if (settleTimer) {
+          clearTimeout(settleTimer);
+        }
+        settleTimer = setTimeout(measure, SETTLE_DELAY);
+      } catch (error) {}
+    }
+
+    function handleOrientationChange() {
+      try {
+        // innerHeight/visualViewport settle a bit after a rotation; the settle
+        // timer re-checks with the gap method, which needs no per-orientation
+        // baseline.
+        scheduleUpdate();
+      } catch (error) {}
+    }
+
+    const visualViewport = window.visualViewport;
+
+    // Keyboard show/hide and viewport resizes.
+    visualViewport.addEventListener('resize', scheduleUpdate);
+
+    // Visual-viewport pan (offsetTop changes) while the keyboard animates in/out
+    // so the widget stays aligned with the visible area.
+    visualViewport.addEventListener('scroll', scheduleUpdate);
+
+    // Re-check after orientation changes.
+    window.addEventListener('orientationchange', handleOrientationChange);
+
+    // Initial measure (no keyboard expected -> no-op).
+    measure();
   } catch (error) {}
 };
