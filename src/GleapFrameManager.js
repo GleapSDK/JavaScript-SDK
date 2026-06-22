@@ -190,14 +190,31 @@ export default class GleapFrameManager {
     runFunctionWhenDomIsReady(() => {
       var elem = document.createElement('div');
       elem.className = 'gleap-image-view';
+      // Make the overlay focusable so we can pull keyboard focus out of the
+      // messenger iframe. Without this, Escape is handled inside the iframe and
+      // closes the whole widget instead of just the image lightbox.
+      elem.setAttribute('tabindex', '-1');
       elem.innerHTML = `<div class="gleap-image-view-close">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm97.9-320l-17 17-47 47 47 47 17 17L320 353.9l-17-17-47-47-47 47-17 17L158.1 320l17-17 47-47-47-47-17-17L192 158.1l17 17 47 47 47-47 17-17L353.9 192z"/></svg>
       </div><img class="gleap-image-view-image" src="${url}" />`;
       document.body.appendChild(elem);
 
       const closeElement = () => {
+        document.removeEventListener('keydown', keyListener, true);
         elem.remove();
       };
+
+      // Close only the image on Escape and stop the event so neither the
+      // widget's own Escape handler nor the iframe's handler closes the widget.
+      // The next Escape press (no lightbox open) then closes the widget.
+      const keyListener = (e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          closeElement();
+        }
+      };
+      document.addEventListener('keydown', keyListener, true);
 
       const close = elem.querySelector('.gleap-image-view-close');
       close.addEventListener('click', () => {
@@ -209,6 +226,14 @@ export default class GleapFrameManager {
           closeElement();
         }
       });
+
+      // Move keyboard focus to the overlay (out of the messenger iframe) so the
+      // Escape key is captured here and closes the image, not the widget.
+      try {
+        elem.focus({ preventScroll: true });
+      } catch (e) {
+        elem.focus();
+      }
     });
   };
 
