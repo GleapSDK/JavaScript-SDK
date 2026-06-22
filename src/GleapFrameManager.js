@@ -100,6 +100,13 @@ export default class GleapFrameManager {
     this.escListener = (evt) => {
       evt = evt || window.event;
       if (evt.key === 'Escape') {
+        // If an image lightbox is open, close it first instead of hiding the widget.
+        // Only on a subsequent Escape press (no lightbox left) the widget closes.
+        const imageViews = document.querySelectorAll('.gleap-image-view');
+        if (imageViews.length > 0) {
+          imageViews[imageViews.length - 1].remove();
+          return;
+        }
         this.hideWidget();
       }
     };
