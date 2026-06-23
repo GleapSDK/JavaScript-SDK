@@ -14,7 +14,6 @@ export default class GleapAiChatbarManager {
   manuallyShown = false;
   iframeReady = false;
   pendingMessages = [];
-  chatbarStyle = null;
 
   static instance;
   static getInstance() {
@@ -138,8 +137,16 @@ export default class GleapAiChatbarManager {
 
   _resizeFrame({ width, height }) {
     if (!this.chatbarContainer) return;
-    this.chatbarContainer.style.width = Math.ceil(width) + 'px';
-    this.chatbarContainer.style.height = Math.ceil(height) + 'px';
+    // The iframe is sized by us (the parent), so its own innerWidth reflects
+    // the frame, not the device — the chatbar inside can't know the viewport.
+    // Clamp here so the expanded panel never runs off the edge on mobile.
+    if (Number.isFinite(width)) {
+      const maxWidth = window.innerWidth - 20;
+      this.chatbarContainer.style.width = Math.min(Math.ceil(width), maxWidth) + 'px';
+    }
+    if (Number.isFinite(height)) {
+      this.chatbarContainer.style.height = Math.ceil(height) + 'px';
+    }
     if (!this.isHidden) {
       this.chatbarContainer.style.display = 'block';
     }
@@ -228,13 +235,9 @@ export default class GleapAiChatbarManager {
     if (document.body && document.body.contains(this.chatbarContainer)) {
       document.body.removeChild(this.chatbarContainer);
     }
-    if (this.chatbarStyle && this.chatbarStyle.parentNode) {
-      this.chatbarStyle.parentNode.removeChild(this.chatbarStyle);
-    }
     this.chatbarContainer = null;
     this.chatbarFrame = null;
     this.blurBackdrop = null;
-    this.chatbarStyle = null;
     this.iframeReady = false;
     this.pendingMessages = [];
   }
@@ -296,21 +299,13 @@ export default class GleapAiChatbarManager {
 
     const container = document.createElement('div');
     container.className = 'gleap-chatbar';
-    const style = document.createElement('style');
-    style.textContent = `
-      @media (max-width: 768px) {
-        .gleap-chatbar {
-          width: 70% !important;
-          left: 40% !important;
-        }
-      }
-    `;
     container.style.cssText = `
       position: fixed;
       bottom: 10px;
       z-index: 2147483000;
       border: 0;
       width: 280px;
+      max-width: calc(100vw - 20px);
       overflow: hidden;
       height: 80px;
       display: none;
@@ -352,13 +347,11 @@ export default class GleapAiChatbarManager {
 
     container.appendChild(blurBackdrop);
     container.appendChild(frame);
-    (document.head || document.body).appendChild(style);
     document.body.appendChild(container);
 
     this.chatbarContainer = container;
     this.chatbarFrame = frame;
     this.blurBackdrop = blurBackdrop;
-    this.chatbarStyle = style;
   }
 
   destroy() {
