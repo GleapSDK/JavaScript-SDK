@@ -512,25 +512,8 @@ export default class GleapFrameManager {
       }
 
       if (data.name === 'collect-ticket-data') {
-        var ticketData = {
-          customData: GleapCustomDataManager.getInstance().getCustomData(),
-          metaData: GleapMetaDataManager.getInstance().getMetaData(),
-          consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
-          networkLogs: GleapNetworkIntercepter.getInstance().getRequests(),
-          customEventLog: GleapStreamedEvent.getInstance().getEventArray(),
-          formData: GleapCustomDataManager.getInstance().getTicketAttributes(),
-        };
-
-        // Add tags
-        const tags = GleapTagManager.getInstance().getTags();
-        if (tags && tags.length > 0) {
-          ticketData.tags = tags;
-        }
-
-        this.sendMessage({
-          name: 'collect-ticket-data',
-          data: ticketData,
-        });
+        this.gleapFrame = document.querySelector('.gleap-frame');
+        this.answerCollectTicketData(this.gleapFrame, data);
       }
 
       if (data.name === 'height-update') {
@@ -736,5 +719,39 @@ export default class GleapFrameManager {
 
   addMessageListener(callback) {
     this.listeners.push(callback);
+  }
+
+  // Collects the ticket metadata (customData, metaData, consoleLog, networkLogs,
+  // customEventLog, formData, tags) and posts the `collect-ticket-data` response to the
+  // given target frame. Extracted so both the widget frame (GleapFrameManager) and the
+  // AI chatbar frame (GleapAiChatbarManager) collect identical metadata. Posts bare
+  // (Messenger-protocol) messages directly to targetFrame.contentWindow.
+  answerCollectTicketData(targetFrame, requestData) {
+    var ticketData = {
+      customData: GleapCustomDataManager.getInstance().getCustomData(),
+      metaData: GleapMetaDataManager.getInstance().getMetaData(),
+      consoleLog: GleapConsoleLogManager.getInstance().getLogs(),
+      networkLogs: GleapNetworkIntercepter.getInstance().getRequests(),
+      customEventLog: GleapStreamedEvent.getInstance().getEventArray(),
+      formData: GleapCustomDataManager.getInstance().getTicketAttributes(),
+    };
+
+    // Add tags
+    const tags = GleapTagManager.getInstance().getTags();
+    if (tags && tags.length > 0) {
+      ticketData.tags = tags;
+    }
+
+    try {
+      if (targetFrame && targetFrame.contentWindow) {
+        targetFrame.contentWindow.postMessage(
+          JSON.stringify({
+            name: 'collect-ticket-data',
+            data: ticketData,
+          }),
+          '*'
+        );
+      }
+    } catch (e) {}
   }
 }

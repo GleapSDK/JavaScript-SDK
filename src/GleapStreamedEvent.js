@@ -123,15 +123,10 @@ export default class GleapStreamedEvent {
 
         const isOpened = GleapFrameManager.getInstance().isOpened();
 
-        if (a) {
-          const listOfActionsWhereIgnoreOpened = ['banner', 'modal'];
-          const filteredActions = a.filter(
-            (action) => !isOpened || listOfActionsWhereIgnoreOpened.includes(action?.actionType?.toLowerCase())
-          );
-
-          Gleap.getInstance().performActions(filteredActions);
-        }
-
+        // Apply the chatbar config BEFORE performing actions, so a notification
+        // delivered in the same update is routed with up-to-date availability.
+        // Otherwise the first post-(re)connect chatbar pill leaks to the widget
+        // because config.enabled isn't set yet when showNotification runs.
         if (ai) {
           GleapAiChatbarManager.getInstance().setConfig({
             enabled: ai.e ?? false,
@@ -141,6 +136,15 @@ export default class GleapStreamedEvent {
             agentId: ai.g,
             agentName: ai.n,
           });
+        }
+
+        if (a) {
+          const listOfActionsWhereIgnoreOpened = ['banner', 'modal'];
+          const filteredActions = a.filter(
+            (action) => !isOpened || listOfActionsWhereIgnoreOpened.includes(action?.actionType?.toLowerCase())
+          );
+
+          Gleap.getInstance().performActions(filteredActions);
         }
 
         if (u != null) {
