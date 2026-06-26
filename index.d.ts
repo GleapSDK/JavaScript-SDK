@@ -57,14 +57,6 @@ export namespace Gleap {
   function closeModal(): void;
   function setBannerUrl(bannerUrl: string): void;
   function setModalUrl(modalUrl: string): void;
-  function startAgent(
-    agentId: string,
-    options?: { context?: any; primaryColor?: string; initialMessage?: string }
-  ): void;
-  function setAIAgent(
-    agentId: string,
-    options?: { context?: any; primaryColor?: string }
-  ): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;

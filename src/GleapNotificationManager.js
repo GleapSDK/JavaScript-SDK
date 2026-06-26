@@ -90,7 +90,7 @@ export default class GleapNotificationManager {
       const lastSource = notification?.data?.lastSource;
       const chatbar = GleapAiChatbarManager.getInstance();
       // Available if enabled for the project, manually shown, or currently visible
-      // (e.g. opened via showWithAgent before config arrives). showChatbarNotification
+      // (e.g. shown before config arrives). showChatbarNotification
       // queues the pill until the frame handshakes, so routing pre-handshake is safe.
       const chatbarAvailable =
         chatbar?.config?.enabled || chatbar?.manuallyShown || (chatbar && !chatbar.isHidden);

@@ -9,12 +9,10 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = 'http://localhost:3001/chatbar';
+  chatbarUrl = 'https://messenger-app.gleap.io/chatbar';
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;
-  agentId = 'kai';
-  agentContext = null;
   isHidden = true;
   manuallyHidden = false;
   manuallyShown = false;
@@ -173,6 +171,7 @@ export default class GleapAiChatbarManager {
       chatbarQuickActions: this.config?.quickActions || [],
       chatbarStyle: this.config?.style,
       chatbarColor: base?.color,
+      chatbarWorkflowId: this.config?.workflowId ?? null,
     };
   }
 
@@ -199,7 +198,9 @@ export default class GleapAiChatbarManager {
   _resizeFrame({ width, height }) {
     if (!this.chatbarContainer) return;
 
-    if (Number.isFinite(width)) {
+    // Below 600px the width is owned by CSS (the ≤460px media query takes it fluid);
+    // don't write an inline width that would override it.
+    if (Number.isFinite(width) && window.innerWidth >= 600) {
       const maxWidth = window.innerWidth - 20;
       this.chatbarContainer.style.width = Math.min(Math.ceil(width), maxWidth) + 'px';
     }
@@ -239,14 +240,6 @@ export default class GleapAiChatbarManager {
 
   setConfig(config) {
     this.config = config;
-
-    if (this.agentId === 'kai' || !this.agentId) {
-      if (!config.agentId || config.agentId === 'default') {
-        this.agentId = 'kai';
-      } else {
-        this.agentId = config.agentId;
-      }
-    }
 
     if (config.enabled) {
       this.show();
@@ -329,48 +322,6 @@ export default class GleapAiChatbarManager {
     this.pendingMessages = [];
   }
 
-  _resolveAgentId(agentId) {
-    if (!agentId || agentId === 'default') {
-      return 'kai';
-    }
-    return agentId;
-  }
-
-  _sendAgentCommand(agentId, options = {}, openPanel = false) {
-    const resolvedAgentId = this._resolveAgentId(agentId);
-    this.agentId = resolvedAgentId;
-    if (options.context) this.agentContext = options.context;
-    this.manuallyHidden = false;
-
-    const messageData = {
-      agentId: this.agentId,
-      context: this.agentContext,
-      primaryColor: options.primaryColor || undefined,
-      initialMessage: options.initialMessage || undefined,
-    };
-
-    const messageName = openPanel ? 'chatbar-show-agent' : 'chatbar-set-agent';
-
-    // Suppress outside-click for this tick so a button that calls
-    // startAgent() doesn't immediately close the conversation.
-    this._suppressOutsideClick = true;
-    setTimeout(() => { this._suppressOutsideClick = false; }, 0);
-
-    // Show the chatbar (preloads iframe if needed)
-    this.show();
-
-    // Post the agent command (queued automatically if iframe not ready yet)
-    this._postMessageRaw({ name: messageName, data: messageData });
-  }
-
-  setAgent(agentId, options = {}) {
-    this._sendAgentCommand(agentId, options, false);
-  }
-
-  showWithAgent(agentId, options = {}) {
-    this._sendAgentCommand(agentId, options, true);
-  }
-
   _preloadIframe() {
     if (this.chatbarContainer) return;
     runFunctionWhenDomIsReady(() => this._injectUI());
@@ -383,6 +334,32 @@ export default class GleapAiChatbarManager {
     try {
       flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
     } catch (e) {}
+
+    if (!document.getElementById('gleap-chatbar-styles')) {
+      const widgetPosition = flowConfig.feedbackButtonPosition;
+      let positionStyle = '';
+
+      if (widgetPosition === "BOTTOM_RIGHT") {
+        positionStyle = 'right: 60px !important;';
+      } else if (widgetPosition === "BOTTOM_LEFT") {
+        positionStyle = 'left: 60px !important;';
+      } else {
+        positionStyle = 'right: 0 !important;';
+      }
+
+      const styleEl = document.createElement('style');
+      styleEl.id = 'gleap-chatbar-styles';
+      styleEl.innerHTML = `
+        @media (max-width: 460px) {
+          .gleap-chatbar {
+            width: auto !important;
+            max-width: 100% !important;
+            ${positionStyle}
+          }
+        }
+      `;
+      document.head.appendChild(styleEl);
+    }
 
     const container = document.createElement('div');
     container.className = 'gleap-chatbar';
@@ -464,8 +441,6 @@ export default class GleapAiChatbarManager {
   destroy() {
     this._removeUI();
     this.config = null;
-    this.agentId = null;
-    this.agentContext = null;
     this.isHidden = true;
     this.comReady = false;
     this._panelOpen = false;

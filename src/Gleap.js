@@ -1387,30 +1387,6 @@ class Gleap {
     } catch (e) {}
   }
 
-  /**
-   * Start an agent conversation in the inline chatbar.
-   * @param {string} agentId - The agent ID to converse with.
-   * @param {object} [options] - Optional config: { context?, primaryColor?, initialMessage? }
-   *   Also accepts a plain context object for backward compatibility.
-   */
-  static startAgent(agentId, options) {
-    try {
-      GleapAiChatbarManager.getInstance().showWithAgent(agentId, options);
-    } catch (e) {}
-  }
-
-  /**
-   * Set the AI agent for the chatbar without opening the conversation panel.
-   * The chatbar input bar will be shown, but the panel stays closed until the user interacts.
-   * @param {string} agentId - The agent ID to use. Pass empty/null/'default' for Kai.
-   * @param {object} [options] - Optional config: { context?, primaryColor? }
-   */
-  static setAIAgent(agentId, options) {
-    try {
-      GleapAiChatbarManager.getInstance().setAgent(agentId, options);
-    } catch (e) {}
-  }
-
   static showNotification(data) {
     GleapNotificationManager.getInstance().showNotification(data);
   }
