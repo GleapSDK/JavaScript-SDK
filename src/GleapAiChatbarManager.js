@@ -212,7 +212,7 @@ export default class GleapAiChatbarManager {
     }
   }
 
-  _updateBlurBackdrop({ visible, top, bottom, left, right, radius }) {
+  _updateBlurBackdrop({ visible, top, bottom, left, right, radius, dark }) {
     // The blur is a PARENT div sized to the panel and placed BEHIND the transparent
     // iframe, so ONLY the panel is frosted — not the padding, gap, or input bar. The
     // frame sends the panel's insets; top+bottom (not height) make the div track the
@@ -232,6 +232,18 @@ export default class GleapAiChatbarManager {
       bd.right = (right ?? 0) + 'px';
       bd.height = 'auto';
       bd.borderRadius = (radius ?? 20) + 'px';
+      // Match the chatbar style: a dark frosted tint for the dark variants, the light
+      // white tint otherwise. brightness < 1 darkens the blurred page behind it so the
+      // panel reads as a true dark surface (mirrors the dark input bar's gray frost).
+      if (dark) {
+        bd.background = 'rgba(40, 40, 40, 0.55)';
+        bd.backdropFilter = 'blur(20px) saturate(140%) brightness(0.75)';
+        bd.webkitBackdropFilter = 'blur(20px) saturate(140%) brightness(0.75)';
+      } else {
+        bd.background = 'rgba(255, 255, 255, 0.45)';
+        bd.backdropFilter = 'blur(20px) saturate(150%) brightness(1.04)';
+        bd.webkitBackdropFilter = 'blur(20px) saturate(150%) brightness(1.04)';
+      }
       bd.opacity = '1';
     } else {
       this.blurBackdrop.style.opacity = '0';
