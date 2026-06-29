@@ -5,6 +5,7 @@ import Gleap, {
   GleapAudioManager,
   GleapTranslationManager,
   GleapEventManager,
+  GleapAiChatbarManager,
 } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import { loadIcon } from './UI';
@@ -53,7 +54,11 @@ export default class GleapNotificationManager {
       const notificationsFromCache = loadFromGleapCache(this.unreadNotificationsKey);
       if (notificationsFromCache && notificationsFromCache.length > 0) {
         let nots = notificationsFromCache.filter(
-          (notification) => new Date(notification.createdAt) > new Date(Date.now() - 1 * 60 * 60 * 1000)
+          (notification) =>
+            // Never resurface chatbar-routed notifications in the widget bubble.
+            // (Pre-fix builds may have cached them before the routing guard existed.)
+            notification?.data?.lastSource !== 'chatbar' &&
+            new Date(notification.createdAt) > new Date(Date.now() - 1 * 60 * 60 * 1000)
         );
 
         if (nots.length > 2) {
@@ -78,6 +83,22 @@ export default class GleapNotificationManager {
     if (!(this.notificationContainer && notification && notification.data)) {
       return;
     }
+
+    // Route conversation notifications by lastSource. Chatbar-origin replies go to the
+    // chatbar pill; everything else stays in the widget bubble (unchanged behavior).
+    try {
+      const lastSource = notification?.data?.lastSource;
+      const chatbar = GleapAiChatbarManager.getInstance();
+      // Available if enabled for the project, manually shown, or currently visible
+      // (e.g. shown before config arrives). showChatbarNotification
+      // queues the pill until the frame handshakes, so routing pre-handshake is safe.
+      const chatbarAvailable =
+        chatbar?.config?.enabled || chatbar?.manuallyShown || (chatbar && !chatbar.isHidden);
+      if (lastSource === 'chatbar' && chatbarAvailable) {
+        chatbar.showChatbarNotification(notification.data);
+        return;
+      }
+    } catch (e) {}
 
     const notificationsForOutbound = this.notifications.find((e) => notification.outbound === e.outbound);
     if (!notificationsForOutbound) {
