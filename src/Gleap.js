@@ -347,6 +347,20 @@ class Gleap {
   }
 
   /**
+   * Start an agent conversation in the inline chatbar.
+   * @param {string} agentId - The agent ID to converse with.
+   * @param {object} [options] - Optional config: { context?, initialQuestion?, initialMessage? }
+   *   - initialQuestion: a customer question delivered into the conversation and answered by the agent.
+   *   - initialMessage: a greeting shown first from the agent (e.g. "Hey, how can I help you").
+   *   Also accepts a plain context object for backward compatibility.
+   */
+  static startAgent(agentId, options) {
+    try {
+      GleapAiChatbarManager.getInstance().showWithAgent(agentId, options);
+    } catch (e) {}
+  }
+
+  /**
    * Set the AI quick actions.
    * @param {Array<string>} quickActions
    */
