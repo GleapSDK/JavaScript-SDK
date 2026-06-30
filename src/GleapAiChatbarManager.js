@@ -337,7 +337,7 @@ export default class GleapAiChatbarManager {
       if (session.session?.gleapId) headers['Gleap-Id'] = session.session.gleapId;
       if (session.session?.gleapHash) headers['Gleap-Hash'] = session.session.gleapHash;
 
-      const res = await fetch(`${apiUrl}/v3/shared/agents/${agentId}`, { headers });
+      const res = await fetch(`${apiUrl}/v3/shared/agents/${encodeURIComponent(agentId)}`, { headers });
       if (!res.ok) return null;
 
       const agentInfo = await res.json();
@@ -362,12 +362,31 @@ export default class GleapAiChatbarManager {
   async showWithAgent(agentId, options) {
     const opts = this._normalizeAgentOptions(options);
 
+    // startAgent() is typically called from a host-page click. That same click
+    // bubbles to our document listener and would post `chatbar-outside-click`,
+    // collapsing the panel the instant it opens. Suppress outside-click handling
+    // SYNCHRONOUSLY here — before the awaited validation below — so the
+    // triggering click (which finishes bubbling during that await) can't close
+    // the panel; otherwise the validated, non-'kai' path is left unprotected.
+    this._suppressOutsideClick = true;
+    clearTimeout(this._suppressOutsideClickTimeout);
+    this._suppressOutsideClickTimeout = setTimeout(() => {
+      this._suppressOutsideClick = false;
+    }, 600);
+
     let resolvedAgentId = agentId;
     if (!resolvedAgentId || resolvedAgentId === 'default') {
       resolvedAgentId = this._getDefaultAgentId() || 'kai';
     }
 
     if (resolvedAgentId && resolvedAgentId !== 'kai') {
+      // Target the requested id up front: _validateAgent only enriches
+      // agentName on success, so on a failed lookup (404, network error) we'd
+      // otherwise post a stale id from a previous call — or null on the first
+      // call. Setting it here means a failed validation still targets the
+      // requested agent.
+      this.agentId = resolvedAgentId;
+      this.agentName = null;
       await this._validateAgent(resolvedAgentId);
     } else {
       this.agentId = 'kai';
@@ -375,16 +394,6 @@ export default class GleapAiChatbarManager {
     }
 
     if (opts.context) this.agentContext = opts.context;
-
-    // startAgent() is typically called from a host-page click. That same click
-    // bubbles to our document listener and would post `chatbar-outside-click`,
-    // collapsing the panel the instant it opens. Suppress outside-click handling
-    // briefly so the triggering click (and the boot tick) can't close the panel.
-    this._suppressOutsideClick = true;
-    clearTimeout(this._suppressOutsideClickTimeout);
-    this._suppressOutsideClickTimeout = setTimeout(() => {
-      this._suppressOutsideClick = false;
-    }, 600);
 
     // Reveal the chatbar (mirrors showAiChatbar) and ensure the frame is mounted.
     this.manuallyHidden = false;
