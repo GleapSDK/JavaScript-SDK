@@ -20,6 +20,12 @@ export default class GleapAiChatbarManager {
   pendingMessages = [];
   chatbarStyle = null;
   _panelOpen = false;
+  // Agent targeted by the public Gleap.startAgent() API. agentId is 'kai' (the
+  // default AI agent) or a resolved workflow/bot id; agentName is the display
+  // name resolved via the shared agents endpoint.
+  agentId = null;
+  agentName = null;
+  agentContext = null;
 
   static instance;
   static getInstance() {
@@ -294,6 +300,118 @@ export default class GleapAiChatbarManager {
     });
   }
 
+  // Normalize the second argument of startAgent()/showWithAgent(). For backward
+  // compatibility a bare context object (no recognized option keys) is accepted
+  // and treated as { context }.
+  _normalizeAgentOptions(options) {
+    if (!options || typeof options !== 'object') return {};
+    const hasKnownKeys =
+      'context' in options ||
+      'initialQuestion' in options ||
+      'initialMessage' in options;
+    return hasKnownKeys ? options : { context: options };
+  }
+
+  // The project's configured chatbar agent (aiBar.workflowId), used when
+  // startAgent() is called without an explicit id.
+  _getDefaultAgentId() {
+    try {
+      if (this.config?.workflowId) return this.config.workflowId;
+      const flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
+      return flowConfig?.aiBar?.workflowId || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Legacy agent validation: resolve the agent's display name via the shared
+  // agents endpoint. Sets agentId/agentName on success, leaves them untouched
+  // (and returns null) on any failure so the caller can still proceed.
+  async _validateAgent(agentId) {
+    try {
+      const session = GleapSession.getInstance();
+      const apiUrl = session.apiUrl || 'https://api.gleap.io';
+
+      const headers = {};
+      if (session.sdkKey) headers['Api-Token'] = session.sdkKey;
+      if (session.session?.gleapId) headers['Gleap-Id'] = session.session.gleapId;
+      if (session.session?.gleapHash) headers['Gleap-Hash'] = session.session.gleapHash;
+
+      const res = await fetch(`${apiUrl}/v3/shared/agents/${agentId}`, { headers });
+      if (!res.ok) return null;
+
+      const agentInfo = await res.json();
+      if (!agentInfo || agentInfo.error) return null;
+
+      this.agentId = agentId;
+      this.agentName = agentInfo.name || 'AI Agent';
+      return agentInfo;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Reveal the inline chatbar and start a fresh conversation with the given
+  // agent. agentId resolves to the configured default (or 'kai') when empty or
+  // 'default'. options:
+  //   { context?, initialQuestion?, initialMessage? }
+  //   • initialQuestion — a customer question delivered into the conversation
+  //     and ANSWERED by the agent (the customer's first message).
+  //   • initialMessage  — a greeting FROM the agent shown first (e.g. "Hey, how
+  //     can I help you"); a static bot message, not answered.
+  async showWithAgent(agentId, options) {
+    const opts = this._normalizeAgentOptions(options);
+
+    let resolvedAgentId = agentId;
+    if (!resolvedAgentId || resolvedAgentId === 'default') {
+      resolvedAgentId = this._getDefaultAgentId() || 'kai';
+    }
+
+    if (resolvedAgentId && resolvedAgentId !== 'kai') {
+      await this._validateAgent(resolvedAgentId);
+    } else {
+      this.agentId = 'kai';
+      this.agentName = null;
+    }
+
+    if (opts.context) this.agentContext = opts.context;
+
+    // startAgent() is typically called from a host-page click. That same click
+    // bubbles to our document listener and would post `chatbar-outside-click`,
+    // collapsing the panel the instant it opens. Suppress outside-click handling
+    // briefly so the triggering click (and the boot tick) can't close the panel.
+    this._suppressOutsideClick = true;
+    clearTimeout(this._suppressOutsideClickTimeout);
+    this._suppressOutsideClickTimeout = setTimeout(() => {
+      this._suppressOutsideClick = false;
+    }, 600);
+
+    // Reveal the chatbar (mirrors showAiChatbar) and ensure the frame is mounted.
+    this.manuallyHidden = false;
+    this.manuallyShown = true;
+    this.show();
+
+    // Mark the panel open BEFORE starting the agent so the frame connects Pusher
+    // and subscribes first. The initial message is delivered back to the frame
+    // over the WebSocket (~500ms after create); without an active subscription
+    // at create time that push is missed and the message never renders.
+    this.setPanelOpen(true);
+
+    // Queued until the handshake completes (_postMessageRaw buffers until the
+    // frame posts `ping`), so this works whether or not the chatbar was already
+    // mounted. The frame opens its panel and starts the conversation.
+    this._postMessageRaw({
+      name: 'chatbar-start-agent',
+      data: {
+        agentId: this.agentId,
+        agentName: this.agentName,
+        context: this.agentContext,
+        initialQuestion: opts.initialQuestion || undefined,
+        initialMessage: opts.initialMessage || undefined,
+      },
+    });
+  }
+
   updateUIVisibility() {
     const isOpened = GleapFrameManager.getInstance().isOpened();
     if (isOpened) {
@@ -457,6 +575,9 @@ export default class GleapAiChatbarManager {
     this.comReady = false;
     this._panelOpen = false;
     this.pendingMessages = [];
+    this.agentId = null;
+    this.agentName = null;
+    this.agentContext = null;
     GleapAiChatbarManager.instance = null;
   }
 }

@@ -49,6 +49,10 @@ export namespace Gleap {
   function hideAiChatbar(): void;
   function askAI(question: string, showBackButton?: boolean): void;
   function setAiChatbarQuickActions(quickActions: string[]): void;
+  function startAgent(
+    agentId: string,
+    options?: { context?: any; initialQuestion?: string; initialMessage?: string }
+  ): void;
   function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;
   function setWSApiUrl(wsApiUrl: string): void;
