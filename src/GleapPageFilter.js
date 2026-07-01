@@ -82,10 +82,31 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
   return matched;
 };
 
+// Exclusion (negative) rule types. These express "hide here" and must all
+// hold simultaneously, so they are combined with AND. Everything else is a
+// positive "show here" rule and is combined with OR.
+const NEGATIVE_FILTER_TYPES = ['notcontains', 'isnot'];
+
 export const checkPageRules = (currentUrl, action) => {
   const rules = action.pageRules && action.pageRules.length > 0
     ? action.pageRules
     : (action.pageFilter ? [{ pageFilter: action.pageFilter, pageFilterType: action.pageFilterType }] : []);
   if (rules.length === 0) return true;
-  return rules.some(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
+
+  const positiveRules = rules.filter(r => !NEGATIVE_FILTER_TYPES.includes(r.pageFilterType));
+  const negativeRules = rules.filter(r => NEGATIVE_FILTER_TYPES.includes(r.pageFilterType));
+
+  // Positive rules are an allow-list: show if the page matches ANY of them.
+  const positivesPass = positiveRules.length === 0
+    ? true
+    : positiveRules.some(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
+
+  // Negative rules are a deny-list: only show if the page passes EVERY
+  // exclusion. Combining exclusions with OR (the previous behaviour) made any
+  // multi-page exclusion a tautology that always resolved to "show".
+  const negativesPass = negativeRules.length === 0
+    ? true
+    : negativeRules.every(r => checkPageFilter(currentUrl, r.pageFilter, r.pageFilterType));
+
+  return positivesPass && negativesPass;
 };
