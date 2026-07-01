@@ -111,12 +111,20 @@ describe('checkPageRules — mixed multi-rule (positive scope minus exclusions)'
   });
 
   test('Zeevou: contains app host AND isnot signup wizard (exact)', () => {
+    // Positive and exclusion rules share the same host+protocol so the positive
+    // rule matches the excluded URL too — this ensures the suppression on the
+    // wizard page is driven by the `isnot` deny-list, not by the positive
+    // rule failing.
     const rules = [
       { pageFilter: 'https://app.zeevou.com/', pageFilterType: 'contains' },
-      { pageFilter: 'http://app.zeevou.com/wizard/signup', pageFilterType: 'isnot' },
+      { pageFilter: 'https://app.zeevou.com/wizard/signup', pageFilterType: 'isnot' },
     ];
+    // In scope, not the wizard: positive passes, exclusion passes -> show.
     expect(checkPageRules('https://app.zeevou.com/rates', { pageRules: rules })).toBe(true);
-    expect(checkPageRules('http://app.zeevou.com/wizard/signup', { pageRules: rules })).toBe(false);
+    // The wizard page: positive rule ALSO matches (contains host), so only the
+    // isnot exclusion can suppress it. Proves the deny-list drives suppression.
+    expect(checkPageRules('https://app.zeevou.com/wizard/signup', { pageRules: rules })).toBe(false);
+    // Out of scope entirely: positive fails -> hidden.
     expect(checkPageRules('https://other.com/rates', { pageRules: rules })).toBe(false);
   });
 });
