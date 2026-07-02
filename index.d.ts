@@ -65,6 +65,10 @@ export namespace Gleap {
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;
   function setNetworkLogPropsToIgnore(filters: string[]): void;
+  /**
+   * @deprecated Use registerAgentTool(name, handler) with a dashboard-defined
+   * Frontend tool instead.
+   */
   function registerAgentToolAction(
     callback: (toolAction: {
       name: string;
@@ -73,6 +77,18 @@ export namespace Gleap {
       message: string;
       toolCallId: string;
     }) => void
+  ): void;
+  /**
+   * Register the handler for a Frontend tool defined on an AI agent in the
+   * Gleap dashboard. The agent calls the handler with the configured
+   * parameters and waits for its return value (string or JSON — JSON is
+   * stringified). Thrown errors are caught and reported back to the AI.
+   */
+  function registerAgentTool(
+    name: string,
+    handler: (
+      params: Record<string, any>
+    ) => string | object | Promise<string | object>
   ): void;
   function registerCustomAction(
     customAction: (action: { name: string }) => void
@@ -100,6 +116,10 @@ export namespace Gleap {
   function enableShortcuts(enabled: boolean): void;
   function setLanguage(language: string): void;
   function preFillForm(data: object): void;
+  /**
+   * @deprecated Define Frontend tools on your AI agent in the Gleap dashboard
+   * and register their handlers via registerAgentTool(name, handler) instead.
+   */
   function setAiTools(tools: {
     name: string;
     description: string;

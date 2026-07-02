@@ -9,7 +9,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = 'https://messenger-app.gleap.io/chatbar';
+  chatbarUrl = 'http://localhost:3001/chatbar';
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;
@@ -114,6 +114,20 @@ export default class GleapAiChatbarManager {
         if (data.name === 'tool-execution' && data.data) {
           GleapEventManager.notifyEvent('tool-execution', data.data);
           GleapAgentToolManager.getInstance().triggerToolAction(data.data);
+          return;
+        }
+
+        // Frontend tool execution request: run the registered handler and
+        // return its result to the frame, which delivers it to the agent.
+        if (data.name === 'frontend-tool-execute' && data.data) {
+          GleapAgentToolManager.getInstance()
+            .executeToolAction(data.data)
+            .then((result) => {
+              this._postMessageRaw({
+                name: 'frontend-tool-result',
+                data: result,
+              });
+            });
           return;
         }
 

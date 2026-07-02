@@ -571,6 +571,19 @@ export default class GleapFrameManager {
         GleapAgentToolManager.getInstance().triggerToolAction(data.data);
       }
 
+      // Frontend tool execution request: run the registered handler and
+      // return its result to the frame, which delivers it to the agent.
+      if (data.name === 'frontend-tool-execute' && data.data) {
+        GleapAgentToolManager.getInstance()
+          .executeToolAction(data.data)
+          .then((result) => {
+            this.sendMessage({
+              name: 'frontend-tool-result',
+              data: result,
+            });
+          });
+      }
+
       if (data.name === 'checklist-loaded') {
         const checklistData = data.data;
         GleapEventManager.notifyEvent('checklist-loaded', {
