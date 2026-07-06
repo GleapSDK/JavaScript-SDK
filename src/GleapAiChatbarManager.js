@@ -9,7 +9,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = 'http://localhost:3001/chatbar';
+  chatbarUrl = "https://messenger-app.gleap.io/chatbar";
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;
