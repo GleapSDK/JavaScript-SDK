@@ -158,6 +158,9 @@ class Gleap {
 
   /**
    * Set frontend-side tools that AI agents (including Kai) can call.
+   * @deprecated Define Frontend tools on your AI agent in the Gleap dashboard
+   * and register their handlers via Gleap.registerAgentTool(name, handler)
+   * instead. setAiTools tools only return a static response to the AI.
    * @param {Array} tools - Tool definitions with name, description, response, parameters.
    */
   static setAiTools(tools) {
@@ -717,10 +720,24 @@ class Gleap {
 
   /**
    * Register a callback for agent tool executions.
+   * @deprecated Use Gleap.registerAgentTool(name, handler) with a
+   * dashboard-defined Frontend tool instead.
    * @param {function} callback - Called with { name, params, result, message, toolCallId } when any tool finishes.
    */
   static registerAgentToolAction(callback) {
     GleapAgentToolManager.getInstance().registerAgentToolAction(callback);
+  }
+
+  /**
+   * Register the handler for a Frontend tool defined on an AI agent in the
+   * Gleap dashboard. The agent calls the handler with the configured
+   * parameters and waits for its return value (string or JSON — JSON is
+   * stringified). Thrown errors are caught and reported back to the AI.
+   * @param {string} name - The tool's runtime name (shown in the dashboard, e.g. 'create-workflow').
+   * @param {function} handler - async (params) => string | object
+   */
+  static registerAgentTool(name, handler) {
+    GleapAgentToolManager.getInstance().registerAgentTool(name, handler);
   }
 
   /**
