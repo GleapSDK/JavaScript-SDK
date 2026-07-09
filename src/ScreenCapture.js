@@ -447,7 +447,7 @@ const deepClone = async (host) => {
 
       if (tagName === 'SELECT' || tagName === 'TEXTAREA' || tagName === 'INPUT') {
         var val = node.value;
-        if (node.getAttribute('gleap-ignore') === 'value' || node.classList.contains('gl-mask')) {
+        if (node.getAttribute('gleap-ignore') === 'value' || node.classList.contains('rr-mask')) {
           val = new Array(val.length + 1).join('*');
         }
 

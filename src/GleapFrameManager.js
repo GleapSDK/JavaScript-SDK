@@ -166,7 +166,7 @@ export default class GleapFrameManager {
         // fails (e.g. CORS not available on the frameUrl), the helper falls back to direct
         // src loading, preserving the original behavior.
         var elem = document.createElement('div');
-        elem.className = 'gleap-frame-container gleap-frame-container--hidden gl-block';
+        elem.className = 'gleap-frame-container gleap-frame-container--hidden rr-block';
         elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
         document.body.appendChild(elem);
 

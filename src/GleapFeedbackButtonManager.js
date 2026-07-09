@@ -179,7 +179,7 @@ export default class GleapFeedbackButtonManager {
       buttonIcon = loadIcon('button', '#fff');
     }
 
-    this.feedbackButton.className = 'bb-feedback-button gleap-font gl-block';
+    this.feedbackButton.className = 'bb-feedback-button gleap-font rr-block';
     this.feedbackButton.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
 
     if (
