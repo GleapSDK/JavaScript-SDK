@@ -125,6 +125,23 @@ export default class GleapReplayRecorder {
   }
 
   /**
+   * Starts recording only if it isn't already running.
+   *
+   * The recorder is started eagerly at SDK init and then again once the config
+   * confirms web replays are enabled. Without this guard that second call (and
+   * the cached-vs-server config double apply) would call start(), which tears
+   * down and rebuilds the rolling buffer, throwing away everything captured so
+   * far.
+   */
+  startIfNotRunning() {
+    if (this.stopFunction) {
+      return;
+    }
+
+    this.start();
+  }
+
+  /**
    * Stop replays
    * @returns
    */

@@ -142,7 +142,10 @@ export default class GleapConfigManager {
       GleapNotificationManager.getInstance().updateContainerStyle();
 
       if (flowConfig.enableWebReplays) {
-        GleapReplayRecorder.getInstance().start();
+        // startIfNotRunning (not start) so re-applying the config - the cached
+        // config first, then the server refresh - doesn't wipe the rolling
+        // buffer of a recorder that was already started eagerly at init.
+        GleapReplayRecorder.getInstance().startIfNotRunning();
       } else {
         GleapReplayRecorder.getInstance().stop();
       }
