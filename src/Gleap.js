@@ -199,6 +199,18 @@ class Gleap {
 
     instance.initialized = true;
 
+    // Start capturing the session replay as early as possible. Capture is
+    // otherwise only kicked off once the config round-trip finishes, which
+    // leaves a window (slow network, uncached first visit) where a user can
+    // open feedback before the recorder is running and submit an empty replay.
+    // If this project has web replays disabled, applyConfig() stops the
+    // recorder again. That transient buffer can't reach a ticket: the feedback
+    // widget (the only thing that emits 'flow-started', which is what snapshots
+    // the buffer) is injected after the config has loaded, i.e. after the stop.
+    try {
+      GleapReplayRecorder.getInstance().startIfNotRunning();
+    } catch (error) {}
+
     try {
       fixGleapHeight();
     } catch (error) {}
@@ -1445,7 +1457,18 @@ class Gleap {
    */
   takeCurrentReplay() {
     const replayData = GleapReplayRecorder.getInstance().getReplayData();
-    this.setGlobalDataItem('webReplay', replayData);
+
+    // Only attach the replay when it actually captured something. A stopped or
+    // not-yet-started recorder returns an empty buffer (no startDate, no
+    // events); attaching that produces a ticket that advertises a web replay
+    // but plays back blank. Leaving webReplay null keeps the ticket honest.
+    const hasReplayData =
+      replayData &&
+      replayData.startDate &&
+      Array.isArray(replayData.events) &&
+      replayData.events.length > 0;
+
+    this.setGlobalDataItem('webReplay', hasReplayData ? replayData : null);
   }
 }
 
