@@ -4,6 +4,7 @@ import {
   GleapSession,
   GleapEventManager,
   GleapTranslationManager,
+  GleapTabCommunication,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
@@ -136,6 +137,13 @@ export default class GleapAiChatbarManager {
           GleapEventManager.notifyEvent(data.data.type, data.data.data);
           return;
         }
+
+        // The frame reports that the user read/opened the chatbar notification pill.
+        // Propagate the dismissal to sibling tabs so they hide their pill too.
+        if (data.name === 'chatbar-notification-read') {
+          this.hideChatbarNotification();
+          return;
+        }
       } catch (e) {}
     });
   }
@@ -213,6 +221,28 @@ export default class GleapAiChatbarManager {
         shareToken: data?.conversation?.shareToken,
       },
     });
+  }
+
+  // Dismisses the chatbar notification pill in the frame — the counterpart to
+  // showChatbarNotification. Called when the pill is read in THIS tab (the frame
+  // reports `chatbar-notification-read`) or when a sibling tab broadcasts that it
+  // was read (via GleapTabCommunication). A genuine local dismissal
+  // (fromOtherTab = false) is propagated to sibling tabs; an inbound cross-tab
+  // dismissal (fromOtherTab = true) is applied WITHOUT re-broadcasting, mirroring
+  // the fromOtherTab loop guard in GleapNotificationManager.clearAllNotifications.
+  // (Re-posting the clear to the local frame after its own read is a harmless
+  // no-op — the pill is already gone.)
+  hideChatbarNotification(fromOtherTab = false) {
+    this._postMessageRaw({ name: 'chatbar-notification-clear' });
+
+    if (!fromOtherTab) {
+      try {
+        GleapTabCommunication.getInstance().sendMessage({
+          type: 'chatbar-notification-cleared',
+          gleapId: GleapSession.getInstance().session?.gleapId,
+        });
+      } catch (e) {}
+    }
   }
 
   _resizeFrame({ width, height }) {

@@ -19,6 +19,7 @@ import GleapTranslationManager from './GleapTranslationManager';
 import GleapShortcutListener from './GleapShortcutListener';
 import GleapPreFillManager from './GleapPreFillManager';
 import GleapNotificationManager from './GleapNotificationManager';
+import GleapTabCommunication from './GleapTabCommunication';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapBannerManager from './GleapBannerManager';
@@ -319,6 +320,7 @@ class Gleap {
     GleapFrameManager.getInstance().destroy();
     GleapFeedbackButtonManager.getInstance().destroy();
     GleapNotificationManager.getInstance().clearAllNotifications(true);
+    GleapTabCommunication.getInstance().stop();
     GleapAiChatbarManager.getInstance().destroy();
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
@@ -1537,6 +1539,7 @@ export {
   GleapNetworkIntercepter,
   GleapAudioManager,
   GleapNotificationManager,
+  GleapTabCommunication,
   GleapAiChatbarManager,
   GleapBannerManager,
   GleapModalManager,

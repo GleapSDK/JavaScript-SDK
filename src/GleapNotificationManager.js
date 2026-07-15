@@ -6,6 +6,7 @@ import Gleap, {
   GleapTranslationManager,
   GleapEventManager,
   GleapAiChatbarManager,
+  GleapTabCommunication,
 } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import { loadIcon } from './UI';
@@ -47,6 +48,11 @@ export default class GleapNotificationManager {
 
     this.updateContainerStyle();
     this.reloadNotificationsFromCache();
+
+    // Start listening for cross-tab notification events (e.g. another tab
+    // clearing already-read notifications). Safe/idempotent; no-ops when
+    // BroadcastChannel is unavailable.
+    GleapTabCommunication.getInstance().start();
   }
 
   reloadNotificationsFromCache() {
@@ -367,8 +373,9 @@ export default class GleapNotificationManager {
    * Clears all notifications from the container.
    *
    * @param {boolean} uiOnly - Whether to only clear the UI or also the notifications.
+   * @param {boolean} fromOtherTab - True when applying a clear broadcast from a sibling tab (prevents re-broadcast loops).
    */
-  clearAllNotifications(uiOnly = false) {
+  clearAllNotifications(uiOnly = false, fromOtherTab = false) {
     if (!this.notificationContainer) {
       return;
     }
@@ -382,6 +389,19 @@ export default class GleapNotificationManager {
 
     while (this.notificationContainer.firstChild) {
       this.notificationContainer.removeChild(this.notificationContainer.firstChild);
+    }
+
+    // Propagate genuine (persisted) reads to sibling tabs so they clear the same
+    // already-read notifications. The !uiOnly gate keeps this off the per-render
+    // clearAllNotifications(true) calls in renderNotifications; fromOtherTab keeps
+    // an inbound clear from bouncing back out.
+    if (!uiOnly && !fromOtherTab) {
+      try {
+        GleapTabCommunication.getInstance().sendMessage({
+          type: 'notifications-cleared',
+          gleapId: GleapSession.getInstance().session?.gleapId,
+        });
+      } catch (exp) {}
     }
   }
 
