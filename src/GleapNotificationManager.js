@@ -370,6 +370,55 @@ export default class GleapNotificationManager {
   }
 
   /**
+   * Removes every notification bubble belonging to one conversation — from this
+   * tab's memory, from the shared localStorage cache (so sibling/new tabs and
+   * the widget-close reload can't resurrect it), and re-renders. Driven by the
+   * WebSocket `rc` (read conversation) field on the session update frame, sent
+   * when the conversation transitions unread → read; relayed cross-tab so tabs
+   * with a dead/reconnecting socket clear too.
+   *
+   * @param {string} shareToken - The read conversation's shareToken.
+   * @param {boolean} fromOtherTab - True when applying a sibling tab's broadcast (prevents re-broadcast loops).
+   */
+  clearNotificationsForConversation(shareToken, fromOtherTab = false) {
+    if (!shareToken) {
+      return;
+    }
+
+    try {
+      const belongsToConversation = (notification) => notification?.data?.conversation?.shareToken === shareToken;
+
+      // Filter the CACHE contents, not this tab's memory — the cache may hold
+      // entries this tab never rendered (bubbles shown while the widget was
+      // open here but closed elsewhere), and unrelated cached entries (news,
+      // checklists, other conversations) must survive.
+      const cachedNotifications = loadFromGleapCache(this.unreadNotificationsKey);
+      if (cachedNotifications && cachedNotifications.length > 0) {
+        saveToGleapCache(
+          this.unreadNotificationsKey,
+          cachedNotifications.filter((notification) => !belongsToConversation(notification))
+        );
+      }
+
+      const countBefore = this.notifications.length;
+      this.notifications = this.notifications.filter((notification) => !belongsToConversation(notification));
+      if (this.notifications.length !== countBefore) {
+        this.renderNotifications();
+      }
+
+      // Badge intentionally untouched: the authoritative count `u` travels in
+      // the same WebSocket frame (see the GleapTabCommunication docstring).
+      if (!fromOtherTab) {
+        GleapTabCommunication.getInstance().sendMessage({
+          type: 'conversation-notifications-cleared',
+          shareToken,
+          gleapId: GleapSession.getInstance().session?.gleapId,
+        });
+      }
+    } catch (exp) {}
+  }
+
+  /**
    * Clears all notifications from the container.
    *
    * @param {boolean} uiOnly - Whether to only clear the UI or also the notifications.

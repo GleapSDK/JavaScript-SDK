@@ -63,7 +63,7 @@ beforeEach(() => {
   MockBroadcastChannel.reset();
   global.BroadcastChannel = MockBroadcastChannel;
 
-  notifStub = { clearAllNotifications: jest.fn() };
+  notifStub = { clearAllNotifications: jest.fn(), clearNotificationsForConversation: jest.fn() };
   buttonStub = { updateNotificationBadge: jest.fn() };
   chatbarStub = { hideChatbarNotification: jest.fn() };
   sessionStub = { sdkKey: SDK_KEY, session: { gleapId: 'user-1' } };
@@ -205,6 +205,59 @@ describe('inbound notifications-cleared', () => {
     openSiblingTab().postMessage({ type: 'notifications-cleared', gleapId: 'user-1' });
 
     expect(chatbarStub.hideChatbarNotification).not.toHaveBeenCalled();
+  });
+});
+
+describe('inbound conversation-notifications-cleared', () => {
+  test('with matching gleapId clears that conversation only (fromOtherTab = true)', () => {
+    const tc = GleapTabCommunication.getInstance();
+    tc.start();
+
+    openSiblingTab().postMessage({
+      type: 'conversation-notifications-cleared',
+      shareToken: 'token-1',
+      gleapId: 'user-1',
+    });
+
+    expect(notifStub.clearNotificationsForConversation).toHaveBeenCalledWith('token-1', true);
+    expect(notifStub.clearAllNotifications).not.toHaveBeenCalled();
+    expect(buttonStub.updateNotificationBadge).not.toHaveBeenCalled();
+  });
+
+  test('applying the inbound clear does not post back on the channel (loop guard)', () => {
+    const tc = GleapTabCommunication.getInstance();
+    tc.start();
+    const postSpy = jest.spyOn(tc.channel, 'postMessage');
+
+    openSiblingTab().postMessage({
+      type: 'conversation-notifications-cleared',
+      shareToken: 'token-1',
+      gleapId: 'user-1',
+    });
+
+    expect(postSpy).not.toHaveBeenCalled();
+  });
+
+  test('is ignored when the broadcast carries no shareToken', () => {
+    const tc = GleapTabCommunication.getInstance();
+    tc.start();
+
+    openSiblingTab().postMessage({ type: 'conversation-notifications-cleared', gleapId: 'user-1' });
+
+    expect(notifStub.clearNotificationsForConversation).not.toHaveBeenCalled();
+  });
+
+  test('is ignored when the broadcast gleapId does not match the local user', () => {
+    const tc = GleapTabCommunication.getInstance();
+    tc.start();
+
+    openSiblingTab().postMessage({
+      type: 'conversation-notifications-cleared',
+      shareToken: 'token-1',
+      gleapId: 'someone-else',
+    });
+
+    expect(notifStub.clearNotificationsForConversation).not.toHaveBeenCalled();
   });
 });
 

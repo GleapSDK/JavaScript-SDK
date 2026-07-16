@@ -119,9 +119,16 @@ export default class GleapStreamedEvent {
       }
 
       if (message.name === 'update') {
-        const { a, u, ai } = message.data;
+        const { a, u, ai, rc } = message.data;
 
         const isOpened = GleapFrameManager.getInstance().isOpened();
+
+        // A conversation was read (possibly in another tab): drop its pending
+        // notification bubbles + shared cache entries BEFORE applying new
+        // actions, so a stale popup can't outlive the read.
+        if (rc) {
+          GleapNotificationManager.getInstance().clearNotificationsForConversation(rc);
+        }
 
         // Apply the chatbar config BEFORE performing actions, so a notification
         // delivered in the same update is routed with up-to-date availability.
