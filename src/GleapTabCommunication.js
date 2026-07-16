@@ -100,6 +100,13 @@ export default class GleapTabCommunication {
         GleapFeedbackButtonManager.getInstance().updateNotificationBadge(0);
       }
 
+      if (data.type === 'conversation-notifications-cleared' && data.shareToken) {
+        // A sibling tab read a conversation; drop its bubbles here too. Covers
+        // tabs whose socket is dead/reconnecting and thus missed the `rc`
+        // frame. fromOtherTab = true prevents a re-broadcast loop.
+        GleapNotificationManager.getInstance().clearNotificationsForConversation(data.shareToken, true);
+      }
+
       if (data.type === 'chatbar-notification-cleared') {
         // A sibling tab read/dismissed the AI chatbar pill. Dismiss ours too,
         // applying with fromOtherTab = true so it isn't re-broadcast (loop guard).
