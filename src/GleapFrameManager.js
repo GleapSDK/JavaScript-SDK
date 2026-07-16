@@ -310,6 +310,12 @@ export default class GleapFrameManager {
     const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     const loadingClass = 'gleap-frame-container--loading';
     if (this.gleapFrameContainer?.classList) {
+      // Cancel any in-flight close animation so re-opening is instant.
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+      }
+      this.gleapFrameContainer.classList.remove('gleap-frame-container--closing');
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
@@ -395,8 +401,26 @@ export default class GleapFrameManager {
 
     this.hideMarkerManager();
     if (this.gleapFrameContainer) {
-      this.gleapFrameContainer.classList.add('gleap-frame-container--hidden');
-      this.gleapFrameContainer.classList.remove('gleap-frame-container--animate');
+      const container = this.gleapFrameContainer;
+      container.classList.remove('gleap-frame-container--animate');
+
+      if (this.closeTimeout) {
+        clearTimeout(this.closeTimeout);
+        this.closeTimeout = null;
+      }
+
+      // Survey-full has no open/close animation, hide it instantly.
+      if (container.classList.contains('gleap-frame-container--survey-full')) {
+        container.classList.add('gleap-frame-container--hidden');
+      } else {
+        // Play the close animation, then remove from view once it finishes.
+        container.classList.add('gleap-frame-container--closing');
+        this.closeTimeout = setTimeout(() => {
+          container.classList.add('gleap-frame-container--hidden');
+          container.classList.remove('gleap-frame-container--closing');
+          this.closeTimeout = null;
+        }, 260);
+      }
     }
     if (resetRoutes) {
       this.sendMessage({
