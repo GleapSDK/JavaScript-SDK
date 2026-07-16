@@ -94,12 +94,11 @@ export const injectStyledCSS = (
       position: fixed;
       z-index: ${zIndexBase + 31};
       visibility: visible;
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.16);
+      box-shadow: 0px 5px 40px 0px rgba(9, 14, 21, 0.16);
       border-radius: ${containerRadius * 1.5}px;
       overflow: hidden;
-      animation-duration: .3s;
-      animation-fill-mode: both;
-      animation-name: gleapFadeInUp;
+      transform-origin: right bottom;
+      animation: gleapWidgetScale 0.3s cubic-bezier(0, 1.2, 1, 1) both, gleapWidgetFade 0.12s ease-out both;
       user-select: none;
       pointer-events: none;
       transition: max-width 0.3s ease-out;
@@ -500,6 +499,50 @@ export const injectStyledCSS = (
 
     .gleap-frame-container--animate {
       pointer-events: auto !important;
+    }
+
+    .gleap-frame-container--closing {
+      animation: gleapWidgetOut 0.2s cubic-bezier(0.4, 0, 1, 1) both !important;
+      pointer-events: none !important;
+    }
+
+    .gleap-frame-container--modern-left,
+    .gleap-frame-container--classic-left {
+      transform-origin: left bottom;
+    }
+
+    [dir=rtl].gleap-frame-container {
+      transform-origin: left bottom;
+    }
+
+    [dir=rtl].gleap-frame-container--modern-left,
+    [dir=rtl].gleap-frame-container--classic-left {
+      transform-origin: right bottom;
+    }
+
+    @keyframes gleapWidgetScale {
+      from { transform: scale(0.9); }
+      to { transform: scale(1); }
+    }
+
+    @keyframes gleapWidgetFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes gleapWidgetOut {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.96); }
+    }
+
+    @keyframes gleapWidgetSlideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes gleapWidgetSlideDown {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(100%); }
     }
 
     @keyframes gleapFadeInUp {
@@ -1764,7 +1807,12 @@ export const injectStyledCSS = (
         top: 0px;
         bottom: 0px;
         border-radius: 0px;
-        animation-name: gleapFadeInUpMobile;
+        transform-origin: center bottom;
+        animation: gleapWidgetSlideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) both, gleapWidgetFade 0.15s ease-out both;
+      }
+
+      .gleap-frame-container--closing {
+        animation: gleapWidgetSlideDown 0.26s cubic-bezier(0.4, 0, 1, 1) both !important;
       }
 
       .gleap-frame-container-inner {
