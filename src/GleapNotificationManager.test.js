@@ -1,4 +1,4 @@
-import { GleapTabCommunication, GleapSession } from './Gleap';
+import { GleapTabCommunication, GleapSession, GleapAudioManager } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import GleapNotificationManager from './GleapNotificationManager';
 
@@ -120,6 +120,159 @@ describe('clearNotificationsForConversation', () => {
     expect(loadFromGleapCache).not.toHaveBeenCalled();
     expect(saveToGleapCache).not.toHaveBeenCalled();
     expect(sendMessageMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('page rules — render-time evaluation (#141052)', () => {
+  // Mirrors the HaltH config: an outbound notification excluded from the
+  // insurance-extension flow via notcontains "Extend".
+  const pageRuledNotification = (text = 'campaign') => ({
+    outbound: `outbound-${text}`,
+    actionType: 'notification',
+    createdAt: new Date().toISOString(),
+    pageRules: [{ pageFilter: 'Extend', pageFilterType: 'notcontains' }],
+    data: { text },
+  });
+  const plainNotification = (text = 'plain') => ({
+    outbound: `outbound-${text}`,
+    createdAt: new Date().toISOString(),
+    data: { text },
+  });
+
+  const ALLOWED_URL = 'https://business.halth.com/dashboard';
+  const EXCLUDED_URL = 'https://business.halth.com/insurance?mode=extend';
+
+  const setUrl = (href) => {
+    global.window = { location: { href } };
+  };
+
+  // Rendered bubbles are observable as 'gleap-notification-item' elements
+  // appended to the (fake) container.
+  const renderedItems = (nm) =>
+    nm.notificationContainer.appendChild.mock.calls
+      .map((call) => call[0])
+      .filter((el) => el.className === 'gleap-notification-item');
+
+  beforeEach(() => {
+    GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' }, getName: () => 'Lukas' });
+    GleapAudioManager.ping.mockClear();
+    loadFromGleapCache.mockReset();
+    saveToGleapCache.mockReset();
+    // The suite runs in the node environment; renderNotifications only needs
+    // createElement + property assignments, so a minimal stub is enough.
+    global.document = { createElement: jest.fn(() => ({})) };
+    setUrl(ALLOWED_URL);
+  });
+
+  afterEach(() => {
+    delete global.window;
+    delete global.document;
+  });
+
+  test('renders a page-ruled bubble on an allowed page', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    nm.notifications = [pageRuledNotification()];
+
+    nm.renderNotifications();
+
+    expect(renderedItems(nm)).toHaveLength(1);
+  });
+
+  test('hides the bubble on an excluded page WITHOUT dropping it from memory', () => {
+    setUrl(EXCLUDED_URL);
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    const notification = pageRuledNotification();
+    nm.notifications = [notification];
+
+    nm.renderNotifications();
+
+    expect(renderedItems(nm)).toHaveLength(0);
+    // Still held for re-display on allowed pages.
+    expect(nm.notifications).toEqual([notification]);
+  });
+
+  test('URL change cycle: shown on allowed page, hidden on excluded, shown again', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    nm.notifications = [pageRuledNotification()];
+
+    nm.checkPageRulesForUrl(ALLOWED_URL);
+    expect(renderedItems(nm)).toHaveLength(1);
+
+    nm.notificationContainer.appendChild.mockClear();
+    setUrl(EXCLUDED_URL);
+    nm.checkPageRulesForUrl(EXCLUDED_URL);
+    expect(renderedItems(nm)).toHaveLength(0);
+
+    nm.notificationContainer.appendChild.mockClear();
+    setUrl(ALLOWED_URL);
+    nm.checkPageRulesForUrl(ALLOWED_URL);
+    expect(renderedItems(nm)).toHaveLength(1);
+  });
+
+  test('checkPageRulesForUrl re-renders only once per URL', () => {
+    const nm = GleapNotificationManager.getInstance();
+    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    nm.notifications = [pageRuledNotification()];
+
+    nm.checkPageRulesForUrl(ALLOWED_URL);
+    nm.checkPageRulesForUrl(ALLOWED_URL);
+
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('checkPageRulesForUrl skips re-rendering when nothing is page-ruled', () => {
+    const nm = GleapNotificationManager.getInstance();
+    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    nm.notifications = [plainNotification()];
+
+    nm.checkPageRulesForUrl('https://a.example.com/1');
+    nm.checkPageRulesForUrl('https://a.example.com/2');
+
+    expect(renderSpy).not.toHaveBeenCalled();
+  });
+
+  test('legacy single pageFilter notifications also trigger re-evaluation', () => {
+    const nm = GleapNotificationManager.getInstance();
+    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    nm.notifications = [{ outbound: 'o1', data: { text: 'x' }, pageFilter: '/x', pageFilterType: 'notcontains' }];
+
+    nm.checkPageRulesForUrl('https://a.example.com/1');
+
+    expect(renderSpy).toHaveBeenCalledTimes(1);
+  });
+
+  test('cached page-ruled notifications survive a reload on an excluded page but stay hidden', () => {
+    setUrl(EXCLUDED_URL);
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    const cached = pageRuledNotification();
+    loadFromGleapCache.mockReturnValue([cached]);
+
+    nm.reloadNotificationsFromCache();
+
+    expect(nm.notifications).toEqual([cached]);
+    expect(renderedItems(nm)).toHaveLength(0);
+  });
+
+  test('a notification arriving on an excluded page is stored + persisted (not consumed), without a ping', () => {
+    setUrl(EXCLUDED_URL);
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const notification = { ...pageRuledNotification(), sound: true };
+
+    nm.showNotification(notification);
+
+    expect(nm.notifications).toEqual([notification]);
+    expect(saveToGleapCache).toHaveBeenCalledWith(nm.unreadNotificationsKey, [notification]);
+    expect(GleapAudioManager.ping).not.toHaveBeenCalled();
+  });
+
+  test('a notification arriving on an allowed page still pings', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+
+    nm.showNotification({ ...pageRuledNotification(), sound: true });
+
+    expect(GleapAudioManager.ping).toHaveBeenCalled();
   });
 });
 

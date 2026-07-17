@@ -259,6 +259,14 @@ export default class GleapStreamedEvent {
     const self = this;
     setInterval(function () {
       self.logCurrentPage();
+
+      // Re-evaluate notification page rules on URL changes so bubbles hide
+      // on excluded pages and come back on allowed ones. Deliberately outside
+      // logCurrentPage: disablePageTracking only disables pageView streaming,
+      // not page rules.
+      try {
+        GleapNotificationManager.getInstance().checkPageRulesForUrl(window.location.href);
+      } catch (exp) {}
     }, 1000);
   }
 

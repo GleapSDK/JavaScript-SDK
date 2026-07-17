@@ -110,6 +110,17 @@ describe('checkPageRules — mixed multi-rule (positive scope minus exclusions)'
     expect(checkPageRules(url('/home'), { pageRules: rules })).toBe(false);
   });
 
+  test('HaltH (#141052): notcontains Extend is case-insensitive via the regex fallback', () => {
+    // The live config excludes "Extend" while the real URLs carry
+    // ?mode=extend — the substring check misses, the /i regex must catch it.
+    const notification = {
+      actionType: 'notification',
+      pageRules: [{ pageFilter: 'Extend', pageFilterType: 'notcontains' }],
+    };
+    expect(checkPageRules('https://business.halth.com/insurance?mode=extend', notification)).toBe(false);
+    expect(checkPageRules('https://business.halth.com/dashboard', notification)).toBe(true);
+  });
+
   test('Zeevou: contains app host AND isnot signup wizard (exact)', () => {
     // Positive and exclusion rules share the same host+protocol so the positive
     // rule matches the excluded URL too — this ensures the suppression on the
