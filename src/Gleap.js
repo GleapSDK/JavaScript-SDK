@@ -1365,7 +1365,21 @@ class Gleap {
     for (let i = 0; i < actions.length; i++) {
       const action = actions[i];
       if (action && action.actionType) {
-        if ((action.pageRules?.length > 0 || action.pageFilter) && window && window.location) {
+        // Notification bubbles get their page rules evaluated at render time
+        // (and re-evaluated on URL changes) by GleapNotificationManager. The
+        // server marks outbound actions as sent on delivery, so suppressing
+        // them here on an excluded page would consume the notification
+        // without the user ever seeing it. Banners, modals, surveys, tours
+        // and checklists opening the widget stay gated at arrival.
+        const pageRulesCheckedAtRenderTime =
+          action.actionType === 'notification' && action?.data?.checklist?.popupType !== 'widget';
+
+        if (
+          !pageRulesCheckedAtRenderTime &&
+          (action.pageRules?.length > 0 || action.pageFilter) &&
+          window &&
+          window.location
+        ) {
           const passed = checkPageRules(window.location.href, action);
 
           if (!passed) {

@@ -9,6 +9,7 @@ import Gleap, {
   GleapTabCommunication,
 } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
+import { checkPageRules } from './GleapPageFilter';
 import { loadIcon } from './UI';
 
 export default class GleapNotificationManager {
@@ -18,6 +19,7 @@ export default class GleapNotificationManager {
   unreadNotificationsKey = 'unread-notifications';
   isTabActive = true;
   showNotificationBadge = true;
+  lastPageRulesUrl = undefined;
 
   // Keep track of the current index of news being shown
   currentNewsIndex = 0;
@@ -77,6 +79,56 @@ export default class GleapNotificationManager {
     } catch (exp) {}
   }
 
+  /**
+   * Whether the notification's page rules allow it on the current page.
+   * Notifications keep their outbound pageRules/pageFilter when cached, so
+   * this can be re-evaluated long after arrival.
+   */
+  notificationPassesPageRules(notification) {
+    try {
+      const currentUrl = typeof window !== 'undefined' && window.location ? window.location.href : undefined;
+      if (!currentUrl) {
+        return true;
+      }
+      return checkPageRules(currentUrl, notification);
+    } catch (exp) {
+      return true;
+    }
+  }
+
+  /**
+   * Notifications allowed on the current page. Page rules are evaluated at
+   * render time instead of arrival (see performActions): the server marks
+   * outbound actions as sent on delivery, so an arrival-time check silently
+   * consumed notifications that arrived on an excluded page — and bubbles
+   * rendered on an allowed page followed users onto excluded ones.
+   */
+  getVisibleNotifications() {
+    return this.notifications.filter((notification) => this.notificationPassesPageRules(notification));
+  }
+
+  /**
+   * Re-evaluates page rules when the URL changes (SPA navigations), so
+   * bubbles hide on excluded pages and re-appear on allowed ones. Invoked
+   * ~1x/s by GleapStreamedEvent's page listener.
+   */
+  checkPageRulesForUrl(currentUrl) {
+    if (!currentUrl || currentUrl === this.lastPageRulesUrl) {
+      return;
+    }
+    this.lastPageRulesUrl = currentUrl;
+
+    // Only page-ruled notifications can change visibility with the URL.
+    const hasPageRuleNotifications = this.notifications.some(
+      (notification) => notification?.pageRules?.length > 0 || notification?.pageFilter
+    );
+    if (!hasPageRuleNotifications) {
+      return;
+    }
+
+    this.renderNotifications();
+  }
+
   setNotificationCount(unreadCount) {
     this.unreadCount = unreadCount;
     this.updateTabBarNotificationCount();
@@ -110,8 +162,10 @@ export default class GleapNotificationManager {
     if (!notificationsForOutbound) {
       this.notifications.push(notification);
 
-      // Play sound only if it's a new one
-      if (notification.sound) {
+      // Play sound only if it's a new one and its page rules allow the
+      // current page (it may have arrived on an excluded page and only
+      // become visible later).
+      if (notification.sound && this.notificationPassesPageRules(notification)) {
         GleapAudioManager.ping();
       }
     }
@@ -152,12 +206,17 @@ export default class GleapNotificationManager {
     clearElem.innerHTML = loadIcon('dismiss');
     this.notificationContainer.appendChild(clearElem);
 
+    // Only render notifications whose page rules allow the current page.
+    // The full list stays in memory + cache, so they re-appear when the
+    // user navigates back to an allowed page (see checkPageRulesForUrl).
+    const visibleNotifications = this.getVisibleNotifications();
+
     // Separate out news notifications vs. others, then sort news by date ascending
-    const newsNotifications = this.notifications
+    const newsNotifications = visibleNotifications
       .filter((n) => n.data.news)
       .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-    const otherNotifications = this.notifications.filter((n) => !n.data.news);
+    const otherNotifications = visibleNotifications.filter((n) => !n.data.news);
 
     // --- Render NEWS notifications (with pagination) ---
     if (newsNotifications.length > 0) {
