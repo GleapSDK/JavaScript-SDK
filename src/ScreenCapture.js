@@ -487,6 +487,46 @@ const deepClone = async (host) => {
   return fragment;
 };
 
+// HTML cannot represent nested <button>, <a> or <form> elements: when the
+// serialized capture is re-parsed (screenshot rendering), the parser
+// force-closes the outer element at the inner start tag and re-parents
+// everything after it one level up — which can eject the page's main content
+// out of its flex container and collapse it to a blank area. A JS-built DOM
+// can legally contain such nesting, so rewrite the INNER occurrences to <div>
+// with identical attributes before serialization; the tree then survives the
+// HTML round-trip.
+const fixParserUnsafeNesting = (clone) => {
+  const rewrites = [
+    { selector: 'button button', role: 'button' },
+    { selector: 'a a', role: 'link' },
+    { selector: 'form form', role: null },
+  ];
+  for (var r = 0; r < rewrites.length; r++) {
+    const nestedElems = clone.querySelectorAll(rewrites[r].selector);
+    for (var i = 0; i < nestedElems.length; i++) {
+      const el = nestedElems[i];
+      try {
+        // SVG <a> is a different (foreign content) element and parses fine.
+        if (el.namespaceURI && el.namespaceURI !== 'http://www.w3.org/1999/xhtml') {
+          continue;
+        }
+        const div = window.document.createElement('div');
+        for (var a = 0; a < el.attributes.length; a++) {
+          div.setAttribute(el.attributes[a].name, el.attributes[a].value);
+        }
+        if (rewrites[r].role && !div.hasAttribute('role')) {
+          div.setAttribute('role', rewrites[r].role);
+        }
+        div.setAttribute('bb-nested-' + el.tagName.toLowerCase(), 'true');
+        while (el.firstChild) {
+          div.appendChild(el.firstChild);
+        }
+        el.parentNode.replaceChild(div, el);
+      } catch (exp) {}
+    }
+  }
+};
+
 const prepareScreenshotData = (remote) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -496,6 +536,10 @@ const prepareScreenshotData = (remote) => {
     }
 
     const clone = await deepClone(window.document.documentElement);
+
+    try {
+      fixParserUnsafeNesting(clone);
+    } catch (exp) {}
 
     // Fix for web imports (depracted).
     const linkImportElems = clone.querySelectorAll('link[rel=import]');
