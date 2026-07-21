@@ -1,40 +1,40 @@
-import { injectStyledCSS } from './UI';
-import GleapNetworkIntercepter from './GleapNetworkIntercepter';
-import { fixGleapHeight, gleapDataParser, runFunctionWhenDomIsReady } from './GleapHelper';
-import GleapSession from './GleapSession';
-import GleapStreamedEvent from './GleapStreamedEvent';
-import GleapConfigManager from './GleapConfigManager';
-import GleapFeedback from './GleapFeedback';
-import GleapFrameManager from './GleapFrameManager';
-import GleapMetaDataManager from './GleapMetaDataManager';
-import GleapConsoleLogManager from './GleapConsoleLogManager';
+import AgentNetworkManager from './AgentNetworkManager';
+import ChecklistNetworkManager from './ChecklistNetworkManager';
+import GleapAdminManager from './GleapAdminManager';
+import GleapAgentChat from './GleapAgentChat';
+import { registerGleapAgentComponents } from './GleapAgentConversation';
+import GleapAgentToolManager from './GleapAgentToolManager';
+import GleapAiChatbarManager from './GleapAiChatbarManager';
+import GleapAudioManager from './GleapAudioManager';
+import GleapBannerManager from './GleapBannerManager';
+import { registerGleapChecklist } from './GleapChecklist';
 import GleapClickListener from './GleapClickListener';
-import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import GleapConfigManager from './GleapConfigManager';
+import GleapConsoleLogManager from './GleapConsoleLogManager';
+import GleapCustomActionManager from './GleapCustomActionManager';
 import GleapCustomDataManager from './GleapCustomDataManager';
 import GleapEventManager from './GleapEventManager';
-import GleapCustomActionManager from './GleapCustomActionManager';
-import GleapReplayRecorder from './GleapReplayRecorder';
+import GleapFeedback from './GleapFeedback';
+import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import GleapFrameManager from './GleapFrameManager';
+import { fixGleapHeight, flattenCompany, gleapDataParser, runFunctionWhenDomIsReady } from './GleapHelper';
 import GleapMarkerManager from './GleapMarkerManager';
-import GleapTranslationManager from './GleapTranslationManager';
-import GleapShortcutListener from './GleapShortcutListener';
-import GleapPreFillManager from './GleapPreFillManager';
-import GleapNotificationManager from './GleapNotificationManager';
-import GleapTabCommunication from './GleapTabCommunication';
-import GleapAiChatbarManager from './GleapAiChatbarManager';
-import GleapAgentToolManager from './GleapAgentToolManager';
-import GleapBannerManager from './GleapBannerManager';
+import GleapMetaDataManager from './GleapMetaDataManager';
 import GleapModalManager from './GleapModalManager';
-import GleapAudioManager from './GleapAudioManager';
-import GleapTagManager from './GleapTagManager';
-import GleapAdminManager from './GleapAdminManager';
+import GleapNetworkIntercepter from './GleapNetworkIntercepter';
+import GleapNotificationManager from './GleapNotificationManager';
+import { checkPageRules } from './GleapPageFilter';
+import GleapPreFillManager from './GleapPreFillManager';
 import GleapProductTours from './GleapProductTours';
-import { checkPageFilter, checkPageRules } from './GleapPageFilter';
-import { registerGleapChecklist } from './GleapChecklist';
-import ChecklistNetworkManager from './ChecklistNetworkManager';
-import { registerGleapAgentComponents } from './GleapAgentConversation';
-import AgentNetworkManager from './AgentNetworkManager';
-import GleapAgentChat from './GleapAgentChat';
-import { parseSSEStream, dispatchSSEEvent } from './GleapSSEParser';
+import GleapReplayRecorder from './GleapReplayRecorder';
+import GleapSession from './GleapSession';
+import GleapShortcutListener from './GleapShortcutListener';
+import { dispatchSSEEvent, parseSSEStream } from './GleapSSEParser';
+import GleapStreamedEvent from './GleapStreamedEvent';
+import GleapTabCommunication from './GleapTabCommunication';
+import GleapTagManager from './GleapTagManager';
+import GleapTranslationManager from './GleapTranslationManager';
+import { injectStyledCSS } from './UI';
 
 if (
   typeof window !== 'undefined' &&
@@ -411,7 +411,7 @@ class Gleap {
    * @param {*} userData
    */
   static identify(userId, userData, userHash) {
-    return GleapSession.getInstance().identifySession(userId, gleapDataParser(userData), userHash);
+    return GleapSession.getInstance().identifySession(userId, flattenCompany(gleapDataParser(userData)), userHash);
   }
 
   /**
@@ -419,7 +419,7 @@ class Gleap {
    * @param {*} userData
    */
   static updateContact(userData) {
-    return GleapSession.getInstance().updateSession(gleapDataParser(userData));
+    return GleapSession.getInstance().updateSession(flattenCompany(gleapDataParser(userData)));
   }
 
   /**
@@ -1060,7 +1060,9 @@ class Gleap {
             conversationId,
           });
         },
-        onError: (data) => { reject(data); },
+        onError: (data) => {
+          reject(data);
+        },
         onToolStart: () => {},
         onToolEnd: () => {},
       });
@@ -1479,10 +1481,7 @@ class Gleap {
     // events); attaching that produces a ticket that advertises a web replay
     // but plays back blank. Leaving webReplay null keeps the ticket honest.
     const hasReplayData =
-      replayData &&
-      replayData.startDate &&
-      Array.isArray(replayData.events) &&
-      replayData.events.length > 0;
+      replayData && replayData.startDate && Array.isArray(replayData.events) && replayData.events.length > 0;
 
     this.setGlobalDataItem('webReplay', hasReplayData ? replayData : null);
   }
@@ -1550,39 +1549,39 @@ const handleGleapLink = (href) => {
 };
 
 export {
-  GleapNetworkIntercepter,
-  GleapAudioManager,
-  GleapNotificationManager,
-  GleapTabCommunication,
+  AgentNetworkManager,
+  dispatchSSEEvent,
+  GleapAdminManager,
+  GleapAgentChat,
+  GleapAgentToolManager,
   GleapAiChatbarManager,
+  GleapAudioManager,
   GleapBannerManager,
-  GleapModalManager,
-  GleapPreFillManager,
-  GleapShortcutListener,
-  GleapMarkerManager,
-  GleapTranslationManager,
-  GleapReplayRecorder,
-  GleapFeedback,
+  GleapClickListener,
+  GleapConfigManager,
   GleapConsoleLogManager,
   GleapCustomActionManager,
-  GleapEventManager,
   GleapCustomDataManager,
+  GleapEventManager,
+  GleapFeedback,
   GleapFeedbackButtonManager,
-  GleapClickListener,
-  GleapSession,
-  GleapStreamedEvent,
-  GleapConfigManager,
   GleapFrameManager,
+  GleapMarkerManager,
   GleapMetaDataManager,
-  GleapTagManager,
+  GleapModalManager,
+  GleapNetworkIntercepter,
+  GleapNotificationManager,
+  GleapPreFillManager,
   GleapProductTours,
-  GleapAdminManager,
-  GleapAgentToolManager,
-  AgentNetworkManager,
-  GleapAgentChat,
-  parseSSEStream,
-  dispatchSSEEvent,
+  GleapReplayRecorder,
+  GleapSession,
+  GleapShortcutListener,
+  GleapStreamedEvent,
+  GleapTabCommunication,
+  GleapTagManager,
+  GleapTranslationManager,
   handleGleapLink,
+  parseSSEStream,
 };
 
 export default Gleap;

@@ -57,10 +57,7 @@ export const bootstrapGleapFrame = (iframe, url) => {
     .then((html) => {
       // Rewrite root-relative URLs (href="/x", src="/x") to absolute URLs on the Gleap origin,
       // so that the about:blank document (which has no base URL) can still resolve them.
-      const absolutized = html.replace(
-        /(\s(?:href|src)\s*=\s*["'])\/([^"'/][^"']*)/g,
-        '$1' + baseHref + '$2'
-      );
+      const absolutized = html.replace(/(\s(?:href|src)\s*=\s*["'])\/([^"'/][^"']*)/g, '$1' + baseHref + '$2');
 
       // The Gleap apps (banner, modal, agent-conversation, chatbar) are SPAs that route based
       // on window.location.pathname. Since the iframe inherits the parent's origin via about:blank,
@@ -73,9 +70,7 @@ export const bootstrapGleapFrame = (iframe, url) => {
         targetPath = parsedTarget.pathname + parsedTarget.search + parsedTarget.hash;
       } catch (e) {}
       const routeScript =
-        '<script>try{history.replaceState(null,"",' +
-        JSON.stringify(targetPath) +
-        ');}catch(e){}</script>';
+        '<script>try{history.replaceState(null,"",' + JSON.stringify(targetPath) + ');}catch(e){}</script>';
 
       // Inject the route-setter script BEFORE the first existing <script> tag so it runs
       // before any app bundle. If no <script> is found, inject just before </head> as a fallback.
@@ -212,6 +207,66 @@ export const gleapDataParser = function (data) {
     }
   }
   return data;
+};
+
+// Coerce a company id/name into a usable string, or null if it cannot be one.
+// Only primitives that stringify meaningfully are accepted: objects and arrays
+// would turn into "[object Object]" / "a,b", which is never a real identifier.
+const normalizeCompanyValue = (value) => {
+  if (typeof value === 'string') {
+    // Return the TRIMMED value, not the original: the server matches companyId
+    // byte-for-byte, so " acme " and "acme" would become two separate companies.
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? String(value) : null;
+  }
+  if (typeof value === 'bigint') {
+    return String(value);
+  }
+  return null;
+};
+
+// Map ergonomic { company: { id, name } } to the flat companyId/companyName fields.
+// The raw `company` key must never survive into the outgoing payload: the server
+// does not know it as a session field, so it ends up either as a stray customData
+// attribute or as an unset that the client-side dedup can never match - which
+// re-fires /sessions/identify on every single identify call.
+export const flattenCompany = (userData) => {
+  try {
+    if (!userData || typeof userData !== 'object' || !('company' in userData)) {
+      // Nothing to do - hand back the exact same reference (no-op).
+      return userData;
+    }
+
+    const company = userData.company;
+    const out = { ...userData };
+    delete out.company;
+
+    if (!company || typeof company !== 'object') {
+      return out;
+    }
+
+    const companyId = normalizeCompanyValue(company.id);
+    if (!companyId) {
+      // Without an id the server cannot create/link the company, and a name
+      // alone would show a company the contact is not actually linked to.
+      return out;
+    }
+
+    out.companyId = companyId;
+
+    const companyName = normalizeCompanyValue(company.name);
+    if (companyName) {
+      out.companyName = companyName;
+    }
+
+    return out;
+  } catch (exp) {
+    // This runs in customer browsers - never break the widget over user data.
+    return userData;
+  }
 };
 
 export const truncateString = (str, num) => {
@@ -355,11 +410,7 @@ let gleapHeightFixInstalled = false;
 export const fixGleapHeight = () => {
   try {
     // Strict no-op off iOS / when the VisualViewport API is unavailable.
-    if (
-      !('visualViewport' in window) ||
-      !window.visualViewport ||
-      !/iPad|iPhone|iPod/.test(navigator.userAgent)
-    ) {
+    if (!('visualViewport' in window) || !window.visualViewport || !/iPad|iPhone|iPod/.test(navigator.userAgent)) {
       return;
     }
 
@@ -410,9 +461,7 @@ export const fixGleapHeight = () => {
 
     function measure() {
       try {
-        const gleapFrameContainer = document.querySelector(
-          '.gleap-frame-container-inner iframe'
-        );
+        const gleapFrameContainer = document.querySelector('.gleap-frame-container-inner iframe');
 
         if (!gleapFrameContainer) {
           return;
@@ -431,25 +480,16 @@ export const fixGleapHeight = () => {
         const keyboardHeight = round(window.innerHeight) - round(visualViewport.height);
         // keyboardForcedClosed wins so a stuck iOS 26 viewport can't keep the
         // widget shrunk after a send/dismiss (it's cleared on the next focus).
-        const keyboardIsOpen =
-          !keyboardForcedClosed && keyboardHeight >= KEYBOARD_OPEN_THRESHOLD;
+        const keyboardIsOpen = !keyboardForcedClosed && keyboardHeight >= KEYBOARD_OPEN_THRESHOLD;
 
         if (keyboardIsOpen) {
-          gleapFrameContainer.style.setProperty(
-            'max-height',
-            visualViewport.height + 'px',
-            'important'
-          );
+          gleapFrameContainer.style.setProperty('max-height', visualViewport.height + 'px', 'important');
           // When the keyboard opens, iOS pans the visual viewport up to reveal
           // the focused field. The widget is position:fixed (anchored to the
           // layout viewport), so without compensation it appears to "scroll up"
           // behind the status bar. Translate it down by the viewport offset to
           // keep it pinned to the visible area above the keyboard.
-          gleapFrameContainer.style.setProperty(
-            'transform',
-            'translateY(' + visualViewport.offsetTop + 'px)',
-            'important'
-          );
+          gleapFrameContainer.style.setProperty('transform', 'translateY(' + visualViewport.offsetTop + 'px)', 'important');
         } else {
           // Reset in EVERY non-open path. removeProperty is idempotent and safe
           // even when nothing was set.
@@ -471,20 +511,13 @@ export const fixGleapHeight = () => {
         window.setTimeout(() => {
           try {
             const active = keyboardFocusDoc && keyboardFocusDoc.activeElement;
-            if (
-              active &&
-              (active.tagName === 'INPUT' ||
-                active.tagName === 'TEXTAREA' ||
-                active.isContentEditable)
-            ) {
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
               return; // focus moved to another field — keyboard stays open
             }
 
             keyboardForcedClosed = true;
 
-            const frame = document.querySelector(
-              '.gleap-frame-container-inner iframe'
-            );
+            const frame = document.querySelector('.gleap-frame-container-inner iframe');
             if (frame) {
               frame.style.removeProperty('max-height');
               frame.style.removeProperty('transform');

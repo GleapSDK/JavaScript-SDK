@@ -150,8 +150,11 @@ export namespace Gleap {
       email?: string | null;
       phone?: string | null;
       value?: number | null;
+      /** @deprecated Use `company` instead. */
       companyId?: string | null;
+      /** @deprecated Use `company` instead. */
       companyName?: string | null;
+      company?: { id: string | number; name?: string | null } | null;
       sla?: number | null;
       plan?: string | null;
       customData?: object | null;
@@ -166,8 +169,11 @@ export namespace Gleap {
       email?: string | null;
       phone?: string | null;
       value?: number | null;
+      /** @deprecated Use `company` instead. */
       companyId?: string | null;
+      /** @deprecated Use `company` instead. */
       companyName?: string | null;
+      company?: { id: string | number; name?: string | null } | null;
       sla?: number | null;
       plan?: string | null;
       avatar?: string | null;
