@@ -1,5 +1,5 @@
-import unique from './unique-selector/src/unique-selector';
 import ElementPicker from './ElementPicker';
+import { buildStableSelector } from './GleapTourSelector';
 
 class GleapAdminHelper {
   picker = null;
@@ -47,7 +47,7 @@ class GleapAdminHelper {
             const tourId = anchor.getAttribute('data-gleap-tour');
             selector = `[data-gleap-tour="${tourId}"]`;
           } else {
-            selector = unique(el);
+            selector = buildStableSelector(el);
           }
 
           self.onElementPicked && self.onElementPicked(selector);
