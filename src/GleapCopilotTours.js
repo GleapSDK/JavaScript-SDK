@@ -1,4 +1,5 @@
 import { GleapConfigManager, GleapTranslationManager } from './Gleap';
+import { typeIntoElement } from './GleapInputFiller';
 import { calculateContrast, loadIcon } from './UI';
 
 const localStorageKey = 'gleap-tour-data';
@@ -861,20 +862,14 @@ export default class GleapCopilotTours {
             );
             element.focus();
           } else {
-            const inputValue = currentStep.inputValue ?? '';
-            let index = 0;
-            function typeCharacter() {
-              if (index < inputValue.length) {
-                element.value += inputValue[index];
-                index++;
-                setTimeout(typeCharacter, 100);
-              } else {
+            typeIntoElement(element, currentStep.inputValue ?? '', {
+              charDelay: 100,
+              onDone: () => {
                 setTimeout(() => {
                   proceedClickmode();
                 }, 1200);
-              }
-            }
-            typeCharacter();
+              },
+            });
           }
           return;
         }
