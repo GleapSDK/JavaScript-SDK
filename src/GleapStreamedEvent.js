@@ -3,6 +3,7 @@ import Gleap, {
   GleapMetaDataManager,
   GleapAiChatbarManager,
   GleapNotificationManager,
+  GleapBannerManager,
   GleapSession,
   GleapAdminManager,
   GleapEventManager,
@@ -260,12 +261,15 @@ export default class GleapStreamedEvent {
     setInterval(function () {
       self.logCurrentPage();
 
-      // Re-evaluate notification page rules on URL changes so bubbles hide
-      // on excluded pages and come back on allowed ones. Deliberately outside
-      // logCurrentPage: disablePageTracking only disables pageView streaming,
-      // not page rules.
+      // Re-evaluate notification and banner page rules on URL changes so they
+      // hide on excluded pages and come back on allowed ones. Deliberately
+      // outside logCurrentPage: disablePageTracking only disables pageView
+      // streaming, not page rules.
       try {
         GleapNotificationManager.getInstance().checkPageRulesForUrl(window.location.href);
+      } catch (exp) {}
+      try {
+        GleapBannerManager.getInstance().checkPageRulesForUrl(window.location.href);
       } catch (exp) {}
     }, 1000);
   }

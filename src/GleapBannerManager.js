@@ -1,5 +1,6 @@
 import Gleap, { GleapFrameManager } from './Gleap';
 import { bootstrapGleapFrame } from './GleapHelper';
+import { checkPageRules } from './GleapPageFilter';
 
 export default class GleapBannerManager {
   bannerUrl = 'https://outboundmedia.gleap.io';
@@ -63,6 +64,9 @@ export default class GleapBannerManager {
           }
         }
         if (data.name === 'banner-close') {
+          // User dismissal — drop the data so the page-rule re-evaluation
+          // (checkPageRulesForUrl) can't resurrect the banner on navigation.
+          this.bannerData = null;
           this.removeBannerUI();
         }
         if (data.name === 'start-conversation') {
@@ -163,6 +167,59 @@ export default class GleapBannerManager {
   }
 
   showBanner(bannerData) {
-    this.injectBannerUI(bannerData);
+    // Banners keep their outbound pageRules/pageFilter, so visibility is
+    // decided at render time — not arrival (see performActions): the server
+    // marks outbound actions as sent on delivery, so an arrival-time check
+    // silently consumed banners that arrived on an excluded page — and
+    // banners rendered on an allowed page followed users onto excluded ones
+    // in SPAs.
+    this.bannerData = bannerData;
+    this.lastPageRulesUrl = null;
+
+    const currentUrl =
+      typeof window !== 'undefined' && window.location ? window.location.href : null;
+    if (this.bannerPassesPageRules(bannerData, currentUrl)) {
+      this.injectBannerUI(bannerData);
+    }
+  }
+
+  /**
+   * Whether the banner's page rules allow it on the given page.
+   */
+  bannerPassesPageRules(bannerData, currentUrl) {
+    try {
+      if (!currentUrl || !bannerData) {
+        return true;
+      }
+      return checkPageRules(currentUrl, bannerData);
+    } catch (exp) {
+      return true;
+    }
+  }
+
+  /**
+   * Re-evaluates page rules when the URL changes (SPA navigations), so the
+   * banner hides on excluded pages and re-appears on allowed ones. Invoked
+   * ~1x/s by GleapStreamedEvent's page listener.
+   */
+  checkPageRulesForUrl(currentUrl) {
+    if (!currentUrl || currentUrl === this.lastPageRulesUrl) {
+      return;
+    }
+    this.lastPageRulesUrl = currentUrl;
+
+    const bannerData = this.bannerData;
+    // Only page-ruled banners can change visibility with the URL.
+    if (!bannerData || !(bannerData.pageRules?.length > 0 || bannerData.pageFilter)) {
+      return;
+    }
+
+    const passes = this.bannerPassesPageRules(bannerData, currentUrl);
+    const shown = !!this.bannerContainer;
+    if (passes && !shown) {
+      this.injectBannerUI(bannerData);
+    } else if (!passes && shown) {
+      this.removeBannerUI();
+    }
   }
 }
