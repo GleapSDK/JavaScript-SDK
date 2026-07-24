@@ -111,7 +111,9 @@ export default class GleapConfigManager {
       parseIntWithDefault(flowConfig.borderRadius, 20),
       parseIntWithDefault(flowConfig.buttonX, 20),
       parseIntWithDefault(flowConfig.buttonY, 20),
-      flowConfig.feedbackButtonPosition
+      flowConfig.feedbackButtonPosition,
+      flowConfig.headerColor2,
+      flowConfig.headerColor3
     );
   }
 

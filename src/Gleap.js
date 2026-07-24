@@ -782,10 +782,12 @@ class Gleap {
     borderRadius = 20,
     buttonX = 20,
     buttonY = 20,
-    buttonStyle = GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT
+    buttonStyle = GleapFeedbackButtonManager.FEEDBACK_BUTTON_BOTTOM_LEFT,
+    headerColor2 = undefined,
+    headerColor3 = undefined
   ) {
     runFunctionWhenDomIsReady(() => {
-      injectStyledCSS(primaryColor, headerColor, buttonColor, borderRadius, backgroundColor, buttonX, buttonY, buttonStyle);
+      injectStyledCSS(primaryColor, headerColor, buttonColor, borderRadius, backgroundColor, buttonX, buttonY, buttonStyle, headerColor2, headerColor3);
     });
   }
 
