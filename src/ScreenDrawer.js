@@ -16,13 +16,35 @@ export class ScreenDrawer {
   resizeListener = null;
   pathBuffer = [];
 
-  constructor(rerender) {
+  constructor(rerender, trackScroll = false) {
     const self = this;
 
     this.rerender = rerender;
 
     this.svgElement = document.querySelector('.bb-capture-svg');
     this.svgElement.style.minHeight = `${document.documentElement.scrollHeight}px`;
+
+    // The overlay is position: fixed, so drawings detach from the content they
+    // mark as soon as the page scrolls after drawing (scrollbar drag while
+    // marking, or scrolling while the feedback form is open) — the DOM
+    // snapshot then stores the new scroll position and the rendered screenshot
+    // shows the marks shifted by exactly that scroll delta. Track scrolling
+    // relative to the position at drawing start and counter-shift the overlay;
+    // the inline transform also serializes into the snapshot, so the replay
+    // stays aligned too. The tracker must outlive destroy(): it keeps the
+    // preview overlay glued to the content while the form is open, and is
+    // released via destroyScrollTracker() when the editor is removed.
+    this.anchorX = window.scrollX;
+    this.anchorY = window.scrollY;
+    this.scrollListener = null;
+    if (trackScroll) {
+      this.scrollListener = function () {
+        self.svgElement.style.transform = `translate(${self.anchorX - window.scrollX}px, ${
+          self.anchorY - window.scrollY
+        }px)`;
+      };
+      window.addEventListener('scroll', this.scrollListener, { passive: true });
+    }
 
     // Window resize listener.
     this.resizeListener = function (e) {
@@ -96,6 +118,15 @@ export class ScreenDrawer {
     this.svgElement.removeEventListener('touchmove', this.mouseMove);
     this.svgElement.removeEventListener('touchend', this.mouseUp);
     window.removeEventListener('resize', this.resizeListener);
+    // The scroll tracker intentionally survives destroy(): the preview overlay
+    // must keep tracking scrolling while the feedback form is open.
+  }
+
+  destroyScrollTracker() {
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener);
+      this.scrollListener = null;
+    }
   }
 
   mouseUpPen() {
@@ -180,16 +211,22 @@ export class ScreenDrawer {
   }
 
   getMousePosition(e) {
+    // When scroll tracking is active the overlay is counter-shifted by the
+    // scroll delta since drawing start, so map viewport coordinates into the
+    // overlay's (shifted) coordinate space to keep drawing under the cursor.
+    const offsetX = this.scrollListener ? window.scrollX - this.anchorX : 0;
+    const offsetY = this.scrollListener ? window.scrollY - this.anchorY : 0;
+
     if (e.touches && e.touches.length > 0) {
       return {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
+        x: e.touches[0].clientX + offsetX,
+        y: e.touches[0].clientY + offsetY,
       };
     }
 
     return {
-      x: e.clientX,
-      y: e.clientY,
+      x: e.clientX + offsetX,
+      y: e.clientY + offsetY,
     };
   }
 
