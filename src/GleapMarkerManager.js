@@ -100,6 +100,10 @@ export default class GleapMarkerManager {
   }
 
   clear() {
+    if (this.screenDrawer) {
+      this.screenDrawer.destroyScrollTracker();
+    }
+
     const captureEditor = document.querySelector('.bb-capture-editor');
     if (captureEditor) {
       captureEditor.remove();
@@ -332,8 +336,10 @@ export default class GleapMarkerManager {
       this.setupScreenRecording();
     }
 
-    // Hook up the drawing.
-    this.screenDrawer = new ScreenDrawer(this.captureScreenDrawerRerender.bind(this));
+    // Hook up the drawing. Screenshot markers track page scrolling so they
+    // stay glued to the marked content until the DOM snapshot is taken;
+    // screen-recording drawings stay viewport-fixed to match the video.
+    this.screenDrawer = new ScreenDrawer(this.captureScreenDrawerRerender.bind(this), this.type === 'screenshot');
 
     this.setupColorPicker();
     this.setupToolbar();
