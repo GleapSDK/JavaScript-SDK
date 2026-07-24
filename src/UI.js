@@ -28,6 +28,146 @@ export const calculateContrast = (hex) => {
 
 export const widgetMaxHeight = 700;
 
+// Builds the loading placeholder shown while the messenger iframe boots.
+// Mirrors the Messenger-App home backgrounds (BG.svg / BGclassic.svg /
+// BGclassicnofade.svg) so the hand-off from loader to app is seamless.
+// Colors are applied via the injected stylesheet (see injectStyledCSS).
+export const widgetLoaderMarkup = (flowConfig) => {
+  const config = flowConfig || {};
+
+  // Same rules as the Messenger-App's renderBG: image only counts with an
+  // actual image set, classic is explicit, everything else is the gradient.
+  const hasImageBG =
+    config.bgType === 'image' && config.bgImage && config.bgImage.length > 0;
+
+  // Mirrors the Messenger-App's resolveHomeVersion: 1-3 pick the classic
+  // homes, anything else (4, unset, unknown) resolves to the latest (v4).
+  const homeVersion = parseInt(config.v, 10);
+  const isClassicHome =
+    homeVersion === 1 || homeVersion === 2 || homeVersion === 3;
+
+  const showBlur = config.bgBlur ?? true;
+  const blurOverlay = showBlur ? `<div class="gleap-frame-loader-blur"></div>` : '';
+
+  if (!isClassicHome) {
+    // v4 home: no full-bleed backgrounds — the brand surface is a header-high
+    // block (image or headerColor → headerColor2 gradient) that eases into
+    // the background color across a bottom-anchored ramp (the composer zone).
+    //
+    // The header height is DYNAMIC (logo bar + greeting, whose title wraps to
+    // 1-3 lines depending on the copy and widget width), so a fixed height can
+    // never match 1:1 and the image visibly re-crops at the cross-fade. Match
+    // it structurally instead: an invisible "strut" replicating the header's
+    // exact box model — the fixed-height bar, then the greeting padding with
+    // the REAL welcome text at the same font/line-height — so the block
+    // auto-sizes to the identical height the app computes, at any width, with
+    // no measurement. The image/gradient fills that block; the ramp fades it.
+    const welcomeText = config.welcomeText
+      ? String(config.welcomeText)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+      : '';
+    const greetingStrut = `<div class="gleap-frame-loader-strut">
+          <div class="gleap-frame-loader-strut-bar"></div>
+          <div class="gleap-frame-loader-strut-greeting">
+            <div class="gleap-frame-loader-strut-kicker">&nbsp;</div>${welcomeText ? `
+            <div class="gleap-frame-loader-strut-title">${welcomeText}</div>` : ''}
+          </div>
+        </div>`;
+
+    if (hasImageBG) {
+      const bgImage = String(config.bgImage).replace(/"/g, '&quot;');
+      return `<div class="gleap-frame-loader">
+          <div class="gleap-frame-loader-header gleap-frame-loader-header--image">
+            <div class="gleap-frame-loader-image-wrap">
+              <img class="gleap-frame-loader-image" src="${bgImage}" alt="" /></div>
+            ${greetingStrut}
+            <div class="gleap-frame-loader-ramp gleap-frame-loader-ramp--image"></div>
+          </div>
+        </div>`;
+    }
+
+    // Colour header (classic AND gradient bgTypes render the same in v4).
+    // fadebg off runs the colour to a hard edge — the overlay is hidden.
+    const fadeBG = config.fadebg ?? true;
+    return `<div class="gleap-frame-loader">
+        <div class="gleap-frame-loader-header gleap-frame-loader-header--colour">
+          ${greetingStrut}${fadeBG ? '\n          <div class="gleap-frame-loader-ramp"></div>' : ''}
+        </div>
+      </div>`;
+  }
+
+  if (hasImageBG) {
+    // Plain white is the fallback state; the image races the iframe boot and
+    // fades in over it once loaded (see the load listener in GleapFrameManager).
+    const bgImage = String(config.bgImage).replace(/"/g, '&quot;');
+
+    // The v1/v2 homes render the bg image only above their docked tab bar
+    // (height: calc(100vh - 80px)); v3 floats the bar over a full-bleed
+    // image. The loader must match, otherwise the cover-crop is computed for
+    // a different height and the image visibly shifts during the cross-fade.
+    // No bar at all (all sections hidden) → the app runs full height again.
+    const allTabsHidden =
+      config.hideNews &&
+      config.hideFeatureRequests &&
+      config.hideAllConversations &&
+      config.hideKnowledgeBase;
+    const hasDockedTabBar =
+      (homeVersion === 1 || homeVersion === 2) && !allTabsHidden;
+
+    return `<div class="gleap-frame-loader gleap-frame-loader--image${hasDockedTabBar ? ' gleap-frame-loader--dockedbar' : ''}">
+        <div class="gleap-frame-loader-image-wrap">
+          <img class="gleap-frame-loader-image" src="${bgImage}" alt="" />${blurOverlay}</div>
+      </div>`;
+  }
+
+  if (config.bgType === 'classic') {
+    const fadeBG = config.fadebg ?? true;
+    const classicSVG = fadeBG
+      ? `<svg width="403" height="598" viewBox="0 0 403 598" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="403" height="503" fill="url(#gleap-bg-classic-grad)"/>
+          <rect y="158" width="403" height="346" fill="url(#gleap-bg-classic-fade)"/>
+          <defs>
+            <linearGradient id="gleap-bg-classic-grad" x1="-2.40293e-06" y1="4.72174" x2="427.062" y2="248.078" gradientUnits="userSpaceOnUse">
+              <stop class="gleap-bg-grad-1"/>
+              <stop class="gleap-bg-grad-2" offset="1"/>
+            </linearGradient>
+            <linearGradient id="gleap-bg-classic-fade" x1="201" y1="158" x2="201.35" y2="473" gradientUnits="userSpaceOnUse">
+              <stop class="gleap-bg-fade" stop-opacity="0"/>
+              <stop class="gleap-bg-fade" offset="1"/>
+            </linearGradient>
+          </defs>
+        </svg>`
+      : `<svg width="403" height="598" viewBox="0 0 403 598" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M403 0H0V362H403V0Z" fill="url(#gleap-bg-classic-grad)"/>
+          <defs>
+            <linearGradient id="gleap-bg-classic-grad" x1="-3.25162e-06" y1="3.02267" x2="315.636" y2="283.986" gradientUnits="userSpaceOnUse">
+              <stop class="gleap-bg-grad-1"/>
+              <stop class="gleap-bg-grad-2" offset="1"/>
+            </linearGradient>
+          </defs>
+        </svg>`;
+    return `<div class="gleap-frame-loader">${classicSVG}${blurOverlay}</div>`;
+  }
+
+  const animateBG = config.animateBG ?? true;
+  return `<div class="gleap-frame-loader${animateBG ? ' gleap-frame-loader--animate' : ''}">
+      <svg width="403" height="598" viewBox="0 0 403 598" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clip-path="url(#gleap-bg-gradient-clip)">
+          <path class="gleap-bg-base" d="M403 0H0V598H403V0Z"/>
+          <path class="gleap-bg-c1" d="M0 0H403V308.5L350.5 298.5H294L144.5 250L78.5 152.5L27 125L0 104V0Z"/>
+          <path class="gleap-bg-c2" d="M0 151V108V101.5H137L156 151L352 300L106 340L0 344.5V151Z"/>
+          <path class="gleap-bg-c3" d="M254.5 118L331.5 94L403 85V318H347.5L221 207L254.5 118Z"/>
+        </g>
+        <defs>
+          <clipPath id="gleap-bg-gradient-clip">
+            <rect width="403" height="598" fill="white"/>
+          </clipPath>
+        </defs>
+      </svg>${blurOverlay}</div>`;
+};
+
 export const injectStyledCSS = (
   primaryColor,
   headerColor,
@@ -36,14 +176,18 @@ export const injectStyledCSS = (
   backgroundColor,
   buttonX,
   buttonY,
-  buttonStyle
+  buttonStyle,
+  headerColor2,
+  headerColor3
 ) => {
   const contrastColor = calculateContrast(primaryColor);
   const contrastButtonColor = calculateContrast(buttonColor);
   const contrastBackgroundColor = calculateContrast(backgroundColor);
-  const contrastHeaderColor = calculateContrast(headerColor);
   const isDarkMode = contrastBackgroundColor === '#ffffff';
-  const headerDarkColor = calculateShadeColor(headerColor, contrastHeaderColor === '#ffffff' ? -35 : -15);
+  // Secondary header colors fall back to the header color, exactly like the
+  // Messenger-App's getHeaderColorSecondary.
+  const headerSecondaryColor = headerColor2 || headerColor;
+  const headerTertiaryColor = headerColor3 || headerColor;
   const subTextColor = isDarkMode ? calculateShadeColor(backgroundColor, 100) : calculateShadeColor(backgroundColor, -120);
   const backgroundColorHover = isDarkMode
     ? calculateShadeColor(backgroundColor, 30)
@@ -373,49 +517,235 @@ export const injectStyledCSS = (
       bottom: ${61 + buttonY}px;
     }
 
+    .gleap-frame-container iframe {
+      transition: opacity 0.3s ease;
+    }
+
     .gleap-frame-container--loading iframe {
       opacity: 0;
+      transition: none;
     }
 
-    .gleap-frame-container--loading::before {
-      content: " ";
-      position: fixed;
+    .gleap-frame-loader {
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease, visibility 0s linear 0.35s;
+      position: absolute;
       top: 0px;
       left: 0px;
       right: 0px;
-      height: 100%;
-      max-height: 380px;
-      background: linear-gradient(
-        130deg,
-        ${headerDarkColor} 0%,
-        ${headerColor} 100%
-      );
+      bottom: 0px;
+      overflow: hidden;
+      background-color: ${backgroundColor};
+      pointer-events: none;
     }
-    
-    .gleap-frame-container--loading::after {
-      content: " ";
-      position: fixed;
+
+    .gleap-frame-container--loading .gleap-frame-loader {
+      visibility: visible;
+      opacity: 1;
+      transition: none;
+    }
+
+    .gleap-frame-loader svg {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .gleap-frame-loader .gleap-bg-base {
+      fill: ${backgroundColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-c1 {
+      fill: ${headerColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-c2 {
+      fill: ${headerSecondaryColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-c3 {
+      fill: ${headerTertiaryColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-grad-1 {
+      stop-color: ${headerSecondaryColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-grad-2 {
+      stop-color: ${headerColor};
+    }
+
+    .gleap-frame-loader .gleap-bg-fade {
+      stop-color: ${backgroundColor};
+    }
+
+    @keyframes gleapBgGrowShrink2 {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.35);
+      }
+    }
+
+    @keyframes gleapBgGrowShrink3 {
+      0%, 100% {
+        transform: scale(1) rotate(0deg);
+      }
+      50% {
+        transform: scale(1.3) rotate(20deg);
+      }
+    }
+
+    .gleap-frame-loader--animate .gleap-bg-c2 {
+      animation: gleapBgGrowShrink2 7s infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .gleap-frame-loader--animate .gleap-bg-c3 {
+      animation: gleapBgGrowShrink3 6s infinite;
+      transform-origin: 50% 50%;
+    }
+
+    .gleap-frame-loader-blur {
+      position: absolute;
       top: 0px;
       left: 0px;
       right: 0px;
-      height: 100%;
-      height: 100%;
-      max-height: 380px;
+      bottom: 0px;
+      -webkit-backdrop-filter: blur(30px);
+      backdrop-filter: blur(30px);
+    }
+
+    .gleap-frame-loader--image {
+      background-color: #ffffff;
+    }
+
+    .gleap-frame-loader-image-wrap {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      bottom: 0px;
+      opacity: 0;
+      transition: opacity 0.25s ease-in;
+    }
+
+    .gleap-frame-loader--dockedbar .gleap-frame-loader-image-wrap {
+      bottom: 80px;
+    }
+
+    /* v4 header block: top-anchored, height driven by the strut child + the
+       header's 150px padding-bottom — mirrors .agent-home-v4-header so the
+       brand surface is exactly as tall as the app's, at any width/wrap. */
+    .gleap-frame-loader-header {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      padding-bottom: 150px;
+      overflow: hidden;
+    }
+
+    .gleap-frame-loader-header--colour {
       background: linear-gradient(
         180deg,
-        transparent 60%,
-        ${backgroundColor}1A 70%,
-        ${backgroundColor} 100%
+        ${headerColor} 0%,
+        ${headerSecondaryColor} 100%
       );
     }
 
-    .gleap-frame-container--loading-nogradient::before {
-      max-height: 340px;
-      background: ${headerColor} !important;
+    /* Strut: invisible height driver replicating the header's content box. */
+    .gleap-frame-loader-strut {
+      position: relative;
+      z-index: 1;
+      visibility: hidden;
+      /* Match the messenger's font stack EXACTLY (and reset any inherited host
+         font metrics), so the title wraps to the same number of lines the app
+         will — the whole point of the strut is a 1:1 height, and a different
+         host font would wrap differently and break it. */
+      font-family: system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      font-style: normal;
+      letter-spacing: normal;
+      text-transform: none;
+      box-sizing: border-box;
     }
 
-    .gleap-frame-container--loading-nofade::after {
-      display: none !important;
+    .gleap-frame-loader-strut-bar {
+      height: 96px;
+    }
+
+    .gleap-frame-loader-strut-greeting {
+      padding: 54px 38px 0px;
+      box-sizing: border-box;
+    }
+
+    .gleap-frame-loader-strut-kicker {
+      font-size: 25px;
+      line-height: 25px;
+      font-weight: normal;
+      margin: 0px 0px 4px;
+    }
+
+    .gleap-frame-loader-strut-title {
+      font-size: 25px;
+      line-height: 29.5px;
+      font-weight: 600;
+      margin: 0px;
+    }
+
+    .gleap-frame-loader-ramp {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      right: 0px;
+      /* 1px overlap past the block's bottom edge so fractional-DPR rounding
+         can't let the image/gradient shimmer through as a hairline — same
+         trick as the Messenger-App's header overlay. */
+      bottom: -1px;
+      background: linear-gradient(
+        180deg,
+        transparent calc(100% - 120px),
+        ${backgroundColor}38 calc(100% - 101px),
+        ${backgroundColor}73 calc(100% - 82px),
+        ${backgroundColor}A6 calc(100% - 65px),
+        ${backgroundColor}D6 calc(100% - 49px),
+        ${backgroundColor} calc(100% - 35px)
+      );
+    }
+
+    .gleap-frame-loader-ramp--image {
+      /* Smootherstep whitening ramp — must stay stop-for-stop identical to the
+         Messenger-App's image header overlay (AgentHomeV4.scss), or the fade
+         visibly shifts during the loader→app cross-fade. */
+      background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.2) 0px,
+        rgba(0, 0, 0, 0) 60px,
+        transparent calc(100% - 90px),
+        ${backgroundColor}03 calc(100% - 83px),
+        ${backgroundColor}0F calc(100% - 76px),
+        ${backgroundColor}29 calc(100% - 69px),
+        ${backgroundColor}52 calc(100% - 62px),
+        ${backgroundColor}80 calc(100% - 55px),
+        ${backgroundColor}AD calc(100% - 48px),
+        ${backgroundColor}D6 calc(100% - 41px),
+        ${backgroundColor}F0 calc(100% - 34px),
+        ${backgroundColor}FC calc(100% - 27px),
+        ${backgroundColor} calc(100% - 20px)
+      );
+    }
+
+    .gleap-frame-loader-image-wrap--loaded {
+      opacity: 1;
+    }
+
+    .gleap-frame-loader-image {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     .gleap-frame-container--survey {

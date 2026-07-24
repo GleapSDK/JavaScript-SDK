@@ -19,7 +19,7 @@ import Gleap, {
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
-import { widgetMaxHeight } from './UI';
+import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
 export default class GleapFrameManager {
   frameUrl = 'https://messenger-app.gleap.io';
@@ -167,8 +167,27 @@ export default class GleapFrameManager {
         // src loading, preserving the original behavior.
         var elem = document.createElement('div');
         elem.className = 'gleap-frame-container gleap-frame-container--hidden rr-block';
-        elem.innerHTML = `<div class="gleap-frame-container-inner"><iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
+        elem.innerHTML = `<div class="gleap-frame-container-inner">${widgetLoaderMarkup(
+          GleapConfigManager.getInstance().getFlowConfig()
+        )}<iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
         document.body.appendChild(elem);
+
+        // Image-type loader: fade the background image in once it has loaded.
+        // Until then (or if it fails) the plain white fallback stays.
+        const loaderImage = elem.querySelector('.gleap-frame-loader-image');
+        if (loaderImage) {
+          const revealLoaderImage = () => {
+            const wrap = elem.querySelector('.gleap-frame-loader-image-wrap');
+            if (wrap) {
+              wrap.classList.add('gleap-frame-loader-image-wrap--loaded');
+            }
+          };
+          if (loaderImage.complete && loaderImage.naturalWidth > 0) {
+            revealLoaderImage();
+          } else {
+            loaderImage.addEventListener('load', revealLoaderImage);
+          }
+        }
 
         this.gleapFrameContainer = elem;
         this.gleapFrame = document.querySelector('.gleap-frame');
@@ -307,7 +326,6 @@ export default class GleapFrameManager {
       return;
     }
 
-    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
     const loadingClass = 'gleap-frame-container--loading';
     if (this.gleapFrameContainer?.classList) {
       // Cancel any in-flight close animation so re-opening is instant.
@@ -319,13 +337,6 @@ export default class GleapFrameManager {
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
-
-        if (flowConfig && flowConfig.disableBGFade) {
-          this.gleapFrameContainer.classList.add('gleap-frame-container--loading-nofade');
-        }
-        if (flowConfig && flowConfig.disableBGGradient) {
-          this.gleapFrameContainer.classList.add('gleap-frame-container--loading-nogradient');
-        }
       } else {
         this.gleapFrameContainer.classList.remove(loadingClass);
       }
