@@ -28,21 +28,23 @@ export class ScreenDrawer {
     // mark as soon as the page scrolls after drawing (scrollbar drag while
     // marking, or scrolling while the feedback form is open) — the DOM
     // snapshot then stores the new scroll position and the rendered screenshot
-    // shows the marks shifted by exactly that scroll delta. Track scrolling
-    // relative to the position at drawing start and counter-shift the overlay;
-    // the inline transform also serializes into the snapshot, so the replay
-    // stays aligned too. The tracker must outlive destroy(): it keeps the
-    // preview overlay glued to the content while the form is open, and is
-    // released via destroyScrollTracker() when the editor is removed.
-    this.anchorX = window.scrollX;
-    this.anchorY = window.scrollY;
+    // shows the marks shifted by exactly that scroll delta. With tracking
+    // enabled the overlay works in document coordinates instead and is
+    // counter-shifted by the current scroll offset: the fixed element then
+    // behaves like a document-anchored layer that always covers the viewport
+    // in both scroll directions, and the inline transform serializes into the
+    // snapshot so the replayed screenshot stays aligned too. The tracker must
+    // outlive destroy(): it keeps the preview overlay glued to the content
+    // while the form is open, and is released via destroyScrollTracker() when
+    // the capture editor is removed.
+    this.trackScroll = !!trackScroll;
     this.scrollListener = null;
-    if (trackScroll) {
+    if (this.trackScroll) {
       this.scrollListener = function () {
-        self.svgElement.style.transform = `translate(${self.anchorX - window.scrollX}px, ${
-          self.anchorY - window.scrollY
-        }px)`;
+        self.svgElement.style.transform = `translate(${-window.scrollX}px, ${-window.scrollY}px)`;
+        self.svgElement.style.minWidth = `${document.documentElement.scrollWidth}px`;
       };
+      this.scrollListener();
       window.addEventListener('scroll', this.scrollListener, { passive: true });
     }
 
@@ -211,11 +213,11 @@ export class ScreenDrawer {
   }
 
   getMousePosition(e) {
-    // When scroll tracking is active the overlay is counter-shifted by the
-    // scroll delta since drawing start, so map viewport coordinates into the
-    // overlay's (shifted) coordinate space to keep drawing under the cursor.
-    const offsetX = this.scrollListener ? window.scrollX - this.anchorX : 0;
-    const offsetY = this.scrollListener ? window.scrollY - this.anchorY : 0;
+    // When scroll tracking is active the overlay works in document
+    // coordinates (counter-shifted by the scroll offset), so map viewport
+    // coordinates into document space to keep drawing under the cursor.
+    const offsetX = this.trackScroll ? window.scrollX : 0;
+    const offsetY = this.trackScroll ? window.scrollY : 0;
 
     if (e.touches && e.touches.length > 0) {
       return {

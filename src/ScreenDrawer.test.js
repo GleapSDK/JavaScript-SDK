@@ -9,8 +9,7 @@ const setScroll = (x, y) => {
 };
 
 const mouseEvent = (type, clientX, clientY) => {
-  const e = new MouseEvent(type, { clientX, clientY, bubbles: true });
-  return e;
+  return new MouseEvent(type, { clientX, clientY, bubbles: true });
 };
 
 describe('ScreenDrawer scroll tracking', () => {
@@ -32,16 +31,23 @@ describe('ScreenDrawer scroll tracking', () => {
     }
   });
 
-  it('counter-shifts the overlay when the page scrolls after drawing start', () => {
+  it('counter-shifts the overlay by the current scroll offset', () => {
     drawer = new ScreenDrawer(() => {}, true);
+
+    // Applied immediately so the overlay is document-anchored from the start.
+    expect(svg.style.transform).toBe('translate(0px, -1116px)');
 
     setScroll(0, 1236);
     window.dispatchEvent(new Event('scroll'));
+    expect(svg.style.transform).toBe('translate(0px, -1236px)');
 
-    expect(svg.style.transform).toBe('translate(0px, -120px)');
+    // Scrolling above the drawing-start position must work too.
+    setScroll(0, 500);
+    window.dispatchEvent(new Event('scroll'));
+    expect(svg.style.transform).toBe('translate(0px, -500px)');
   });
 
-  it('maps drawing coordinates into the shifted overlay space after a mid-drawing scroll', () => {
+  it('stores drawings in document coordinates so they stay glued to content', () => {
     drawer = new ScreenDrawer(() => {}, true);
 
     setScroll(0, 1236);
@@ -52,10 +58,10 @@ describe('ScreenDrawer scroll tracking', () => {
 
     const rect = svg.querySelector('rect');
     expect(rect).not.toBeNull();
-    // clientY + (scrollY - anchorY): the mark must stay glued to the content
-    // under the cursor, not to the viewport.
+    // clientX/Y + scroll: document coordinates, rendered under the cursor
+    // through the counter-shifting transform.
     expect(rect.getAttribute('x')).toBe('200');
-    expect(rect.getAttribute('y')).toBe('220');
+    expect(rect.getAttribute('y')).toBe('1336');
     expect(rect.getAttribute('width')).toBe('100');
     expect(rect.getAttribute('height')).toBe('50');
   });
@@ -84,12 +90,12 @@ describe('ScreenDrawer scroll tracking', () => {
     drawer.destroy();
     setScroll(0, 1236);
     window.dispatchEvent(new Event('scroll'));
-    expect(svg.style.transform).toBe('translate(0px, -120px)');
+    expect(svg.style.transform).toBe('translate(0px, -1236px)');
 
     // clear() releases the tracker when the capture editor is removed.
     drawer.destroyScrollTracker();
     setScroll(0, 1000);
     window.dispatchEvent(new Event('scroll'));
-    expect(svg.style.transform).toBe('translate(0px, -120px)');
+    expect(svg.style.transform).toBe('translate(0px, -1236px)');
   });
 });
