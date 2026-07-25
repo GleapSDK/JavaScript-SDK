@@ -211,6 +211,7 @@ export namespace Gleap {
   function hide(): void;
   function setUseCookies(useCookies: boolean): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
+  function setCSPNonce(nonce: string): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(
     feedbackFlow: string,

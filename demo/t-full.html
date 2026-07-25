@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gleap Demo — strict CSP (nonce + strict-dynamic)</title>
+
+    <!--
+      Mirrors a strict, nonce-based Content-Security-Policy with 'strict-dynamic' and no
+      'unsafe-inline' / 'unsafe-eval' — the setup from #141769. Under 'strict-dynamic' the
+      browser ignores host allowlists entirely, so https://*.gleap.io in script-src does
+      nothing: only the nonce (or trust propagated through createElement + appendChild)
+      admits a script. The widget frames are bootstrapped into a same-origin about:blank
+      document, which INHERITS this policy, so the messenger bundle is checked against it too.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        script-src 'nonce-gleapcsptest123' 'strict-dynamic';
+        script-src-elem 'nonce-gleapcsptest123' 'strict-dynamic';
+        object-src 'none';
+        base-uri 'none';
+      "
+    />
+
+    <style nonce="gleapcsptest123">
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        margin: 0;
+        padding: 48px 24px;
+        background: #f7f8fa;
+        color: #1a1a2e;
+      }
+      main {
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 22px;
+        margin-bottom: 8px;
+      }
+      p {
+        line-height: 1.6;
+        color: #4a4a68;
+      }
+      code {
+        background: #eceef3;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+      #violations {
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 8px;
+        background: #fff;
+        border: 1px solid #e2e5ec;
+        font-family: ui-monospace, monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+      .ok {
+        color: #0a7a3d;
+      }
+      .bad {
+        color: #c0261c;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Strict CSP integration test</h1>
+      <p>
+        The SDK is loaded below via <code>document.createElement('script')</code> +
+        <code>appendChild()</code> with the page nonce, exactly as a strict-CSP host page would. Every
+        <code>securitypolicyviolation</code> event on this document is listed below — the box must stay empty.
+      </p>
+      <div id="violations"><span class="ok">No CSP violations reported yet.</span></div>
+    </main>
+
+    <script nonce="gleapcsptest123">
+      window.__wsLog = [];
+      var NativeWS = window.WebSocket;
+      window.WebSocket = function (url, protocols) {
+        var rec = { url: String(url), state: 'connecting' };
+        window.__wsLog.push(rec);
+        var ws = protocols ? new NativeWS(url, protocols) : new NativeWS(url);
+        ws.addEventListener('open', function () { rec.state = 'OPEN'; });
+        ws.addEventListener('error', function () { rec.state = 'ERROR'; });
+        ws.addEventListener('close', function (e) { rec.state = 'closed:' + e.code; });
+        return ws;
+      };
+      window.WebSocket.prototype = NativeWS.prototype;
+      window.__violations = [];
+      document.addEventListener('securitypolicyviolation', function (e) {
+        window.__violations.push({ where: 'parent', directive: e.violatedDirective, blocked: e.blockedURI || '(inline)' });
+      });
+    </script>
+    <script nonce="gleapcsptest123">
+      // Report violations on the page itself so a failure is visible without DevTools.
+      var violationBox = document.getElementById('violations');
+      document.addEventListener('securitypolicyviolation', function (event) {
+        var line = document.createElement('div');
+        line.className = 'bad';
+        line.textContent =
+          'BLOCKED ' + event.violatedDirective + ' → ' + (event.blockedURI || '(inline)') + ' @ ' + event.sourceFile;
+        if (violationBox.querySelector('.ok')) {
+          violationBox.innerHTML = '';
+        }
+        violationBox.appendChild(line);
+      });
+    </script>
+
+    <script nonce="gleapcsptest123">
+      // Load the SDK the way a strict-CSP page does: a nonced, dynamically created script.
+      var sdk = document.createElement('script');
+      sdk.nonce = 'gleapcsptest123';
+      sdk.setAttribute('nonce', 'gleapcsptest123');
+      sdk.src = '/build/cjs/index.js';
+      sdk.onload = function () {
+        Gleap.initialize('GnhEkS8fdwxNVjyn3BnYwKzpCkiHgKWL');
+      };
+      document.head.appendChild(sdk);
+    </script>
+  </body>
+</html>

@@ -1,3 +1,112 @@
+// A nonce ends up both as a DOM attribute and inside doc.write'd markup, so only a
+// conservative token charset is accepted — anything else could close the attribute and
+// inject markup into the bootstrapped document. This is the base64 alphabet plus the
+// url-safe variants real generators emit.
+const CSP_NONCE_PATTERN = /^[A-Za-z0-9+/=_-]{1,256}$/;
+
+const sanitizeCSPNonce = (nonce) => {
+  if (typeof nonce !== 'string') {
+    return null;
+  }
+  const trimmed = nonce.trim();
+  return CSP_NONCE_PATTERN.test(trimmed) ? trimmed : null;
+};
+
+/**
+ * Reads the nonce off the SDK's own <script> tag.
+ *
+ * `document.currentScript` is only non-null while the SDK script is running synchronously,
+ * so this must be called at module-evaluation time (see gleapDetectedCSPNonce below) and
+ * never lazily. Loaders that leave it null (type="module", injected-then-executed later)
+ * fall back to locating the SDK tag by src.
+ *
+ * The nonce is read from the IDL property FIRST: browsers hide the content attribute once
+ * the policy is applied, so getAttribute('nonce') returns "" on exactly the strict-CSP
+ * pages this exists for. getAttribute is only a fallback for the non-CSP case.
+ */
+const detectCSPNonce = () => {
+  try {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+
+    const currentScript = document.currentScript;
+    if (currentScript) {
+      const nonce = sanitizeCSPNonce(currentScript.nonce || currentScript.getAttribute('nonce'));
+      if (nonce) {
+        return nonce;
+      }
+    }
+
+    const sdkScript = document.querySelector('script[src*="sdk.gleap.io"]');
+    if (sdkScript) {
+      return sanitizeCSPNonce(sdkScript.nonce || sdkScript.getAttribute('nonce'));
+    }
+  } catch (exp) {}
+  return null;
+};
+
+// Captured during the SDK script's own synchronous execution — do not move this below.
+const gleapDetectedCSPNonce = detectCSPNonce();
+
+// Set via Gleap.setCSPNonce() and always preferred over the auto-detected value, for
+// loaders (tag managers, bundlers) that cannot put the nonce on the SDK tag itself.
+let gleapConfiguredCSPNonce = null;
+
+/**
+ * Sets the CSP nonce the SDK stamps onto every <script>/<style> element it creates.
+ * @param {string} nonce - the nonce from the page's Content-Security-Policy
+ */
+export const setGleapCSPNonce = (nonce) => {
+  gleapConfiguredCSPNonce = sanitizeCSPNonce(nonce);
+};
+
+export const getGleapCSPNonce = () => {
+  return gleapConfiguredCSPNonce || gleapDetectedCSPNonce;
+};
+
+/**
+ * Stamps the page's nonce onto a <script>/<style> element the SDK created.
+ * No-op when there is no nonce, so non-CSP pages keep byte-identical markup.
+ * @param {HTMLElement} element
+ * @returns {HTMLElement} the same element, for chaining
+ */
+export const applyGleapCSPNonce = (element) => {
+  const nonce = getGleapCSPNonce();
+  if (!nonce || !element) {
+    return element;
+  }
+
+  try {
+    // Both, deliberately: the content attribute is what older browsers match on, the
+    // IDL property is what current ones read after nonce-hiding clears the attribute.
+    element.setAttribute('nonce', nonce);
+    element.nonce = nonce;
+  } catch (exp) {}
+
+  return element;
+};
+
+/**
+ * Adds nonce="..." to every <script>/<style> tag in an HTML string.
+ *
+ * Needed because doc.write'd tags are parser-inserted: 'strict-dynamic' trust only
+ * propagates through createElement() + appendChild(), and it makes the browser ignore
+ * host allowlists entirely — so on a strict policy a nonce is the only source
+ * expression that can let the app bundle execute.
+ *
+ * @param {string} html
+ * @param {string} nonce - already sanitized
+ * @returns {string}
+ */
+const stampNonceOnMarkup = (html, nonce) => {
+  if (!nonce) {
+    return html;
+  }
+  // The lookahead keeps a tag that already carries a nonce untouched.
+  return html.replace(/<(script|style)\b(?![^>]*\snonce\s*=)/gi, '<$1 nonce="' + nonce + '"');
+};
+
 /**
  * Bootstraps an iframe by injecting a Gleap-hosted HTML document via about:blank + doc.write,
  * so the iframe inherits the parent page's origin instead of being a cross-site iframe to a
@@ -59,6 +168,14 @@ export const bootstrapGleapFrame = (iframe, url) => {
       // so that the about:blank document (which has no base URL) can still resolve them.
       const absolutized = html.replace(/(\s(?:href|src)\s*=\s*["'])\/([^"'/][^"']*)/g, '$1' + baseHref + '$2');
 
+      // The about:blank document is same-origin to the parent, so it INHERITS the parent's
+      // CSP — the app's own <script src="...main.[hash].js"> is checked against the host
+      // page's policy, not against messenger-app.gleap.io's. Stamp the page's nonce onto it
+      // so a strict (nonce + 'strict-dynamic') policy can admit it. No-op without a nonce.
+      const nonce = getGleapCSPNonce();
+      const noncedHtml = stampNonceOnMarkup(absolutized, nonce);
+      const nonceAttr = nonce ? ' nonce="' + nonce + '"' : '';
+
       // The Gleap apps (banner, modal, agent-conversation, chatbar) are SPAs that route based
       // on window.location.pathname. Since the iframe inherits the parent's origin via about:blank,
       // pathname would be the parent page's pathname — not the intended app route.
@@ -70,17 +187,17 @@ export const bootstrapGleapFrame = (iframe, url) => {
         targetPath = parsedTarget.pathname + parsedTarget.search + parsedTarget.hash;
       } catch (e) {}
       const routeScript =
-        '<script>try{history.replaceState(null,"",' + JSON.stringify(targetPath) + ');}catch(e){}</script>';
+        '<script' + nonceAttr + '>try{history.replaceState(null,"",' + JSON.stringify(targetPath) + ');}catch(e){}</script>';
 
       // Inject the route-setter script BEFORE the first existing <script> tag so it runs
       // before any app bundle. If no <script> is found, inject just before </head> as a fallback.
       let withRouteScript;
-      if (/<script\b/i.test(absolutized)) {
-        withRouteScript = absolutized.replace(/<script\b/i, routeScript + '<script');
-      } else if (/<\/head>/i.test(absolutized)) {
-        withRouteScript = absolutized.replace(/<\/head>/i, routeScript + '</head>');
+      if (/<script\b/i.test(noncedHtml)) {
+        withRouteScript = noncedHtml.replace(/<script\b/i, routeScript + '<script');
+      } else if (/<\/head>/i.test(noncedHtml)) {
+        withRouteScript = noncedHtml.replace(/<\/head>/i, routeScript + '</head>');
       } else {
-        withRouteScript = absolutized;
+        withRouteScript = noncedHtml;
       }
 
       // Re-grab contentDocument here — Firefox may have replaced the initial about:blank

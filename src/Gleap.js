@@ -17,7 +17,13 @@ import GleapEventManager from './GleapEventManager';
 import GleapFeedback from './GleapFeedback';
 import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
 import GleapFrameManager from './GleapFrameManager';
-import { fixGleapHeight, flattenCompany, gleapDataParser, runFunctionWhenDomIsReady } from './GleapHelper';
+import {
+  fixGleapHeight,
+  flattenCompany,
+  gleapDataParser,
+  runFunctionWhenDomIsReady,
+  setGleapCSPNonce,
+} from './GleapHelper';
 import GleapMarkerManager from './GleapMarkerManager';
 import GleapMetaDataManager from './GleapMetaDataManager';
 import GleapModalManager from './GleapModalManager';
@@ -105,6 +111,21 @@ class Gleap {
    */
   static setEnvironment(environment) {
     GleapMetaDataManager.getInstance().environment = environment;
+  }
+
+  /**
+   * Sets the page's Content-Security-Policy nonce, which the SDK then stamps onto every
+   * <script>/<style> element it creates — including the widget frames' app bundles, which
+   * a strict policy (nonce-based, 'strict-dynamic', no 'unsafe-inline') would otherwise
+   * block.
+   *
+   * Only needed when the SDK's own <script> tag does not carry the nonce: if it does, the
+   * SDK picks it up automatically and no call is required. Must be called before
+   * Gleap.initialize() so the nonce is in place before any frame is bootstrapped.
+   * @param {string} nonce
+   */
+  static setCSPNonce(nonce) {
+    setGleapCSPNonce(nonce);
   }
 
   /**
