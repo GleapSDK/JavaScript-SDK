@@ -7,7 +7,7 @@ import {
   GleapTabCommunication,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
-import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
+import { applyGleapCSPNonce, bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
   chatbarUrl = "https://messenger-app.gleap.io/chatbar";
@@ -531,6 +531,7 @@ export default class GleapAiChatbarManager {
       }
 
       const styleEl = document.createElement('style');
+      applyGleapCSPNonce(styleEl);
       styleEl.id = 'gleap-chatbar-styles';
       styleEl.innerHTML = `
         @media (max-width: 460px) {

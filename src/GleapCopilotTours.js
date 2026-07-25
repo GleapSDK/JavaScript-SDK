@@ -1,4 +1,5 @@
 import { GleapConfigManager, GleapTranslationManager } from './Gleap';
+import { applyGleapCSPNonce } from './GleapHelper';
 import { typeIntoElement } from './GleapInputFiller';
 import { calculateContrast, loadIcon } from './UI';
 
@@ -349,6 +350,7 @@ export default class GleapCopilotTours {
     let styleNode = document.getElementById(styleId);
     if (!styleNode) {
       styleNode = document.createElement('style');
+      applyGleapCSPNonce(styleNode);
       styleNode.id = styleId;
       styleNode.type = 'text/css';
       styleNode.textContent = `

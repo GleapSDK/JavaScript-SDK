@@ -1,4 +1,5 @@
 import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import { applyGleapCSPNonce } from './GleapHelper';
 
 const calculateShadeColor = function (col, amt) {
   col = col.replace(/^#/, '');
@@ -2854,6 +2855,7 @@ export const injectStyledCSS = (
     oldNode.remove();
   }
   const node = document.createElement('style');
+  applyGleapCSPNonce(node);
   node.innerHTML = colorStyleSheet;
   node.className = 'gleap-styles';
   document.body.appendChild(node);
