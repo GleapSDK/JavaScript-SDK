@@ -16,11 +16,13 @@ export default class GleapClickListener {
         return;
       }
 
-      if (e.target.tagName === 'A' && e.target.protocol === 'gleap:') {
+      // Resolve the closest anchor, as the click target can be a child node
+      // of the link (bold text, a span, an icon, ...).
+      const anchor = e.target.closest ? e.target.closest('a') : null;
+      if (anchor && anchor.protocol === 'gleap:') {
         e.preventDefault();
 
-        const href = e.target.href;
-        handleGleapLink(href);
+        handleGleapLink(anchor.href);
       }
 
       if (!GleapFrameManager.getInstance().isOpened()) {
