@@ -41,11 +41,16 @@ export const widgetLoaderMarkup = (flowConfig) => {
   const hasImageBG =
     config.bgType === 'image' && config.bgImage && config.bgImage.length > 0;
 
-  // Mirrors the Messenger-App's resolveHomeVersion: 1-3 pick the classic
-  // homes, anything else (4, unset, unknown) resolves to the latest (v4).
-  const homeVersion = parseInt(config.v, 10);
-  const isClassicHome =
-    homeVersion === 1 || homeVersion === 2 || homeVersion === 3;
+  // Mirrors the Messenger-App's resolveHomeVersion (src/Helper/homeVersion.ts):
+  // a version we ship renders as configured, anything else — unset (most
+  // projects, they only get a `v` by picking one in the dashboard) or unknown
+  // — is the CLASSIC home, not the latest. Resolving unset to v4 here made the
+  // loader paint the v4 header block in front of a classic home (#141887).
+  // Keep in sync with FALLBACK_HOME_VERSION / LATEST_HOME_VERSION over there.
+  const configuredVersion = parseInt(config.v, 10);
+  const homeVersion =
+    configuredVersion >= 1 && configuredVersion <= 4 ? configuredVersion : 1;
+  const isClassicHome = homeVersion !== 4;
 
   const showBlur = config.bgBlur ?? true;
   const blurOverlay = showBlur ? `<div class="gleap-frame-loader-blur"></div>` : '';
