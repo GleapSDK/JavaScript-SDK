@@ -84,6 +84,75 @@ describe('checkPageRules — all-negative multi-rule (THE BUG: was tautology, no
   });
 });
 
+describe('checkPageRules — blank rules are dropped (server parity)', () => {
+  // The dashboard's "+ Add page rule" inserts `{ pageFilter: '' }` immediately,
+  // so a blank rule is a normal transient (and sometimes permanent) state.
+  // The server ignores those rules entirely; the SDK must do the same, or
+  // checkPageFilter's lenient "missing param" guard turns the blank rule into a
+  // positive match and the action shows everywhere.
+  test('a blank positive rule does not widen a real positive rule', () => {
+    const rules = [
+      { pageFilter: '/dashboard', pageFilterType: 'contains' },
+      { pageFilter: '', pageFilterType: 'contains' },
+    ];
+    expect(checkPageRules(url('/dashboard'), { pageRules: rules })).toBe(true);
+    expect(checkPageRules(url('/billing'), { pageRules: rules })).toBe(false);
+  });
+
+  test('a whitespace-only rule is kept and never matches (server keeps it too)', () => {
+    // Server parity by construction: the server only checks length, so `'   '`
+    // survives as a condition that never matches a URL and the action is never
+    // sent; the SDK keeps the rule and it never matches either.
+    const rules = [
+      { pageFilter: '/dashboard', pageFilterType: 'contains' },
+      { pageFilter: '   ', pageFilterType: 'contains' },
+    ];
+    expect(checkPageRules(url('/dashboard'), { pageRules: rules })).toBe(true);
+    expect(checkPageRules(url('/billing'), { pageRules: rules })).toBe(false);
+    // Alone, it suppresses everywhere — the client-side mirror of "never sent".
+    expect(checkPageRules(url('/anything'), {
+      pageRules: [{ pageFilter: '   ', pageFilterType: 'contains' }],
+    })).toBe(false);
+    // Negative direction agrees as well: no URL contains '   ', so the
+    // exclusion passes on both sides.
+    expect(checkPageRules(url('/anything'), {
+      pageRules: [{ pageFilter: '   ', pageFilterType: 'notcontains' }],
+    })).toBe(true);
+  });
+
+  test('a blank rule does not disarm exclusions', () => {
+    const rules = [
+      { pageFilter: '', pageFilterType: 'contains' },
+      { pageFilter: '/onboarding', pageFilterType: 'notcontains' },
+    ];
+    expect(checkPageRules(url('/onboarding'), { pageRules: rules })).toBe(false);
+    expect(checkPageRules(url('/dashboard'), { pageRules: rules })).toBe(true);
+  });
+
+  test('a blank negative rule does not suppress everything', () => {
+    const rules = [
+      { pageFilter: '/onboarding', pageFilterType: 'notcontains' },
+      { pageFilter: '', pageFilterType: 'notcontains' },
+    ];
+    expect(checkPageRules(url('/dashboard'), { pageRules: rules })).toBe(true);
+    expect(checkPageRules(url('/onboarding'), { pageRules: rules })).toBe(false);
+  });
+
+  test('an all-empty rule set falls through to "no rules => show"', () => {
+    expect(checkPageRules(url('/anything'), {
+      pageRules: [
+        { pageFilter: '', pageFilterType: 'contains' },
+        { pageFilter: '', pageFilterType: 'notcontains' },
+      ],
+    })).toBe(true);
+  });
+
+  test('legacy single pageFilter: empty means no rule, whitespace-only never matches', () => {
+    expect(checkPageRules(url('/anything'), { pageFilter: '', pageFilterType: 'contains' })).toBe(true);
+    expect(checkPageRules(url('/anything'), { pageFilter: '   ', pageFilterType: 'contains' })).toBe(false);
+  });
+});
+
 describe('checkPageRules — mixed multi-rule (positive scope minus exclusions)', () => {
   // Mirrors real live configs: CSAT "members" survey, Tess onboarding modal, Zeevou banner.
   test('CSAT: contains members AND excludes auth/dev pages', () => {

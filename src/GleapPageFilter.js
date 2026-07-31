@@ -87,10 +87,24 @@ export const checkPageFilter = (currentUrl, pageFilter, pageFilterType) => {
 // positive "show here" rule and is combined with OR.
 const NEGATIVE_FILTER_TYPES = ['notcontains', 'isnot'];
 
+// A rule without a value is an unfinished draft: the dashboard's "+ Add page
+// rule" button inserts `{ pageFilter: '', pageFilterType }` before the user
+// types anything. Such rules must be dropped, matching the server's
+// buildPageRuleConditionGroups. Keeping one would hit checkPageFilter's
+// "any parameter missing => passed" guard, which as a positive rule satisfies
+// the OR allow-list and shows the action on EVERY page.
+// Mirrors the server's `rule.pageFilter && rule.pageFilter.length > 0` verbatim
+// — deliberately no trimming: a whitespace-only value is kept on both sides and
+// simply never matches any URL (server never sends, SDK never shows).
+const hasPageFilterValue = (rule) =>
+  Boolean(rule && rule.pageFilter && rule.pageFilter.length > 0);
+
 export const checkPageRules = (currentUrl, action) => {
-  const rules = action.pageRules && action.pageRules.length > 0
+  const configuredRules = action.pageRules && action.pageRules.length > 0
     ? action.pageRules
     : (action.pageFilter ? [{ pageFilter: action.pageFilter, pageFilterType: action.pageFilterType }] : []);
+
+  const rules = configuredRules.filter(hasPageFilterValue);
   if (rules.length === 0) return true;
 
   const positiveRules = rules.filter(r => !NEGATIVE_FILTER_TYPES.includes(r.pageFilterType));
