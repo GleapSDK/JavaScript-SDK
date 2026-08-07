@@ -1215,6 +1215,7 @@ class Gleap {
         name: 'open-news-article',
         data: {
           id,
+          hideBackButton: !showBackButton,
         },
       },
       true
@@ -1232,7 +1233,9 @@ class Gleap {
     GleapFrameManager.getInstance().sendMessage(
       {
         name: 'open-checklists',
-        data: {},
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
       true
     );
@@ -1343,7 +1346,9 @@ class Gleap {
     GleapFrameManager.getInstance().sendMessage(
       {
         name: 'open-feature-requests',
-        data: {},
+        data: {
+          hideBackButton: !showBackButton,
+        },
       },
       true
     );
