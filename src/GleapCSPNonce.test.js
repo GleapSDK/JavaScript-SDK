@@ -233,3 +233,115 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
     expect(iframe.src).toBe('https://messenger-app.gleap.io/');
   });
 });
+
+// A CSP that blocks the bootstrap chain used to fail with no Gleap-attributable console
+// output at all — the launcher just never appeared (#143226). These pin the diagnostics.
+describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
+  const bootstrapFailingFetch = async (helper, url) => {
+    const iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    Object.defineProperty(iframe, 'contentDocument', {
+      value: { open: jest.fn(), write: jest.fn(), close: jest.fn() },
+      configurable: true,
+    });
+    global.fetch = jest.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+    helper.bootstrapGleapFrame(iframe, url);
+    await flush();
+    return iframe;
+  };
+
+  test('a failing bootstrap fetch warns once, names the URL, and links the CSP docs', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = loadHelper();
+
+    const iframe = await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    const message = warn.mock.calls[0][0];
+    expect(message).toContain('https://messenger-app.gleap.io/chatbar');
+    expect(message).toContain('Content-Security-Policy');
+    expect(message).toContain('https://docs.gleap.io/documentation/javascript/content-security-policy');
+    // The warning must not replace the fallback — working setups keep working.
+    expect(iframe.src).toBe('https://messenger-app.gleap.io/chatbar');
+  });
+
+  test('the same failing URL does not warn twice, a different URL does', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = loadHelper();
+
+    await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
+    await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    await bootstrapFailingFetch(helper, 'https://outboundmedia.gleap.io/banner');
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  const bootstrapAndCaptureViolationListener = async (helper) => {
+    const listeners = {};
+    const writtenDoc = {
+      open: jest.fn(),
+      write: jest.fn(),
+      close: jest.fn(),
+      addEventListener: jest.fn((name, fn) => {
+        listeners[name] = fn;
+      }),
+    };
+    const iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    Object.defineProperty(iframe, 'contentDocument', { value: writtenDoc, configurable: true });
+    const html = '<html><head><script src="/static/js/main.js"></script></head><body></body></html>';
+    global.fetch = jest.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(html) }));
+    helper.bootstrapGleapFrame(iframe, 'https://messenger-app.gleap.io/');
+    await flush();
+    return { writtenDoc, violationListener: listeners['securitypolicyviolation'] };
+  };
+
+  test('a CSP violation inside the bootstrapped frame is surfaced with URI and directive', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = loadHelper();
+
+    const { writtenDoc, violationListener } = await bootstrapAndCaptureViolationListener(helper);
+
+    // Attached after open() — open() wipes listeners, so earlier attachment would be lost.
+    expect(writtenDoc.open.mock.invocationCallOrder[0]).toBeLessThan(
+      writtenDoc.addEventListener.mock.invocationCallOrder[0]
+    );
+    expect(violationListener).toEqual(expect.any(Function));
+
+    violationListener({
+      blockedURI: 'wss://sockets.gleap.io',
+      effectiveDirective: 'connect-src',
+      disposition: 'enforce',
+    });
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    const message = warn.mock.calls[0][0];
+    expect(message).toContain('wss://sockets.gleap.io');
+    expect(message).toContain('connect-src');
+    expect(message).toContain('https://docs.gleap.io/documentation/javascript/content-security-policy');
+  });
+
+  test('duplicate violations warn once; Report-Only violations stay silent', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = loadHelper();
+
+    const { violationListener } = await bootstrapAndCaptureViolationListener(helper);
+
+    const violation = {
+      blockedURI: 'https://messenger-app.gleap.io/static/js/main.js',
+      effectiveDirective: 'script-src-elem',
+      disposition: 'enforce',
+    };
+    violationListener(violation);
+    violationListener(violation);
+    expect(warn).toHaveBeenCalledTimes(1);
+
+    violationListener({
+      blockedURI: 'https://messenger-app.gleap.io/static/css/main.css',
+      effectiveDirective: 'style-src-elem',
+      disposition: 'report',
+    });
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+});
