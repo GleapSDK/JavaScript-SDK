@@ -37,6 +37,13 @@ export default class GleapSession {
   };
   ready = false;
   onSessionReadyListener = [];
+  // Last Gleap.identify() arguments, kept so an identify that was consumed
+  // against a session that later gets recreated (transient /sessions failure,
+  // explicit server rejection) can be replayed against the new session.
+  // Memory-only on purpose: cleared on clearSession so a logged-out user is
+  // never re-identified from stale state.
+  lastIdentify = null;
+  identifyInFlight = false;
 
   // GleapSession singleton
   static instance;
@@ -135,6 +142,10 @@ export default class GleapSession {
       phone: '',
       value: 0,
     };
+    // Explicit teardown (logout, destroy, server-rejected session): forget the
+    // replay state so the next session can't inherit a stale identity.
+    this.lastIdentify = null;
+    this.identifyInFlight = false;
 
     GleapFrameManager.getInstance().sendMessage(
       {
@@ -148,14 +159,20 @@ export default class GleapSession {
     GleapModalManager.getInstance().hideModal();
 
     if (retry) {
-      if (!isNaN(attemp)) {
-        // Exponentially retry to renew session.
-        const newTimeout = Math.pow(attemp, 2) * 10;
-        setTimeout(() => {
-          this.startSession(attemp + 1);
-        }, newTimeout * 1000);
-      }
+      this.scheduleSessionRetry(attemp);
     }
+  };
+
+  scheduleSessionRetry = (attemp = 0) => {
+    if (isNaN(attemp)) {
+      return;
+    }
+
+    // Exponentially retry to renew session.
+    const newTimeout = Math.pow(attemp, 2) * 10;
+    setTimeout(() => {
+      this.startSession(attemp + 1);
+    }, newTimeout * 1000);
   };
 
   validateSession = (session) => {
@@ -214,6 +231,37 @@ export default class GleapSession {
     }
 
     this.notifySessionReady();
+
+    if (sessionChanged) {
+      this.replayIdentifyIfNeeded();
+    }
+  };
+
+  /**
+   * Re-runs the last identify against the current session when a session
+   * change left it anonymous. Covers the case where Gleap.identify() was
+   * already consumed (no-op against a cached identified session, or its
+   * request failed) before the session got recreated — without this, an SPA
+   * that identifies once per boot stays a guest until the next full reload.
+   */
+  replayIdentifyIfNeeded = () => {
+    try {
+      if (!this.lastIdentify || !this.lastIdentify.userId) {
+        return;
+      }
+      if (this.identifyInFlight) {
+        return;
+      }
+      if (this.session && this.session.userId) {
+        return;
+      }
+
+      const { userId, userData, userHash } = this.lastIdentify;
+      const result = this.identifySession(userId, userData, userHash);
+      if (result && typeof result.catch === 'function') {
+        result.catch(() => {});
+      }
+    } catch (exp) {}
   };
 
   startSession = (attemp = 0) => {
@@ -256,7 +304,19 @@ export default class GleapSession {
           } catch (exp) {}
         } else {
           if (http.status !== 429) {
-            self.clearSession(attemp, true);
+            // Only an explicit 4xx tells us the stored session itself was
+            // rejected. Anything else (status 0 = offline/connection cut,
+            // 5xx, gateway errors during API deploys) is transient: keep the
+            // cached session — identity included — and retry with the same
+            // Gleap-Id/Gleap-Hash instead of discarding it for a brand-new
+            // anonymous session.
+            const sessionRejected = http.status >= 400 && http.status < 500;
+
+            if (!sessionRejected && self.session && self.session.gleapId) {
+              self.scheduleSessionRetry(attemp);
+            } else {
+              self.clearSession(attemp, true);
+            }
           }
         }
       }
@@ -379,6 +439,10 @@ export default class GleapSession {
   };
 
   identifySession = (userId, userData, userHash) => {
+    // Remember the args before any early-out: a no-op identify against a
+    // session that later gets recreated must still be replayable.
+    this.lastIdentify = { userId, userData, userHash };
+
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
     if (!sessionNeedsUpdate) {
       return;
@@ -401,11 +465,15 @@ export default class GleapSession {
           http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
         } catch (exp) {}
 
+        self.identifyInFlight = true;
+
         http.onerror = () => {
+          self.identifyInFlight = false;
           reject();
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
+            self.identifyInFlight = false;
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
