@@ -107,6 +107,50 @@ const stampNonceOnMarkup = (html, nonce) => {
   return html.replace(/<(script|style)\b(?![^>]*\snonce\s*=)/gi, '<$1 nonce="' + nonce + '"');
 };
 
+const CSP_DOCS_URL = 'https://docs.gleap.io/documentation/javascript/content-security-policy';
+
+// One warn per blocked resource/directive pair per page load — a frame can violate the
+// same rule repeatedly (several assets, reconnect attempts), and repeating the warning
+// would drown out the console we are trying to help debug.
+const reportedFrameLoadIssues = new Set();
+
+/**
+ * Surfaces Content-Security-Policy blocks from inside a Gleap-bootstrapped frame.
+ *
+ * The about:blank frame inherits the host page's CSP, so a policy missing a Gleap origin
+ * blocks the messenger's script, stylesheet or websocket with no signal from Gleap — the
+ * launcher simply never appears. The violation events fire on the frame's document (they
+ * don't reach the parent), so this listener is the only place they can be observed.
+ *
+ * @param {Document} doc - the frame document, right after doc.open() (open() clears listeners)
+ * @returns {void}
+ */
+const warnOnCSPViolation = (doc) => {
+  try {
+    doc.addEventListener('securitypolicyviolation', (event) => {
+      // Report-Only policies fire violations too but don't block anything.
+      if (!event || event.disposition === 'report') {
+        return;
+      }
+      const blockedURI = event.blockedURI || 'a resource';
+      const directive = event.effectiveDirective || event.violatedDirective || 'unknown directive';
+      const key = blockedURI + '|' + directive;
+      if (reportedFrameLoadIssues.has(key)) {
+        return;
+      }
+      reportedFrameLoadIssues.add(key);
+      console.warn(
+        "Gleap: Your page's Content-Security-Policy blocked " +
+          blockedURI +
+          ' (' +
+          directive +
+          '). Gleap may not appear or work correctly until your policy allows it — see ' +
+          CSP_DOCS_URL
+      );
+    });
+  } catch (e) {}
+};
+
 /**
  * Bootstraps an iframe by injecting a Gleap-hosted HTML document via about:blank + doc.write,
  * so the iframe inherits the parent page's origin instead of being a cross-site iframe to a
@@ -214,15 +258,32 @@ export const bootstrapGleapFrame = (iframe, url) => {
 
       try {
         doc.open();
+        // After open(), which wipes any existing listeners. The violation events for the
+        // written markup are fired from queued tasks, so attaching here catches them all.
+        warnOnCSPViolation(doc);
         doc.write(withRouteScript);
         doc.close();
       } catch (e) {
         fallbackToSrc();
       }
     })
-    .catch(() => {
-      // CORS error, network error, or non-OK status: fall back to direct iframe.src loading.
-      // This preserves the original behavior — the patch is a no-op when bootstrap can't work.
+    .catch((error) => {
+      // CORS error, network error, non-OK status — or the host page's CSP blocking the
+      // fetch (connect-src): fall back to direct iframe.src loading. The fallback keeps
+      // working setups working, but under a blocking CSP it fails too, with nothing in
+      // the console pointing at Gleap — so name the failure once before falling back.
+      if (!reportedFrameLoadIssues.has(url)) {
+        reportedFrameLoadIssues.add(url);
+        console.warn(
+          'Gleap: Loading ' +
+            url +
+            ' failed (' +
+            (error && error.message ? error.message : 'network error') +
+            ') — falling back to loading the frame directly. If Gleap does not appear, your ' +
+            "Content-Security-Policy may be blocking it (most often a missing connect-src entry) — see " +
+            CSP_DOCS_URL
+        );
+      }
       fallbackToSrc();
     });
 };
