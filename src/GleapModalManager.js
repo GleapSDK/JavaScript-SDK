@@ -6,6 +6,8 @@ export default class GleapModalManager {
   modalContainer = null;
   modalData = null;
   modalBackdropClickListener = null;
+  modalResizeListener = null;
+  lastSentMaxHeight = 0;
   disabled = false;
   // singleton
   static instance;
@@ -22,6 +24,16 @@ export default class GleapModalManager {
 
   setModalUrl(url) {
     this.modalUrl = url;
+  }
+
+  // How tall the card may be. Must stay in step with the `max-height: 90vh` on
+  // `.gleap-modal` in UI.js: that rule plus `overflow: hidden` clips the iframe,
+  // and the card's footer with it, on viewports the content doesn't know about.
+  // documentElement.clientHeight is the same box `vh` resolves against, and the
+  // floor keeps us at or under the CSS cap rather than a sub-pixel over it.
+  _maxModalHeight() {
+    const viewportHeight = document.documentElement?.clientHeight || window.innerHeight || 0;
+    return Math.floor(viewportHeight * 0.9);
   }
 
   disable() {
@@ -55,12 +67,17 @@ export default class GleapModalManager {
           const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
           const backgroundColor = flowConfig.backgroundColor ? flowConfig.backgroundColor : '#FFFFFF';
 
+          this.lastSentMaxHeight = this._maxModalHeight();
+
           this._postMessage({
             name: 'modal-data',
             data: {
               ...this.modalData,
               primaryColor: primaryColor,
               backgroundColor: backgroundColor,
+              // Tell the card its bounds so it scrolls its own content instead of
+              // reporting a height we'd silently clip.
+              maxHeight: this.lastSentMaxHeight,
             },
           });
         }
@@ -161,8 +178,24 @@ export default class GleapModalManager {
         }
       });
 
+    // Resizing the window (or rotating a phone) changes the card's bounds.
+    window.addEventListener('resize', (this.modalResizeListener = this._handleResize.bind(this)));
+
     // lock background scroll
     document.body.classList.add('gleap-modal-open');
+  }
+
+  _handleResize() {
+    const maxHeight = this._maxModalHeight();
+    if (maxHeight <= 0 || maxHeight === this.lastSentMaxHeight) {
+      return;
+    }
+    this.lastSentMaxHeight = maxHeight;
+
+    this._postMessage({
+      name: 'modal-max-height',
+      data: { maxHeight },
+    });
   }
 
   _postMessage(message) {
@@ -192,6 +225,12 @@ export default class GleapModalManager {
         .querySelector('.gleap-modal-backdrop')
         .removeEventListener('click', this.modalBackdropClickListener);
     }
+
+    if (this.modalResizeListener) {
+      window.removeEventListener('resize', this.modalResizeListener);
+      this.modalResizeListener = null;
+    }
+    this.lastSentMaxHeight = 0;
 
     document.body.removeChild(this.modalContainer);
     this.modalContainer = null;
