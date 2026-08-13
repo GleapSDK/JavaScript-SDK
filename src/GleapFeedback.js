@@ -10,6 +10,47 @@ import Gleap, {
   GleapTagManager,
 } from './Gleap';
 
+// The screenshot is a best-effort extra on a report the user is actively waiting to send, but
+// nothing in the capture path had an upper bound — so any slow step held the submission, and the
+// sending spinner, open indefinitely. Cap it: a report that arrives without a screenshot beats a
+// spinner that never ends. Generous on purpose — a 20k-element page captures in ~1.5s.
+const SCREENSHOT_CAPTURE_TIMEOUT_MS = 15000;
+
+// Resolves early if the wrapped promise overruns. Rejection is passed through untouched, so a
+// genuinely failed capture still surfaces as a failed send exactly as before.
+const resolveAfterTimeout = (promise, timeoutMs, label) =>
+  new Promise((resolve, reject) => {
+    var settled = false;
+
+    const timer = setTimeout(() => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      console.warn('Gleap: ' + label + ' timed out after ' + timeoutMs + 'ms. Sending the report without it.');
+      resolve();
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+
 export default class GleapFeedback {
   excludeData = {};
   type = 'BUG';
@@ -76,7 +117,9 @@ export default class GleapFeedback {
           this.screenshotData = screenshotData;
         }
       });
-      dataPromises.push(screenshotDataPromise);
+      dataPromises.push(
+        resolveAfterTimeout(screenshotDataPromise, SCREENSHOT_CAPTURE_TIMEOUT_MS, 'screenshot capture')
+      );
     }
 
     return Promise.all(dataPromises);

@@ -354,36 +354,75 @@ const handleAdoptedStyleSheets = (doc, clone, shadowNodeId) => {
   }
 };
 
-const extractFinalCSSState = (element) => {
-  if (element && typeof element.getAnimations === 'function') {
-    const animations = element.getAnimations();
-    const finalCSSState = {};
-
-    animations.forEach((animation) => {
-      const keyframes = animation.effect?.getKeyframes() || [];
-      const finalKeyframe = keyframes[keyframes.length - 1] || {};
-
-      // Extract only the keys (CSS properties) from the final keyframe
-      Object.keys(finalKeyframe).forEach((property) => {
-        if (property !== 'offset') {
-          // Store the computed style for each animated property
-          finalCSSState[property] = getComputedStyle(element)[property];
-        }
-      });
-    });
-
-    if (Object.keys(finalCSSState).length === 0) {
-      return null;
+// Element.getAnimations() has to flush pending style before it can answer, and a page with a
+// running animation (a spinner, a pulsing dot) re-dirties style the moment it does — so asking
+// per node made the clone walk force one full style recalc per element. That is quadratic in DOM
+// size: ~2.8s at 6k elements, ~17.6s at 12k, minutes on a dashboard-sized page, all of it while
+// the user waits for their report to send. Asking the ROOT instead answers the same question for
+// every element under it in a single flush, so we resolve it once and index the result by target.
+//
+// One root is not enough: document.getAnimations() stops at shadow boundaries, so a web
+// component's animations would silently drop out of the capture. Shadow roots expose the same
+// call, and deepClone already discovers each one as it walks — so we index them as we go, which
+// costs one flush per shadow ROOT rather than one per element.
+const collectAnimationsInto = (animationsByTarget, root) => {
+  try {
+    if (!root || typeof root.getAnimations !== 'function') {
+      return animationsByTarget;
     }
 
-    return JSON.stringify(finalCSSState);
+    const animations = root.getAnimations();
+    for (var i = 0; i < animations.length; i++) {
+      const target = animations[i].effect && animations[i].effect.target;
+      if (!target) {
+        continue;
+      }
+
+      const existing = animationsByTarget.get(target);
+      if (existing) {
+        existing.push(animations[i]);
+      } else {
+        animationsByTarget.set(target, [animations[i]]);
+      }
+    }
+  } catch (exp) {}
+
+  return animationsByTarget;
+};
+
+const extractFinalCSSState = (element, animationsByTarget) => {
+  const animations = animationsByTarget.get(element);
+  if (!animations) {
+    return null;
   }
 
-  return null;
+  const finalCSSState = {};
+  // One live computed-style object per element rather than one lookup per animated property.
+  const computedStyle = getComputedStyle(element);
+
+  animations.forEach((animation) => {
+    const keyframes = animation.effect?.getKeyframes() || [];
+    const finalKeyframe = keyframes[keyframes.length - 1] || {};
+
+    // Extract only the keys (CSS properties) from the final keyframe
+    Object.keys(finalKeyframe).forEach((property) => {
+      if (property !== 'offset') {
+        // Store the computed style for each animated property
+        finalCSSState[property] = computedStyle[property];
+      }
+    });
+  });
+
+  if (Object.keys(finalCSSState).length === 0) {
+    return null;
+  }
+
+  return JSON.stringify(finalCSSState);
 };
 
 const deepClone = async (host) => {
   let shadowNodeId = 1;
+  const animationsByTarget = collectAnimationsInto(new Map(), window.document);
 
   const cloneNode = async (node, parent, shadowRoot) => {
     const walkTree = async (nextn, nextp, innerShadowRoot) => {
@@ -406,7 +445,7 @@ const deepClone = async (host) => {
 
     const clone = node.cloneNode();
 
-    const webAnimations = extractFinalCSSState(node);
+    const webAnimations = extractFinalCSSState(node, animationsByTarget);
     if (webAnimations != null) {
       clone.setAttribute('bb-web-animations', webAnimations);
     }
@@ -463,6 +502,9 @@ const deepClone = async (host) => {
     if (node.shadowRoot) {
       var rootShadowNodeId = shadowNodeId;
       shadowNodeId++;
+      // Index this shadow tree's animations before descending into it — document.getAnimations()
+      // does not cross the boundary, so its elements are not in the map yet.
+      collectAnimationsInto(animationsByTarget, node.shadowRoot);
       await walkTree(node.shadowRoot.firstChild, clone, rootShadowNodeId);
       handleAdoptedStyleSheets(node.shadowRoot, clone, rootShadowNodeId);
 
