@@ -12,7 +12,10 @@ jest.mock('./Gleap', () => ({
   GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })) },
   GleapSession: { getInstance: jest.fn() },
   GleapAudioManager: { ping: jest.fn() },
-  GleapTranslationManager: { getInstance: jest.fn(() => ({ isRTLLayout: false })), translateText: (s) => s },
+  GleapTranslationManager: {
+    getInstance: jest.fn(() => ({ isRTLLayout: false, getActiveLanguage: () => 'en' })),
+    translateText: (s) => s,
+  },
   GleapEventManager: { notifyEvent: jest.fn() },
   GleapAiChatbarManager: { getInstance: jest.fn(() => ({})) },
   GleapTabCommunication: { getInstance: jest.fn() },
@@ -21,6 +24,7 @@ jest.mock('./Gleap', () => ({
 jest.mock('./GleapHelper', () => ({
   loadFromGleapCache: jest.fn(),
   saveToGleapCache: jest.fn(),
+  formatRelativeTime: jest.fn(() => 'now'),
 }));
 
 jest.mock('./UI', () => ({
