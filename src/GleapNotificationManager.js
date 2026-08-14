@@ -8,7 +8,7 @@ import Gleap, {
   GleapAiChatbarManager,
   GleapTabCommunication,
 } from './Gleap';
-import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
+import { formatRelativeTime, loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import { checkPageRules } from './GleapPageFilter';
 import { loadIcon } from './UI';
 
@@ -369,23 +369,17 @@ export default class GleapNotificationManager {
             </div>
           </div>`;
       } else {
-        // Standard non-news notification
+        // Standard non-news notification. Avatar and text live inside one card
+        // (no speech-bubble tail), with the sender + time as a meta line below
+        // the message.
         elem.className = 'gleap-notification-item';
         elem.innerHTML = `
-          ${
-            notification.data.sender &&
-            notification.data.sender.profileImageUrl &&
-            `<img src="${notification.data.sender.profileImageUrl}" />`
-          }
           <div class="gleap-notification-item-container">
-            ${
-              notification.data.sender
-                ? `<div class="gleap-notification-item-sender">
-                     ${notification.data.sender.name}
-                   </div>`
-                : ''
-            }
-            <div class="gleap-notification-item-content">${content}</div>
+            ${this.renderAvatar(notification.data.sender, 'gleap-notification-item-avatar')}
+            <div class="gleap-notification-item-body">
+              <div class="gleap-notification-item-content">${content}</div>
+              ${this.renderMeta(notification)}
+            </div>
           </div>`;
       }
       this.notificationContainer.appendChild(elem);
@@ -410,6 +404,61 @@ export default class GleapNotificationManager {
   }
 
   /**
+   * Sender avatar markup, or '' when there is no image to show.
+   *
+   * Teammates stay circular and the bot gets a rounded square (shapes live in
+   * the stylesheet), the same split the messenger makes in ChatMessageAuthor.
+   * `isBot` is absent on notifications cached before the server started sending
+   * it, which falls through to the teammate shape — what every avatar looked
+   * like until now.
+   */
+  renderAvatar(sender, className) {
+    if (!sender || !sender.profileImageUrl) {
+      return '';
+    }
+    // A team member is free to put a quote in their display name, which would
+    // otherwise close the alt attribute and swallow the rest of the tag.
+    const alt = String(sender.name || '').replace(/"/g, '&quot;');
+    const classes = sender.isBot ? `${className} ${className}--bot` : className;
+    return `<img class="${classes}" src="${sender.profileImageUrl}" alt="${alt}" />`;
+  }
+
+  /**
+   * The "Sender · 5 minutes ago" line under a notification's message. Either
+   * half may be missing (no sender on some outbounds, no usable timestamp on
+   * browsers without Intl.RelativeTimeFormat), so the separator is only emitted
+   * when both are present.
+   *
+   * The age is taken from sendAt rather than createdAt: a scheduled outbound is
+   * written to the database long before it is delivered, and its creation time
+   * would surface as an hours-old message the user just received.
+   */
+  renderMeta(notification) {
+    const sender = notification.data.sender;
+    const parts = [];
+
+    if (sender && sender.name) {
+      parts.push(`<span class="gleap-notification-item-sender">${sender.name}</span>`);
+    }
+
+    const time = formatRelativeTime(
+      notification.sendAt || notification.createdAt,
+      GleapTranslationManager.getInstance().getActiveLanguage()
+    );
+    if (time) {
+      parts.push(`<span class="gleap-notification-item-time">${time}</span>`);
+    }
+
+    if (parts.length === 0) {
+      return '';
+    }
+
+    return `<div class="gleap-notification-item-meta">${parts.join(
+      '<span class="gleap-notification-item-meta-dot">•</span>'
+    )}</div>`;
+  }
+
+  /**
    * Helper to render preview or sender info for news notifications.
    */
   renderDescription(notification) {
@@ -420,7 +469,7 @@ export default class GleapNotificationManager {
       // Return HTML for the sender name + optional image
       return `
         <div class="gleap-notification-item-news-sender">
-          ${sender.profileImageUrl ? `<img src="${sender.profileImageUrl}" alt="${sender.name}" />` : ''}
+          ${this.renderAvatar(sender, 'gleap-notification-item-news-sender-avatar')}
           ${sender.name}
         </div>
       `;

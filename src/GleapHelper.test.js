@@ -1,4 +1,49 @@
-import { flattenCompany } from './GleapHelper';
+import { flattenCompany, formatRelativeTime } from './GleapHelper';
+
+describe('formatRelativeTime — the notification meta line', () => {
+  const agoBy = (ms) => new Date(Date.now() - ms).toISOString();
+
+  test('a just-sent notification reads as "now", not "in 0 seconds"', () => {
+    expect(formatRelativeTime(agoBy(0), 'en')).toBe('now');
+  });
+
+  test('minutes and hours pick their own unit instead of rounding to zero', () => {
+    expect(formatRelativeTime(agoBy(5 * 60 * 1000), 'en')).toBe('5 minutes ago');
+    expect(formatRelativeTime(agoBy(3 * 60 * 60 * 1000), 'en')).toBe('3 hours ago');
+    expect(formatRelativeTime(agoBy(3 * 24 * 60 * 60 * 1000), 'en')).toBe('3 days ago');
+  });
+
+  // Second-level precision reads as noise on a bubble the user is looking at.
+  test('anything under a minute collapses to "now"', () => {
+    expect(formatRelativeTime(agoBy(42 * 1000), 'en')).toBe('now');
+    expect(formatRelativeTime(agoBy(59 * 1000), 'en')).toBe('now');
+    expect(formatRelativeTime(agoBy(61 * 1000), 'en')).toBe('1 minute ago');
+  });
+
+  test('it localizes off the passed locale', () => {
+    expect(formatRelativeTime(agoBy(5 * 60 * 1000), 'de')).toBe('vor 5 Minuten');
+  });
+
+  // A scheduled outbound can carry a sendAt a moment ahead of the client clock;
+  // "in 1 minute" on a notification the user is looking at would be nonsense.
+  test('a future timestamp is clamped to "now"', () => {
+    expect(formatRelativeTime(new Date(Date.now() + 90 * 1000).toISOString(), 'en')).toBe('now');
+  });
+
+  test('an unusable locale falls back to the browser default instead of dropping the label', () => {
+    expect(formatRelativeTime(agoBy(5 * 60 * 1000), 'not-a-locale')).not.toBe('');
+  });
+
+  // Callers drop the separator on '', so these must never return a placeholder.
+  test.each([
+    ['undefined', undefined],
+    ['null', null],
+    ['empty string', ''],
+    ['an unparsable date', 'not a date'],
+  ])('%s yields an empty label', (_name, value) => {
+    expect(formatRelativeTime(value, 'en')).toBe('');
+  });
+});
 
 describe('flattenCompany — no-op cases (must stay byte-identical)', () => {
   test('userData without a company key is returned by reference', () => {

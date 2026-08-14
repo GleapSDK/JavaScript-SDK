@@ -203,9 +203,13 @@ export const injectStyledCSS = (
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
   const containerRadius = Math.round(borderRadius * 0.8);
-  const chatRadius = Math.round(borderRadius * 0.6);
   const formItemBorderRadius = Math.round(borderRadius * 0.4);
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
+  // The bot's avatar is a rounded rectangle rather than a circle — the same
+  // shape the dashboard and the messenger give it. Derived from the project's
+  // radius so a squared-off widget theme keeps squared-off marks; 8px at the
+  // default 20, matching the messenger's --border-radius-40.
+  const avatarRadius = formItemBorderRadius;
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
@@ -935,24 +939,74 @@ export const injectStyledCSS = (
       bottom: ${buttonY}px;
     }
 
-    .gleap-notification-item {
-      animation-duration: 0.7s;
+    /* Every notification card shares one chrome: full container width, the same
+       radius, the same soft shadow, and a lift on hover. */
+    .gleap-notification-item,
+    .gleap-notification-item-news,
+    .gleap-notification-item-checklist {
+      width: 100%;
+      animation-duration: 0.45s;
       animation-fill-mode: both;
-      animation-name: bbFadeInOpacity;
+      animation-name: gleapNotificationIn;
     }
 
+    .gleap-notification-item-container,
+    .gleap-notification-item-news-container,
+    .gleap-notification-item-checklist-container {
+      width: 100%;
+      box-sizing: border-box;
+      background-color: ${backgroundColor};
+      border-radius: ${containerRadius}px;
+      /* A drop shadow alone cannot separate a dark card from a dark page, so
+         the card also carries a hairline in the direction the theme needs. */
+      border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'};
+      box-shadow: 0px 6px 26px rgba(0, 0, 0, 0.14), 0px 1px 4px rgba(0, 0, 0, 0.06);
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+    }
+
+    .gleap-notification-item-container:hover,
+    .gleap-notification-item-news-container:hover,
+    .gleap-notification-item-checklist-container:hover {
+      transform: translateY(-1px);
+      box-shadow: 0px 10px 32px rgba(0, 0, 0, 0.18), 0px 1px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    @keyframes gleapNotificationIn {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 12px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* Floats over the stack's top-right corner instead of taking a row of its
+       own above it, so the notifications read as one contained unit. */
     .gleap-notification-close {
+      position: absolute;
+      top: -9px;
+      right: -9px;
       border-radius: 100%;
-      width: 28px;
-      height: 28px;
-      background-color: ${subTextColor};
+      width: 26px;
+      height: 26px;
+      background-color: ${backgroundColor};
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.18);
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 8px;
       cursor: pointer;
       visibility: hidden;
       pointer-events: none;
+      z-index: 1;
+    }
+
+    [dir=rtl].gleap-notification-container .gleap-notification-close {
+      left: -9px;
+      right: initial;
     }
 
     .gleap-notification-container:hover .gleap-notification-close {
@@ -974,35 +1028,26 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-close svg {
-      width: 45%;
-      height: 45%;
+      width: 40%;
+      height: 40%;
       object-fit: contain;
-      fill: ${backgroundColor};
+      fill: ${contrastBackgroundColor};
     }
 
     .gleap-notification-item-checklist-container {
       display: flex;
-      animation: fadeIn;
-      animation-duration: .45s;
-      background-color: ${backgroundColor};
-      border-radius: ${subTextColor};
-      box-sizing: border-box;
-      cursor: pointer;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      border-radius: ${chatRadius}px;
-      margin-bottom: 12px;
     }
 
     .gleap-notification-item-checklist-content {
       align-items: flex-start;
       display: flex;
       flex-direction: column;
-      padding: 15px;
+      box-sizing: border-box;
+      padding: 16px;
       width: 100%;
-      width: min(310px, 70vw);
-      max-width: min(310px, 70vw);
+      max-width: 100%;
     }
 
     .gleap-notification-item-checklist-content-title {
@@ -1012,6 +1057,7 @@ export const injectStyledCSS = (
       line-height: 21px;
       margin-bottom: 10px;
       max-width: 100%;
+      display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
@@ -1056,10 +1102,6 @@ export const injectStyledCSS = (
       color: ${contrastBackgroundColor};
     }
 
-    .gleap-notification-item-news {
-      width: 100%;
-    }
-
     .gleap-news-pagination {
       display: flex;
       justify-content: space-between;
@@ -1097,7 +1139,9 @@ export const injectStyledCSS = (
       align-items: flex-start;
       display: flex;
       flex-direction: column;
-      padding: 15px;
+      box-sizing: border-box;
+      width: 100%;
+      padding: 16px;
     }
 
     .gleap-notification-item-news-preview {
@@ -1118,11 +1162,11 @@ export const injectStyledCSS = (
       display: flex;
       align-items: center;
       color: ${subTextColor};
-      font-size: 15px;
+      font-size: 14px;
       line-height: 21px;
       font-weight: 400;
     }
-    
+
     .gleap-notification-item-news-content-title {
       color: ${contrastBackgroundColor};
       font-size: 15px;
@@ -1130,37 +1174,31 @@ export const injectStyledCSS = (
       line-height: 21px;
       margin-bottom: 6px;
       max-width: 100%;
+      display: -webkit-box;
       -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
       cursor: pointer;
     }
 
-    .gleap-notification-item-news-sender img {
+    .gleap-notification-item-news-sender-avatar {
       border-radius: 100%;
       height: 20px;
+      width: 20px;
+      min-width: 20px;
       margin-right: 8px;
       object-fit: cover;
-      width: 20px;
     }
 
-    [dir=rtl] .gleap-notification-item-news-sender img {
+    [dir=rtl] .gleap-notification-item-news-sender-avatar {
       margin-left: 8px;
       margin-right: 0px !important;
     }
 
     .gleap-notification-item-news-container {
       display: flex;
-      animation: fadeIn;
-      animation-duration: .45s;
-      background-color: ${backgroundColor};
-      border-radius: ${subTextColor};
-      box-sizing: border-box;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      border-radius: ${chatRadius}px;
-      margin-bottom: 12px;
     }
 
     .gleap-notification-item-news-image {
@@ -1176,66 +1214,82 @@ export const injectStyledCSS = (
       color: ${primaryColor};
     }
 
-    .gleap-notification-item {
-      display: flex;
-      align-items: flex-end;
-      cursor: pointer;
-    }
-
-    .gleap-notification-item img {
-      width: 32px;
-      height: 32px;
-      min-width: 32px;
-      border-radius: 100%;
-      object-fit: cover;
-      margin-right: 8px;
-      margin-bottom: 12px;
-      cursor: pointer;
-    }
-
-    [dir=rtl] .gleap-notification-item img {
-      margin-left: 8px;
-      margin-right: 0px !important;
-    }
-
     .gleap-notification-item-container {
-      box-shadow: 0px 5px 30px rgba(0, 0, 0, 0.2);
-      border-radius: ${chatRadius}px;
-      border-bottom-left-radius: 0px;
-      padding: 20px;
-      background-color: ${backgroundColor};
-      margin-bottom: 12px;
-      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      padding: 16px;
       font-size: 15px;
       line-height: 21px;
       color: ${contrastBackgroundColor};
-      position: relative;
     }
 
-    .gleap-notification-item-container::after {
-      content: " ";
-      position: absolute;
-      bottom: 0px;
-      width: 0px;
-      height: 0px;
-      left: -6px;
-      border-style: solid;
-      border-width: 0px 0px 10px 6px;
-      border-color: transparent transparent ${backgroundColor};
+    .gleap-notification-item-avatar {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 100%;
+      object-fit: cover;
+      display: block;
+      margin-right: 12px;
     }
 
-    .gleap-notification-item-sender {
-      color: ${subTextColor};
-      line-height: 20px;
+    /* The AI is a product, not a person — a rounded square reads as a logo and
+       keeps it distinct from the circular teammate avatars. Same split the
+       messenger makes in ChatMessageAuthor. */
+    .gleap-notification-item-avatar--bot,
+    .gleap-notification-item-news-sender-avatar--bot {
+      border-radius: ${avatarRadius}px;
+    }
+
+    [dir=rtl] .gleap-notification-item-avatar {
+      margin-left: 12px;
+      margin-right: 0px !important;
+    }
+
+    /* min-width: 0 so a long unbroken word shrinks the body instead of pushing
+       the card past the container. */
+    .gleap-notification-item-body {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
     }
 
     .gleap-notification-item-content {
       line-height: 20px;
       color: ${contrastBackgroundColor};
-      margin-top: 4px;
-      min-width: min(200px, 50vw);
       word-wrap: break-word;
       word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .gleap-notification-item-meta {
+      display: flex;
+      align-items: center;
+      margin-top: 5px;
+      font-size: 13px;
+      line-height: 18px;
+      color: ${subTextColor};
+      overflow: hidden;
+    }
+
+    .gleap-notification-item-sender {
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .gleap-notification-item-meta-dot {
+      margin: 0px 5px;
+      opacity: 0.6;
+    }
+
+    .gleap-notification-item-time {
+      white-space: nowrap;
     }
 
     .gleap-frame-container-inner {
