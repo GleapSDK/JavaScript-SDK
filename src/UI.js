@@ -207,10 +207,10 @@ export const injectStyledCSS = (
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
   // The bot's avatar is a rounded rectangle rather than a circle — the same
   // shape the dashboard and the messenger give it. Derived from the project's
-  // radius so a squared-off widget theme keeps squared-off marks; 6px at the
-  // default 20 — the proportional match, on the 28px notification avatar, of
+  // radius so a squared-off widget theme keeps squared-off marks; 7px at the
+  // default 20 — the proportional match, on the 32px notification avatar, of
   // the 8px the messenger's larger marks use.
-  const avatarRadius = Math.max(2, Math.round(formItemBorderRadius * 0.75));
+  const avatarRadius = Math.max(2, Math.round((formItemBorderRadius * 32) / 36));
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
@@ -1300,9 +1300,9 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-item-avatar {
-      width: 28px;
-      height: 28px;
-      min-width: 28px;
+      width: 32px;
+      height: 32px;
+      min-width: 32px;
       border-radius: 100%;
       object-fit: cover;
       display: block;
