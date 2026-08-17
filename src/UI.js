@@ -960,8 +960,8 @@ export const injectStyledCSS = (
       /* A drop shadow alone cannot separate a dark card from a dark page, so
          the card also carries a hairline in the direction the theme needs. */
       border: 1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'};
-      /* A tight contact shadow for a defined edge + a shorter ambient throw. */
-      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.12), 0px 6px 18px rgba(0, 0, 0, 0.16);
+      /* A barely-there contact shadow + a large, soft ambient throw. */
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 10px 30px rgba(0, 0, 0, 0.1);
       margin-bottom: 12px;
       cursor: pointer;
       transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
@@ -971,7 +971,7 @@ export const injectStyledCSS = (
     .gleap-notification-item-news-container:hover,
     .gleap-notification-item-checklist-container:hover {
       transform: translateY(-1px);
-      box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.14), 0px 10px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05), 0px 14px 38px rgba(0, 0, 0, 0.14);
     }
 
     @keyframes gleapNotificationIn {
@@ -988,47 +988,76 @@ export const injectStyledCSS = (
     /* More than one notification collapses into a stack: the newest card in
        front, older ones peeking out behind its top edge like a deck. Hovering
        the stack (or tapping it on touch devices, which adds --expanded)
-       spreads it back into the full list. */
+       spreads it back into the full list.
+
+       Every stacked card is bottom-anchored and placed purely via translateY
+       offsets that updateStackLayout() measures and writes as CSS vars, so
+       collapsing and expanding is one smooth transform + height transition
+       rather than a layout jump. */
     .gleap-notification-card {
       position: relative;
-      transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+    }
+
+    .gleap-notification-container--stack {
+      height: var(--gleap-nstack-h-collapsed, auto);
+      transition: height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .gleap-notification-container--stack:hover,
+    .gleap-notification-container--stack.gleap-notification-container--expanded {
+      height: var(--gleap-nstack-h-expanded, auto);
+    }
+
+    .gleap-notification-container--stack .gleap-notification-card {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      transform: translateY(var(--gleap-nstack-expand, 0px));
+      transform-origin: top center;
+      /* The negative inset keeps the box-shadow outside the clip region. */
+      clip-path: inset(-40px);
+      transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), clip-path 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease-out;
     }
 
     /* The entrance animation's fill pins transform at translate3d(0,0,0),
-       which would defeat the peek transforms below — so in a stack only the
-       front card animates in. */
+       which would defeat the stack offsets — so only the front card animates
+       in (its stack offsets are 0 anyway). */
     .gleap-notification-container--stack .gleap-notification-card:not(:last-child) {
       animation-name: none;
     }
 
+    /* How far back a card scales at each peek depth when collapsed. */
+    .gleap-notification-container--stack .gleap-notification-card:nth-last-child(2) {
+      --gleap-nstack-scale: 0.955;
+    }
+
+    .gleap-notification-container--stack .gleap-notification-card:nth-last-child(n+3) {
+      --gleap-nstack-scale: 0.91;
+    }
+
+    .gleap-notification-container--stack:not(:hover):not(.gleap-notification-container--expanded) .gleap-notification-card {
+      transform: translateY(var(--gleap-nstack-collapse, 0px)) scale(var(--gleap-nstack-scale, 1));
+      /* Clips a taller card behind down to the front card's height (bottom
+         inset measured by updateStackLayout), so e.g. a news cover can't hang
+         out below the stack. */
+      clip-path: inset(-40px -40px var(--gleap-nstack-clip, -40px) -40px);
+    }
+
     .gleap-notification-container--stack:not(:hover):not(.gleap-notification-container--expanded) .gleap-notification-card:not(:last-child) {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      /* Clip to the front card's height (100% of the container minus the card
-         gap) so a taller card behind can't poke out below the stack. */
-      max-height: calc(100% - 12px);
-      overflow: hidden;
       pointer-events: none;
-      transform-origin: top center;
-    }
-
-    .gleap-notification-container--stack:not(:hover):not(.gleap-notification-container--expanded) .gleap-notification-card:nth-last-child(2) {
-      transform: translateY(-9px) scale(0.955);
-      z-index: -1;
-    }
-
-    .gleap-notification-container--stack:not(:hover):not(.gleap-notification-container--expanded) .gleap-notification-card:nth-last-child(3) {
-      transform: translateY(-17px) scale(0.91);
-      z-index: -2;
     }
 
     /* Anything deeper than two peeks hides entirely until the stack expands. */
     .gleap-notification-container--stack:not(:hover):not(.gleap-notification-container--expanded) .gleap-notification-card:nth-last-child(n+4) {
-      transform: translateY(-17px) scale(0.91);
       opacity: 0;
-      z-index: -3;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-notification-container--stack,
+      .gleap-notification-container--stack .gleap-notification-card {
+        transition: none;
+      }
     }
 
     /* Floats over the stack's top-right corner instead of taking a row of its

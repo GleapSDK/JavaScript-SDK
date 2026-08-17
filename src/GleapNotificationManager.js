@@ -25,6 +25,7 @@ export default class GleapNotificationManager {
   isTabActive = true;
   showNotificationBadge = true;
   lastPageRulesUrl = undefined;
+  stackResizeObserver = null;
 
   // Keep track of the current index of news being shown
   currentNewsIndex = 0;
@@ -427,6 +428,77 @@ export default class GleapNotificationManager {
       this.notificationContainer.classList.toggle('gleap-notification-container--stack', cardCount > 1);
       this.notificationContainer.classList.remove('gleap-notification-container--expanded');
     }
+    this.updateStackLayout();
+  }
+
+  /**
+   * Measures the stacked cards and writes the offsets the stack CSS animates
+   * between. Every stacked card is bottom-anchored; both its collapsed peek
+   * and its expanded slot are plain translateY values, so collapsing and
+   * expanding is a pure transform + height transition instead of a layout
+   * jump. Re-measures when a card resizes (news cover images load async).
+   */
+  updateStackLayout() {
+    try {
+      if (this.stackResizeObserver) {
+        this.stackResizeObserver.disconnect();
+        this.stackResizeObserver = null;
+      }
+
+      const container = this.notificationContainer;
+      if (
+        !container ||
+        !container.classList ||
+        !container.classList.contains('gleap-notification-container--stack') ||
+        typeof container.querySelectorAll !== 'function'
+      ) {
+        return;
+      }
+
+      const cards = Array.prototype.slice.call(container.querySelectorAll('.gleap-notification-card'));
+      if (cards.length < 2) {
+        return;
+      }
+
+      const measure = () => {
+        try {
+          // Bottom-anchored boxes, so offsetHeight includes each card's 12px
+          // bottom margin — the inter-card gap comes along for free.
+          const heights = cards.map((card) => card.offsetHeight || 0);
+          const frontHeight = heights[heights.length - 1];
+          let totalHeight = 0;
+          let expandOffset = 0;
+          for (let i = cards.length - 1; i >= 0; i--) {
+            const depth = cards.length - 1 - i;
+            const peek = depth === 0 ? 0 : depth === 1 ? 9 : 17;
+            // Collapsed: tuck the card's top edge `peek`px above the front
+            // card's top. Taller cards additionally get their overhang clipped
+            // off the bottom so nothing hangs out below the stack.
+            cards[i].style.setProperty('--gleap-nstack-collapse', `${heights[i] - frontHeight - peek}px`);
+            cards[i].style.setProperty('--gleap-nstack-expand', `${-expandOffset}px`);
+            cards[i].style.setProperty(
+              '--gleap-nstack-clip',
+              heights[i] > frontHeight ? `${heights[i] - frontHeight}px` : '-40px'
+            );
+            expandOffset += heights[i];
+            totalHeight += heights[i];
+          }
+          // 17px of headroom keeps the peeking card edges inside the
+          // container's hover area.
+          container.style.setProperty('--gleap-nstack-h-collapsed', `${frontHeight + 17}px`);
+          container.style.setProperty('--gleap-nstack-h-expanded', `${totalHeight}px`);
+        } catch (exp) {}
+      };
+
+      measure();
+
+      if (typeof ResizeObserver !== 'undefined') {
+        this.stackResizeObserver = new ResizeObserver(measure);
+        for (let i = 0; i < cards.length; i++) {
+          this.stackResizeObserver.observe(cards[i]);
+        }
+      }
+    } catch (exp) {}
   }
 
   /**
