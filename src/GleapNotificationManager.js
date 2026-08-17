@@ -472,13 +472,16 @@ export default class GleapNotificationManager {
             const depth = cards.length - 1 - i;
             const peek = depth === 0 ? 0 : depth === 1 ? 9 : 17;
             // Collapsed: tuck the card's top edge `peek`px above the front
-            // card's top. Taller cards additionally get their overhang clipped
-            // off the bottom so nothing hangs out below the stack.
+            // card's top. Back cards get their bottom clipped so that nothing
+            // reaches past the front card's VISUAL bottom (frontHeight minus
+            // its 12px margin) — the gap under the front card is transparent,
+            // and an unclipped card behind (a news cover) shines through it.
             cards[i].style.setProperty('--gleap-nstack-collapse', `${heights[i] - frontHeight - peek}px`);
             cards[i].style.setProperty('--gleap-nstack-expand', `${-expandOffset}px`);
+            const overhang = heights[i] - (frontHeight - 12);
             cards[i].style.setProperty(
               '--gleap-nstack-clip',
-              heights[i] > frontHeight ? `${heights[i] - frontHeight}px` : '-40px'
+              depth > 0 && overhang > 0 ? `${overhang}px` : '-40px'
             );
             expandOffset += heights[i];
             totalHeight += heights[i];
