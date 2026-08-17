@@ -207,9 +207,10 @@ export const injectStyledCSS = (
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
   // The bot's avatar is a rounded rectangle rather than a circle — the same
   // shape the dashboard and the messenger give it. Derived from the project's
-  // radius so a squared-off widget theme keeps squared-off marks; 8px at the
-  // default 20, matching the messenger's --border-radius-40.
-  const avatarRadius = formItemBorderRadius;
+  // radius so a squared-off widget theme keeps squared-off marks; 6px at the
+  // default 20 — the proportional match, on the 28px notification avatar, of
+  // the 8px the messenger's larger marks use.
+  const avatarRadius = Math.max(2, Math.round(formItemBorderRadius * 0.75));
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
@@ -964,13 +965,12 @@ export const injectStyledCSS = (
       box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.04), 0px 10px 30px rgba(0, 0, 0, 0.1);
       margin-bottom: 12px;
       cursor: pointer;
-      transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+      transition: box-shadow 0.15s ease-out;
     }
 
     .gleap-notification-item-container:hover,
     .gleap-notification-item-news-container:hover,
     .gleap-notification-item-checklist-container:hover {
-      transform: translateY(-1px);
       box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.05), 0px 14px 38px rgba(0, 0, 0, 0.14);
     }
 
@@ -1300,13 +1300,13 @@ export const injectStyledCSS = (
     }
 
     .gleap-notification-item-avatar {
-      width: 36px;
-      height: 36px;
-      min-width: 36px;
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
       border-radius: 100%;
       object-fit: cover;
       display: block;
-      margin-right: 12px;
+      margin-right: 10px;
     }
 
     /* The AI is a product, not a person — a rounded square reads as a logo and
@@ -1318,7 +1318,7 @@ export const injectStyledCSS = (
     }
 
     [dir=rtl] .gleap-notification-item-avatar {
-      margin-left: 12px;
+      margin-left: 10px;
       margin-right: 0px !important;
     }
 
