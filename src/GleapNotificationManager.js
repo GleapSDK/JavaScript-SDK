@@ -12,6 +12,11 @@ import { formatRelativeTime, loadFromGleapCache, saveToGleapCache } from './Glea
 import { checkPageRules } from './GleapPageFilter';
 import { loadIcon } from './UI';
 
+// How many notifications may pile up before the oldest drop off. More than one
+// renders as a collapsed stack (newest in front), so a higher cap no longer
+// costs vertical space.
+const MAX_NOTIFICATIONS = 4;
+
 export default class GleapNotificationManager {
   notificationContainer = null;
   notifications = [];
@@ -48,6 +53,30 @@ export default class GleapNotificationManager {
     document.body.appendChild(elem);
     this.notificationContainer = elem;
 
+    // Touch devices have no hover to expand a collapsed stack, so the first
+    // tap expands it instead of activating the front card. Capture phase, so
+    // that first tap never reaches the card's own onclick.
+    elem.addEventListener(
+      'click',
+      (event) => {
+        if (
+          !elem.classList.contains('gleap-notification-container--stack') ||
+          elem.classList.contains('gleap-notification-container--expanded') ||
+          !(window.matchMedia && window.matchMedia('(hover: none)').matches)
+        ) {
+          return;
+        }
+        // The close button clears directly — expanding first would only be in the way.
+        if (event.target && event.target.closest && event.target.closest('.gleap-notification-close')) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        elem.classList.add('gleap-notification-container--expanded');
+      },
+      true
+    );
+
     this.updateContainerStyle();
     this.reloadNotificationsFromCache();
 
@@ -69,11 +98,8 @@ export default class GleapNotificationManager {
             new Date(notification.createdAt) > new Date(Date.now() - 1 * 60 * 60 * 1000)
         );
 
-        if (nots.length > 2) {
-          this.notifications = nots.splice(0, nots.length - 2);
-        } else {
-          this.notifications = nots;
-        }
+        // Keep the newest MAX_NOTIFICATIONS — the same end shift() trims from.
+        this.notifications = nots.slice(-MAX_NOTIFICATIONS);
         this.renderNotifications();
       }
     } catch (exp) {}
@@ -169,7 +195,7 @@ export default class GleapNotificationManager {
         GleapAudioManager.ping();
       }
     }
-    if (this.notifications.length > 2) {
+    while (this.notifications.length > MAX_NOTIFICATIONS) {
       this.notifications.shift();
     }
 
@@ -226,7 +252,7 @@ export default class GleapNotificationManager {
 
       // Main wrapper for the news notification
       const newsElem = document.createElement('div');
-      newsElem.className = 'gleap-notification-item-news';
+      newsElem.className = 'gleap-notification-item-news gleap-notification-card';
 
       // The container that holds image + content
       const newsContainerElem = document.createElement('div');
@@ -347,7 +373,7 @@ export default class GleapNotificationManager {
           progress += 4;
         }
 
-        elem.className = 'gleap-notification-item-checklist';
+        elem.className = 'gleap-notification-item-checklist gleap-notification-card';
         elem.innerHTML = `
           <div class="gleap-notification-item-checklist-container">
             <div class="gleap-notification-item-checklist-content">
@@ -372,7 +398,7 @@ export default class GleapNotificationManager {
         // Standard non-news notification. Avatar and text live inside one card
         // (no speech-bubble tail), with the sender + time as a meta line below
         // the message.
-        elem.className = 'gleap-notification-item';
+        elem.className = 'gleap-notification-item gleap-notification-card';
         elem.innerHTML = `
           <div class="gleap-notification-item-container">
             ${this.renderAvatar(notification.data.sender, 'gleap-notification-item-avatar')}
@@ -389,6 +415,17 @@ export default class GleapNotificationManager {
     if (!hasNotifications) {
       // Clear the notification container
       this.clearAllNotifications(true);
+    }
+
+    // More than one card collapses into a stack — the newest in front, older
+    // ones peeking behind it — instead of a full list. Hovering (or, via the
+    // container's tap handler, tapping) expands it; any re-render collapses it
+    // again. News pagination already folds all news into one card, so it
+    // counts once.
+    const cardCount = (newsNotifications.length > 0 ? 1 : 0) + otherNotifications.length;
+    if (this.notificationContainer.classList) {
+      this.notificationContainer.classList.toggle('gleap-notification-container--stack', cardCount > 1);
+      this.notificationContainer.classList.remove('gleap-notification-container--expanded');
     }
   }
 
