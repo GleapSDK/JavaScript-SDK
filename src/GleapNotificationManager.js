@@ -8,9 +8,14 @@ import Gleap, {
   GleapAiChatbarManager,
   GleapTabCommunication,
 } from './Gleap';
-import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
+import { formatRelativeTime, loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import { checkPageRules } from './GleapPageFilter';
 import { loadIcon } from './UI';
+
+// How many notifications may pile up before the oldest drop off. More than one
+// renders as a collapsed stack (newest in front), so a higher cap no longer
+// costs vertical space.
+const MAX_NOTIFICATIONS = 4;
 
 export default class GleapNotificationManager {
   notificationContainer = null;
@@ -20,6 +25,7 @@ export default class GleapNotificationManager {
   isTabActive = true;
   showNotificationBadge = true;
   lastPageRulesUrl = undefined;
+  stackResizeObserver = null;
 
   // Keep track of the current index of news being shown
   currentNewsIndex = 0;
@@ -48,6 +54,30 @@ export default class GleapNotificationManager {
     document.body.appendChild(elem);
     this.notificationContainer = elem;
 
+    // Touch devices have no hover to expand a collapsed stack, so the first
+    // tap expands it instead of activating the front card. Capture phase, so
+    // that first tap never reaches the card's own onclick.
+    elem.addEventListener(
+      'click',
+      (event) => {
+        if (
+          !elem.classList.contains('gleap-notification-container--stack') ||
+          elem.classList.contains('gleap-notification-container--expanded') ||
+          !(window.matchMedia && window.matchMedia('(hover: none)').matches)
+        ) {
+          return;
+        }
+        // The close button clears directly — expanding first would only be in the way.
+        if (event.target && event.target.closest && event.target.closest('.gleap-notification-close')) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        elem.classList.add('gleap-notification-container--expanded');
+      },
+      true
+    );
+
     this.updateContainerStyle();
     this.reloadNotificationsFromCache();
 
@@ -69,11 +99,8 @@ export default class GleapNotificationManager {
             new Date(notification.createdAt) > new Date(Date.now() - 1 * 60 * 60 * 1000)
         );
 
-        if (nots.length > 2) {
-          this.notifications = nots.splice(0, nots.length - 2);
-        } else {
-          this.notifications = nots;
-        }
+        // Keep the newest MAX_NOTIFICATIONS — the same end shift() trims from.
+        this.notifications = nots.slice(-MAX_NOTIFICATIONS);
         this.renderNotifications();
       }
     } catch (exp) {}
@@ -169,7 +196,7 @@ export default class GleapNotificationManager {
         GleapAudioManager.ping();
       }
     }
-    if (this.notifications.length > 2) {
+    while (this.notifications.length > MAX_NOTIFICATIONS) {
       this.notifications.shift();
     }
 
@@ -226,7 +253,7 @@ export default class GleapNotificationManager {
 
       // Main wrapper for the news notification
       const newsElem = document.createElement('div');
-      newsElem.className = 'gleap-notification-item-news';
+      newsElem.className = 'gleap-notification-item-news gleap-notification-card';
 
       // The container that holds image + content
       const newsContainerElem = document.createElement('div');
@@ -347,7 +374,7 @@ export default class GleapNotificationManager {
           progress += 4;
         }
 
-        elem.className = 'gleap-notification-item-checklist';
+        elem.className = 'gleap-notification-item-checklist gleap-notification-card';
         elem.innerHTML = `
           <div class="gleap-notification-item-checklist-container">
             <div class="gleap-notification-item-checklist-content">
@@ -369,23 +396,17 @@ export default class GleapNotificationManager {
             </div>
           </div>`;
       } else {
-        // Standard non-news notification
-        elem.className = 'gleap-notification-item';
+        // Standard non-news notification. Avatar and text live inside one card
+        // (no speech-bubble tail), with the sender + time as a meta line below
+        // the message.
+        elem.className = 'gleap-notification-item gleap-notification-card';
         elem.innerHTML = `
-          ${
-            notification.data.sender &&
-            notification.data.sender.profileImageUrl &&
-            `<img src="${notification.data.sender.profileImageUrl}" />`
-          }
           <div class="gleap-notification-item-container">
-            ${
-              notification.data.sender
-                ? `<div class="gleap-notification-item-sender">
-                     ${notification.data.sender.name}
-                   </div>`
-                : ''
-            }
-            <div class="gleap-notification-item-content">${content}</div>
+            ${this.renderAvatar(notification.data.sender, 'gleap-notification-item-avatar')}
+            <div class="gleap-notification-item-body">
+              <div class="gleap-notification-item-content">${content}</div>
+              ${this.renderMeta(notification)}
+            </div>
           </div>`;
       }
       this.notificationContainer.appendChild(elem);
@@ -396,6 +417,91 @@ export default class GleapNotificationManager {
       // Clear the notification container
       this.clearAllNotifications(true);
     }
+
+    // More than one card collapses into a stack — the newest in front, older
+    // ones peeking behind it — instead of a full list. Hovering (or, via the
+    // container's tap handler, tapping) expands it; any re-render collapses it
+    // again. News pagination already folds all news into one card, so it
+    // counts once.
+    const cardCount = (newsNotifications.length > 0 ? 1 : 0) + otherNotifications.length;
+    if (this.notificationContainer.classList) {
+      this.notificationContainer.classList.toggle('gleap-notification-container--stack', cardCount > 1);
+      this.notificationContainer.classList.remove('gleap-notification-container--expanded');
+    }
+    this.updateStackLayout();
+  }
+
+  /**
+   * Measures the stacked cards and writes the offsets the stack CSS animates
+   * between. Every stacked card is bottom-anchored; both its collapsed peek
+   * and its expanded slot are plain translateY values, so collapsing and
+   * expanding is a pure transform + height transition instead of a layout
+   * jump. Re-measures when a card resizes (news cover images load async).
+   */
+  updateStackLayout() {
+    try {
+      if (this.stackResizeObserver) {
+        this.stackResizeObserver.disconnect();
+        this.stackResizeObserver = null;
+      }
+
+      const container = this.notificationContainer;
+      if (
+        !container ||
+        !container.classList ||
+        !container.classList.contains('gleap-notification-container--stack') ||
+        typeof container.querySelectorAll !== 'function'
+      ) {
+        return;
+      }
+
+      const cards = Array.prototype.slice.call(container.querySelectorAll('.gleap-notification-card'));
+      if (cards.length < 2) {
+        return;
+      }
+
+      const measure = () => {
+        try {
+          // Bottom-anchored boxes, so offsetHeight includes each card's 12px
+          // bottom margin — the inter-card gap comes along for free.
+          const heights = cards.map((card) => card.offsetHeight || 0);
+          const frontHeight = heights[heights.length - 1];
+          let totalHeight = 0;
+          let expandOffset = 0;
+          for (let i = cards.length - 1; i >= 0; i--) {
+            const depth = cards.length - 1 - i;
+            const peek = depth === 0 ? 0 : depth === 1 ? 9 : 17;
+            // Collapsed: tuck the card's top edge `peek`px above the front
+            // card's top. Back cards get their bottom clipped so that nothing
+            // reaches past the front card's VISUAL bottom (frontHeight minus
+            // its 12px margin) — the gap under the front card is transparent,
+            // and an unclipped card behind (a news cover) shines through it.
+            cards[i].style.setProperty('--gleap-nstack-collapse', `${heights[i] - frontHeight - peek}px`);
+            cards[i].style.setProperty('--gleap-nstack-expand', `${-expandOffset}px`);
+            const overhang = heights[i] - (frontHeight - 12);
+            cards[i].style.setProperty(
+              '--gleap-nstack-clip',
+              depth > 0 && overhang > 0 ? `${overhang}px` : '-40px'
+            );
+            expandOffset += heights[i];
+            totalHeight += heights[i];
+          }
+          // 17px of headroom keeps the peeking card edges inside the
+          // container's hover area.
+          container.style.setProperty('--gleap-nstack-h-collapsed', `${frontHeight + 17}px`);
+          container.style.setProperty('--gleap-nstack-h-expanded', `${totalHeight}px`);
+        } catch (exp) {}
+      };
+
+      measure();
+
+      if (typeof ResizeObserver !== 'undefined') {
+        this.stackResizeObserver = new ResizeObserver(measure);
+        for (let i = 0; i < cards.length; i++) {
+          this.stackResizeObserver.observe(cards[i]);
+        }
+      }
+    } catch (exp) {}
   }
 
   /**
@@ -410,6 +516,61 @@ export default class GleapNotificationManager {
   }
 
   /**
+   * Sender avatar markup, or '' when there is no image to show.
+   *
+   * Teammates stay circular and the bot gets a rounded square (shapes live in
+   * the stylesheet), the same split the messenger makes in ChatMessageAuthor.
+   * `isBot` is absent on notifications cached before the server started sending
+   * it, which falls through to the teammate shape — what every avatar looked
+   * like until now.
+   */
+  renderAvatar(sender, className) {
+    if (!sender || !sender.profileImageUrl) {
+      return '';
+    }
+    // A team member is free to put a quote in their display name, which would
+    // otherwise close the alt attribute and swallow the rest of the tag.
+    const alt = String(sender.name || '').replace(/"/g, '&quot;');
+    const classes = sender.isBot ? `${className} ${className}--bot` : className;
+    return `<img class="${classes}" src="${sender.profileImageUrl}" alt="${alt}" />`;
+  }
+
+  /**
+   * The "Sender · 5 minutes ago" line under a notification's message. Either
+   * half may be missing (no sender on some outbounds, no usable timestamp on
+   * browsers without Intl.RelativeTimeFormat), so the separator is only emitted
+   * when both are present.
+   *
+   * The age is taken from sendAt rather than createdAt: a scheduled outbound is
+   * written to the database long before it is delivered, and its creation time
+   * would surface as an hours-old message the user just received.
+   */
+  renderMeta(notification) {
+    const sender = notification.data.sender;
+    const parts = [];
+
+    if (sender && sender.name) {
+      parts.push(`<span class="gleap-notification-item-sender">${sender.name}</span>`);
+    }
+
+    const time = formatRelativeTime(
+      notification.sendAt || notification.createdAt,
+      GleapTranslationManager.getInstance().getActiveLanguage()
+    );
+    if (time) {
+      parts.push(`<span class="gleap-notification-item-time">${time}</span>`);
+    }
+
+    if (parts.length === 0) {
+      return '';
+    }
+
+    return `<div class="gleap-notification-item-meta">${parts.join(
+      '<span class="gleap-notification-item-meta-dot">•</span>'
+    )}</div>`;
+  }
+
+  /**
    * Helper to render preview or sender info for news notifications.
    */
   renderDescription(notification) {
@@ -420,7 +581,7 @@ export default class GleapNotificationManager {
       // Return HTML for the sender name + optional image
       return `
         <div class="gleap-notification-item-news-sender">
-          ${sender.profileImageUrl ? `<img src="${sender.profileImageUrl}" alt="${sender.name}" />` : ''}
+          ${this.renderAvatar(sender, 'gleap-notification-item-news-sender-avatar')}
           ${sender.name}
         </div>
       `;

@@ -447,6 +447,80 @@ export const flattenCompany = (userData) => {
   }
 };
 
+// Ordered smallest-to-largest, each entry holding how many of the current unit
+// fit into the next one. Walking the list promotes the value to the largest
+// unit it still fills, so 90 minutes reads as "1 hour", not "90 minutes".
+//
+// Seconds are deliberately absent: anything under a minute collapses to "now"
+// (see below) rather than ticking "9 seconds ago", which reads as noise on a
+// notification the user is looking at right now.
+const RELATIVE_TIME_DIVISIONS = [
+  { amount: 60, unit: 'minute' },
+  { amount: 24, unit: 'hour' },
+  { amount: 7, unit: 'day' },
+  { amount: 4.34524, unit: 'week' },
+  { amount: 12, unit: 'month' },
+  { amount: Number.POSITIVE_INFINITY, unit: 'year' },
+];
+
+/**
+ * "now" / "5 minutes ago" label for a notification's age, localized by the
+ * browser through Intl.RelativeTimeFormat — the SDK ships no date library and
+ * this needs to read correctly in every language the messenger supports.
+ *
+ * Returns '' whenever a truthful label can't be produced (no timestamp, an
+ * unparsable one, or a browser without the API), so callers can drop the
+ * separator instead of printing a placeholder.
+ *
+ * @param {string|number|Date} value - the moment the notification was sent
+ * @param {string} [locale] - BCP-47 tag; falls back to the browser's locale
+ * @returns {string}
+ */
+export const formatRelativeTime = (value, locale) => {
+  try {
+    if (!value || typeof Intl === 'undefined' || typeof Intl.RelativeTimeFormat !== 'function') {
+      return '';
+    }
+
+    const timestamp = new Date(value).getTime();
+    if (isNaN(timestamp)) {
+      return '';
+    }
+
+    // The locale comes from the page's lang attribute / the SDK's language
+    // override, so it can be a tag Intl rejects. Falling back to the browser's
+    // own locale keeps the label rather than dropping it.
+    let formatter;
+    try {
+      formatter = new Intl.RelativeTimeFormat(locale || undefined, { numeric: 'auto' });
+    } catch (exp) {
+      formatter = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto' });
+    }
+
+    // Clamped at 0: a notification scheduled a few seconds ahead (or a client
+    // clock running behind the server's) must never read as "in 1 minute".
+    const seconds = Math.min(0, (timestamp - Date.now()) / 1000);
+
+    // Under a minute is "now" ("just now" in the locales that phrase it that
+    // way) — numeric: 'auto' turns the literal 0 into the word.
+    if (seconds > -60) {
+      return formatter.format(0, 'second');
+    }
+
+    let duration = seconds / 60;
+
+    for (let i = 0; i < RELATIVE_TIME_DIVISIONS.length; i++) {
+      const division = RELATIVE_TIME_DIVISIONS[i];
+      if (Math.abs(duration) < division.amount) {
+        return formatter.format(Math.round(duration), division.unit);
+      }
+      duration /= division.amount;
+    }
+  } catch (exp) {}
+
+  return '';
+};
+
 export const truncateString = (str, num) => {
   if (str.length > num) {
     return str.slice(0, num) + '...';

@@ -12,7 +12,10 @@ jest.mock('./Gleap', () => ({
   GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })) },
   GleapSession: { getInstance: jest.fn() },
   GleapAudioManager: { ping: jest.fn() },
-  GleapTranslationManager: { getInstance: jest.fn(() => ({ isRTLLayout: false })), translateText: (s) => s },
+  GleapTranslationManager: {
+    getInstance: jest.fn(() => ({ isRTLLayout: false, getActiveLanguage: () => 'en' })),
+    translateText: (s) => s,
+  },
   GleapEventManager: { notifyEvent: jest.fn() },
   GleapAiChatbarManager: { getInstance: jest.fn(() => ({})) },
   GleapTabCommunication: { getInstance: jest.fn() },
@@ -21,6 +24,7 @@ jest.mock('./Gleap', () => ({
 jest.mock('./GleapHelper', () => ({
   loadFromGleapCache: jest.fn(),
   saveToGleapCache: jest.fn(),
+  formatRelativeTime: jest.fn(() => 'now'),
 }));
 
 jest.mock('./UI', () => ({
@@ -30,7 +34,12 @@ jest.mock('./UI', () => ({
 let sendMessageMock;
 
 const withContainer = (nm) => {
-  nm.notificationContainer = { firstChild: null, appendChild: jest.fn(), removeChild: jest.fn() };
+  nm.notificationContainer = {
+    firstChild: null,
+    appendChild: jest.fn(),
+    removeChild: jest.fn(),
+    classList: { add: jest.fn(), remove: jest.fn(), toggle: jest.fn(), contains: jest.fn(() => false) },
+  };
   return nm;
 };
 
@@ -151,7 +160,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
   const renderedItems = (nm) =>
     nm.notificationContainer.appendChild.mock.calls
       .map((call) => call[0])
-      .filter((el) => el.className === 'gleap-notification-item');
+      .filter((el) => String(el.className || '').split(' ').includes('gleap-notification-item'));
 
   beforeEach(() => {
     GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' }, getName: () => 'Lukas' });
@@ -273,6 +282,67 @@ describe('page rules — render-time evaluation (#141052)', () => {
     nm.showNotification({ ...pageRuledNotification(), sound: true });
 
     expect(GleapAudioManager.ping).toHaveBeenCalled();
+  });
+});
+
+describe('notification stack', () => {
+  const plainNotification = (text) => ({
+    outbound: `outbound-${text}`,
+    createdAt: new Date().toISOString(),
+    data: { text },
+  });
+
+  beforeEach(() => {
+    GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' }, getName: () => 'Lukas' });
+    loadFromGleapCache.mockReset();
+    saveToGleapCache.mockReset();
+    global.window = { location: { href: 'https://a.example.com/' } };
+    global.document = { createElement: jest.fn(() => ({})) };
+  });
+
+  afterEach(() => {
+    delete global.window;
+    delete global.document;
+  });
+
+  test('showNotification keeps the newest 4, dropping the oldest beyond that', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+
+    for (let i = 1; i <= 6; i++) {
+      nm.showNotification(plainNotification(`n${i}`));
+    }
+
+    expect(nm.notifications.map((n) => n.data.text)).toEqual(['n3', 'n4', 'n5', 'n6']);
+  });
+
+  test('reloadNotificationsFromCache keeps the NEWEST 4 (the same end shift() trims from)', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    loadFromGleapCache.mockReturnValue([1, 2, 3, 4, 5, 6].map((i) => plainNotification(`n${i}`)));
+
+    nm.reloadNotificationsFromCache();
+
+    expect(nm.notifications.map((n) => n.data.text)).toEqual(['n3', 'n4', 'n5', 'n6']);
+  });
+
+  test('multiple cards toggle the stack class on; the expanded state resets each render', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    nm.notifications = [plainNotification('a'), plainNotification('b'), plainNotification('c')];
+
+    nm.renderNotifications();
+
+    expect(nm.notificationContainer.classList.toggle).toHaveBeenCalledWith('gleap-notification-container--stack', true);
+    expect(nm.notificationContainer.classList.remove).toHaveBeenCalledWith('gleap-notification-container--expanded');
+  });
+
+  test('a single card toggles the stack class off', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    nm.notifications = [plainNotification('a')];
+
+    nm.renderNotifications();
+
+    expect(nm.notificationContainer.classList.toggle).toHaveBeenCalledWith('gleap-notification-container--stack', false);
   });
 });
 
