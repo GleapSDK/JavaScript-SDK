@@ -601,6 +601,21 @@ export default class GleapFrameManager {
         GleapFeedbackButtonManager.getInstance().updateRedDot(false);
       }
 
+      // Kai Voice call lifecycle — same launcher treatment as video calls so a
+      // minimized widget shows the in-call red dot. Sent by newer messenger
+      // builds; harmless if the messenger never sends them.
+      if (data.name === 'kai-voice-started') {
+        GleapFeedbackButtonManager.getInstance().showingRedDot = true;
+        GleapFeedbackButtonManager.getInstance().updateRedDot(true);
+        GleapEventManager.notifyEvent('voice-call-started');
+      }
+
+      if (data.name === 'kai-voice-ended') {
+        GleapFeedbackButtonManager.getInstance().showingRedDot = false;
+        GleapFeedbackButtonManager.getInstance().updateRedDot(false);
+        GleapEventManager.notifyEvent('voice-call-ended');
+      }
+
       if (data.name === 'tool-execution') {
         GleapEventManager.notifyEvent('tool-execution', data.data);
         GleapAgentToolManager.getInstance().triggerToolAction(data.data);
