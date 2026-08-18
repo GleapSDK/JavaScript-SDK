@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sdk-demo",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start", "--", "--no-open"],
+      "port": 4444
+    }
+  ]
+}

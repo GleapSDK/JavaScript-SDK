@@ -14,6 +14,7 @@ export default class GleapFeedbackButtonManager {
   buttonHidden = null;
   lastButtonIcon = null;
   showingRedDot = false;
+  removePressListeners = null;
 
   // Feedback button types
   static FEEDBACK_BUTTON_BOTTOM_RIGHT = 'BOTTOM_RIGHT';
@@ -33,6 +34,11 @@ export default class GleapFeedbackButtonManager {
   }
 
   destroy() {
+    if (this.removePressListeners) {
+      this.removePressListeners();
+      this.removePressListeners = null;
+    }
+
     if (this.feedbackButton) {
       this.feedbackButton.remove();
       this.feedbackButton = null;
@@ -103,10 +109,61 @@ export default class GleapFeedbackButtonManager {
     elem.addEventListener('click', () => {
       this.feedbackButtonPressed();
     });
+    this.attachPressAnimation(elem);
     document.body.appendChild(elem);
     this.feedbackButton = elem;
 
     this.updateFeedbackButtonState();
+  }
+
+  /**
+   * Scales the icon button down while held and springs it back on release.
+   * The release listeners sit on the document so a press that ends outside
+   * the button (drag off, cancelled touch) still springs back — it just
+   * doesn't toggle the widget, since no click fires in that case.
+   */
+  attachPressAnimation(elem) {
+    const pressedClass = 'bb-feedback-button--pressed';
+    const springingClass = 'bb-feedback-button--springing';
+    var springingTimeout = null;
+
+    const press = () => {
+      clearTimeout(springingTimeout);
+      elem.classList.remove(springingClass);
+      elem.classList.add(pressedClass);
+    };
+
+    const release = () => {
+      if (!elem.classList.contains(pressedClass)) {
+        return;
+      }
+      elem.classList.remove(pressedClass);
+      elem.classList.add(springingClass);
+      springingTimeout = setTimeout(() => {
+        elem.classList.remove(springingClass);
+      }, 550);
+    };
+
+    if (window.PointerEvent) {
+      elem.addEventListener('pointerdown', press);
+      document.addEventListener('pointerup', release);
+      document.addEventListener('pointercancel', release);
+      this.removePressListeners = () => {
+        document.removeEventListener('pointerup', release);
+        document.removeEventListener('pointercancel', release);
+      };
+    } else {
+      elem.addEventListener('mousedown', press);
+      elem.addEventListener('touchstart', press, { passive: true });
+      document.addEventListener('mouseup', release);
+      document.addEventListener('touchend', release);
+      document.addEventListener('touchcancel', release);
+      this.removePressListeners = () => {
+        document.removeEventListener('mouseup', release);
+        document.removeEventListener('touchend', release);
+        document.removeEventListener('touchcancel', release);
+      };
+    }
   }
 
   updateNotificationBadge(count) {
@@ -179,7 +236,13 @@ export default class GleapFeedbackButtonManager {
       buttonIcon = loadIcon('button', '#fff');
     }
 
+    // Opening the widget re-runs this while the release spring is mid-flight;
+    // the wholesale className reset must not swallow the press animation classes.
+    const pressAnimationClasses = ['bb-feedback-button--pressed', 'bb-feedback-button--springing'].filter(
+      (className) => this.feedbackButton.classList.contains(className)
+    );
     this.feedbackButton.className = 'bb-feedback-button gleap-font rr-block';
+    pressAnimationClasses.forEach((className) => this.feedbackButton.classList.add(className));
     this.feedbackButton.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
 
     if (

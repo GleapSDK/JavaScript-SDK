@@ -207,10 +207,11 @@ export const injectStyledCSS = (
   const formItemSmallBorderRadius = Math.round(borderRadius * 0.25);
   // The bot's avatar is a rounded rectangle rather than a circle — the same
   // shape the dashboard and the messenger give it. Derived from the project's
-  // radius so a squared-off widget theme keeps squared-off marks; 7px at the
-  // default 20 — the proportional match, on the 32px notification avatar, of
-  // the 8px the messenger's larger marks use.
-  const avatarRadius = Math.max(2, Math.round((formItemBorderRadius * 32) / 36));
+  // radius so a squared-off widget theme keeps squared-off marks; 11px on the
+  // 32px notification avatar at the default 20.
+  const avatarRadius = Math.max(2, Math.round(borderRadius * 0.55));
+  // The 20px news sender mark keeps the same softness, scaled to its size.
+  const smallAvatarRadius = Math.max(2, Math.round((avatarRadius * 20) / 32));
   const zIndexBase = 2147483600;
 
   var bottomInfoOffset = 57 + buttonY;
@@ -1312,9 +1313,12 @@ export const injectStyledCSS = (
     /* The AI is a product, not a person — a rounded square reads as a logo and
        keeps it distinct from the circular teammate avatars. Same split the
        messenger makes in ChatMessageAuthor. */
-    .gleap-notification-item-avatar--bot,
-    .gleap-notification-item-news-sender-avatar--bot {
+    .gleap-notification-item-avatar--bot {
       border-radius: ${avatarRadius}px;
+    }
+
+    .gleap-notification-item-news-sender-avatar--bot {
+      border-radius: ${smallAvatarRadius}px;
     }
 
     [dir=rtl] .gleap-notification-item-avatar {
@@ -1549,7 +1553,7 @@ export const injectStyledCSS = (
       height: 48px;
       border-radius: 48px;
       background-color: #485bff;
-      transition: box-shadow, transform 0.2s ease-in-out;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.15), 0px 0px 20px rgba(0, 0, 0, 0.1);
       position: relative;
     }
@@ -1663,6 +1667,18 @@ export const injectStyledCSS = (
     .bb-feedback-button-icon:hover {
       box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.25), 0px 0px 20px rgba(0, 0, 0, 0.2);
       transform: scale(1.1);
+    }
+
+    /* The overshoot curve lives in its own class (added only for the release)
+       so plain hover in/out keeps its regular ease and never bounces. */
+    .bb-feedback-button--springing .bb-feedback-button-icon {
+      transition: transform 0.55s cubic-bezier(0.2, 2, 0.45, 1), box-shadow 0.2s ease-in-out;
+    }
+
+    .bb-feedback-button--pressed .bb-feedback-button-icon {
+      transform: scale(0.875);
+      transition: transform 0.11s cubic-bezier(0.2, 0, 0.4, 1), box-shadow 0.2s ease-in-out;
+      box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2), 0px 0px 12px rgba(0, 0, 0, 0.1);
     }
     
     .bb-feedback-button--open .bb-feedback-button-text {
