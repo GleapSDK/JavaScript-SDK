@@ -4,6 +4,7 @@ import { typeIntoElement } from './GleapInputFiller';
 import { calculateContrast, loadIcon } from './UI';
 
 const localStorageKey = 'gleap-tour-data';
+const audioProbeTimeout = 500;
 const pointerContainerId = 'copilot-pointer-container';
 const styleId = 'copilot-tour-styles';
 const copilotJoinedContainerId = 'copilot-joined-container';
@@ -82,17 +83,30 @@ function smoothScrollToY(yPosition) {
   });
 }
 
-async function canPlayAudio() {
-  if (typeof window === 'undefined') return;
+// The probe clip carries a zero-length data chunk, so when autoplay is permitted Chrome never
+// reaches a playing state and play() settles neither way. A rejection is the only reliable signal
+// that autoplay is blocked - anything else (resolve or silence) means we are allowed to play.
+const canPlayAudio = () => {
+  if (typeof window === 'undefined') return Promise.resolve(false);
 
-  const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgAEABAAZGF0YQAAAAA=');
-  try {
-    await audio.play();
-    return true;
-  } catch (err) {
-    return false;
-  }
-}
+  return new Promise((resolve) => {
+    const settleAsAllowed = setTimeout(() => resolve(true), audioProbeTimeout);
+    const settle = (allowed) => {
+      clearTimeout(settleAsAllowed);
+      resolve(allowed);
+    };
+
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAABCxAgAEABAAZGF0YQAAAAA=');
+      audio
+        .play()
+        .then(() => settle(true))
+        .catch(() => settle(false));
+    } catch (exp) {
+      settle(false);
+    }
+  });
+};
 
 // Helper: Check if an element is fully visible in the viewport.
 function isElementFullyVisible(el) {
@@ -195,6 +209,7 @@ export default class GleapCopilotTours {
           })
         );
         data.tourData.steps = data.tourData.steps.slice(this.currentActiveIndex || 0, data.tourData.steps.length);
+        data.audioMuted = this.audioMuted;
         localStorage.setItem(localStorageKey, JSON.stringify(data));
       } catch (e) {
         // Optionally log error in development mode.
@@ -202,6 +217,22 @@ export default class GleapCopilotTours {
     } else {
       localStorage.removeItem(localStorageKey);
     }
+  }
+
+  // A tour that walks the visitor across pages is restarted from scratch on every page load, so the
+  // audio decision has to survive with it. Without this the visitor is re-prompted - or talked at -
+  // after every navigation, no matter what they picked before.
+  loadStoredAudioMuted() {
+    if (typeof window === 'undefined') return undefined;
+
+    try {
+      const data = JSON.parse(localStorage.getItem(localStorageKey));
+      if (data && data.tourId === this.productTourId && typeof data.audioMuted === 'boolean') {
+        return data.audioMuted;
+      }
+    } catch (e) {}
+
+    return undefined;
   }
 
   // Attach scroll listeners with a debounce to update the pointer position after scrolling stops.
@@ -338,7 +369,17 @@ export default class GleapCopilotTours {
     if (this.currentAudio) {
       this.currentAudio.muted = this.audioMuted;
     }
-    document.querySelector(`.${copilotJoinedContainerId}-mute`).innerHTML = loadIcon(this.audioMuted ? 'unmute' : 'mute');
+    const muteButton = document.querySelector(`.${copilotJoinedContainerId}-mute`);
+    if (muteButton) {
+      muteButton.innerHTML = loadIcon(this.audioMuted ? 'unmute' : 'mute');
+    }
+
+    // Persist right away: the next step can navigate away before the tour advances again. Only
+    // while a tour is actually running - cleanup() drops the tour 800ms before the mute button
+    // leaves the DOM, and storing in that window would wipe a tour that is meant to resume.
+    if (this.productTourId && this.productTourData) {
+      this.storeUncompletedTour();
+    }
   }
 
   setupCopilotTour() {
@@ -729,17 +770,30 @@ export default class GleapCopilotTours {
 
     const config = this.productTourData;
     if (!config) return;
-    canPlayAudio().then((supported) => {
-      this.audioMuted = !supported;
+
+    const beginTour = (muted, allowUnmuteModal) => {
+      this.audioMuted = muted;
       this.setupCopilotTour();
 
-      if (this.audioMuted && config?.showUnmuteModal) {
+      if (this.audioMuted && allowUnmuteModal && config?.showUnmuteModal) {
         this.showAudioUnmuteModal();
       } else {
         setTimeout(() => {
           this.renderNextStep();
         }, 1500);
       }
+    };
+
+    // Resuming after a page change: carry the visitor's audio state over instead of asking the
+    // browser again, which would re-enable the voice as soon as autoplay happens to be allowed.
+    const storedAudioMuted = this.loadStoredAudioMuted();
+    if (typeof storedAudioMuted === 'boolean') {
+      beginTour(storedAudioMuted, false);
+      return;
+    }
+
+    canPlayAudio().then((supported) => {
+      beginTour(!supported, true);
     });
   }
 
@@ -777,6 +831,8 @@ export default class GleapCopilotTours {
     startAnywayButton.classList.add('gleap-tour-continue-button');
     startAnywayButton.textContent = this.productTourData?.unmuteModalContinue;
     startAnywayButton.addEventListener('click', () => {
+      // Record the choice explicitly so the following pages keep the tour silent.
+      this.toggleAudio(true);
       if (modalOverlay.parentNode) {
         modalOverlay.parentNode.removeChild(modalOverlay);
       }
@@ -898,7 +954,10 @@ export default class GleapCopilotTours {
           gotToNextStep();
         }, readTime * 1000);
       };
-      if (currentStep.voice && currentStep.voice.length > 0) {
+      // Voice clips stay on a tour once generated, so "read text aloud" has to be honoured here.
+      // Otherwise turning it off keeps the audio running while hiding the mute button with it.
+      const playVoice = this.productTourData?.playVoice ?? true;
+      if (playVoice && currentStep.voice && currentStep.voice.length > 0) {
         this.currentAudio = new Audio(currentStep.voice);
         if (this.audioMuted) {
           this.currentAudio.muted = true;
