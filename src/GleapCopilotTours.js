@@ -18,13 +18,25 @@ function estimateReadTime(text) {
   return readTimeInSeconds + 1;
 }
 
-function htmlToPlainText(html) {
+// The step message arrives as rendered TipTap HTML, but the bubble is a single run of plain text,
+// so the blocks have to be flattened. `textContent` alone glues them together with nothing in
+// between - a heading runs straight into the paragraph under it ("Welcome!In two minutes ...") -
+// so put the boundaries back as spaces first. A space is the only separator that survives here:
+// the bubble is written with textContent and styled `white-space: normal`, so newlines would be
+// collapsed anyway.
+const blockLevelSelector = 'address, article, blockquote, br, div, footer, h1, h2, h3, h4, h5, h6, header, hr, li, p, pre, section, table, tr';
+
+const htmlToPlainText = (html) => {
   if (typeof window === 'undefined') return;
 
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
-  return tempDiv.textContent || '';
-}
+  tempDiv.querySelectorAll(blockLevelSelector).forEach((block) => {
+    block.insertAdjacentText('afterend', ' ');
+  });
+
+  return (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
+};
 
 function scrollToElement(element) {
   if (typeof window === 'undefined') return;

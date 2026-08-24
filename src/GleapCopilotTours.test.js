@@ -189,6 +189,45 @@ describe('read text aloud', () => {
   });
 });
 
+describe('step message flattening', () => {
+  const bubbleText = async (message) => {
+    jest.useFakeTimers();
+    const tours = newTour(buildConfig({ steps: [{ selector: '', message, type: 'post', mode: 'BUTTON' }] }));
+    tours.setupCopilotTour();
+
+    tours.renderNextStep();
+    await flush(100);
+
+    const text = document.getElementById('copilot-info-bubble-content').textContent;
+    jest.useRealTimers();
+    return text;
+  };
+
+  it('separates a heading from the paragraph below it', async () => {
+    const text = await bubbleText('<h2>Willkommen bei Wikimanual!</h2><p>In zwei Minuten zeige ich dir alles.</p>');
+
+    expect(text).toBe('Willkommen bei Wikimanual! In zwei Minuten zeige ich dir alles.');
+  });
+
+  it('separates consecutive paragraphs and line breaks', async () => {
+    const text = await bubbleText('<p>Erster Absatz.</p><p>Zweiter Absatz.<br>Nach dem Umbruch.</p>');
+
+    expect(text).toBe('Erster Absatz. Zweiter Absatz. Nach dem Umbruch.');
+  });
+
+  it('drops the empty paragraphs TipTap leaves behind instead of padding the text', async () => {
+    const text = await bubbleText('<h2>Quizseite</h2><p>Alles gebündelt.</p><p></p><p></p>');
+
+    expect(text).toBe('Quizseite Alles gebündelt.');
+  });
+
+  it('keeps inline markup glued to the words around it', async () => {
+    const text = await bubbleText('<p>Klicke auf <strong>Weiter</strong>, um zu starten.</p>');
+
+    expect(text).toBe('Klicke auf Weiter, um zu starten.');
+  });
+});
+
 describe('teardown', () => {
   it('does not wipe a resumable tour when mute is hit during the fade-out', () => {
     const tours = newTour();
