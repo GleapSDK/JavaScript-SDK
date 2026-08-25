@@ -232,6 +232,8 @@ export namespace Gleap {
       | "agent-error"
       | "agent-conversation-created"
       | "agent-tool-executed"
+      | "voice-call-started"
+      | "voice-call-ended"
       | string,
     callback: (data?: any) => void
   ): void;

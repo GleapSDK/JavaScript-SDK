@@ -132,6 +132,9 @@ export default class GleapFrameManager {
     this.markerManager = undefined;
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
+    // The frame can die mid-call (crash, teardown) without ever sending
+    // kai-voice-ended — never leave the ping muted forever.
+    GleapAudioManager.setCallActive(false);
   }
 
   isOpened() {
@@ -607,12 +610,14 @@ export default class GleapFrameManager {
       if (data.name === 'kai-voice-started') {
         GleapFeedbackButtonManager.getInstance().showingRedDot = true;
         GleapFeedbackButtonManager.getInstance().updateRedDot(true);
+        GleapAudioManager.setCallActive(true);
         GleapEventManager.notifyEvent('voice-call-started');
       }
 
       if (data.name === 'kai-voice-ended') {
         GleapFeedbackButtonManager.getInstance().showingRedDot = false;
         GleapFeedbackButtonManager.getInstance().updateRedDot(false);
+        GleapAudioManager.setCallActive(false);
         GleapEventManager.notifyEvent('voice-call-ended');
       }
 
