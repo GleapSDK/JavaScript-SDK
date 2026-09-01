@@ -18,12 +18,14 @@ function estimateReadTime(text) {
   return readTimeInSeconds + 1;
 }
 
-// The step message arrives as rendered TipTap HTML, but the bubble is a single run of plain text,
-// so the blocks have to be flattened. `textContent` alone glues them together with nothing in
+// The step message arrives as rendered TipTap HTML, but the bubble is plain text, so the
+// blocks have to be flattened. `textContent` alone glues them together with nothing in
 // between - a heading runs straight into the paragraph under it ("Welcome!In two minutes ...") -
-// so put the boundaries back as spaces first. A space is the only separator that survives here:
-// the bubble is written with textContent and styled `white-space: normal`, so newlines would be
-// collapsed anyway.
+// so put the boundaries back as newlines first. The bubble is styled `white-space: pre-line`,
+// which renders those newlines as real line breaks (bug #145754): each editor block gets its
+// own line, and an intentional trailing hard break / empty paragraph yields one blank line,
+// mirroring the editor. Horizontal whitespace still collapses so inline markup stays glued
+// to the words around it.
 const blockLevelSelector = 'address, article, blockquote, br, div, footer, h1, h2, h3, h4, h5, h6, header, hr, li, p, pre, section, table, tr';
 
 const htmlToPlainText = (html) => {
@@ -32,10 +34,14 @@ const htmlToPlainText = (html) => {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
   tempDiv.querySelectorAll(blockLevelSelector).forEach((block) => {
-    block.insertAdjacentText('afterend', ' ');
+    block.insertAdjacentText('afterend', '\n');
   });
 
-  return (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
+  return (tempDiv.textContent || '')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/ *\n */g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 };
 
 function scrollToElement(element) {
@@ -472,7 +478,7 @@ export default class GleapCopilotTours {
           font-size: 14px;
           box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
           max-width: 100%;
-          white-space: normal;
+          white-space: pre-line;
           overflow-wrap: break-word;
           word-break: normal;
           hyphens: none;

@@ -203,22 +203,36 @@ describe('step message flattening', () => {
     return text;
   };
 
-  it('separates a heading from the paragraph below it', async () => {
+  it('puts a heading and the paragraph below it on separate lines', async () => {
     const text = await bubbleText('<h2>Willkommen bei Wikimanual!</h2><p>In zwei Minuten zeige ich dir alles.</p>');
 
-    expect(text).toBe('Willkommen bei Wikimanual! In zwei Minuten zeige ich dir alles.');
+    expect(text).toBe('Willkommen bei Wikimanual!\nIn zwei Minuten zeige ich dir alles.');
   });
 
-  it('separates consecutive paragraphs and line breaks', async () => {
+  it('turns consecutive paragraphs and hard breaks into line breaks', async () => {
     const text = await bubbleText('<p>Erster Absatz.</p><p>Zweiter Absatz.<br>Nach dem Umbruch.</p>');
 
-    expect(text).toBe('Erster Absatz. Zweiter Absatz. Nach dem Umbruch.');
+    expect(text).toBe('Erster Absatz.\nZweiter Absatz.\nNach dem Umbruch.');
   });
 
-  it('drops the empty paragraphs TipTap leaves behind instead of padding the text', async () => {
+  it('keeps an intentional trailing hard break as one blank line, never more', async () => {
+    const text = await bubbleText('<p>Erster Absatz.<br></p><p></p><p>Zweiter Absatz.</p>');
+
+    expect(text).toBe('Erster Absatz.\n\nZweiter Absatz.');
+  });
+
+  it('trims the empty paragraphs TipTap leaves behind at the end', async () => {
     const text = await bubbleText('<h2>Quizseite</h2><p>Alles gebündelt.</p><p></p><p></p>');
 
-    expect(text).toBe('Quizseite Alles gebündelt.');
+    expect(text).toBe('Quizseite\nAlles gebündelt.');
+  });
+
+  it('collapses the space separators older servers inject between blocks', async () => {
+    // Server-delivered HTML carries a space after each block boundary (Server PR #1500)
+    // so pre-16.4.7 SDKs do not glue blocks; the newline flattening must absorb it.
+    const text = await bubbleText('<h2>Listing</h2> <p>A Listing represents the property.</p> ');
+
+    expect(text).toBe('Listing\nA Listing represents the property.');
   });
 
   it('keeps inline markup glued to the words around it', async () => {
