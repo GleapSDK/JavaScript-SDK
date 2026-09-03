@@ -1,12 +1,18 @@
 import Gleap, { GleapConfigManager, GleapFrameManager } from './Gleap';
 import { bootstrapGleapFrame } from './GleapHelper';
 
+// How long the card renderer gets to announce itself (`modal-loaded`) before we assume the
+// bootstrapped frame is dead and load it directly — and, after a second period, give up.
+export const MODAL_LOAD_TIMEOUT_MS = 8000;
+
 export default class GleapModalManager {
   modalUrl = 'https://outboundmedia.gleap.io/modal';
   modalContainer = null;
   modalData = null;
   modalBackdropClickListener = null;
   modalResizeListener = null;
+  modalLoadTimeout = null;
+  modalLoaded = false;
   lastSentMaxHeight = 0;
   disabled = false;
   // singleton
@@ -62,6 +68,10 @@ export default class GleapModalManager {
           return;
         }
 
+        if (data.name === 'modal-loaded') {
+          this.modalLoaded = true;
+          this._clearLoadWatchdog();
+        }
         if (data.name === 'modal-loaded' && this.modalData) {
           const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
           const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
@@ -89,6 +99,8 @@ export default class GleapModalManager {
             if (iframe) {
               iframe.style.height = `${height}px`;
             }
+            // First height = the card has real content. Only now is it safe to show.
+            this._revealModal();
           }
         }
         if (data.name === 'modal-data-set') {
@@ -147,7 +159,9 @@ export default class GleapModalManager {
     // to parent). bootstrapGleapFrame then injects the actual modal content via doc.write.
     // See bootstrapGleapFrame in GleapHelper for the why and the fallback behavior.
     const wrapper = document.createElement('div');
-    wrapper.className = 'gleap-modal-wrapper';
+    // --loading keeps the card invisible until the frame reports a height (see _revealModal):
+    // until then the iframe is an empty 150px box, i.e. a blank white card.
+    wrapper.className = 'gleap-modal-wrapper gleap-modal-wrapper--loading';
     wrapper.innerHTML = `
       <div class="gleap-modal-backdrop"></div>
       <div class="gleap-modal">
@@ -167,6 +181,7 @@ export default class GleapModalManager {
     const iframe = wrapper.querySelector('.gleap-modal-frame');
     if (iframe) {
       bootstrapGleapFrame(iframe, this.modalUrl);
+      this._armLoadWatchdog(iframe);
     }
 
     // Add on backdrop click listener
@@ -183,6 +198,60 @@ export default class GleapModalManager {
 
     // lock background scroll
     document.body.classList.add('gleap-modal-open');
+  }
+
+  _revealModal() {
+    if (this.modalContainer) {
+      this.modalContainer.classList.remove('gleap-modal-wrapper--loading');
+    }
+  }
+
+  // The about:blank bootstrap can fail without any signal reaching us — the host page's CSP
+  // blocking the card bundle inside the inherited frame, the router not matching, a desktop
+  // shell origin (see bootstrapGleapFrame) — and then `modal-loaded` simply never arrives.
+  // Stage 1: load the card URL directly into the frame (the legacy cross-origin path, which
+  // none of those failure modes affect). Stage 2: still nothing — take the card down rather
+  // than leave a blank overlay the user has to dismiss.
+  _armLoadWatchdog(iframe) {
+    this._clearLoadWatchdog();
+    this.modalLoaded = false;
+
+    this.modalLoadTimeout = setTimeout(() => {
+      this.modalLoadTimeout = null;
+      if (this.modalLoaded || !this.modalContainer) {
+        return;
+      }
+
+      try {
+        // The bootstrap may already have fallen back to a (slow) direct load; don't restart it.
+        if (iframe.getAttribute('src') !== this.modalUrl) {
+          iframe.src = this.modalUrl;
+        }
+      } catch (e) {}
+
+      this.modalLoadTimeout = setTimeout(() => {
+        this.modalLoadTimeout = null;
+        if (this.modalLoaded || !this.modalContainer) {
+          return;
+        }
+        try {
+          console.warn(
+            'Gleap: the info card (' +
+              this.modalUrl +
+              ') did not load and was closed. If this keeps happening, check that your ' +
+              "Content-Security-Policy allows frame-src, script-src and style-src for https://*.gleap.io."
+          );
+        } catch (e) {}
+        this.hideModal();
+      }, MODAL_LOAD_TIMEOUT_MS);
+    }, MODAL_LOAD_TIMEOUT_MS);
+  }
+
+  _clearLoadWatchdog() {
+    if (this.modalLoadTimeout) {
+      clearTimeout(this.modalLoadTimeout);
+      this.modalLoadTimeout = null;
+    }
   }
 
   _handleResize() {
@@ -230,6 +299,8 @@ export default class GleapModalManager {
       window.removeEventListener('resize', this.modalResizeListener);
       this.modalResizeListener = null;
     }
+    this._clearLoadWatchdog();
+    this.modalLoaded = false;
     this.lastSentMaxHeight = 0;
 
     document.body.removeChild(this.modalContainer);
