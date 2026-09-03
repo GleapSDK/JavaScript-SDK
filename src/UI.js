@@ -2893,6 +2893,16 @@ export const injectStyledCSS = (
       justify-content: center;
     }
 
+    /* Invisible until the card inside the frame reports its height. Before that the frame is an
+       empty box, and a bootstrap that fails silently must not leave a blank white card behind. */
+    .gleap-modal-wrapper--loading {
+      visibility: hidden;
+    }
+
+    .gleap-modal-wrapper--loading .gleap-modal {
+      animation-name: none;
+    }
+
     .gleap-modal-backdrop {
       position: absolute;
       top: 0;

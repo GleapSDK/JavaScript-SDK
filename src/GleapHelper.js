@@ -123,9 +123,14 @@ const reportedFrameLoadIssues = new Set();
  * don't reach the parent), so this listener is the only place they can be observed.
  *
  * @param {Document} doc - the frame document, right after doc.open() (open() clears listeners)
+ * @param {{ baseHref: string, onBlocked: Function }} [fallback] - when the host policy blocks the
+ *   frame's own script or stylesheet from the Gleap origin, onBlocked is called (once) so the
+ *   caller can load the frame directly instead: a cross-origin iframe.src load is only subject to
+ *   the host's frame-src, not its script-src/style-src.
  * @returns {void}
  */
-const warnOnCSPViolation = (doc) => {
+export const warnOnCSPViolation = (doc, fallback) => {
+  let fallbackTriggered = false;
   try {
     doc.addEventListener('securitypolicyviolation', (event) => {
       // Report-Only policies fire violations too but don't block anything.
@@ -135,20 +140,52 @@ const warnOnCSPViolation = (doc) => {
       const blockedURI = event.blockedURI || 'a resource';
       const directive = event.effectiveDirective || event.violatedDirective || 'unknown directive';
       const key = blockedURI + '|' + directive;
-      if (reportedFrameLoadIssues.has(key)) {
-        return;
+      if (!reportedFrameLoadIssues.has(key)) {
+        reportedFrameLoadIssues.add(key);
+        console.warn(
+          "Gleap: Your page's Content-Security-Policy blocked " +
+            blockedURI +
+            ' (' +
+            directive +
+            '). Gleap may not appear or work correctly until your policy allows it — see ' +
+            CSP_DOCS_URL
+        );
       }
-      reportedFrameLoadIssues.add(key);
-      console.warn(
-        "Gleap: Your page's Content-Security-Policy blocked " +
-          blockedURI +
-          ' (' +
-          directive +
-          '). Gleap may not appear or work correctly until your policy allows it — see ' +
-          CSP_DOCS_URL
-      );
+
+      if (
+        fallback &&
+        !fallbackTriggered &&
+        isFrameSourceDirective(directive) &&
+        typeof blockedURI === 'string' &&
+        blockedURI.indexOf(fallback.baseHref) === 0
+      ) {
+        fallbackTriggered = true;
+        fallback.onBlocked();
+      }
     });
   } catch (e) {}
+};
+
+// Dispatched on the <iframe> element by the route script written into a bootstrapped frame when
+// history.replaceState could not set the app route (exported for tests).
+export const ROUTE_FAILED_EVENT = 'gleap-frame-route-failed';
+
+// The directives that decide whether the bootstrapped frame's own bundle and stylesheet run.
+const isFrameSourceDirective = (directive) =>
+  typeof directive === 'string' && (directive.indexOf('script-src') === 0 || directive.indexOf('style-src') === 0);
+
+/**
+ * Whether the host document is a regular web page. Desktop shells (Electron `file://`, custom
+ * app schemes) and hybrid containers (`capacitor://`, `ionic://`) are not.
+ * @returns {boolean}
+ */
+export const isHttpDocument = () => {
+  try {
+    const protocol = window.location?.protocol;
+    return protocol === 'http:' || protocol === 'https:';
+  } catch (e) {
+    return false;
+  }
 };
 
 /**
@@ -176,11 +213,26 @@ export const bootstrapGleapFrame = (iframe, url) => {
     return;
   }
 
+  // Idempotent: several of the checks below can conclude independently that the bootstrapped
+  // document is unusable, and re-assigning src would reload a frame that is already on its way.
+  let fellBackToSrc = false;
   const fallbackToSrc = () => {
+    if (fellBackToSrc) {
+      return;
+    }
+    fellBackToSrc = true;
     try {
       iframe.src = url;
     } catch (e) {}
   };
+
+  // The about:blank trick only buys anything on a web page (Safari ITP, see above). Inside a
+  // desktop shell or hybrid container the frame would inherit a file:// or app-scheme origin
+  // with whatever CSP the shell ships, and the pathname rewrite below is not reliable there —
+  // either failure leaves the frame blank with nothing in the console. Load it directly instead.
+  if (!isHttpDocument()) {
+    return fallbackToSrc();
+  }
 
   try {
     if (!iframe.contentDocument) return fallbackToSrc();
@@ -226,12 +278,27 @@ export const bootstrapGleapFrame = (iframe, url) => {
       // We use history.replaceState() to set the iframe's URL to the intended path BEFORE the
       // app's router initializes. replaceState is allowed because the iframe is same-origin to the parent.
       let targetPath = '/';
+      let targetPathname = '/';
       try {
         const parsedTarget = new URL(url);
-        targetPath = parsedTarget.pathname + parsedTarget.search + parsedTarget.hash;
+        targetPathname = parsedTarget.pathname;
+        targetPath = targetPathname + parsedTarget.search + parsedTarget.hash;
       } catch (e) {}
+      // If the rewrite did not land on the intended pathname — sandboxed/exotic origins throw,
+      // and on Windows a file:///C:/... base keeps the drive letter, so "/modal" resolves to
+      // "/C:/modal" (Gleap #146130) — the app's router would match nothing and the frame would stay blank — so the script also checks
+      // the outcome and raises ROUTE_FAILED_EVENT on its own <iframe> element for the parent.
       const routeScript =
-        '<script' + nonceAttr + '>try{history.replaceState(null,"",' + JSON.stringify(targetPath) + ');}catch(e){}</script>';
+        '<script' +
+        nonceAttr +
+        '>try{history.replaceState(null,"",' +
+        JSON.stringify(targetPath) +
+        ');}catch(e){}' +
+        'try{if(location.pathname!==' +
+        JSON.stringify(targetPathname) +
+        '&&window.frameElement){window.frameElement.dispatchEvent(new Event(' +
+        JSON.stringify(ROUTE_FAILED_EVENT) +
+        '));}}catch(e){}</script>';
 
       // Inject the route-setter script BEFORE the first existing <script> tag so it runs
       // before any app bundle. If no <script> is found, inject just before </head> as a fallback.
@@ -256,11 +323,20 @@ export const bootstrapGleapFrame = (iframe, url) => {
         return fallbackToSrc();
       }
 
+      // Raised by the route script when the pathname rewrite did not take (see above). Listening
+      // on the element rather than reading the frame's pathname after doc.write keeps this
+      // correct whether the parser runs the inline script synchronously or a tick later.
+      try {
+        iframe.addEventListener(ROUTE_FAILED_EVENT, fallbackToSrc, { once: true });
+      } catch (e) {}
+
       try {
         doc.open();
         // After open(), which wipes any existing listeners. The violation events for the
         // written markup are fired from queued tasks, so attaching here catches them all.
-        warnOnCSPViolation(doc);
+        // A blocked bundle or stylesheet means the written document can never render; the
+        // hook switches to a direct src load, which the host's script-src does not govern.
+        warnOnCSPViolation(doc, { baseHref, onBlocked: fallbackToSrc });
         doc.write(withRouteScript);
         doc.close();
       } catch (e) {
