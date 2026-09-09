@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import GleapCopilotTours from './GleapCopilotTours';
+import GleapCopilotTours, { getJoinedIndicatorPositionClass } from './GleapCopilotTours';
 
 // Stub the barrel so the real GleapCopilotTours loads without the rest of the SDK.
 jest.mock('./Gleap', () => ({
@@ -252,5 +252,46 @@ describe('teardown', () => {
     tours.toggleAudio(true);
 
     expect(localStorage.getItem(localStorageKey)).not.toBeNull();
+  });
+});
+
+describe('joined indicator position', () => {
+  const positionClasses = (element) =>
+    Array.from(element.classList).filter((c) => c.startsWith('copilot-joined-container--'));
+
+  it('maps every corner to its modifier class and falls back to top-right', () => {
+    expect(getJoinedIndicatorPositionClass('TOP_LEFT')).toBe('copilot-joined-container--top-left');
+    expect(getJoinedIndicatorPositionClass('TOP_RIGHT')).toBe('copilot-joined-container--top-right');
+    expect(getJoinedIndicatorPositionClass('BOTTOM_LEFT')).toBe('copilot-joined-container--bottom-left');
+    expect(getJoinedIndicatorPositionClass('BOTTOM_RIGHT')).toBe('copilot-joined-container--bottom-right');
+    expect(getJoinedIndicatorPositionClass(undefined)).toBe('copilot-joined-container--top-right');
+    expect(getJoinedIndicatorPositionClass('MIDDLE')).toBe('copilot-joined-container--top-right');
+  });
+
+  it('pins the indicator top-right when the tour config has no position', async () => {
+    jest.useFakeTimers();
+    const tours = newTour();
+
+    tours.start();
+    await flush(500);
+
+    const indicator = document.getElementById('copilot-joined-container');
+    expect(positionClasses(indicator)).toEqual(['copilot-joined-container--top-right']);
+    jest.useRealTimers();
+  });
+
+  it('pins the indicator to the configured corner', async () => {
+    jest.useFakeTimers();
+    const tours = newTour(buildConfig({ joinedIndicatorPosition: 'BOTTOM_LEFT' }));
+
+    tours.start();
+    await flush(500);
+
+    const indicator = document.getElementById('copilot-joined-container');
+    expect(positionClasses(indicator)).toEqual(['copilot-joined-container--bottom-left']);
+    expect(document.getElementById('copilot-tour-styles').textContent).toContain(
+      '.copilot-joined-container--bottom-left {',
+    );
+    jest.useRealTimers();
   });
 });
