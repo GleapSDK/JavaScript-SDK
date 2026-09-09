@@ -9,6 +9,19 @@ const pointerContainerId = 'copilot-pointer-container';
 const styleId = 'copilot-tour-styles';
 const copilotJoinedContainerId = 'copilot-joined-container';
 
+// Corner the "joined the session" indicator is pinned to. Set per tour in the dashboard
+// (config.joinedIndicatorPosition); unknown or missing values keep the historical top-right.
+const joinedIndicatorPositionClasses = {
+  TOP_LEFT: `${copilotJoinedContainerId}--top-left`,
+  TOP_RIGHT: `${copilotJoinedContainerId}--top-right`,
+  BOTTOM_LEFT: `${copilotJoinedContainerId}--bottom-left`,
+  BOTTOM_RIGHT: `${copilotJoinedContainerId}--bottom-right`,
+};
+
+export function getJoinedIndicatorPositionClass(position) {
+  return joinedIndicatorPositionClasses[position] ?? joinedIndicatorPositionClasses.TOP_RIGHT;
+}
+
 function estimateReadTime(text) {
   if (typeof window === 'undefined') return;
 
@@ -518,10 +531,18 @@ export default class GleapCopilotTours {
             opacity: 1;
           }
         }
+        @keyframes slideInFromBottom {
+          0% {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
         .${copilotJoinedContainerId} {
           position: fixed;
-          top: 20px;
-          right: 20px;
           z-index: 2147483610;
           background: #fff;
           padding: 6px;
@@ -531,7 +552,26 @@ export default class GleapCopilotTours {
           align-items: center;
           gap: 8px;
           border: 1px solid rgba(192, 146, 242, 0.5);
+        }
+        .${copilotJoinedContainerId}--top-left {
+          top: 20px;
+          left: 20px;
           animation: slideInFromTop 0.5s ease-out forwards;
+        }
+        .${copilotJoinedContainerId}--top-right {
+          top: 20px;
+          right: 20px;
+          animation: slideInFromTop 0.5s ease-out forwards;
+        }
+        .${copilotJoinedContainerId}--bottom-left {
+          bottom: 20px;
+          left: 20px;
+          animation: slideInFromBottom 0.5s ease-out forwards;
+        }
+        .${copilotJoinedContainerId}--bottom-right {
+          bottom: 20px;
+          right: 20px;
+          animation: slideInFromBottom 0.5s ease-out forwards;
         }
         .${copilotJoinedContainerId} span {
           font-size: 13px;
@@ -748,7 +788,10 @@ export default class GleapCopilotTours {
 
     const copilotInfoContainer = document.createElement('div');
     copilotInfoContainer.id = copilotJoinedContainerId;
-    copilotInfoContainer.classList.add(copilotJoinedContainerId);
+    copilotInfoContainer.classList.add(
+      copilotJoinedContainerId,
+      getJoinedIndicatorPositionClass(this.productTourData?.joinedIndicatorPosition),
+    );
     copilotInfoContainer.innerHTML = `
       <img class="${copilotJoinedContainerId}-avatar" src="${this.productTourData?.kaiAvatar}" />
       <span>${this.productTourData?.kaiSlug}</span>
