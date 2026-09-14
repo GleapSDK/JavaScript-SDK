@@ -22,6 +22,7 @@ import GleapTooltipManager from './GleapTooltipManager';
 export default class GleapSession {
   apiUrl = 'https://api.gleap.io';
   wsApiUrl = 'wss://ws.gleap.io';
+  realtimeHost = undefined;
   sdkKey = null;
   updatingSession = false;
   useCookies = true;
