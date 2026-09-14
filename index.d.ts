@@ -56,6 +56,8 @@ export namespace Gleap {
   function isOpened(): boolean;
   function setApiUrl(apiUrl: string): void;
   function setWSApiUrl(wsApiUrl: string): void;
+  /** Messenger realtime hostname, without protocol or path. Set before initialize. */
+  function setRealtimeHost(realtimeHost: string): void;
   function setFrameUrl(frameUrl: string): void;
   function closeBanner(): void;
   function closeModal(): void;

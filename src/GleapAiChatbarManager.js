@@ -10,7 +10,9 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { applyGleapCSPNonce, bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 
 export default class GleapAiChatbarManager {
-  chatbarUrl = "https://messenger-app.gleap.io/chatbar";
+  get chatbarUrl() {
+    return `${GleapFrameManager.getInstance().frameUrl.replace(/\/$/, '')}/chatbar`;
+  }
   chatbarContainer = null;
   chatbarFrame = null;
   config = null;
@@ -172,6 +174,7 @@ export default class GleapAiChatbarManager {
       data: {
         sessionData: GleapSession.getInstance().getSession(),
         apiUrl: GleapSession.getInstance().apiUrl,
+        realtimeHost: GleapSession.getInstance().realtimeHost,
         sdkKey: GleapSession.getInstance().sdkKey,
       },
     });

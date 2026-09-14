@@ -628,6 +628,15 @@ class Gleap {
   }
 
   /**
+   * Set the messenger realtime hostname (without protocol or path).
+   * Call before initialize. Separate from the SDK streaming URL (setWSApiUrl).
+   * @param {string} realtimeHost
+   */
+  static setRealtimeHost(realtimeHost) {
+    GleapSession.getInstance().realtimeHost = realtimeHost;
+  }
+
+  /**
    * Set a custom api url.
    * @param {string} apiUrl
    */

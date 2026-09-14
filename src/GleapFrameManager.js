@@ -471,6 +471,7 @@ export default class GleapFrameManager {
       data: {
         sessionData: GleapSession.getInstance().getSession(),
         apiUrl: GleapSession.getInstance().apiUrl,
+        realtimeHost: GleapSession.getInstance().realtimeHost,
         sdkKey: GleapSession.getInstance().sdkKey,
       },
     });

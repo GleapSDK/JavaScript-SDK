@@ -1,4 +1,4 @@
-import { GleapSession, GleapTabCommunication } from './Gleap';
+import { GleapFrameManager, GleapSession, GleapTabCommunication } from './Gleap';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 
 // Keep the barrel + helper imports light (no DOM bootstrap, no SDK_VERSION global).
@@ -62,6 +62,34 @@ beforeEach(() => {
 afterEach(() => {
   delete global.window;
   delete global.document;
+});
+
+describe('custom widget domains', () => {
+  test('loads the chatbar from the configured messenger domain', () => {
+    GleapFrameManager.getInstance.mockReturnValue({ frameUrl: 'https://widget.example.com/' });
+    expect(GleapAiChatbarManager.getInstance().chatbarUrl).toBe('https://widget.example.com/chatbar');
+  });
+
+  test('passes the realtime host and API URL to the chatbar iframe', () => {
+    GleapSession.getInstance.mockReturnValue({
+      getSession: () => ({ gleapId: 'user-1' }),
+      apiUrl: 'https://api.example.com',
+      realtimeHost: 'sockets.example.com',
+      sdkKey: 'test-key',
+    });
+    const manager = GleapAiChatbarManager.getInstance();
+    const frame = attachReadyFrame(manager);
+    manager._sendSessionUpdate();
+    expect(lastFramePayload(frame)).toEqual({
+      name: 'session-update',
+      data: {
+        sessionData: { gleapId: 'user-1' },
+        apiUrl: 'https://api.example.com',
+        realtimeHost: 'sockets.example.com',
+        sdkKey: 'test-key',
+      },
+    });
+  });
 });
 
 describe('hideChatbarNotification()', () => {
