@@ -1,0 +1,12 @@
+# Response headers for sdk.gleap.io — Cloudflare Workers static assets
+# (wrangler.jsonc: assets.directory = ./published) applies this file at the edge.
+#
+# Cross-Origin-Resource-Policy lets host pages that enforce cross-origin isolation
+# (Cross-Origin-Embedder-Policy: require-corp) load the SDK bundle: a plain
+# <script src> is a no-cors request, and under COEP the browser drops any
+# cross-origin no-cors response that lacks this header (Gleap #147158).
+# Access-Control-Allow-Origin makes <script crossorigin="anonymous"> (SRI,
+# full error stacks in window.onerror) work as well.
+/*
+  Cross-Origin-Resource-Policy: cross-origin
+  Access-Control-Allow-Origin: *
