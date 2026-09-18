@@ -39,13 +39,13 @@ Gleap.initialize('YOUR_PROJECT_SDK_KEY');
 
 | Region | API (`setApiUrl`) | SDK streaming (`setWSApiUrl`) | Messenger realtime (`setRealtimeHost`) |
 |--------|-------------------|-------------------------------|----------------------------------------|
-| `eu` (default) | `https://api.gleap.io` | `wss://ws.gleap.io` | `sockets.gleap.io` |
+| `eu` (default) | `https://api.eu.gleap.ai` | `wss://ws.eu.gleap.ai` | `sockets.eu.gleap.ai` |
 | `us` | `https://api.us.gleap.ai` | `wss://ws.us.gleap.ai` | `sockets.us.gleap.ai` |
 
 An unknown region logs a console warning and changes nothing.
 `Gleap.getRegion()` returns the active region. Without a `setRegion` call the
 realtime host is not sent to the messenger, which then uses its own default
-(`sockets.gleap.io`), exactly as before.
+(`sockets.eu.gleap.ai`), exactly as before.
 
 ### Order rule
 

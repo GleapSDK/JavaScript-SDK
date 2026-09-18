@@ -2,7 +2,9 @@
  * Gleap data regions.
  *
  * This is the single source of truth for the region specific hosts. To move a
- * region to new hosts (e.g. EU to `*.eu.gleap.ai`), edit this table only.
+ * region to new hosts, edit this table only. EU uses `*.eu.gleap.ai`; the
+ * legacy `*.gleap.io` hosts (api/ws/sockets.gleap.io) keep serving older SDKs
+ * and remain valid values for the manual setters.
  *
  * Only the API, the SDK streaming (WS) and the messenger realtime host are
  * region specific. The static widget hosts (messenger-app.gleap.io,
@@ -11,9 +13,9 @@
  */
 export const GLEAP_REGIONS = {
   eu: {
-    apiUrl: 'https://api.gleap.io',
-    wsApiUrl: 'wss://ws.gleap.io',
-    realtimeHost: 'sockets.gleap.io',
+    apiUrl: 'https://api.eu.gleap.ai',
+    wsApiUrl: 'wss://ws.eu.gleap.ai',
+    realtimeHost: 'sockets.eu.gleap.ai',
   },
   us: {
     apiUrl: 'https://api.us.gleap.ai',

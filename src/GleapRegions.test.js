@@ -6,9 +6,9 @@ import GleapNetworkIntercepter from './GleapNetworkIntercepter';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
 
 const EU = {
-  apiUrl: 'https://api.gleap.io',
-  wsApiUrl: 'wss://ws.gleap.io',
-  realtimeHost: 'sockets.gleap.io',
+  apiUrl: 'https://api.eu.gleap.ai',
+  wsApiUrl: 'wss://ws.eu.gleap.ai',
+  realtimeHost: 'sockets.eu.gleap.ai',
 };
 
 const US = {
@@ -171,7 +171,7 @@ describe('region side effects', () => {
   test("network logs skip the SDK's own eu and us traffic by default", () => {
     const intercepter = new GleapNetworkIntercepter();
     intercepter.requests = {
-      1: { url: 'https://api.gleap.io/sessions' },
+      1: { url: 'https://api.eu.gleap.ai/sessions' },
       2: { url: 'https://api.us.gleap.ai/sessions' },
       3: { url: 'https://example.com/data' },
     };
