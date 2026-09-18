@@ -76,6 +76,8 @@ widget hosts.
 
 The region table lives in one place in the SDK: `src/GleapRegions.js`.
 
+> The EU region is also reachable on `api.eu.gleap.ai`, `ws.eu.gleap.ai` and `sockets.eu.gleap.ai`. The JavaScript SDK keeps the `*.gleap.io` hosts as its EU default for now, because sites with a Content-Security-Policy allow-list `*.gleap.io`; add `*.gleap.ai` to your CSP today so a later SDK release can switch the default without any change on your side. To use the new hosts already, set them with `setApiUrl`, `setWSApiUrl` and `setRealtimeHost`.
+
 ## Hosting requirements
 
 Provision DNS, valid TLS certificates and reverse proxy routing for each custom
