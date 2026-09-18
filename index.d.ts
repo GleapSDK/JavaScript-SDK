@@ -1,3 +1,6 @@
+/** Gleap data region. */
+export type GleapRegion = "eu" | "us";
+
 export namespace Gleap {
   function initialize(sdkKey: string, disablePing?: boolean): void;
   function sendSilentCrashReport(
@@ -54,6 +57,23 @@ export namespace Gleap {
     options?: { context?: any; initialQuestion?: string; initialMessage?: string }
   ): void;
   function isOpened(): boolean;
+  /**
+   * Sets the data region your Gleap project lives in. Call before initialize.
+   * Defaults to "eu". The value is case-insensitive; an unknown value logs a
+   * console warning and changes nothing.
+   *
+   * Sets three hosts at once:
+   * - eu: apiUrl `https://api.gleap.io`, wsApiUrl `wss://ws.gleap.io`, realtimeHost `sockets.gleap.io`
+   * - us: apiUrl `https://api.us.gleap.ai`, wsApiUrl `wss://ws.us.gleap.ai`, realtimeHost `sockets.us.gleap.ai`
+   *
+   * Order rule (last call wins): setApiUrl / setWSApiUrl / setRealtimeHost
+   * called AFTER setRegion override that single host; setRegion called after
+   * them overrides all three region hosts. The static widget hosts
+   * (setFrameUrl, setBannerUrl, setModalUrl) are global and never changed by setRegion.
+   */
+  function setRegion(region: GleapRegion): void;
+  /** Returns the current data region ("eu" unless setRegion was called). */
+  function getRegion(): GleapRegion;
   function setApiUrl(apiUrl: string): void;
   function setWSApiUrl(wsApiUrl: string): void;
   /** Messenger realtime hostname, without protocol or path. Set before initialize. */
@@ -63,6 +83,11 @@ export namespace Gleap {
   function closeModal(): void;
   function setBannerUrl(bannerUrl: string): void;
   function setModalUrl(modalUrl: string): void;
+  /**
+   * Custom url for the `<gleap-agent-conversation>` iframe. Applies to elements
+   * attached to the DOM after this call.
+   */
+  function setAgentConversationUrl(agentConversationUrl: string): void;
   function setMaxNetworkRequests(maxRequests: number): void;
   function startNetworkLogger(): void;
   function setNetworkLogsBlacklist(networkLogBlacklist: string[]): void;

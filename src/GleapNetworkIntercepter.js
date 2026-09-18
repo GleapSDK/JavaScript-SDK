@@ -5,7 +5,7 @@ class GleapNetworkIntercepter {
   externalRequests = [];
   maxRequests = 30;
   filters = [];
-  defaultBlacklist = ['gleap.io'];
+  defaultBlacklist = ['gleap.io', 'gleap.ai'];
   blacklist = [];
   initialized = false;
   stopped = false;

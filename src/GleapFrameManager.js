@@ -139,8 +139,11 @@ export default class GleapFrameManager {
   }
 
   autoWhiteListCookieManager = () => {
-    if (window && window.cmp_block_ignoredomains) {
-      window.cmp_block_ignoredomains.concat(['messenger-app.gleap.io']);
+    // Push in place: concat returns a new array and would leave the allowlist untouched.
+    if (window && Array.isArray(window.cmp_block_ignoredomains)) {
+      if (window.cmp_block_ignoredomains.indexOf('messenger-app.gleap.io') === -1) {
+        window.cmp_block_ignoredomains.push('messenger-app.gleap.io');
+      }
     }
   };
 

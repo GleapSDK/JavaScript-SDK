@@ -8,6 +8,7 @@ import {
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import { applyGleapCSPNonce, bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
+import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS } from './GleapRegions';
 
 export default class GleapAiChatbarManager {
   get chatbarUrl() {
@@ -377,7 +378,7 @@ export default class GleapAiChatbarManager {
   async _validateAgent(agentId) {
     try {
       const session = GleapSession.getInstance();
-      const apiUrl = session.apiUrl || 'https://api.gleap.io';
+      const apiUrl = session.apiUrl || GLEAP_REGIONS[GLEAP_DEFAULT_REGION].apiUrl;
 
       const headers = {};
       if (session.sdkKey) headers['Api-Token'] = session.sdkKey;

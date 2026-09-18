@@ -34,6 +34,15 @@ Add the following code to initialize the Gleap JavaScript SDK. Replace "SDK-TOKE
 Gleap.initialize("SDK-TOKEN");
 ```
 
+### Data region (optional)
+
+Projects hosted in the US data region select it before initializing. The default region is `eu`. See [docs/custom-widget-domains.md](docs/custom-widget-domains.md) for the host table and custom domains.
+
+```
+Gleap.setRegion("us");
+Gleap.initialize("SDK-TOKEN");
+```
+
 Congrats, you are now all set! Report your first bug by using the feedback button.
 
 ## 🤝 Need help?
