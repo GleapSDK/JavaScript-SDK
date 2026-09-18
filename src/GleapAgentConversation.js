@@ -1,5 +1,17 @@
 import { GleapSession } from './Gleap';
 import { bootstrapGleapFrame } from './GleapHelper';
+import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS } from './GleapRegions';
+
+let agentConversationUrl = 'https://outboundmedia.gleap.io/agent-conversation';
+
+/**
+ * Set a custom agent conversation url. Applies to <gleap-agent-conversation>
+ * elements attached to the DOM after this call.
+ * @param {string} url
+ */
+export const setGleapAgentConversationUrl = (url) => {
+  agentConversationUrl = url;
+};
 
 export const registerGleapAgentComponents = () => {
   if (typeof customElements === 'undefined' || typeof HTMLElement === 'undefined' || typeof window === 'undefined') return;
@@ -7,7 +19,7 @@ export const registerGleapAgentComponents = () => {
   if (!customElements.get('gleap-agent-conversation')) {
     class GleapAgentConversation extends HTMLElement {
       _iframe = null;
-      _agentConvUrl = 'https://outboundmedia.gleap.io/agent-conversation';
+      _agentConvUrl = agentConversationUrl;
       _messageListener = null;
       _config = {};
 
@@ -35,6 +47,7 @@ export const registerGleapAgentComponents = () => {
 
       _injectIframe() {
         if (this._iframe) return;
+        this._agentConvUrl = agentConversationUrl;
         this.style.display = 'block';
         this.style.width = '100%';
         this.style.height = '100%';
@@ -97,7 +110,7 @@ export const registerGleapAgentComponents = () => {
       _sendConfig() {
         if (!this._iframe?.contentWindow) return;
 
-        let apiUrl = 'https://api.gleap.io';
+        let apiUrl = GLEAP_REGIONS[GLEAP_DEFAULT_REGION].apiUrl;
         let sdkKey = '';
         let gleapId = '';
         let gleapHash = '';

@@ -18,10 +18,14 @@ import {
   setGleapCookie,
 } from './GleapHelper';
 import GleapTooltipManager from './GleapTooltipManager';
+import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
 
 export default class GleapSession {
-  apiUrl = 'https://api.gleap.io';
-  wsApiUrl = 'wss://ws.gleap.io';
+  region = GLEAP_DEFAULT_REGION;
+  apiUrl = GLEAP_REGIONS[GLEAP_DEFAULT_REGION].apiUrl;
+  wsApiUrl = GLEAP_REGIONS[GLEAP_DEFAULT_REGION].wsApiUrl;
+  // Left undefined by default so the messenger keeps its environment/default
+  // realtime hostname. Set explicitly by setRegion or Gleap.setRealtimeHost.
   realtimeHost = undefined;
   sdkKey = null;
   updatingSession = false;
@@ -55,6 +59,38 @@ export default class GleapSession {
     } else {
       return this.instance;
     }
+  }
+
+  /**
+   * Sets the data region. Applies the region's apiUrl, wsApiUrl and
+   * realtimeHost at once. Unknown regions are ignored with a warning.
+   * @param {string} region "eu" | "us" (case-insensitive)
+   * @returns {boolean} true if the region was applied.
+   */
+  setRegion(region) {
+    const regionKey = resolveGleapRegion(region);
+    if (!regionKey) {
+      console.warn(
+        `Gleap: Unknown region "${region}". Supported regions: ${Object.keys(GLEAP_REGIONS).join(', ')}. Region not changed.`
+      );
+      return false;
+    }
+
+    const hosts = GLEAP_REGIONS[regionKey];
+    this.region = regionKey;
+    this.apiUrl = hosts.apiUrl;
+    this.wsApiUrl = hosts.wsApiUrl;
+    this.realtimeHost = hosts.realtimeHost;
+
+    return true;
+  }
+
+  /**
+   * Returns the current data region.
+   * @returns {string}
+   */
+  getRegion() {
+    return this.region;
   }
 
   /**

@@ -2,7 +2,7 @@ import AgentNetworkManager from './AgentNetworkManager';
 import ChecklistNetworkManager from './ChecklistNetworkManager';
 import GleapAdminManager from './GleapAdminManager';
 import GleapAgentChat from './GleapAgentChat';
-import { registerGleapAgentComponents } from './GleapAgentConversation';
+import { registerGleapAgentComponents, setGleapAgentConversationUrl } from './GleapAgentConversation';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import GleapAudioManager from './GleapAudioManager';
@@ -620,6 +620,29 @@ class Gleap {
   }
 
   /**
+   * Sets the data region. Call before initialize.
+   * Applies the region's apiUrl, wsApiUrl and realtimeHost at once. The static
+   * widget hosts (frameUrl, bannerUrl, modalUrl) are global and stay untouched.
+   *
+   * Order rule: the last call wins. A manual setter (setApiUrl, setWSApiUrl,
+   * setRealtimeHost) called AFTER setRegion overrides that single host;
+   * setRegion called after manual setters overrides all three region hosts.
+   * Unknown regions log a warning and change nothing.
+   * @param {"eu"|"us"} region The data region (case-insensitive). Defaults to "eu".
+   */
+  static setRegion(region) {
+    GleapSession.getInstance().setRegion(region);
+  }
+
+  /**
+   * Returns the current data region.
+   * @returns {"eu"|"us"}
+   */
+  static getRegion() {
+    return GleapSession.getInstance().getRegion();
+  }
+
+  /**
    * Set a custom ws api url.
    * @param {string} wsApiUrl
    */
@@ -658,6 +681,15 @@ class Gleap {
    */
   static setModalUrl(modalUrl) {
     GleapModalManager.getInstance().setModalUrl(modalUrl);
+  }
+
+  /**
+   * Set a custom agent conversation url (<gleap-agent-conversation>).
+   * Applies to elements attached to the DOM after this call.
+   * @param {string} agentConversationUrl
+   */
+  static setAgentConversationUrl(agentConversationUrl) {
+    setGleapAgentConversationUrl(agentConversationUrl);
   }
 
   /**
