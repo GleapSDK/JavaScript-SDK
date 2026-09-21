@@ -249,8 +249,9 @@ export default class GleapReplayRecorder {
       return;
     }
 
-    // Deferred on purpose: this runs inside rrweb's emit callback, and taking a
-    // snapshot from there would re-enter the recorder mid-mutation.
+    // record.takeFullSnapshot(true) is rrweb's own checkout call (the one behind
+    // checkoutEveryNms / checkoutEveryNth). On a timer because forced checkpoints
+    // are rate limited, and to stay out of the emit callback we are running in.
     const wait = Math.max(0, this.lastForcedCheckout + MIN_FORCED_CHECKOUT_INTERVAL_MS - Date.now());
     this.forcedCheckoutTimeout = setTimeout(() => {
       this.forcedCheckoutTimeout = undefined;
