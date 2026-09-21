@@ -51,6 +51,11 @@ const resolveAfterTimeout = (promise, timeoutMs, label) =>
     );
   });
 
+// Attachments a report can live without, heaviest first. When the API (or a proxy in front of it)
+// answers 413, the report is resent without them instead of failing: same reasoning as above, a
+// report that arrives without its replay beats one that never arrives.
+const OVERSIZE_FALLBACKS = [['webReplay'], ['screenshotData', 'networkLogs']];
+
 export default class GleapFeedback {
   excludeData = {};
   type = 'BUG';
@@ -195,28 +200,34 @@ export default class GleapFeedback {
         .then(() => {
           const dataToSend = this.getData();
 
-          const http = new XMLHttpRequest();
-          http.open('POST', GleapSession.getInstance().apiUrl + '/bugs/v2');
-          http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-          GleapSession.getInstance().injectSession(http);
-          http.onerror = (error) => {
-            reject();
-          };
-          http.onreadystatechange = function (e) {
-            if (http.readyState === 4) {
-              if (http.status === 200 || http.status === 201) {
-                try {
-                  const feedback = JSON.parse(http.responseText);
-                  resolve(feedback);
-                } catch (exp) {
+          const send = (fallbackIndex) => {
+            const http = new XMLHttpRequest();
+            http.open('POST', GleapSession.getInstance().apiUrl + '/bugs/v2');
+            http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+            GleapSession.getInstance().injectSession(http);
+            http.onerror = (error) => {
+              reject();
+            };
+            http.onreadystatechange = function (e) {
+              if (http.readyState === 4) {
+                if (http.status === 200 || http.status === 201) {
+                  try {
+                    const feedback = JSON.parse(http.responseText);
+                    resolve(feedback);
+                  } catch (exp) {
+                    reject();
+                  }
+                } else if (http.status === 413 && fallbackIndex < OVERSIZE_FALLBACKS.length) {
+                  OVERSIZE_FALLBACKS[fallbackIndex].forEach((key) => delete dataToSend[key]);
+                  send(fallbackIndex + 1);
+                } else {
                   reject();
                 }
-              } else {
-                reject();
               }
-            }
+            };
+            http.send(JSON.stringify(dataToSend));
           };
-          http.send(JSON.stringify(dataToSend));
+          send(0);
         })
         .catch((exp) => {
           console.log('Failed to take snapshot', exp);

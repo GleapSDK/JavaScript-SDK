@@ -17,11 +17,52 @@ const CHECKOUT_EVERY_MS = 5 * 60 * 1000;
 // self-contained and never starts mid-mutation.
 const MAX_CHECKPOINTS = 3;
 
+// Checkpoints bound the buffer in time only. A page that re-renders constantly,
+// or inlines large stylesheets into every full snapshot, still collected tens of
+// MB within those minutes: held in the host page's memory, then uploaded with
+// the report. Cap the (approximate, uncompressed) serialized size as well.
+const MAX_BUFFER_SIZE = 10 * 1024 * 1024;
+
+// A fresh checkpoint serializes the whole DOM, so a page that outgrows the
+// budget faster than this keeps its current checkpoint until the interval is up.
+const MIN_FORCED_CHECKOUT_INTERVAL_MS = 30 * 1000;
+
+const RRWEB_FULL_SNAPSHOT_EVENT_TYPE = 2;
+
+// Allocation-free stand-in for JSON.stringify(value).length. It runs on every
+// recorded event, so it must stay cheap next to rrweb's own serialization.
+export const approximateSize = (value) => {
+  if (typeof value === 'string') {
+    return value.length + 2;
+  }
+  if (value === null || typeof value !== 'object') {
+    return typeof value === 'number' ? String(value).length : 5;
+  }
+
+  let size = 2;
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      size += approximateSize(value[i]) + 1;
+    }
+    return size;
+  }
+  for (const key in value) {
+    size += key.length + 4 + approximateSize(value[key]);
+  }
+  return size;
+};
+
 export default class GleapReplayRecorder {
   startDate = undefined;
   // Events grouped into checkpoint segments so out-of-window checkpoints can be
   // dropped without ever cutting off the full snapshot a replay needs to start.
   segments = [[]];
+  // Approximate serialized size per segment, and of the newest segment's
+  // incremental events (everything after its Meta + FullSnapshot).
+  segmentSizes = [0];
+  incrementalSize = 0;
+  lastForcedCheckout = 0;
+  forcedCheckoutTimeout = undefined;
   stopFunction = undefined;
   customOptions = {};
 
@@ -57,7 +98,7 @@ export default class GleapReplayRecorder {
     this.stop();
 
     this.startDate = Date.now();
-    this.segments = [[]];
+    this.resetBuffer();
 
     var options = {
       inlineStylesheet: true,
@@ -111,12 +152,21 @@ export default class GleapReplayRecorder {
           // segment and drop the oldest checkpoints beyond the retention cap.
           if (isCheckout && event && event.type === RRWEB_META_EVENT_TYPE) {
             this.segments.push([]);
+            this.segmentSizes.push(0);
+            this.incrementalSize = 0;
             while (this.segments.length > MAX_CHECKPOINTS) {
-              this.segments.shift();
+              this.dropOldestSegment();
             }
           }
 
+          const size = approximateSize(event);
           this.segments[this.segments.length - 1].push(event);
+          this.segmentSizes[this.segmentSizes.length - 1] += size;
+          if (event && event.type !== RRWEB_META_EVENT_TYPE && event.type !== RRWEB_FULL_SNAPSHOT_EVENT_TYPE) {
+            this.incrementalSize += size;
+          }
+
+          this.enforceBufferSize();
         },
       });
     } catch (e) {
@@ -152,7 +202,63 @@ export default class GleapReplayRecorder {
     }
 
     this.startDate = undefined;
+    this.resetBuffer();
+  }
+
+  resetBuffer() {
+    clearTimeout(this.forcedCheckoutTimeout);
+    this.forcedCheckoutTimeout = undefined;
     this.segments = [[]];
+    this.segmentSizes = [0];
+    this.incrementalSize = 0;
+  }
+
+  dropOldestSegment() {
+    this.segments.shift();
+    this.segmentSizes.shift();
+  }
+
+  getBufferSize() {
+    let size = 0;
+    for (let i = 0; i < this.segmentSizes.length; i++) {
+      size += this.segmentSizes[i];
+    }
+    return size;
+  }
+
+  /**
+   * Keeps the buffer within MAX_BUFFER_SIZE. Whole checkpoints go first, oldest
+   * first; the newest always stays, because a replay needs its full snapshot.
+   */
+  enforceBufferSize() {
+    while (this.segments.length > 1 && this.getBufferSize() > MAX_BUFFER_SIZE) {
+      this.dropOldestSegment();
+    }
+
+    // The newest checkpoint alone is over budget because its incremental events
+    // outgrew it: start a fresh one, which lets the pass above drop this one and
+    // keeps the most recent activity. A full snapshot that is over budget by
+    // itself never triggers this, otherwise every checkpoint would force the next.
+    if (this.getBufferSize() > MAX_BUFFER_SIZE && this.incrementalSize > MAX_BUFFER_SIZE / 2) {
+      this.scheduleForcedCheckout();
+    }
+  }
+
+  scheduleForcedCheckout() {
+    if (this.forcedCheckoutTimeout) {
+      return;
+    }
+
+    // Deferred on purpose: this runs inside rrweb's emit callback, and taking a
+    // snapshot from there would re-enter the recorder mid-mutation.
+    const wait = Math.max(0, this.lastForcedCheckout + MIN_FORCED_CHECKOUT_INTERVAL_MS - Date.now());
+    this.forcedCheckoutTimeout = setTimeout(() => {
+      this.forcedCheckoutTimeout = undefined;
+      this.lastForcedCheckout = Date.now();
+      try {
+        record.takeFullSnapshot(true);
+      } catch (e) {}
+    }, wait);
   }
 
   /**
