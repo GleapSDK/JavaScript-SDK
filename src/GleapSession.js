@@ -29,6 +29,7 @@ export default class GleapSession {
   realtimeHost = undefined;
   sdkKey = null;
   updatingSession = false;
+  fileRefreshTimeout = null;
   useCookies = true;
   localStorageDisabled = false;
   session = {
@@ -155,6 +156,16 @@ export default class GleapSession {
   };
 
   clearSession = (attemp = 0, retry = true) => {
+    clearTimeout(this.fileRefreshTimeout);
+    this.openingProtectedFile = null;
+    if (this.session?.fileAccessToken) {
+      try {
+        const revoke = new XMLHttpRequest();
+        revoke.open('POST', this.apiUrl + '/files/session/revoke');
+        revoke.setRequestHeader('X-File-Session', this.session.fileAccessToken);
+        revoke.send();
+      } catch (_) { /* Local logout still clears credentials if offline. */ }
+    }
     if (this.session && this.session.gleapHash) {
       GleapEventManager.notifyEvent('unregister-pushmessage-group', `gleapuser-${this.session.gleapHash}`);
     }
@@ -212,11 +223,40 @@ export default class GleapSession {
     }, newTimeout * 1000);
   };
 
+  openRequestedProtectedFile = () => {
+    const fileId = new URLSearchParams(window.location?.search || '').get('gleapFile');
+    if (!/^[a-f0-9]{24}$/.test(fileId || '') || this.openingProtectedFile === fileId) return;
+    this.openingProtectedFile = fileId;
+    const token = this.session.fileAccessToken;
+    const request = new XMLHttpRequest();
+    request.open('GET', `${this.apiUrl}/files/${fileId}/location`);
+    request.setRequestHeader('X-File-Session', this.session.fileAccessToken);
+    request.onload = () => {
+      if (this.session?.fileAccessToken !== token) return;
+      if (request.status !== 200) { this.openingProtectedFile = null; return; }
+      try {
+        const { shareToken } = JSON.parse(request.responseText);
+        const frame = GleapFrameManager.getInstance();
+        frame.setAppMode('widget');
+        frame.sendMessage({ name: 'open-conversation', data: { shareToken } }, true);
+        frame.showWidget();
+      } catch { this.openingProtectedFile = null; }
+    };
+    request.onerror = () => { this.openingProtectedFile = null; };
+    request.send();
+  };
+
   validateSession = (session) => {
     if (!session || !session.gleapId) {
       return;
     }
 
+    // Ordinary session refreshes must not discard the independently verified,
+    // short-lived file session. Never carry it across an identity change.
+    if (!session.fileAccessToken && session.gleapId === this.session?.gleapId &&
+        session.userId === this.session?.userId && Date.parse(this.session.fileAccessExpiresAt) > Date.now()) {
+      session = { ...session, fileAccessToken: this.session.fileAccessToken, fileAccessExpiresAt: this.session.fileAccessExpiresAt };
+    }
     let sessionChanged = false;
     if (this.session?.gleapId !== session?.gleapId) {
       sessionChanged = true;
@@ -236,6 +276,16 @@ export default class GleapSession {
 
     this.session = session;
     this.ready = true;
+    if (session.fileAccessToken) this.openRequestedProtectedFile();
+    clearTimeout(this.fileRefreshTimeout);
+    if (session.fileAccessToken && this.lastIdentify?.userHash) {
+      this.fileRefreshTimeout = setTimeout(() => {
+        if (this.lastIdentify) {
+          const { userId, userData, userHash } = this.lastIdentify;
+          this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
+        }
+      }, Math.max(0, Date.parse(session.fileAccessExpiresAt) - Date.now() - 5 * 60 * 1000));
+    }
 
     // Register new push group.
     if (this.session && this.session.gleapHash) {
@@ -271,6 +321,10 @@ export default class GleapSession {
 
     if (sessionChanged) {
       this.replayIdentifyIfNeeded();
+    }
+    if (session.authenticatedFilesRequired && !session.fileAccessToken && this.lastIdentify?.userHash && !this.identifyInFlight) {
+      const { userId, userData, userHash } = this.lastIdentify;
+      this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
     }
   };
 
@@ -475,13 +529,14 @@ export default class GleapSession {
     });
   };
 
-  identifySession = (userId, userData, userHash) => {
+  identifySession = (userId, userData, userHash, refreshFileSession = false) => {
     // Remember the args before any early-out: a no-op identify against a
     // session that later gets recreated must still be replayable.
     this.lastIdentify = { userId, userData, userHash };
 
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
-    if (!sessionNeedsUpdate) {
+    const needsFileIdentity = !!userHash && this.session?.authenticatedFilesRequired && (!this.session?.fileAccessToken || Date.parse(this.session.fileAccessExpiresAt) <= Date.now());
+    if (!sessionNeedsUpdate && !refreshFileSession && !needsFileIdentity) {
       return;
     }
 

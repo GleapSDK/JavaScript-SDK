@@ -235,3 +235,52 @@ describe('identify replay', () => {
     expect(identifyRequests().length).toBe(0);
   });
 });
+
+describe('authenticated file sessions', () => {
+  it('keeps partial session updates independent of file identification', () => {
+    const session = buildSession();
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION });
+    expect(() => session.updateSession({ email: CACHED_IDENTIFIED_SESSION.email })).not.toThrow();
+  });
+  it('does not postpone file refresh when ordinary session polling repeats', () => {
+    const session = buildSession();
+    session.lastIdentify = { userId: 'user-1', userData: {}, userHash: 'verified-hmac' };
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
+    jest.advanceTimersByTime(300000);
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION });
+    jest.advanceTimersByTime(300000);
+    expect(identifyRequests()).toHaveLength(1);
+  });
+  it('re-verifies an unchanged cached identity when the project now requires authenticated files', () => {
+    const session = buildSession();
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, authenticatedFilesRequired: true });
+    session.identifySession('user-1', { email: 'bec@example.com', name: 'Bec' }, 'verified-hmac');
+    expect(identifyRequests()).toHaveLength(1);
+    expect(JSON.parse(identifyRequests()[0].body).userHash).toBe('verified-hmac');
+  });
+  it('preserves a still-valid file session on ordinary refresh but never across identity changes', () => {
+    const session = buildSession();
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION });
+    expect(session.session.fileAccessToken).toBe('file-session');
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, gleapId: 'different', userId: 'different-user' });
+    expect(session.session.fileAccessToken).toBeUndefined();
+  });
+  it('refreshes file authentication with identity proof before its 15 minute expiry', () => {
+    const session = buildSession();
+    session.lastIdentify = { userId: 'user-1', userData: { email: 'bec@example.com' }, userHash: 'verified-hmac' };
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
+    jest.advanceTimersByTime(600000);
+    expect(identifyRequests()).toHaveLength(1);
+    expect(JSON.parse(identifyRequests()[0].body).userHash).toBe('verified-hmac');
+  });
+  it('revokes the file session on logout and cancels credential refresh', () => {
+    const session = buildSession();
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
+    session.clearSession(0, false);
+    const revoke = MockXhr.instances.find((xhr) => xhr.url.endsWith('/files/session/revoke'));
+    expect(revoke.headers['X-File-Session']).toBe('file-session');
+    expect(session.session.fileAccessToken).toBeUndefined();
+    expect(session.lastIdentify).toBeNull();
+  });
+});
