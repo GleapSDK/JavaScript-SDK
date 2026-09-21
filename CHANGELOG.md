@@ -1,5 +1,10 @@
 # Changelog
 
+## 18.0.1
+The session replay buffer is now capped by size as well as by time (about 10 MB of events, on top of the existing three 5-minute checkpoints). When it grows past that, the oldest checkpoints are dropped first; if a single checkpoint outgrows the budget on a page that re-renders constantly, a fresh checkpoint replaces it (at most every 30 seconds), so the most recent activity is always kept. This bounds the memory the recorder holds in the host page and the size of the report upload.
+A report that the API (or a proxy in front of it) rejects as too large (HTTP 413) is no longer lost: it is resent without the session replay, and if needed without screenshot data and network logs.
+Added support for authenticated conversation files (opt-in per project): after a server-verified `identify`, the SDK hands a short-lived file session to the messenger, refreshes it while active, keeps it only for the same identity and revokes it on logout. Projects that have not enabled the setting are unaffected.
+
 ## 18.0.0
 No breaking changes: major version aligned across all Gleap SDKs for the data-region release. Without `Gleap.setRegion` the SDK behaves exactly as 17.x (EU hosts).
 
