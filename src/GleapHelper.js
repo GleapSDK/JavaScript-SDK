@@ -107,7 +107,7 @@ const stampNonceOnMarkup = (html, nonce) => {
   return html.replace(/<(script|style)\b(?![^>]*\snonce\s*=)/gi, '<$1 nonce="' + nonce + '"');
 };
 
-const CSP_DOCS_URL = 'https://docs.gleap.io/documentation/javascript/content-security-policy';
+const CSP_DOCS_URL = 'https://docs.gleap.ai/documentation/javascript/content-security-policy';
 
 // One warn per blocked resource/directive pair per page load — a frame can violate the
 // same rule repeatedly (several assets, reconnect attempts), and repeating the warning

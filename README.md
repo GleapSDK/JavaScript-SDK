@@ -1,20 +1,22 @@
-# Gleap JavaScript SDK
+# Gleap JavaScript and TypeScript SDK
 
 ![Gleap JavaScript SDK Intro](https://github.com/GleapSDK/JavaScript-SDK/blob/master/resources/banner.png?raw=true)
 
-Welcome to the Gleap JavaScript SDK. Integrate AI-native customer support and feedback into your app in minutes. Leverage Kai, our autonomous AI agent, to resolve customer inquiries, automate complex workflows, and assist your support team with copilot-powered answers. Combine that with a built-in Help Center, outbound messaging, product roadmaps, bug tracking, and a unified multichannel inbox — everything your team needs to build better software, faster. Let's code, innovate, and grow together!
+Add AI-native customer support, live chat, in-app bug reporting, a help center and surveys to websites and web apps using JavaScript or TypeScript with [Gleap](https://www.gleap.ai). Gleap is an Intercom alternative for software teams that connects customer conversations and feedback with product development.
+
+[SDK documentation](https://docs.gleap.ai/documentation/javascript/README) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
 
 ## 📖 Docs & Examples
 
-Checkout our [documentation](https://docs.gleap.io/javascript) for full reference.
+Checkout our [documentation](https://docs.gleap.ai/documentation/javascript/README) for full reference.
 
 ## 🚀 Getting started
 
-1.) Register an account at [www.gleap.io](https://www.gleap.io). It's free and takes just a few seconds.
+1.) Create a Gleap account and project. See the [current plans and trial terms](https://www.gleap.ai/pricing).
 
 2.) Include the Gleap JS SDK within your apps.
 
-### Installation via nom
+### Installation via npm
 
 Install the **Gleap** package via npm or yarn.
 ```

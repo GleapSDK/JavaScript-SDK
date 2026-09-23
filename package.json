@@ -1,4 +1,5 @@
 {
+  "description": "JavaScript and TypeScript SDK for Gleap, an Intercom alternative with AI customer support, live chat, in-app bug reporting and customer feedback.",
   "name": "gleap",
   "version": "18.0.1",
   "main": "build/cjs/index.js",
@@ -24,7 +25,7 @@
     "url": "https://github.com/GleapSDK/JavaScript-SDK"
   },
   "author": "Gleap <hello@gleap.io>",
-  "homepage": "https://www.gleap.io/",
+  "homepage": "https://www.gleap.ai",
   "keywords": [
     "bug-reporting",
     "bug-reporting-tool",
@@ -36,8 +37,12 @@
     "crash-reporting",
     "marketing-automation",
     "user-onboarding",
-    "ai-chatbot",
-    "in-app-feedback"
+    "ai-support",
+    "in-app-feedback",
+    "intercom-alternative",
+    "ai-customer-support",
+    "live-chat",
+    "sdk"
   ],
   "license": "Commercial",
   "licenseFilename": "LICENSE",
