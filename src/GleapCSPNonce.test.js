@@ -260,7 +260,7 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
     const message = warn.mock.calls[0][0];
     expect(message).toContain('https://messenger-app.gleap.io/chatbar');
     expect(message).toContain('Content-Security-Policy');
-    expect(message).toContain('https://docs.gleap.io/documentation/javascript/content-security-policy');
+    expect(message).toContain('https://docs.gleap.ai/documentation/javascript/content-security-policy');
     // The warning must not replace the fallback — working setups keep working.
     expect(iframe.src).toBe('https://messenger-app.gleap.io/chatbar');
   });
@@ -319,7 +319,7 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
     const message = warn.mock.calls[0][0];
     expect(message).toContain('wss://sockets.gleap.io');
     expect(message).toContain('connect-src');
-    expect(message).toContain('https://docs.gleap.io/documentation/javascript/content-security-policy');
+    expect(message).toContain('https://docs.gleap.ai/documentation/javascript/content-security-policy');
   });
 
   test('duplicate violations warn once; Report-Only violations stay silent', async () => {
