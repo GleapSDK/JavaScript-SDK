@@ -18,7 +18,7 @@ import Gleap, {
   GleapTranslationManager,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
-import { bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
+import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
 import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
 export default class GleapFrameManager {
@@ -35,6 +35,10 @@ export default class GleapFrameManager {
   frameHeight = 0;
   sendingFeedback = false;
   queue = [];
+  // The end user's expand/collapse choice (undefined = not read from the cache yet).
+  widgetExpanded = undefined;
+  appliedWidgetExpanded = false;
+  lastWidgetSizeUpdate = null;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -69,6 +73,7 @@ export default class GleapFrameManager {
 
       try {
         window.addEventListener('resize', appHeight);
+        window.addEventListener('resize', () => this.handleViewportResize());
         appHeight();
       } catch (e) {}
     }
@@ -90,6 +95,75 @@ export default class GleapFrameManager {
     if ((this.appMode === 'widget' || this.appMode === 'survey_full' || this.appMode === 'survey_web') && innerContainer) {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
     }
+
+    this.sendWidgetSizeUpdate();
+  }
+
+  // The widget is full screen at <= 450px (see UI.js), so there is nothing to expand.
+  isMobileViewport() {
+    try {
+      return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 450px)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  canExpandWidget() {
+    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+    if (flowConfig && flowConfig.hideExpandButton) {
+      return false;
+    }
+    return !this.isSurvey() && !this.isMobileViewport();
+  }
+
+  getWidgetExpandedPreference() {
+    if (typeof this.widgetExpanded === 'undefined') {
+      this.widgetExpanded = loadFromGleapCache('widget-expanded') === true;
+    }
+    return this.widgetExpanded;
+  }
+
+  isWidgetExpanded() {
+    return this.getWidgetExpandedPreference() && this.canExpandWidget();
+  }
+
+  setWidgetExpanded(expanded) {
+    this.widgetExpanded = expanded ? true : false;
+    try {
+      saveToGleapCache('widget-expanded', this.widgetExpanded ? true : null);
+    } catch (e) {}
+    this.updateFrameStyle();
+    // Always answer, so a refused request (e.g. on mobile) re-syncs the messenger's button.
+    this.sendWidgetSizeUpdate(true);
+  }
+
+  // Tells the messenger whether to show the expand/collapse button and in which state.
+  sendWidgetSizeUpdate(force = false) {
+    if (!this.comReady) {
+      return;
+    }
+
+    const data = {
+      expandable: this.canExpandWidget(),
+      expanded: this.isWidgetExpanded(),
+    };
+    const last = this.lastWidgetSizeUpdate;
+    if (!force && last && last.expandable === data.expandable && last.expanded === data.expanded) {
+      return;
+    }
+
+    this.lastWidgetSizeUpdate = data;
+    this.sendMessage({
+      name: 'widget-size-update',
+      data,
+    });
+  }
+
+  handleViewportResize() {
+    if (this.isWidgetExpanded() !== this.appliedWidgetExpanded) {
+      this.updateFrameStyle();
+    }
+    this.sendWidgetSizeUpdate();
   }
 
   registerEscListener() {
@@ -271,9 +345,11 @@ export default class GleapFrameManager {
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
     const noButtonStyleLeft = 'gleap-frame-container--no-button';
+    const expandedStyle = 'gleap-frame-container--expanded';
     const allStyles = [
       classicStyle,
       classicStyleLeft,
+      expandedStyle,
       extendedStyle,
       modernStyleLeft,
       noButtonStyleLeft,
@@ -319,6 +395,12 @@ export default class GleapFrameManager {
     }
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
+    }
+
+    // The end user's choice, independent of the page-driven extended mode.
+    this.appliedWidgetExpanded = this.isWidgetExpanded();
+    if (this.appliedWidgetExpanded) {
+      this.gleapFrameContainer.classList.add(expandedStyle);
     }
 
     this.gleapFrameContainer.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
@@ -496,6 +578,7 @@ export default class GleapFrameManager {
     });
 
     this.updateFrameStyle();
+    this.sendWidgetSizeUpdate(true);
   }
 
   showDrawingScreen(type) {
@@ -593,6 +676,10 @@ export default class GleapFrameManager {
 
       if (data.name === 'close-widget') {
         this.hideWidget();
+      }
+
+      if (data.name === 'set-widget-expanded') {
+        this.setWidgetExpanded(data.data && data.data.expanded);
       }
 
       if (data.name === 'video-call-joined') {
