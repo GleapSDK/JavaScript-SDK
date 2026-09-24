@@ -99,10 +99,12 @@ export default class GleapFrameManager {
     this.sendWidgetSizeUpdate();
   }
 
-  // The widget is full screen at <= 450px (see UI.js), so there is nothing to expand.
+  // The widget is full screen at <= 450px and the expanded CSS only applies from
+  // 451px (see UI.js). Test the same query as that CSS so a fractional (zoomed)
+  // viewport between the two never counts as expandable.
   isMobileViewport() {
     try {
-      return typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 450px)').matches;
+      return typeof window.matchMedia === 'function' && !window.matchMedia('(min-width: 451px)').matches;
     } catch (e) {
       return false;
     }

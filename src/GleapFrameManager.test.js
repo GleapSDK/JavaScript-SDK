@@ -74,9 +74,20 @@ const sentSizeUpdates = () =>
 
 const dispatch = (fm, message) => fm.listeners.forEach((listener) => listener(message));
 
+// Evaluates the (min|max)-width media queries against a CSS viewport width,
+// like the browser does (it can be fractional under browser zoom).
+let viewportWidth;
+const matchWidthQuery = (query) => {
+  const min = /\(min-width:\s*([\d.]+)px\)/.exec(query);
+  const max = /\(max-width:\s*([\d.]+)px\)/.exec(query);
+  const width = isMobile ? 400 : viewportWidth;
+  return { matches: (!min || width >= Number(min[1])) && (!max || width <= Number(max[1])) };
+};
+
 beforeEach(() => {
   isMobile = false;
-  window.matchMedia = jest.fn(() => ({ matches: isMobile }));
+  viewportWidth = 1440;
+  window.matchMedia = jest.fn(matchWidthQuery);
   Object.keys(mockFlowConfig).forEach((k) => delete mockFlowConfig[k]);
   loadFromGleapCache.mockReset().mockReturnValue(null);
   saveToGleapCache.mockReset();
@@ -150,8 +161,30 @@ describe('GleapFrameManager expand/collapse window', () => {
     const fm = setup();
     fm.setWidgetExpanded(true);
 
-    expect(window.matchMedia).toHaveBeenCalledWith('(max-width: 450px)');
     expect(fm.canExpandWidget()).toBe(false);
+    expect(fm.gleapFrameContainer.classList.contains(EXPANDED_CLASS)).toBe(false);
+    expect(sentSizeUpdates().pop().data).toEqual({ expandable: false, expanded: false });
+  });
+
+  it('is not expandable between the mobile and desktop breakpoints (fractional zoomed viewport)', () => {
+    // At 450.5px neither `max-width: 450px` (mobile layout) nor the
+    // `min-width: 451px` block holding the expanded CSS applies, so an
+    // "expanded" widget would not change at all.
+    viewportWidth = 450.5;
+    const fm = setup();
+    fm.setWidgetExpanded(true);
+
+    expect(fm.canExpandWidget()).toBe(false);
+    expect(fm.gleapFrameContainer.classList.contains(EXPANDED_CLASS)).toBe(false);
+  });
+
+  it('collapses and hides the button when a config update turns the setting off', () => {
+    const fm = setup();
+    fm.setWidgetExpanded(true);
+
+    mockFlowConfig.hideExpandButton = true;
+    fm.sendConfigUpdate();
+
     expect(fm.gleapFrameContainer.classList.contains(EXPANDED_CLASS)).toBe(false);
     expect(sentSizeUpdates().pop().data).toEqual({ expandable: false, expanded: false });
   });
