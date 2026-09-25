@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.1.0
+Added control over the env data (device, browser and page details shown under the Env data tab of a ticket) the SDK collects:
+`Gleap.setEnvDataPropsToIgnore(["currentUrl", "userAgent"])` removes individual env data keys from every ticket and conversation before it is sent. Each call replaces the previous list; an empty list resets it.
+`Gleap.setDisableEnvData(true)` stops collecting env data entirely (tickets arrive with an empty Env data tab); `Gleap.setDisableEnvData(false)` turns it back on.
+Both can be called before or after `Gleap.initialize` and apply to the next ticket. The per-form "Exclude data → Env data" switch in the dashboard keeps working as before.
+
 ## 18.0.1
 The session replay buffer is now capped by size as well as by time (about 10 MB of events, on top of the existing three 5-minute checkpoints). When it grows past that, the oldest checkpoints are dropped first; if a single checkpoint outgrows the budget on a page that re-renders constantly, a fresh checkpoint replaces it (at most every 30 seconds), so the most recent activity is always kept. This bounds the memory the recorder holds in the host page and the size of the report upload.
 A report that the API (or a proxy in front of it) rejects as too large (HTTP 413) is no longer lost: it is resent without the session replay, and if needed without screenshot data and network logs.
