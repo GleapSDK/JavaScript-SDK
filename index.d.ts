@@ -238,6 +238,16 @@ export namespace Gleap {
   function hide(): void;
   function setUseCookies(useCookies: boolean): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
+  /**
+   * Env data keys (e.g. "currentUrl", "userAgent") that are removed before a
+   * ticket is sent. Each call replaces the previous list.
+   */
+  function setEnvDataPropsToIgnore(propsToIgnore: string[]): void;
+  /**
+   * Stops (true) or resumes (false) collecting env data. While disabled,
+   * tickets are sent without any env data.
+   */
+  function setDisableEnvData(disableEnvData: boolean): void;
   function setCSPNonce(nonce: string): void;
   function showFeedbackButton(show: boolean): void;
   function startFeedbackFlow(

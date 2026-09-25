@@ -114,6 +114,22 @@ class Gleap {
   }
 
   /**
+   * Sets the env data props to ignore. They are removed before a ticket is sent.
+   * @param {Array} propsToIgnore
+   */
+  static setEnvDataPropsToIgnore(propsToIgnore) {
+    GleapMetaDataManager.setEnvDataPropsToIgnore(propsToIgnore);
+  }
+
+  /**
+   * Disables the env data. While disabled, no env data is collected at all.
+   * @param {boolean} disableEnvData
+   */
+  static setDisableEnvData(disableEnvData) {
+    GleapMetaDataManager.setDisableEnvData(disableEnvData);
+  }
+
+  /**
    * Sets the page's Content-Security-Policy nonce, which the SDK then stamps onto every
    * <script>/<style> element it creates — including the widget frames' app bundles, which
    * a strict policy (nonce-based, 'strict-dynamic', no 'unsafe-inline') would otherwise

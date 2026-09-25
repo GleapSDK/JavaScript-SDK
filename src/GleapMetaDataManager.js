@@ -5,6 +5,8 @@ export default class GleapMetaDataManager {
   appBuildNumber = '';
   appVersionCode = '';
   environment = 'prod';
+  envDataPropsToIgnore = [];
+  envDataDisabled = false;
 
   // GleapMetaDataManager singleton
   static instance;
@@ -31,12 +33,42 @@ export default class GleapMetaDataManager {
     this.getInstance().appBuildNumber = appBuildNumber;
   }
 
+  /**
+   * Sets the env data keys that are removed before a ticket is sent.
+   * @param {string[]} propsToIgnore
+   */
+  static setEnvDataPropsToIgnore(propsToIgnore) {
+    this.getInstance().envDataPropsToIgnore = Array.isArray(propsToIgnore) ? propsToIgnore.slice() : [];
+  }
+
+  /**
+   * Disables (or re-enables) the env data collection.
+   * @param {boolean} disableEnvData
+   */
+  static setDisableEnvData(disableEnvData) {
+    this.getInstance().envDataDisabled = !!disableEnvData;
+  }
+
   getSessionDuration() {
     const now = new Date();
     return Math.round((now.getTime() - this.sessionStart.getTime()) / 1000);
   }
 
   getMetaData() {
+    // Disabled env data is never gathered, rather than gathered and dropped.
+    if (this.envDataDisabled) {
+      return {};
+    }
+
+    var metaData = this.collectMetaData();
+    for (var i = 0; i < this.envDataPropsToIgnore.length; i++) {
+      delete metaData[this.envDataPropsToIgnore[i]];
+    }
+
+    return metaData;
+  }
+
+  collectMetaData() {
     var nAgt = navigator.userAgent;
     var browserName = navigator.appName;
     var fullVersion = '' + parseFloat(navigator.appVersion);
