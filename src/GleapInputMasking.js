@@ -1,18 +1,24 @@
 // Which form field values the SDK may send to Gleap. Screenshots (ScreenCapture.js) and session
 // replays (GleapReplayRecorder.js) share this rule, so a value that is masked in one is masked in
 // the other. A masked value becomes one '*' per character, the same as rrweb's own masking.
+// Screenshots also use the markers below to leave out blocked elements and to mask text.
 
 // Always masked, whatever the replay options say: password fields, and fields whose autocomplete
 // token names a secret, a card number or a card security code.
 const SENSITIVE_AUTOCOMPLETE_TOKENS = ['current-password', 'new-password', 'one-time-code', 'cc-number', 'cc-csc'];
 
-// Also masked when the field, or an element around it, carries a marker: rrweb's rr-mask class
-// (documented for the JavaScript SDK), gl-mask (the class replays used before 16.2.5, documented
-// for Ionic Capacitor) and the SDK's original gleap-ignore="value" attribute. A site's own
-// maskTextClass / maskTextSelector from Gleap.setReplayOptions count as markers as well.
-const MASK_MARKER_SELECTOR = '.rr-mask, .gl-mask, [gleap-ignore="value"]';
+// Also masked when the field, or an element around it, carries a mask marker: rrweb's rr-mask
+// class (documented for the JavaScript SDK), gl-mask (the class replays used before 16.2.5,
+// documented for Ionic Capacitor), or a site's own maskTextClass / maskTextSelector from
+// Gleap.setReplayOptions. Screenshots also mask the text inside them.
+const MASK_MARKER_SELECTOR = '.rr-mask, .gl-mask';
 
-// Areas the screenshot renderer leaves blank and replays do not record at all.
+// Field values only: the SDK's original gleap-ignore="value" attribute.
+const VALUE_MASK_MARKER_SELECTOR = '[gleap-ignore="value"]';
+
+// Elements screenshots capture as an empty placeholder of the same size, the way replays record
+// rr-block elements (gl-block is the class replays used before 16.2.5). A site's own blockClass /
+// blockSelector count as well.
 const BLOCK_MARKER_SELECTOR = '.rr-block, .gl-block';
 
 // Input types whose value is a button label or a fixed value, not something the user typed. rrweb
@@ -121,23 +127,37 @@ const someAncestor = (element, test) => {
   return false;
 };
 
-const hasMaskMarker = (element, options) =>
-  someAncestor(
-    element,
-    (el) =>
-      matchesSelector(el, MASK_MARKER_SELECTOR) ||
-      hasClass(el, options.maskTextClass) ||
-      matchesSelector(el, options.maskTextSelector)
+/**
+ * Whether the element itself is a mask marker (its ancestors are not tested).
+ * @param {Element} element
+ * @param {object} options The site's Gleap.setReplayOptions.
+ */
+export const isMaskMarker = (element, options) => {
+  options = options || {};
+  return (
+    matchesSelector(element, MASK_MARKER_SELECTOR) ||
+    hasClass(element, options.maskTextClass) ||
+    matchesSelector(element, options.maskTextSelector)
   );
+};
 
-const isInBlockedArea = (element, options) =>
-  someAncestor(
-    element,
-    (el) =>
-      matchesSelector(el, BLOCK_MARKER_SELECTOR) ||
-      hasClass(el, options.blockClass) ||
-      matchesSelector(el, options.blockSelector)
+/**
+ * Whether the element itself is blocked (its ancestors are not tested): rr-block, gl-block, or the
+ * blockClass / blockSelector replay options.
+ * @param {Element} element
+ * @param {object} options The site's Gleap.setReplayOptions.
+ */
+export const isBlockedElement = (element, options) => {
+  options = options || {};
+  return (
+    matchesSelector(element, BLOCK_MARKER_SELECTOR) ||
+    hasClass(element, options.blockClass) ||
+    matchesSelector(element, options.blockSelector)
   );
+};
+
+const hasMaskMarker = (element, options) =>
+  someAncestor(element, (el) => isMaskMarker(el, options) || matchesSelector(el, VALUE_MASK_MARKER_SELECTOR));
 
 // The field kinds rrweb masks for these replay options: all of them for maskAllInputs, otherwise
 // the kinds in maskInputOptions, which default to password fields.
@@ -198,20 +218,29 @@ export const getFieldValueMask = (element, options) => {
   };
 };
 
+// rrweb's text mask: every character but whitespace becomes '*', so words keep their length and
+// lines keep their breaks.
+const maskTextContent = (text) => String(text).replace(/[\S]/g, '*');
+
 /**
- * The screenshot rule: getFieldValueMask, plus fields inside blocked areas (rr-block, gl-block, or
- * the blockClass / blockSelector replay options). The renderer leaves those areas blank and replays
- * do not record them, so their values have no reason to be in the snapshot.
+ * How the text inside a mask marker is captured: the site's maskTextFn, as rrweb calls it in
+ * replays, otherwise rrweb's own mask.
+ * @param {object} options The site's Gleap.setReplayOptions.
+ * @returns {function(string, Element): string}
  */
-export const getScreenshotFieldMask = (element, options) => {
-  options = options || {};
-
-  const mask = getFieldValueMask(element, options);
-  if (mask) {
-    return mask;
+export const getTextMask = (options) => {
+  const customMask = options && options.maskTextFn;
+  if (typeof customMask !== 'function') {
+    return maskTextContent;
   }
-
-  return isInBlockedArea(element, options) ? maskValue : null;
+  return (text, element) => {
+    try {
+      const masked = customMask(text, element);
+      return typeof masked === 'string' ? masked : maskTextContent(text);
+    } catch (exp) {
+      return maskTextContent(text);
+    }
+  };
 };
 
 /**

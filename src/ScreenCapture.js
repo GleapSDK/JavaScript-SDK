@@ -1,5 +1,5 @@
 import { isMobile, resizeImage } from './GleapHelper';
-import { getScreenshotFieldMask } from './GleapInputMasking';
+import { getFieldValueMask, getTextMask, isBlockedElement, isMaskMarker } from './GleapInputMasking';
 import { isBlacklisted } from './ResourceExclusionList';
 
 /**
@@ -427,15 +427,215 @@ const extractFinalCSSState = (element, animationsByTarget) => {
   return JSON.stringify(finalCSSState);
 };
 
+// Computed values that decide where a box sits among its siblings, and how tall the line an inline
+// box sits on is. A blocked element's placeholder copies them, because the inline styles and
+// attributes that may have set them are not captured.
+const PLACEHOLDER_LAYOUT_PROPERTIES = [
+  'position',
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'float',
+  'clear',
+  'margin-top',
+  'margin-right',
+  'margin-bottom',
+  'margin-left',
+  'order',
+  'grid-row-start',
+  'grid-row-end',
+  'grid-column-start',
+  'grid-column-end',
+  'vertical-align',
+  'font-family',
+  'font-size',
+  'line-height',
+];
+
+const setImportant = (style, property, value) => style.setProperty(property, value, 'important');
+
+// A fixed border-box size, whatever the page's CSS says about min / max sizes or flex and grid
+// sizing.
+const pinSize = (style, width, height) => {
+  setImportant(style, 'box-sizing', 'border-box');
+  ['width', 'min-width', 'max-width'].forEach((property) => setImportant(style, property, width + 'px'));
+  ['height', 'min-height', 'max-height'].forEach((property) => setImportant(style, property, height + 'px'));
+};
+
+// Width is 'auto' where it does not apply: an inline box of text, not an image, a media element or a
+// form field.
+const isTextInline = (style) => style.display === 'inline' && style.width === 'auto';
+
+// The boxes inside an inline element that its line fragments do not cover: block boxes (a <div> in
+// an <a>, or in the shadow tree of a web component), which sit between the fragments, and images,
+// inline-blocks and form fields, which can make a line taller. Margin boxes, with vertical-align.
+const collectInlineContent = (element, content) => {
+  const root = element.shadowRoot || element;
+  for (let child = root.firstElementChild; child; child = child.nextElementSibling) {
+    const style = window.getComputedStyle(child);
+    if (style.display === 'none' || style.position === 'absolute' || style.position === 'fixed' || style.float !== 'none') {
+      continue;
+    }
+
+    if (style.display === 'contents' || isTextInline(style)) {
+      collectInlineContent(child, content);
+      continue;
+    }
+
+    const rect = child.getBoundingClientRect();
+    const box = {
+      left: rect.left - parseFloat(style.marginLeft),
+      right: rect.right + parseFloat(style.marginRight),
+      top: rect.top - parseFloat(style.marginTop),
+      bottom: rect.bottom + parseFloat(style.marginBottom),
+      verticalAlign: style.verticalAlign,
+    };
+    if (style.display.indexOf('inline') !== 0) {
+      content.blocks.push(box);
+      continue;
+    }
+
+    // Its spacer is empty, so it sits on its bottom edge like an image. A box with text in it, a
+    // badge or a form field, sits on its text's baseline instead, which middle comes closest to.
+    if (box.verticalAlign === 'baseline' && !/^(img|video|audio|canvas|iframe|embed|object|svg)$/i.test(child.tagName)) {
+      box.verticalAlign = 'middle';
+    }
+    content.atomicInlines.push(box);
+  }
+  return content;
+};
+
+// An inline box of text wraps into one fragment per line. The placeholder gets an empty inline-block
+// per fragment, as wide as the fragment, and a line break between fragments on different lines, so
+// the text around it stays in place. A spacer has no height, which leaves the line as tall as the
+// element's font makes it, unless an image, inline-block or form field made that line taller: then
+// it takes the tallest one's height and vertical-align.
+const appendLineSpacers = (placeholder, node, atomicInlines) => {
+  const fragments = node.getClientRects();
+  const middle = (box) => (box.top + box.bottom) / 2;
+  const tallestOnLine = [];
+  atomicInlines.forEach((box) => {
+    let line = 0;
+    for (let i = 1; i < fragments.length; i++) {
+      if (Math.abs(middle(fragments[i]) - middle(box)) < Math.abs(middle(fragments[line]) - middle(box))) {
+        line = i;
+      }
+    }
+    const tallest = tallestOnLine[line];
+    if (!tallest || box.bottom - box.top > tallest.bottom - tallest.top) {
+      tallestOnLine[line] = box;
+    }
+  });
+
+  for (let i = 0; i < fragments.length; i++) {
+    const previous = fragments[i - 1];
+    if (previous && fragments[i].top >= previous.top + previous.height / 2) {
+      placeholder.appendChild(placeholder.ownerDocument.createElement('br'));
+    }
+
+    const tallest = tallestOnLine[i];
+    const spacer = placeholder.ownerDocument.createElement('span');
+    setImportant(spacer.style, 'display', 'inline-block');
+    ['margin', 'padding', 'border-width'].forEach((property) => setImportant(spacer.style, property, '0'));
+    setImportant(spacer.style, 'vertical-align', tallest ? tallest.verticalAlign : 'baseline');
+    pinSize(spacer.style, fragments[i].width, tallest ? tallest.bottom - tallest.top : 0);
+    placeholder.appendChild(spacer);
+  }
+};
+
+// A blocked element (rr-block, gl-block, or the blockClass / blockSelector replay options) is
+// captured the way rrweb records it in replays: as an empty element of the same tag and size, so
+// none of its text, attributes, children, shadow tree or images reach the snapshot. It keeps its
+// class and id for the page's CSS, and renders blank. placeholderDocument has no window, so
+// building the placeholder runs no custom element constructor and loads nothing.
+const createBlockedPlaceholder = (node, placeholderDocument) => {
+  const placeholder = placeholderDocument.createElementNS(node.namespaceURI, node.localName);
+  ['class', 'id'].forEach((name) => {
+    if (node.hasAttribute(name)) {
+      placeholder.setAttribute(name, node.getAttribute(name));
+    }
+  });
+
+  if (!placeholder.style) {
+    return placeholder;
+  }
+
+  try {
+    const computedStyle = window.getComputedStyle(node);
+    const style = placeholder.style;
+    PLACEHOLDER_LAYOUT_PROPERTIES.forEach((property) =>
+      setImportant(style, property, computedStyle.getPropertyValue(property))
+    );
+    setImportant(style, 'visibility', 'hidden');
+
+    const content =
+      node instanceof HTMLElement && isTextInline(computedStyle)
+        ? collectInlineContent(node, { blocks: [], atomicInlines: [] })
+        : null;
+
+    if (content && content.blocks.length === 0) {
+      setImportant(style, 'display', 'inline');
+      // The line fragments include the element's padding and border.
+      setImportant(style, 'padding', '0');
+      setImportant(style, 'border-width', '0');
+      appendLineSpacers(placeholder, node, content.atomicInlines);
+    } else if (content) {
+      // Block boxes inside an inline element break its line, as a block placeholder does, and make
+      // up its height.
+      const area = content.blocks.reduce((union, box) => ({
+        left: Math.min(union.left, box.left),
+        right: Math.max(union.right, box.right),
+        top: Math.min(union.top, box.top),
+        bottom: Math.max(union.bottom, box.bottom),
+      }));
+      setImportant(style, 'display', 'block');
+      setImportant(style, 'margin-top', '0');
+      setImportant(style, 'margin-bottom', '0');
+      pinSize(style, area.right - area.left, area.bottom - area.top);
+    } else {
+      const rect = node.getBoundingClientRect();
+      // An inline image or media element without a source is an empty inline box, which width and
+      // height do not apply to.
+      setImportant(style, 'display', computedStyle.display === 'inline' ? 'inline-block' : computedStyle.display);
+      pinSize(style, rect.width, rect.height);
+    }
+  } catch (exp) {}
+
+  return placeholder;
+};
+
 const deepClone = async (host, privacyOptions) => {
   let shadowNodeId = 1;
   const animationsByTarget = collectAnimationsInto(new Map(), window.document);
+  const maskText = getTextMask(privacyOptions);
+  let placeholderDocument = null;
 
-  const cloneNode = async (node, parent, shadowRoot) => {
+  const cloneNode = async (node, parent, shadowRoot, insideMaskMarker) => {
+    const isElement = node.nodeType == Node.ELEMENT_NODE;
+
+    if (isElement && isBlockedElement(node, privacyOptions)) {
+      placeholderDocument = placeholderDocument || document.implementation.createHTMLDocument('');
+      const placeholder = createBlockedPlaceholder(node, placeholderDocument);
+      if (shadowRoot) {
+        placeholder.setAttribute('bb-shadow-child', shadowRoot);
+      }
+      parent.appendChild(placeholder);
+      return;
+    }
+
+    // Replays do not record comments, and inside a mask marker one may hold the values it masks.
+    if (insideMaskMarker && node.nodeType == Node.COMMENT_NODE) {
+      return;
+    }
+
+    // Text inside a mask marker, or inside any of its descendants, is masked.
+    const masksText = insideMaskMarker || (isElement && isMaskMarker(node, privacyOptions));
+
     const walkTree = async (nextn, nextp, innerShadowRoot) => {
       while (nextn) {
         try {
-          await cloneNode(nextn, nextp, innerShadowRoot);
+          await cloneNode(nextn, nextp, innerShadowRoot, masksText);
         } catch (exp) { }
 
         // Fix missing element nodes.
@@ -454,6 +654,11 @@ const deepClone = async (host, privacyOptions) => {
     const tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
     // Set for form fields whose value must not reach the snapshot (see GleapInputMasking.js).
     let fieldMask = null;
+
+    // Masked the way rrweb masks text in replays. A style sheet keeps its CSS.
+    if (insideMaskMarker && node.nodeType == Node.TEXT_NODE && node.parentNode.nodeName.toUpperCase() !== 'STYLE') {
+      clone.data = maskText(node.data, node.parentElement);
+    }
 
     const webAnimations = extractFinalCSSState(node, animationsByTarget);
     if (webAnimations != null) {
@@ -479,7 +684,7 @@ const deepClone = async (host, privacyOptions) => {
       }
     }
 
-    if (node.nodeType == Node.ELEMENT_NODE) {
+    if (isElement) {
       if (tagName == 'IFRAME' || tagName == 'VIDEO' || tagName == 'EMBED' || tagName == 'IMG' || tagName == 'SVG') {
         const boundingRect = node.getBoundingClientRect();
         clone.setAttribute('bb-element', true);
@@ -494,7 +699,7 @@ const deepClone = async (host, privacyOptions) => {
       }
 
       if (tagName === 'SELECT' || tagName === 'TEXTAREA' || tagName === 'INPUT') {
-        fieldMask = getScreenshotFieldMask(node, privacyOptions);
+        fieldMask = getFieldValueMask(node, privacyOptions);
         clone.setAttribute('bb-data-value', fieldMask ? fieldMask(node.value) : node.value);
 
         // Frameworks mirror what the user typed into the value attribute (React does, password
