@@ -176,18 +176,33 @@ describe('startScreenCapture — masked form fields', () => {
 });
 
 // jsdom does no layout, so tests that look at a placeholder's geometry give the page's elements
-// their computed styles and boxes by hand.
+// their computed styles, boxes and offsets by hand. Offsets are 0 and offsetParent null in jsdom, so
+// every child's edge is at its parent's unless a test moves it.
 const fakeComputedStyle = (values) => {
   const all = {
     display: 'block',
     width: 'auto',
+    height: 'auto',
     float: 'none',
     position: 'static',
+    'box-sizing': 'content-box',
+    'overflow-x': 'visible',
+    'overflow-y': 'visible',
+    contain: 'none',
+    content: 'none',
     'vertical-align': 'baseline',
-    'margin-top': '0px',
-    'margin-right': '0px',
-    'margin-bottom': '0px',
-    'margin-left': '0px',
+    'align-self': 'auto',
+    'align-items': 'normal',
+    ...['top', 'right', 'bottom', 'left'].reduce(
+      (sides, side) => ({
+        ...sides,
+        ['margin-' + side]: '0px',
+        ['padding-' + side]: '0px',
+        ['border-' + side + '-width']: '0px',
+        ['border-' + side + '-style']: 'none',
+      }),
+      {}
+    ),
     ...values,
   };
   const style = { getPropertyValue: (property) => all[property] || '' };
@@ -197,15 +212,16 @@ const fakeComputedStyle = (values) => {
   return style;
 };
 
+// A '::before' / '::after' entry in an element's values is the style of that pseudo-element.
 const stubComputedStyles = (stylesByElement) => {
   const getComputedStyle = window.getComputedStyle;
-  jest
-    .spyOn(window, 'getComputedStyle')
-    .mockImplementation((element, pseudo) =>
-      stylesByElement.has(element)
-        ? fakeComputedStyle(stylesByElement.get(element))
-        : getComputedStyle.call(window, element, pseudo)
-    );
+  jest.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+    if (!stylesByElement.has(element)) {
+      return getComputedStyle.call(window, element, pseudo);
+    }
+    const values = stylesByElement.get(element);
+    return fakeComputedStyle(pseudo ? { display: 'inline', ...values[pseudo] } : values);
+  });
 };
 
 const box = (left, top, width, height) => ({
@@ -218,6 +234,16 @@ const box = (left, top, width, height) => ({
   right: left + width,
   bottom: top + height,
 });
+
+const setOffsets = (element, offsets) =>
+  Object.keys(offsets).forEach((name) => Object.defineProperty(element, name, { configurable: true, value: offsets[name] }));
+
+// jsdom's Range has no getClientRects(): the line fragments of the given text nodes.
+const stubTextRects = (rectsByText) => {
+  Range.prototype.getClientRects = function () {
+    return rectsByText.get(this.startContainer) || [];
+  };
+};
 
 // A blocked element (rr-block, gl-block, or the blockClass / blockSelector replay options) reaches
 // the snapshot as an empty placeholder of its size, like rrweb records it in replays.
@@ -232,9 +258,9 @@ describe('startScreenCapture — blocked elements', () => {
     jest.restoreAllMocks();
   });
 
-  // Private: the text, the attributes, and a nested image, link and field.
+  // Private: the text, the attributes (the id too), and a nested image, link and field.
   const blockedCard = (marker) =>
-    `<div ${marker} id="card" title="Jane Doe" data-user="jane@example.com" style="background: url(/avatar/jane.png)">` +
+    `<div ${marker} id="card-jane-doe" title="Jane Doe" data-user="jane@example.com" style="background: url(/avatar/jane.png)">` +
     '<h3>Jane Doe</h3><img src="/avatar/jane.png" alt="Jane Doe avatar"><a href="/users/jane">Profile</a><input id="iban">' +
     '</div><p>Public text</p>';
 
@@ -244,7 +270,7 @@ describe('startScreenCapture — blocked elements', () => {
     ['the blockClass option', 'class="card private"', { blockClass: 'private' }],
     ['a blockClass RegExp', 'class="pii-card"', { blockClass: /^pii-/ }],
     ['the blockSelector option', 'data-private', { blockSelector: '[data-private]' }],
-  ])('%s: only the tag, class and id of the element reach the snapshot', async (name, marker, options) => {
+  ])('%s: only the tag and class of the element reach the snapshot', async (name, marker, options) => {
     document.body.innerHTML = blockedCard(marker);
     document.getElementById('iban').value = 'DE89370400440532013000';
 
@@ -255,57 +281,95 @@ describe('startScreenCapture — blocked elements', () => {
     }
     expect(html).toContain('Public text');
 
-    const card = parse(html).getElementById('card');
+    const card = parse(html).body.firstElementChild;
     expect(card.tagName).toBe('DIV');
     expect(card.childNodes).toHaveLength(0);
-    const otherAttributes = card.getAttributeNames().filter((attribute) => !['class', 'id', 'style'].includes(attribute));
-    expect(otherAttributes).toEqual([]);
+    // rrweb leaves the id out as well.
+    expect(card.getAttributeNames().filter((attribute) => !['class', 'style'].includes(attribute))).toEqual([]);
   });
 
-  test('the placeholder takes the size the element has on the page, and renders blank', async () => {
-    document.body.innerHTML = '<div class="rr-block" id="card">Jane Doe</div>';
-    document.getElementById('card').getBoundingClientRect = () => box(20, 30, 312.5, 80);
+  test('the placeholder takes the size of the element, and renders blank', async () => {
+    document.body.innerHTML = '<div class="rr-block">Jane Doe</div>';
+    const card = document.querySelector('.rr-block');
+    stubComputedStyles(
+      new Map([
+        [
+          card,
+          {
+            width: '300.5px',
+            height: '60px',
+            'padding-top': '8px',
+            'padding-bottom': '8px',
+            'border-left-width': '6px',
+            'border-right-width': '6px',
+          },
+        ],
+      ])
+    );
 
-    const card = parse((await startScreenCapture(true)).html).getElementById('card');
+    const placeholder = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     for (const [property, value] of [
       ['box-sizing', 'border-box'],
       ['width', '312.5px'],
       ['min-width', '312.5px'],
       ['max-width', '312.5px'],
-      ['height', '80px'],
-      ['min-height', '80px'],
-      ['max-height', '80px'],
+      ['height', '76px'],
+      ['min-height', '76px'],
+      ['max-height', '76px'],
+      // It draws nothing, so all of its size is content.
+      ['padding-top', '0px'],
+      ['border-left-width', '0px'],
       ['visibility', 'hidden'],
     ]) {
-      expect(card.style.getPropertyValue(property)).toBe(value);
+      expect(placeholder.style.getPropertyValue(property)).toBe(value);
     }
-    expect(card.style.getPropertyPriority('width')).toBe('important');
+    expect(placeholder.style.getPropertyPriority('width')).toBe('important');
   });
 
-  test('it copies where the element sits, which inline styles and attributes may have set', async () => {
+  test('it copies where the element sits, which inline styles, attributes and id selectors may have set', async () => {
     document.body.innerHTML =
       '<div class="rr-block" id="popover" style="position: absolute; top: 12px; right: 20px">Jane Doe</div>';
-    const popover = document.getElementById('popover');
-    stubComputedStyles(new Map([[popover, { position: 'absolute', top: '12px', right: '20px', 'margin-left': '4px' }]]));
+    stubComputedStyles(
+      new Map([
+        [
+          document.getElementById('popover'),
+          {
+            position: 'absolute',
+            top: '12px',
+            right: '20px',
+            'margin-left': '4px',
+            'align-self': 'flex-end',
+            'overflow-y': 'auto',
+          },
+        ],
+      ])
+    );
 
-    const placeholder = parse((await startScreenCapture(true)).html).getElementById('popover');
+    const placeholder = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     expect(placeholder.style.getPropertyValue('position')).toBe('absolute');
     expect(placeholder.style.getPropertyValue('top')).toBe('12px');
     expect(placeholder.style.getPropertyValue('right')).toBe('20px');
     expect(placeholder.style.getPropertyValue('margin-left')).toBe('4px');
+    expect(placeholder.style.getPropertyValue('align-self')).toBe('flex-end');
+    expect(placeholder.style.getPropertyValue('overflow-y')).toBe('auto');
   });
 
   test('an inline image becomes an inline-block of its size, without its source', async () => {
     document.body.innerHTML = '<p>Photo: <img class="rr-block" id="photo" src="/photos/jane.png" alt="Jane Doe"></p>';
-    const photo = document.getElementById('photo');
-    stubComputedStyles(new Map([[photo, { display: 'inline', width: '120px', 'vertical-align': 'middle' }]]));
-    photo.getBoundingClientRect = () => box(60, 10, 120, 80);
+    stubComputedStyles(
+      new Map([
+        [
+          document.getElementById('photo'),
+          { display: 'inline', width: '120px', height: '80px', 'vertical-align': 'middle' },
+        ],
+      ])
+    );
 
-    const placeholder = parse((await startScreenCapture(true)).html).getElementById('photo');
+    const placeholder = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
-    expect(placeholder.getAttributeNames().sort()).toEqual(['class', 'id', 'style']);
+    expect(placeholder.getAttributeNames().sort()).toEqual(['class', 'style']);
     expect(placeholder.style.getPropertyValue('display')).toBe('inline-block');
     expect(placeholder.style.getPropertyValue('width')).toBe('120px');
     expect(placeholder.style.getPropertyValue('height')).toBe('80px');
@@ -319,7 +383,7 @@ describe('startScreenCapture — blocked elements', () => {
     stubComputedStyles(new Map([[address, { display: 'inline' }]]));
     address.getClientRects = () => [box(64, 44, 210.5, 17), box(10, 62, 90.25, 17)];
 
-    const placeholder = parse((await startScreenCapture(true)).html).getElementById('address');
+    const placeholder = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     expect(placeholder.textContent).toBe('');
     expect(placeholder.style.getPropertyValue('display')).toBe('inline');
@@ -347,7 +411,7 @@ describe('startScreenCapture — blocked elements', () => {
     profile.getClientRects = () => [box(30, 26, 40, 17)];
     avatar.getBoundingClientRect = () => box(30, 3, 40, 40);
 
-    const placeholder = parse((await startScreenCapture(true)).html).getElementById('profile');
+    const placeholder = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     const [spacer] = placeholder.children;
     expect(placeholder.children).toHaveLength(1);
@@ -368,7 +432,7 @@ describe('startScreenCapture — blocked elements', () => {
     );
     inner.getBoundingClientRect = () => box(10, 40, 600, 40);
 
-    const link = parse((await startScreenCapture(true)).html).getElementById('link');
+    const link = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     expect(link.hasAttribute('href')).toBe(false);
     expect(link.style.getPropertyValue('display')).toBe('block');
@@ -389,11 +453,11 @@ describe('startScreenCapture — blocked elements', () => {
     expect(html).not.toContain('078-05-1120');
     expect(html).not.toContain('Jane Doe');
     const doc = parse(html);
+    const [blockedHost, ssn] = [doc.body.children[1], doc.body.firstElementChild.lastElementChild];
     // The renderer moves the placeholder back into the shadow tree it came from.
-    expect(doc.getElementById('ssn').getAttribute('bb-shadow-child')).toBe(
-      doc.getElementById('host').getAttribute('bb-shadow-parent')
-    );
-    expect(doc.getElementById('blocked-host').hasAttribute('bb-shadow-parent')).toBe(false);
+    expect(ssn.className).toBe('rr-block');
+    expect(ssn.getAttribute('bb-shadow-child')).toBe(doc.getElementById('host').getAttribute('bb-shadow-parent'));
+    expect(blockedHost.hasAttribute('bb-shadow-parent')).toBe(false);
   });
 
   test('images in blocked elements are not downloaded', async () => {
@@ -423,13 +487,309 @@ describe('startScreenCapture — blocked elements', () => {
         }
       }
     );
-    document.body.innerHTML = '<blocked-user-card class="rr-block" id="card"></blocked-user-card>';
+    document.body.innerHTML = '<blocked-user-card class="rr-block"></blocked-user-card>';
     const constructedByPage = constructed;
 
-    const card = parse((await startScreenCapture(true)).html).getElementById('card');
+    const card = parse((await startScreenCapture(true)).html).querySelector('.rr-block');
 
     expect(constructed).toBe(constructedByPage);
     expect(card.tagName).toBe('BLOCKED-USER-CARD');
+  });
+});
+
+// The placeholder has no content, so what the content did to the layout around the element, it does
+// itself: user drawings on a screenshot are in page coordinates and point at what was there.
+describe('startScreenCapture — blocked elements keep the layout around them', () => {
+  const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
+  const capturePlaceholder = async (selector = '.rr-block') =>
+    parse((await startScreenCapture(true)).html).querySelector(selector);
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    delete Range.prototype.getClientRects;
+  });
+
+  // A blocked <div> in a card, around a first and a last paragraph with margins.
+  const blockedParagraphs = (styles, text = '') => {
+    document.body.innerHTML =
+      '<div class="card"><div class="rr-block" id="blocked">\n' +
+      `  ${text}<p id="first">Jane Doe</p>\n  <p id="last">jane@example.com</p>\n</div></div>`;
+    stubComputedStyles(
+      new Map([
+        [document.getElementById('blocked'), { width: '300px', height: '100px', 'margin-top': '4px', ...styles }],
+        [document.getElementById('first'), { 'margin-top': '16px', 'margin-bottom': '16px' }],
+        [document.getElementById('last'), { 'margin-top': '16px', 'margin-bottom': '24px' }],
+      ])
+    );
+    document.getElementById('first').getBoundingClientRect = () => box(0, 0, 300, 20);
+    document.getElementById('last').getBoundingClientRect = () => box(0, 36, 300, 20);
+  };
+
+  test('the margins of its first and last child, which collapse through its edges, move to the placeholder', async () => {
+    blockedParagraphs({});
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.style.getPropertyValue('margin-top')).toBe('16px');
+    expect(placeholder.style.getPropertyValue('margin-bottom')).toBe('24px');
+  });
+
+  test.each([
+    ['padding keeps', { 'padding-top': '1px', 'padding-bottom': '1px' }, null],
+    ['a border keeps', { 'border-top-width': '1px', 'border-bottom-width': '1px' }, null],
+    ['a formatting context of its own keeps', { 'overflow-x': 'hidden', 'overflow-y': 'hidden' }, null],
+    [
+      'a flex item keeps',
+      {},
+      () => {
+        setOffsets(document.getElementById('first'), { offsetTop: 16 });
+        setOffsets(document.getElementById('last'), { offsetTop: 52 });
+      },
+    ],
+  ])('%s its children’s margins inside it, and the placeholder keeps its own', async (name, styles, move) => {
+    blockedParagraphs(styles);
+    if (move) {
+      move();
+    }
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.style.getPropertyValue('margin-top')).toBe('4px');
+    expect(placeholder.style.getPropertyValue('margin-bottom')).toBe('0px');
+  });
+
+  test('a line of text before its first child keeps that child’s top margin inside it', async () => {
+    blockedParagraphs({}, 'Customer: ');
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.style.getPropertyValue('margin-top')).toBe('4px');
+    expect(placeholder.style.getPropertyValue('margin-bottom')).toBe('24px');
+  });
+
+  test('negative margins collapse with the others, and empty children let margins through', async () => {
+    document.body.innerHTML = '<div class="rr-block" id="blocked"><div id="spacer"></div><h2 id="title">Jane Doe</h2></div>';
+    stubComputedStyles(
+      new Map([
+        [document.getElementById('blocked'), { 'margin-top': '4px' }],
+        [document.getElementById('spacer'), { 'margin-top': '10px', 'margin-bottom': '20px' }],
+        [document.getElementById('title'), { 'margin-top': '-30px' }],
+      ])
+    );
+    document.getElementById('title').getBoundingClientRect = () => box(0, 0, 300, 20);
+
+    const placeholder = await capturePlaceholder();
+
+    // The largest (20px) plus the most negative (-30px).
+    expect(placeholder.style.getPropertyValue('margin-top')).toBe('-10px');
+  });
+
+  test('a transformed element keeps its size before the transform, as its placeholder is transformed too', async () => {
+    document.body.innerHTML = '<div style="transform: scale(0.5)"><div class="rr-block" id="blocked">Jane Doe</div></div>';
+    stubComputedStyles(new Map([[document.getElementById('blocked'), { width: '300px', height: '100px' }]]));
+    document.getElementById('blocked').getBoundingClientRect = () => box(0, 0, 150, 50);
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.style.getPropertyValue('width')).toBe('300px');
+    expect(placeholder.style.getPropertyValue('height')).toBe('100px');
+  });
+
+  test('the lines of an inline element under a transform keep the width they have before it', async () => {
+    document.body.innerHTML = '<p id="line">Ship to <span class="rr-block" id="address">1234 Long Street</span></p>';
+    stubComputedStyles(
+      new Map([
+        [document.getElementById('line'), { width: '400px', height: '60px' }],
+        [document.getElementById('address'), { display: 'inline' }],
+      ])
+    );
+    document.getElementById('line').getBoundingClientRect = () => box(0, 0, 200, 30);
+    document.getElementById('address').getClientRects = () => [box(40, 0, 60.5, 10)];
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.children[0].style.getPropertyValue('width')).toBe('121px');
+  });
+
+  test('a display: contents element keeps an empty box for each box it put in its parent', async () => {
+    document.body.innerHTML =
+      '<div class="grid"><div class="rr-block" id="blocked"><p class="vip" id="name" title="Jane Doe">Jane Doe</p>' +
+      'jane@example.com<span id="hidden">Jane</span></div><p>Public text</p></div>';
+    const text = document.getElementById('name').nextSibling;
+    stubComputedStyles(
+      new Map([
+        [document.getElementById('blocked'), { display: 'contents' }],
+        [document.getElementById('name'), { width: '120px', height: '40px', 'margin-bottom': '8px' }],
+        [document.getElementById('hidden'), { display: 'none' }],
+      ])
+    );
+    stubTextRects(new Map([[text, [box(10, 60, 150.5, 20)]]]));
+
+    const html = (await startScreenCapture(true)).html;
+
+    expect(html).not.toContain('Jane');
+    expect(html).not.toContain('jane@example.com');
+    expect(html).not.toContain('vip');
+    const placeholder = parse(html).querySelector('.rr-block');
+    expect(placeholder.style.getPropertyValue('display')).toBe('contents');
+    const [paragraph, line] = placeholder.children;
+    expect(placeholder.children).toHaveLength(2);
+    expect(paragraph.tagName).toBe('P');
+    expect(paragraph.getAttributeNames()).toEqual(['style']);
+    expect(paragraph.style.getPropertyValue('width')).toBe('120px');
+    expect(paragraph.style.getPropertyValue('height')).toBe('40px');
+    expect(paragraph.style.getPropertyValue('margin-bottom')).toBe('8px');
+    expect(paragraph.style.getPropertyValue('visibility')).toBe('hidden');
+    // Its text, as a line spacer.
+    expect(line.tagName).toBe('SPAN');
+    expect(line.firstElementChild.style.getPropertyValue('width')).toBe('150.5px');
+  });
+
+  // A cell of this box: content, padding and borders. With collapsed borders, a cell's box has half of
+  // each border it shares.
+  const cellStyle = {
+    display: 'table-cell',
+    width: '153.5px',
+    height: '24px',
+    'padding-top': '4px',
+    'padding-bottom': '4px',
+    'border-left-width': '3px',
+    'border-left-style': 'solid',
+  };
+
+  test('a cell keeps its column and row span, and its box', async () => {
+    document.body.innerHTML =
+      '<table><tr><td class="rr-block" id="cell" colspan="2 columns" rowspan="3">Jane Doe</td><td>1</td></tr></table>';
+    stubComputedStyles(new Map([[document.getElementById('cell'), cellStyle]]));
+
+    const cell = await capturePlaceholder();
+
+    expect(cell.getAttribute('colspan')).toBe('2');
+    expect(cell.getAttribute('rowspan')).toBe('3');
+    for (const [property, value] of [
+      ['box-sizing', 'content-box'],
+      ['width', '153.5px'],
+      ['height', '24px'],
+      ['padding-top', '4px'],
+      ['border-left-width', '3px'],
+      ['border-left-style', 'solid'],
+    ]) {
+      expect(cell.style.getPropertyValue(property)).toBe(value);
+    }
+    // jsdom drops !important when it writes longhands as a shorthand; browsers keep it.
+    expect(cell.style.getPropertyPriority('width')).toBe('important');
+  });
+
+  test('a blocked row keeps an empty cell for each of its cells, which make up the table’s grid', async () => {
+    document.body.innerHTML =
+      '<table><tr class="rr-block" id="row"><td class="vip" id="name" colspan="2">Jane Doe</td><td id="mail">jane@example.com</td></tr>' +
+      '<tr><td>1</td><td>2</td><td>3</td></tr></table>';
+    stubComputedStyles(
+      new Map([
+        [document.getElementById('row'), { display: 'table-row' }],
+        [document.getElementById('name'), cellStyle],
+        [document.getElementById('mail'), { ...cellStyle, width: '80px' }],
+      ])
+    );
+
+    const html = (await startScreenCapture(true)).html;
+
+    expect(html).not.toContain('Jane');
+    expect(html).not.toContain('vip');
+    const row = parse(html).querySelector('.rr-block');
+    const [name, mail] = row.children;
+    expect(row.children).toHaveLength(2);
+    expect(name.getAttributeNames().sort()).toEqual(['colspan', 'style']);
+    expect(name.style.getPropertyValue('width')).toBe('153.5px');
+    expect(mail.style.getPropertyValue('width')).toBe('80px');
+    expect(mail.style.getPropertyValue('padding-top')).toBe('4px');
+    // Every cell in the row is empty: none is aligned on a baseline, which an empty cell has at its
+    // bottom.
+    expect(mail.style.getPropertyValue('vertical-align')).toBe('top');
+    // The row hides them; plain declarations keep a long table's placeholder short.
+    expect(mail.style.getPropertyPriority('width')).toBe('');
+  });
+
+  test('a list item keeps its number, which numbers the items after it', async () => {
+    document.body.innerHTML = '<ol><li class="rr-block" value="7">Jane Doe</li><li>Next</li></ol>';
+
+    const item = await capturePlaceholder();
+
+    expect(item.getAttribute('value')).toBe('7');
+  });
+
+  describe('baselines', () => {
+    beforeEach(() => {
+      jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+        measureText: () => ({ fontBoundingBoxAscent: 14 }),
+      });
+    });
+
+    // A 30px tall box whose text starts 4px from its top: its baseline is 4 + 14px down.
+    const blockedBadge = (styles, parentStyles) => {
+      document.body.innerHTML = '<p id="parent">Status: <span class="rr-block" id="badge">Jane Doe</span> more</p>';
+      stubComputedStyles(
+        new Map([
+          [document.getElementById('parent'), parentStyles || {}],
+          [
+            document.getElementById('badge'),
+            { width: '80px', height: '24px', 'padding-top': '3px', 'padding-bottom': '3px', ...styles },
+          ],
+        ])
+      );
+      document.getElementById('badge').getBoundingClientRect = () => box(60, 100, 80, 30);
+      stubTextRects(new Map([[document.getElementById('badge').firstChild, [box(62, 104, 70, 18)]]]));
+    };
+
+    test.each([
+      ['an inline-block on a line of text', { display: 'inline-block' }, null],
+      ['a flex item aligned on its baseline', {}, { display: 'flex', 'align-items': 'baseline' }],
+    ])('%s keeps its text’s baseline, which an empty box does not have', async (name, styles, parentStyles) => {
+      blockedBadge(styles, parentStyles);
+
+      const placeholder = await capturePlaceholder();
+
+      expect(placeholder.style.getPropertyValue('display')).toBe('inline-block');
+      const [spacer] = placeholder.children;
+      expect(placeholder.children).toHaveLength(1);
+      // As tall as the placeholder, and lowered so that the line it makes has its baseline 18px down.
+      expect(spacer.style.getPropertyValue('height')).toBe('30px');
+      expect(spacer.style.getPropertyValue('vertical-align')).toBe('-12px');
+      expect(spacer.style.getPropertyValue('width')).toBe('0px');
+    });
+
+    test.each([
+      ['aligned on its middle', { display: 'inline-block', 'vertical-align': 'middle' }],
+      ['a scroll container, which sits on its bottom edge', { display: 'inline-block', 'overflow-y': 'auto' }],
+      ['a block', {}],
+    ])('a box %s needs no baseline', async (name, styles) => {
+      blockedBadge(styles);
+
+      const placeholder = await capturePlaceholder();
+
+      expect(placeholder.children).toHaveLength(0);
+    });
+  });
+
+  test('the ::before and ::after content an inline element’s lines include is not added a second time', async () => {
+    document.body.innerHTML = '<p>Hi <span class="rr-block mention" id="mention">Jane</span></p>';
+    const mention = document.getElementById('mention');
+    stubComputedStyles(
+      new Map([
+        // The floated ::after is not in the lines: the class adds it again, as it was.
+        [mention, { display: 'inline', '::before': { content: '"@"' }, '::after': { content: '""', float: 'left' } }],
+      ])
+    );
+    mention.getClientRects = () => [box(20, 0, 50, 17)];
+
+    const placeholder = await capturePlaceholder();
+
+    expect(placeholder.getAttribute('bb-no-content')).toBe('before');
+    expect(placeholder.querySelector('style').textContent).toBe('[bb-no-content~=before]::before{content:none!important}');
   });
 });
 
