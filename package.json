@@ -10,6 +10,10 @@
     "types": "./index.d.ts"
   },
   "types": "index.d.ts",
+  "files": [
+    "build/",
+    "index.d.ts"
+  ],
   "scripts": {
     "start": "webpack serve --env development",
     "build": "webpack",
