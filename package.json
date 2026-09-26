@@ -1,7 +1,7 @@
 {
   "description": "JavaScript and TypeScript SDK for Gleap, an Intercom alternative with AI customer support, live chat, in-app bug reporting and customer feedback.",
   "name": "gleap",
-  "version": "18.1.0",
+  "version": "18.2.0",
   "main": "build/cjs/index.js",
   "module": "build/esm/index.mjs",
   "exports": {

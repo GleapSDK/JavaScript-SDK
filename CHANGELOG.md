@@ -1,5 +1,12 @@
 # Changelog
 
+## 18.2.0
+Added `Gleap.setColorScheme("auto" | "light" | "dark" | "default", options?)` so the widget can match the host app's dark/light mode:
+`"auto"` follows the host app and switches live when it changes. It looks at theme markers on `<html>`/`<body>` (classes like `dark`/`light`, attributes like `data-theme`, `data-bs-theme`, `data-color-scheme`, `data-mode`), then the page's CSS `color-scheme`, then the page background, and finally the OS `prefers-color-scheme`.
+`"light"` / `"dark"` force a scheme, e.g. from your app's own theme toggle. `"default"` (the initial state) keeps the dashboard colors.
+The dashboard background is kept when it already matches the active scheme; otherwise the widget uses `#ffffff` (light) or `#18181b` (dark), overridable via `{ lightBackgroundColor, darkBackgroundColor }` (#rrggbb). Primary, header and button colors are unchanged.
+Can be called before or after `Gleap.initialize`.
+
 ## 18.1.0
 Added control over the env data (device, browser and page details shown under the Env data tab of a ticket) the SDK collects:
 `Gleap.setEnvDataPropsToIgnore(["currentUrl", "userAgent"])` removes individual env data keys from every ticket and conversation before it is sent. Each call replaces the previous list; an empty list resets it.

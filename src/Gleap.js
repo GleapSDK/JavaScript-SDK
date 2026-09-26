@@ -39,6 +39,7 @@ import { dispatchSSEEvent, parseSSEStream } from './GleapSSEParser';
 import GleapStreamedEvent from './GleapStreamedEvent';
 import GleapTabCommunication from './GleapTabCommunication';
 import GleapTagManager from './GleapTagManager';
+import GleapThemeManager from './GleapThemeManager';
 import GleapTranslationManager from './GleapTranslationManager';
 import { injectStyledCSS } from './UI';
 
@@ -846,6 +847,22 @@ class Gleap {
    */
   static triggerCustomAction(name) {
     GleapCustomActionManager.triggerCustomAction(name);
+  }
+
+  /**
+   * Sets the widget's color scheme.
+   * - 'auto': follows the host app's dark/light mode (theme classes/attributes such as
+   *   `class="dark"` or `data-theme="dark"`, the CSS color-scheme, the page background,
+   *   then the OS preference) and switches live when it changes.
+   * - 'light' / 'dark': forces a scheme, e.g. from your app's own theme toggle.
+   * - 'default': uses the colors configured in the Gleap dashboard (initial behavior).
+   * The dashboard background is kept when it already matches the active scheme;
+   * otherwise the widget uses the given (or a neutral default) background.
+   * @param {'default'|'auto'|'light'|'dark'} colorScheme
+   * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options
+   */
+  static setColorScheme(colorScheme, options = {}) {
+    GleapThemeManager.getInstance().setColorScheme(colorScheme, options);
   }
 
   /**
@@ -1664,6 +1681,7 @@ export {
   GleapStreamedEvent,
   GleapTabCommunication,
   GleapTagManager,
+  GleapThemeManager,
   GleapTranslationManager,
   handleGleapLink,
   parseSSEStream,
