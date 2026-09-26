@@ -363,7 +363,7 @@ export namespace Gleap {
       password?: boolean;
       [key: string]: any;
     };
-    maskInputFn?: (text: string) => string;
+    maskInputFn?: (text: string, element: HTMLElement) => string;
     maskTextFn?: (text: string) => string;
     slimDOMOptions?: {
       [key: string]: any;
