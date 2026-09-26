@@ -1,4 +1,5 @@
 import { isMobile } from './GleapHelper';
+import { getReplayMaskingOptions } from './GleapInputMasking';
 import { record } from '@rrweb/record';
 import { pack } from '@rrweb/packer';
 
@@ -102,9 +103,11 @@ export default class GleapReplayRecorder {
 
     var options = {
       inlineStylesheet: true,
-      // Privacy: by default only password inputs are masked (rrweb's default), so
-      // replays keep form values that are useful when debugging. Sites that want
-      // every input masked can opt in via Gleap.setReplayOptions({ maskAllInputs: true }).
+      // Privacy: form values follow the rule screenshots use (GleapInputMasking.js).
+      // Passwords, one-time codes, card numbers and security codes are always masked,
+      // and so are fields marked rr-mask, gl-mask or gleap-ignore="value"; other
+      // values stay readable for debugging. Sites that want every input masked opt in
+      // via Gleap.setReplayOptions({ maskAllInputs: true }).
       // Per-element control uses rrweb's default class names: rr-block (replaced
       // with a same-size placeholder), rr-ignore (skipped) and rr-mask (text masked).
       // Strip non-visual DOM (scripts, comments, head meta) to shrink the payload.
@@ -147,6 +150,9 @@ export default class GleapReplayRecorder {
       this.stopFunction = record({
         ...options,
         ...this.customOptions,
+        // maskInputFn and maskInputOptions that apply the masking rule on top of the
+        // site's own options (a site's maskInputFn still formats what its options mask).
+        ...getReplayMaskingOptions(this.customOptions),
         emit: (event, isCheckout) => {
           // A checkout Meta starts a new self-contained checkpoint. Open a fresh
           // segment and drop the oldest checkpoints beyond the retention cap.

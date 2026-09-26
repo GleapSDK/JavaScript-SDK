@@ -136,6 +136,40 @@ describe('replay buffer byte budget (#147738)', () => {
   });
 });
 
+describe('input masking options passed to rrweb', () => {
+  const recordOptions = (customOptions) => {
+    const recorder = new GleapReplayRecorder();
+    recorder.setOptions(customOptions);
+    recorder.start();
+    return record.mock.calls[record.mock.calls.length - 1][0];
+  };
+
+  test('by default every text-like field goes through maskInputFn, select menus do not', () => {
+    const options = recordOptions({});
+
+    expect(typeof options.maskInputFn).toBe('function');
+    expect(options.maskInputOptions).toMatchObject({ password: true, text: true, email: true, tel: true, textarea: true });
+    // rrweb drops the selected option of every select from snapshots when select is listed.
+    expect(options.maskInputOptions.select).toBeUndefined();
+  });
+
+  test("a site's maskInputOptions keep their kinds; its maskInputFn is wrapped, not replaced", () => {
+    const siteMaskInputFn = jest.fn(() => 'masked by site');
+    const options = recordOptions({ maskInputOptions: { select: true }, maskInputFn: siteMaskInputFn });
+
+    expect(options.maskInputOptions.select).toBe(true);
+    expect(options.maskInputFn).not.toBe(siteMaskInputFn);
+  });
+
+  test('maskAllInputs is passed through, so rrweb masks every kind', () => {
+    const options = recordOptions({ maskAllInputs: true });
+
+    expect(options.maskAllInputs).toBe(true);
+    expect(options.maskInputOptions).toBeUndefined();
+    expect(typeof options.maskInputFn).toBe('function');
+  });
+});
+
 describe('approximateSize', () => {
   const added = (id) => ({
     parentId: 2,

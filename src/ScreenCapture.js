@@ -1,8 +1,15 @@
 import { isMobile, resizeImage } from './GleapHelper';
+import { getScreenshotFieldMask } from './GleapInputMasking';
 import { isBlacklisted } from './ResourceExclusionList';
 
-export const startScreenCapture = (isLiveSite) => {
-  return prepareScreenshotData(isLiveSite);
+/**
+ * Captures the page as HTML for the screenshot renderer.
+ * @param {boolean} isLiveSite
+ * @param {object} privacyOptions The replay options (Gleap.setReplayOptions), so form fields are
+ * masked by the same rule as in replays.
+ */
+export const startScreenCapture = (isLiveSite, privacyOptions) => {
+  return prepareScreenshotData(isLiveSite, privacyOptions || {});
 };
 
 const documentToHTML = (clone) => {
@@ -420,7 +427,7 @@ const extractFinalCSSState = (element, animationsByTarget) => {
   return JSON.stringify(finalCSSState);
 };
 
-const deepClone = async (host) => {
+const deepClone = async (host, privacyOptions) => {
   let shadowNodeId = 1;
   const animationsByTarget = collectAnimationsInto(new Map(), window.document);
 
@@ -444,6 +451,9 @@ const deepClone = async (host) => {
     };
 
     const clone = node.cloneNode();
+    const tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
+    // Set for form fields whose value must not reach the snapshot (see GleapInputMasking.js).
+    let fieldMask = null;
 
     const webAnimations = extractFinalCSSState(node, animationsByTarget);
     if (webAnimations != null) {
@@ -470,7 +480,6 @@ const deepClone = async (host) => {
     }
 
     if (node.nodeType == Node.ELEMENT_NODE) {
-      const tagName = node.tagName ? node.tagName.toUpperCase() : node.tagName;
       if (tagName == 'IFRAME' || tagName == 'VIDEO' || tagName == 'EMBED' || tagName == 'IMG' || tagName == 'SVG') {
         const boundingRect = node.getBoundingClientRect();
         clone.setAttribute('bb-element', true);
@@ -485,12 +494,15 @@ const deepClone = async (host) => {
       }
 
       if (tagName === 'SELECT' || tagName === 'TEXTAREA' || tagName === 'INPUT') {
-        var val = node.value;
-        if (node.getAttribute('gleap-ignore') === 'value' || node.classList.contains('rr-mask')) {
-          val = new Array(val.length + 1).join('*');
+        fieldMask = getScreenshotFieldMask(node, privacyOptions);
+        clone.setAttribute('bb-data-value', fieldMask ? fieldMask(node.value) : node.value);
+
+        // Frameworks mirror what the user typed into the value attribute (React does, password
+        // fields included), and cloneNode() copies attributes.
+        if (fieldMask && clone.hasAttribute('value')) {
+          clone.setAttribute('value', fieldMask(clone.getAttribute('value')));
         }
 
-        clone.setAttribute('bb-data-value', val);
         if ((node.type === 'checkbox' || node.type === 'radio') && node.checked) {
           clone.setAttribute('bb-data-checked', true);
         }
@@ -513,7 +525,19 @@ const deepClone = async (host) => {
       }
     }
 
-    await walkTree(node.firstChild, clone);
+    // A textarea's text is its initial value, and React mirrors every keystroke into it. For a
+    // masked textarea it stays out; the renderer fills the field from bb-data-value.
+    if (!(fieldMask && tagName === 'TEXTAREA')) {
+      await walkTree(node.firstChild, clone);
+    }
+
+    // A masked select would still reveal its choice through an option's selected attribute.
+    if (fieldMask && tagName === 'SELECT') {
+      const selectedOptions = clone.querySelectorAll('option[selected]');
+      for (var i = 0; i < selectedOptions.length; i++) {
+        selectedOptions[i].removeAttribute('selected');
+      }
+    }
   };
 
   const fragment = document.createDocumentFragment();
@@ -569,7 +593,7 @@ const fixParserUnsafeNesting = (clone) => {
   }
 };
 
-const prepareScreenshotData = (remote) => {
+const prepareScreenshotData = (remote, privacyOptions) => {
   return new Promise(async (resolve, reject) => {
     try {
     const styleTags = window.document.querySelectorAll('style, link');
@@ -577,7 +601,7 @@ const prepareScreenshotData = (remote) => {
       styleTags[i].setAttribute('bb-styleid', i);
     }
 
-    const clone = await deepClone(window.document.documentElement);
+    const clone = await deepClone(window.document.documentElement, privacyOptions);
 
     try {
       fixParserUnsafeNesting(clone);

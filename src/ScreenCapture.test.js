@@ -120,3 +120,57 @@ describe('startScreenCapture — animation capture', () => {
     expect(result.html).toContain('hello');
   });
 });
+
+// Masking itself, and its consistency with replays, is covered in GleapInputMasking.test.js. These
+// are the parts only the screenshot has.
+describe('startScreenCapture — masked form fields', () => {
+  const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test('a masked select loses its selected option, so the choice does not show', async () => {
+    document.body.innerHTML =
+      '<select id="plan" class="rr-mask"><option value="basic">Basic</option><option value="diagnosis" selected>Diagnosis</option></select>' +
+      '<select id="size"><option value="s">S</option><option value="m" selected>M</option></select>';
+
+    const doc = parse((await startScreenCapture(true)).html);
+
+    expect(doc.querySelector('#plan').getAttribute('bb-data-value')).toBe('*********');
+    expect(doc.querySelector('#plan option[selected]')).toBeNull();
+    // Ordinary selects are captured as before.
+    expect(doc.querySelector('#size').getAttribute('bb-data-value')).toBe('m');
+    expect(doc.querySelector('#size option[selected]').value).toBe('m');
+  });
+
+  test('a masked textarea keeps no text of its own; the renderer fills it from bb-data-value', async () => {
+    document.body.innerHTML = '<textarea id="note" class="rr-mask">initial secret</textarea>';
+    document.getElementById('note').value = 'typed secret';
+
+    const doc = parse((await startScreenCapture(true)).html);
+
+    expect(doc.querySelector('#note').textContent).toBe('');
+    expect(doc.querySelector('#note').getAttribute('bb-data-value')).toBe('************');
+  });
+
+  test('fields inside gl-block areas, which the renderer leaves blank, are masked', async () => {
+    document.body.innerHTML = '<div class="gl-block"><input id="iban"></div>';
+    document.getElementById('iban').value = 'DE89370400440532013000';
+
+    const html = (await startScreenCapture(true)).html;
+
+    expect(html).not.toContain('DE89370400440532013000');
+  });
+
+  test('without replay options, only the rules that always apply mask a field', async () => {
+    document.body.innerHTML = '<input id="pw" type="password"><input id="name">';
+    document.getElementById('pw').value = 'hunter2';
+    document.getElementById('name').value = 'Jane';
+
+    const doc = parse((await startScreenCapture(true)).html);
+
+    expect(doc.querySelector('#pw').getAttribute('bb-data-value')).toBe('*******');
+    expect(doc.querySelector('#name').getAttribute('bb-data-value')).toBe('Jane');
+  });
+});

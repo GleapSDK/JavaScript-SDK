@@ -1,6 +1,8 @@
 import GleapFeedback from './GleapFeedback';
+import { startScreenCapture } from './ScreenCapture';
 
 const WEB_REPLAY = { startDate: 1, events: ['packed-event'], packed: true, type: 'rrweb' };
+const REPLAY_OPTIONS = { maskAllInputs: true };
 
 // sendFeedback only reads from the sibling managers; stub the barrel so it loads
 // without a DOM or the SDK_VERSION Webpack global.
@@ -24,6 +26,7 @@ jest.mock('./Gleap', () => {
     GleapCustomDataManager: manager({ getCustomData: () => ({}), getTicketAttributes: () => ({}) }),
     GleapMetaDataManager: manager({ getMetaData: () => ({}) }),
     GleapNetworkIntercepter: manager({ getRequests: () => [{ url: 'https://app.example.com/api' }] }),
+    GleapReplayRecorder: manager({ customOptions: { maskAllInputs: true } }),
     GleapTagManager: manager({ getTags: () => [] }),
   };
 });
@@ -145,5 +148,15 @@ describe('sendFeedback when the report is too large (#147738)', () => {
 
     expect(MockXhr.instances).toHaveLength(1);
     expect(settled).toHaveBeenCalledWith('rejected');
+  });
+});
+
+describe('screenshot capture', () => {
+  test('gets the replay options, so form fields are masked the same way as in replays', async () => {
+    startScreenCapture.mockClear();
+
+    await send();
+
+    expect(startScreenCapture).toHaveBeenCalledWith(false, REPLAY_OPTIONS);
   });
 });
