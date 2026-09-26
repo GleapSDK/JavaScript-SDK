@@ -1,4 +1,5 @@
 import { loadFromGleapCache, saveToGleapCache, clearGleapCache } from './GleapHelper';
+import GleapThemeManager from './GleapThemeManager';
 import Gleap, {
   GleapFrameManager,
   GleapFeedbackButtonManager,
@@ -19,6 +20,9 @@ const parseIntWithDefault = (val, def) => {
 };
 
 export default class GleapConfigManager {
+  // The config as delivered by the server; flowConfig is this with the active
+  // color scheme (Gleap.setColorScheme) applied.
+  rawFlowConfig = null;
   flowConfig = null;
   projectActions = null;
   onConfigLoadedListener = [];
@@ -117,6 +121,29 @@ export default class GleapConfigManager {
     );
   }
 
+  /**
+   * Re-applies the active color scheme to the loaded config and pushes the
+   * result to the widget when it changed.
+   */
+  refreshColorScheme() {
+    if (!this.rawFlowConfig) {
+      return;
+    }
+
+    const flowConfig = GleapThemeManager.getInstance().applyToFlowConfig(this.rawFlowConfig);
+    if (this.flowConfig && flowConfig.backgroundColor === this.flowConfig.backgroundColor) {
+      return;
+    }
+    this.flowConfig = flowConfig;
+
+    this.applyStylesFromConfig();
+    GleapFrameManager.getInstance().sendConfigUpdate();
+    const chatbar = GleapAiChatbarManager.getInstance();
+    if (chatbar.comReady) {
+      chatbar._sendConfigUpdate();
+    }
+  }
+
   notifyConfigLoaded() {
     if (this.onConfigLoadedListener.length > 0) {
       for (var i = 0; i < this.onConfigLoadedListener.length; i++) {
@@ -132,7 +159,8 @@ export default class GleapConfigManager {
    */
   applyConfig(config) {
     try {
-      const flowConfig = config.flowConfig;
+      this.rawFlowConfig = config.flowConfig;
+      const flowConfig = GleapThemeManager.getInstance().applyToFlowConfig(config.flowConfig);
       this.flowConfig = flowConfig;
 
       // Update styles.

@@ -237,6 +237,23 @@ export namespace Gleap {
   function close(): void;
   function hide(): void;
   function setUseCookies(useCookies: boolean): void;
+  /**
+   * Sets the widget's color scheme. "auto" follows the host app's dark/light
+   * mode (theme classes/attributes like `class="dark"` or `data-theme="dark"`,
+   * the CSS color-scheme, the page background, then the OS preference) and
+   * switches live. "light"/"dark" force a scheme; "default" uses the dashboard
+   * colors. The dashboard background is kept when it already matches the
+   * active scheme, otherwise the given (or a neutral default) background is used.
+   */
+  function setColorScheme(
+    colorScheme: "default" | "auto" | "light" | "dark",
+    options?: {
+      /** #rrggbb background used in light mode. Defaults to #ffffff. */
+      lightBackgroundColor?: string;
+      /** #rrggbb background used in dark mode. Defaults to #18181b. */
+      darkBackgroundColor?: string;
+    }
+  ): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   /**
    * Env data keys (e.g. "currentUrl", "userAgent") that are removed before a
