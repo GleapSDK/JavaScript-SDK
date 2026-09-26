@@ -1,5 +1,11 @@
 # Changelog
 
+## 18.1.1
+Screenshots no longer send the values of password fields to Gleap. The page snapshot behind a screenshot copied the value of every form field and masked only fields marked `rr-mask` or `gleap-ignore="value"`, so passwords reached Gleap in clear text although the rendered image showed dots. In React apps the typed value was also copied through the field's `value` attribute (and a textarea's text), so even marked fields were not masked there.
+Screenshots and session replays now mask form fields by the same rule. Always masked, whatever the replay options say: password fields (also after a "show password" toggle while replays run) and fields with `autocomplete` `current-password`, `new-password`, `one-time-code`, `cc-number` or `cc-csc`. Masked on request: fields marked `rr-mask`, `gl-mask` or `gleap-ignore="value"`, on the field or on an element around it, and fields matching the `maskTextClass` / `maskTextSelector` replay options. Replays now honor these markers on inputs too; with rrweb 2 they only masked text.
+`Gleap.setReplayOptions({ maskAllInputs: true })`, `maskInputOptions` and `maskInputFn` now apply to screenshots as well. Passing `maskInputOptions` no longer turns off password masking in replays (rrweb replaced its `{ password: true }` default with the object passed).
+In screenshots, a masked value keeps its length as `*` characters, in the field and in its `value` attribute; a masked textarea carries no text, a masked select marks no option as selected, and fields inside `rr-block` / `gl-block` areas are masked.
+
 ## 18.1.0
 Added control over the env data (device, browser and page details shown under the Env data tab of a ticket) the SDK collects:
 `Gleap.setEnvDataPropsToIgnore(["currentUrl", "userAgent"])` removes individual env data keys from every ticket and conversation before it is sent. Each call replaces the previous list; an empty list resets it.
