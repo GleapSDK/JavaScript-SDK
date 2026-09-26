@@ -7,6 +7,7 @@ import {
   GleapTabCommunication,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
+import GleapThemeManager from './GleapThemeManager';
 import { applyGleapCSPNonce, bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS } from './GleapRegions';
 
@@ -201,7 +202,8 @@ export default class GleapAiChatbarManager {
       ...base,
       chatbarPlaceholder: this.config?.placeholder,
       chatbarQuickActions: this.config?.quickActions || [],
-      chatbarStyle: this.config?.style,
+      // The configured style, switched to its dark/light variant under an active color scheme.
+      chatbarStyle: GleapThemeManager.getInstance().applyToChatbarStyle(this.config?.style),
       chatbarColor: base?.color,
       chatbarWorkflowId: this.config?.workflowId ?? null,
     };

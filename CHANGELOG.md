@@ -1,10 +1,11 @@
 # Changelog
 
 ## 18.2.0
-Added `Gleap.setColorScheme("auto" | "light" | "dark" | "default", options?)` so the widget can match the host app's dark/light mode:
+Added widget color schemes, so the widget can match the host app's dark/light mode. Set it in the dashboard (Look & feel → Color scheme, delivered as `colorScheme`, `lightBackgroundColor` and `darkBackgroundColor` in the flow config) or at runtime with `Gleap.setColorScheme("auto" | "light" | "dark" | "default", options?)`, which overrides the dashboard:
 `"auto"` follows the host app and switches live when it changes. It looks at theme markers on `<html>`/`<body>` (classes like `dark`/`light`, attributes like `data-theme`, `data-bs-theme`, `data-color-scheme`, `data-mode`), then the page's CSS `color-scheme`, then the page background, and finally the OS `prefers-color-scheme`.
-`"light"` / `"dark"` force a scheme, e.g. from your app's own theme toggle. `"default"` (the initial state) keeps the dashboard colors.
-The dashboard background is kept when it already matches the active scheme; otherwise the widget uses `#ffffff` (light) or `#18181b` (dark), overridable via `{ lightBackgroundColor, darkBackgroundColor }` (#rrggbb). Primary, header and button colors are unchanged.
+`"light"` / `"dark"` force a scheme, e.g. from your app's own theme toggle. `"default"` (the initial state) removes the runtime override and uses the dashboard setting.
+The dashboard background is kept when it already matches the active scheme; otherwise the widget uses the light/dark background from `{ lightBackgroundColor, darkBackgroundColor }` (#rrggbb), else the dashboard's, else `#ffffff` / `#18181b`. Primary, header and button colors are unchanged.
+The active scheme also applies to the AI chatbar (its style switches to the matching light/dark variant), to open modals, and to `<gleap-checklist>` elements without an explicit `dark` attribute. Product tour popovers now follow a dark widget background instead of staying white (their text was unreadable on dark backgrounds).
 Can be called before or after `Gleap.initialize`.
 
 ## 18.1.0

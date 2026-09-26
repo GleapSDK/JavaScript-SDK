@@ -9,6 +9,7 @@ import Gleap, {
   GleapReplayRecorder,
   GleapNotificationManager,
   GleapAiChatbarManager,
+  GleapModalManager,
 } from './Gleap';
 
 const parseIntWithDefault = (val, def) => {
@@ -24,6 +25,7 @@ export default class GleapConfigManager {
   // color scheme (Gleap.setColorScheme) applied.
   rawFlowConfig = null;
   flowConfig = null;
+  appliedColorScheme = null;
   projectActions = null;
   onConfigLoadedListener = [];
   onConfigLoaded = (onConfigLoaded) => {
@@ -130,17 +132,26 @@ export default class GleapConfigManager {
       return;
     }
 
-    const flowConfig = GleapThemeManager.getInstance().applyToFlowConfig(this.rawFlowConfig);
-    if (this.flowConfig && flowConfig.backgroundColor === this.flowConfig.backgroundColor) {
+    const themeManager = GleapThemeManager.getInstance();
+    const flowConfig = themeManager.applyToFlowConfig(this.rawFlowConfig);
+    // The active scheme also drives the chatbar style, so a change matters even
+    // when the background already fit.
+    const appliedColorScheme = `${themeManager.getActiveColorScheme(this.rawFlowConfig)}|${flowConfig.backgroundColor}`;
+    if (appliedColorScheme === this.appliedColorScheme) {
       return;
     }
+    this.appliedColorScheme = appliedColorScheme;
+    const backgroundChanged = flowConfig.backgroundColor !== this.flowConfig?.backgroundColor;
     this.flowConfig = flowConfig;
 
-    this.applyStylesFromConfig();
-    GleapFrameManager.getInstance().sendConfigUpdate();
     const chatbar = GleapAiChatbarManager.getInstance();
     if (chatbar.comReady) {
       chatbar._sendConfigUpdate();
+    }
+    if (backgroundChanged) {
+      this.applyStylesFromConfig();
+      GleapFrameManager.getInstance().sendConfigUpdate();
+      GleapModalManager.getInstance().sendModalData();
     }
   }
 
@@ -160,8 +171,12 @@ export default class GleapConfigManager {
   applyConfig(config) {
     try {
       this.rawFlowConfig = config.flowConfig;
-      const flowConfig = GleapThemeManager.getInstance().applyToFlowConfig(config.flowConfig);
+      const themeManager = GleapThemeManager.getInstance();
+      themeManager.updateWatching();
+      const flowConfig = themeManager.applyToFlowConfig(config.flowConfig);
       this.flowConfig = flowConfig;
+      this.appliedColorScheme = `${themeManager.getActiveColorScheme(config.flowConfig)}|${flowConfig.backgroundColor}`;
+      themeManager.applyToChecklists();
 
       // Update styles.
       this.applyStylesFromConfig();

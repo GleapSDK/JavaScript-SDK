@@ -7,6 +7,7 @@ const mockSetStyles = jest.fn();
 const mockSendConfigUpdate = jest.fn();
 const mockChatbarSendConfigUpdate = jest.fn();
 const mockChatbar = { comReady: false, _sendConfigUpdate: mockChatbarSendConfigUpdate };
+const mockSendModalData = jest.fn();
 
 jest.mock('./Gleap', () => ({
   __esModule: true,
@@ -27,6 +28,7 @@ jest.mock('./Gleap', () => ({
   },
   GleapTranslationManager: { getInstance: () => ({ updateRTLSupport: jest.fn(), getActiveLanguage: () => 'en' }) },
   GleapAiChatbarManager: { getInstance: () => mockChatbar },
+  GleapModalManager: { getInstance: () => ({ sendModalData: mockSendModalData }) },
   GleapSession: { getInstance: () => ({}) },
 }));
 
@@ -171,12 +173,72 @@ describe('applyToFlowConfig', () => {
     expect(manager.applyToFlowConfig(darkConfig).backgroundColor).toBe('#f5f5f7');
   });
 
+  test('follows the dashboard setting and its background colors', () => {
+    const manager = GleapThemeManager.getInstance();
+    const dashboardDark = { ...lightConfig, colorScheme: 'dark', darkBackgroundColor: '#222' };
+    expect(manager.getColorScheme(dashboardDark)).toBe('dark');
+    expect(manager.applyToFlowConfig(dashboardDark).backgroundColor).toBe('#222222');
+
+    const dashboardAuto = { ...lightConfig, colorScheme: 'auto' };
+    expect(manager.applyToFlowConfig(dashboardAuto)).toBe(dashboardAuto);
+    prefersDark = true;
+    expect(manager.applyToFlowConfig(dashboardAuto).backgroundColor).toBe('#18181b');
+
+    expect(manager.applyToFlowConfig({ ...lightConfig, colorScheme: 'sepia' }).backgroundColor).toBe('#FFFFFF');
+  });
+
+  test('the runtime scheme and backgrounds override the dashboard', () => {
+    const manager = GleapThemeManager.getInstance();
+    const dashboard = { ...lightConfig, colorScheme: 'light', darkBackgroundColor: '#222222' };
+
+    manager.setColorScheme('dark');
+    expect(manager.applyToFlowConfig(dashboard).backgroundColor).toBe('#222222');
+
+    manager.setColorScheme('dark', { darkBackgroundColor: '#333333' });
+    expect(manager.applyToFlowConfig(dashboard).backgroundColor).toBe('#333333');
+
+    // 'default' removes the override again.
+    manager.setColorScheme('default');
+    expect(manager.getColorScheme(dashboard)).toBe('light');
+    expect(manager.applyToFlowConfig(dashboard)).toBe(dashboard);
+  });
+
   test('an unknown scheme resets to the dashboard colors', () => {
     const manager = GleapThemeManager.getInstance();
     manager.setColorScheme('dark');
     manager.setColorScheme('sepia');
     expect(manager.getColorScheme()).toBe('default');
     expect(manager.applyToFlowConfig(lightConfig)).toBe(lightConfig);
+  });
+});
+
+describe('chatbar and checklist', () => {
+  test('maps the chatbar style to the active scheme, keeping the glow', () => {
+    const manager = GleapThemeManager.getInstance();
+    expect(manager.applyToChatbarStyle('light')).toBe('light');
+    expect(manager.applyToChatbarStyle(undefined)).toBeUndefined();
+
+    manager.setColorScheme('dark');
+    expect(manager.applyToChatbarStyle('light')).toBe('dark');
+    expect(manager.applyToChatbarStyle('light-glow')).toBe('dark-glow');
+    expect(manager.applyToChatbarStyle(undefined)).toBe('dark-glow');
+
+    manager.setColorScheme('light');
+    expect(manager.applyToChatbarStyle('dark')).toBe('light');
+    expect(manager.applyToChatbarStyle('dark-glow')).toBe('light-glow');
+  });
+
+  test('marks checklists dark while the dark scheme is active', () => {
+    const checklist = document.createElement('gleap-checklist');
+    document.body.appendChild(checklist);
+    const manager = GleapThemeManager.getInstance();
+
+    manager.setColorScheme('dark');
+    expect(checklist.hasAttribute('data-gleap-dark')).toBe(true);
+
+    manager.setColorScheme('light');
+    expect(checklist.hasAttribute('data-gleap-dark')).toBe(false);
+    checklist.remove();
   });
 });
 
@@ -232,8 +294,10 @@ describe('GleapConfigManager integration', () => {
     expect(configManager.getFlowConfig().backgroundColor).toBe('#FFFFFF');
     jest.clearAllMocks();
 
+    // The background still fits (light host), so only the chatbar style is re-sent.
     GleapThemeManager.getInstance().setColorScheme('auto');
     expect(mockSendConfigUpdate).not.toHaveBeenCalled();
+    expect(mockChatbarSendConfigUpdate).toHaveBeenCalledTimes(1);
 
     document.documentElement.setAttribute('data-theme', 'dark');
     await Promise.resolve();
@@ -252,10 +316,46 @@ describe('GleapConfigManager integration', () => {
       undefined
     );
     expect(mockSendConfigUpdate).toHaveBeenCalledTimes(1);
-    expect(mockChatbarSendConfigUpdate).toHaveBeenCalledTimes(1);
+    expect(mockChatbarSendConfigUpdate).toHaveBeenCalledTimes(2);
+    expect(mockSendModalData).toHaveBeenCalledTimes(1);
 
     // A server refresh keeps the active scheme.
     configManager.applyConfig(serverConfig());
     expect(configManager.getFlowConfig().backgroundColor).toBe('#18181b');
+  });
+
+  test('applies the dashboard color scheme and follows the host when it is auto', async () => {
+    mockUseRealConfigManager = true;
+    const configManager = GleapConfigManager.getInstance();
+    configManager.applyConfig({ flowConfig: { ...serverConfig().flowConfig, colorScheme: 'auto', darkBackgroundColor: '#101828' } });
+    expect(configManager.getFlowConfig().backgroundColor).toBe('#FFFFFF');
+    jest.clearAllMocks();
+
+    document.documentElement.classList.add('dark');
+    await Promise.resolve();
+    expect(configManager.getFlowConfig().backgroundColor).toBe('#101828');
+    expect(mockSendConfigUpdate).toHaveBeenCalledTimes(1);
+
+    // A runtime override wins over the dashboard setting.
+    GleapThemeManager.getInstance().setColorScheme('light');
+    expect(configManager.getFlowConfig().backgroundColor).toBe('#FFFFFF');
+    document.documentElement.classList.remove('dark');
+    await Promise.resolve();
+    expect(mockSendConfigUpdate).toHaveBeenCalledTimes(2);
+  });
+
+  test('a scheme change on an already fitting background still updates the chatbar', () => {
+    mockUseRealConfigManager = true;
+    mockChatbar.comReady = true;
+    const configManager = GleapConfigManager.getInstance();
+    configManager.applyConfig({ flowConfig: { ...serverConfig().flowConfig, backgroundColor: '#111111' } });
+    jest.clearAllMocks();
+
+    GleapThemeManager.getInstance().setColorScheme('dark');
+    expect(configManager.getFlowConfig().backgroundColor).toBe('#111111');
+    expect(mockChatbarSendConfigUpdate).toHaveBeenCalledTimes(1);
+
+    GleapThemeManager.getInstance().setColorScheme('dark');
+    expect(mockChatbarSendConfigUpdate).toHaveBeenCalledTimes(1);
   });
 });

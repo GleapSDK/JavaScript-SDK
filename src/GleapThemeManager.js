@@ -5,6 +5,7 @@ export const COLOR_SCHEME_AUTO = 'auto';
 export const COLOR_SCHEME_LIGHT = 'light';
 export const COLOR_SCHEME_DARK = 'dark';
 
+const COLOR_SCHEMES = [COLOR_SCHEME_AUTO, COLOR_SCHEME_LIGHT, COLOR_SCHEME_DARK];
 const DEFAULT_LIGHT_BACKGROUND = '#ffffff';
 const DEFAULT_DARK_BACKGROUND = '#18181b';
 
@@ -85,6 +86,12 @@ const normalizeHexColor = (color) => {
   const parsed = parseColor(color);
   return '#' + [parsed.r, parsed.g, parsed.b].map((c) => c.toString(16).padStart(2, '0')).join('');
 };
+
+const normalizeColorScheme = (colorScheme) =>
+  COLOR_SCHEMES.indexOf(colorScheme) !== -1 ? colorScheme : COLOR_SCHEME_DEFAULT;
+
+// Marks <gleap-checklist> elements without an explicit `dark` attribute as dark.
+const CHECKLIST_DARK_ATTRIBUTE = 'data-gleap-dark';
 
 const schemeFromString = (value) => {
   if (typeof value !== 'string') {
@@ -195,9 +202,11 @@ export const detectHostColorScheme = () => {
 };
 
 export default class GleapThemeManager {
+  // Runtime override set via Gleap.setColorScheme. 'default' defers to the
+  // color scheme configured in the dashboard (flowConfig.colorScheme).
   colorScheme = COLOR_SCHEME_DEFAULT;
-  lightBackgroundColor = DEFAULT_LIGHT_BACKGROUND;
-  darkBackgroundColor = DEFAULT_DARK_BACKGROUND;
+  lightBackgroundColor = null;
+  darkBackgroundColor = null;
   detectedScheme = null;
   mutationObserver = null;
   mediaQuery = null;
@@ -213,41 +222,52 @@ export default class GleapThemeManager {
   }
 
   /**
-   * Sets the widget color scheme.
-   * @param {'default'|'auto'|'light'|'dark'} colorScheme - 'default' keeps the dashboard colors,
+   * Sets the widget color scheme, overriding the dashboard setting.
+   * @param {'default'|'auto'|'light'|'dark'} colorScheme - 'default' uses the dashboard setting,
    * 'auto' follows the host page, 'light'/'dark' force a scheme.
    * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options - Background
    * colors (#rrggbb) used when the dashboard background doesn't match the active scheme.
    */
   setColorScheme(colorScheme, options = {}) {
-    const validSchemes = [COLOR_SCHEME_AUTO, COLOR_SCHEME_LIGHT, COLOR_SCHEME_DARK];
-    this.colorScheme = validSchemes.indexOf(colorScheme) !== -1 ? colorScheme : COLOR_SCHEME_DEFAULT;
-    this.lightBackgroundColor = normalizeHexColor(options?.lightBackgroundColor) || DEFAULT_LIGHT_BACKGROUND;
-    this.darkBackgroundColor = normalizeHexColor(options?.darkBackgroundColor) || DEFAULT_DARK_BACKGROUND;
+    this.colorScheme = normalizeColorScheme(colorScheme);
+    this.lightBackgroundColor = normalizeHexColor(options?.lightBackgroundColor);
+    this.darkBackgroundColor = normalizeHexColor(options?.darkBackgroundColor);
 
-    if (this.colorScheme === COLOR_SCHEME_AUTO) {
-      this.detectedScheme = detectHostColorScheme();
-      this.startWatching();
-    } else {
-      this.stopWatching();
-    }
-
+    this.updateWatching();
     this.notifyChange();
   }
 
-  getColorScheme() {
-    return this.colorScheme;
+  /**
+   * The raw (unthemed) flow config as delivered by the server.
+   */
+  getDashboardConfig() {
+    try {
+      return GleapConfigManager.getInstance().rawFlowConfig || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * The configured scheme: the runtime override, else the dashboard setting.
+   */
+  getColorScheme(flowConfig = this.getDashboardConfig()) {
+    if (this.colorScheme !== COLOR_SCHEME_DEFAULT) {
+      return this.colorScheme;
+    }
+    return normalizeColorScheme(flowConfig?.colorScheme);
   }
 
   /**
    * The scheme the widget should render in, or null to keep the dashboard colors.
    */
-  getActiveColorScheme() {
-    if (this.colorScheme === COLOR_SCHEME_AUTO) {
+  getActiveColorScheme(flowConfig = this.getDashboardConfig()) {
+    const colorScheme = this.getColorScheme(flowConfig);
+    if (colorScheme === COLOR_SCHEME_AUTO) {
       return this.detectedScheme || detectHostColorScheme();
     }
-    if (this.colorScheme === COLOR_SCHEME_LIGHT || this.colorScheme === COLOR_SCHEME_DARK) {
-      return this.colorScheme;
+    if (colorScheme === COLOR_SCHEME_LIGHT || colorScheme === COLOR_SCHEME_DARK) {
+      return colorScheme;
     }
     return null;
   }
@@ -258,7 +278,7 @@ export default class GleapThemeManager {
    * project that is designed dark stays exactly as designed in dark mode.
    */
   applyToFlowConfig(flowConfig) {
-    const scheme = this.getActiveColorScheme();
+    const scheme = this.getActiveColorScheme(flowConfig);
     if (!flowConfig || !scheme) {
       return flowConfig;
     }
@@ -269,14 +289,77 @@ export default class GleapThemeManager {
       return flowConfig;
     }
 
+    let backgroundColor;
+    if (scheme === COLOR_SCHEME_DARK) {
+      backgroundColor =
+        this.darkBackgroundColor || normalizeHexColor(flowConfig.darkBackgroundColor) || DEFAULT_DARK_BACKGROUND;
+    } else {
+      backgroundColor =
+        this.lightBackgroundColor || normalizeHexColor(flowConfig.lightBackgroundColor) || DEFAULT_LIGHT_BACKGROUND;
+    }
+
     return {
       ...flowConfig,
-      backgroundColor: scheme === COLOR_SCHEME_DARK ? this.darkBackgroundColor : this.lightBackgroundColor,
+      backgroundColor,
     };
   }
 
+  /**
+   * Maps the AI chatbar style to the active scheme, keeping its glow choice.
+   */
+  applyToChatbarStyle(style) {
+    const scheme = this.getActiveColorScheme();
+    if (!scheme) {
+      return style;
+    }
+    const glow = !style || style === 'light-glow' || style === 'dark-glow';
+    if (scheme === COLOR_SCHEME_DARK) {
+      return glow ? 'dark-glow' : 'dark';
+    }
+    return glow ? 'light-glow' : 'light';
+  }
+
+  /**
+   * Applies the active scheme to a <gleap-checklist>. An explicit `dark`
+   * attribute set by the host always wins.
+   */
+  applyToChecklist(element) {
+    if (!element) {
+      return;
+    }
+    if (this.getActiveColorScheme() === COLOR_SCHEME_DARK) {
+      element.setAttribute(CHECKLIST_DARK_ATTRIBUTE, '');
+    } else {
+      element.removeAttribute(CHECKLIST_DARK_ATTRIBUTE);
+    }
+  }
+
+  applyToChecklists() {
+    if (typeof document === 'undefined') {
+      return;
+    }
+    const checklists = document.querySelectorAll('gleap-checklist');
+    for (let i = 0; i < checklists.length; i++) {
+      this.applyToChecklist(checklists[i]);
+    }
+  }
+
+  /**
+   * Starts or stops following the host page, depending on the configured scheme.
+   */
+  updateWatching() {
+    if (this.getColorScheme() === COLOR_SCHEME_AUTO) {
+      if (!this.mutationObserver && !this.mediaQuery) {
+        this.detectedScheme = detectHostColorScheme();
+      }
+      this.startWatching();
+    } else {
+      this.stopWatching();
+    }
+  }
+
   checkHostColorScheme = () => {
-    if (this.colorScheme !== COLOR_SCHEME_AUTO) {
+    if (this.getColorScheme() !== COLOR_SCHEME_AUTO) {
       return;
     }
     const scheme = detectHostColorScheme();
@@ -344,6 +427,7 @@ export default class GleapThemeManager {
   }
 
   notifyChange() {
+    this.applyToChecklists();
     try {
       GleapConfigManager.getInstance().refreshColorScheme();
     } catch (e) {}

@@ -850,14 +850,14 @@ class Gleap {
   }
 
   /**
-   * Sets the widget's color scheme.
+   * Sets the widget's color scheme, overriding the "Color scheme" setting in the dashboard.
    * - 'auto': follows the host app's dark/light mode (theme classes/attributes such as
    *   `class="dark"` or `data-theme="dark"`, the CSS color-scheme, the page background,
    *   then the OS preference) and switches live when it changes.
    * - 'light' / 'dark': forces a scheme, e.g. from your app's own theme toggle.
-   * - 'default': uses the colors configured in the Gleap dashboard (initial behavior).
+   * - 'default': no override, uses the dashboard setting (initial behavior).
    * The dashboard background is kept when it already matches the active scheme;
-   * otherwise the widget uses the given (or a neutral default) background.
+   * otherwise the widget uses the given background, else the one set in the dashboard.
    * @param {'default'|'auto'|'light'|'dark'} colorScheme
    * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options
    */
