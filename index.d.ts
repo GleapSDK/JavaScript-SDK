@@ -364,7 +364,7 @@ export namespace Gleap {
       [key: string]: any;
     };
     maskInputFn?: (text: string, element: HTMLElement) => string;
-    maskTextFn?: (text: string) => string;
+    maskTextFn?: (text: string, element: HTMLElement | null) => string;
     slimDOMOptions?: {
       [key: string]: any;
     };

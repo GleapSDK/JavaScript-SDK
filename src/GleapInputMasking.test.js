@@ -210,3 +210,20 @@ describe('form fields are masked the same way in screenshots and replays', () =>
     expectHiddenInBoth(result, 'private note', 'hunter2');
   });
 });
+
+// Screenshots leave out blocked elements and mask text as rrweb does in replays (see
+// ScreenCapture.test.js for what the screenshot keeps of them).
+describe('blocked elements and masked text stay out of screenshots and replays alike', () => {
+  test.each([
+    ['rr-block', '<div class="rr-block"><p>jane@example.com</p><img src="/avatar/jane.png"></div>', {}],
+    ['blockClass', '<div class="private"><p>jane@example.com</p></div>', { blockClass: 'private' }],
+    ['blockSelector', '<div data-private><p>jane@example.com</p></div>', { blockSelector: '[data-private]' }],
+    ['rr-mask', '<p class="rr-mask">jane@example.com</p>', {}],
+    ['maskTextClass', '<p class="secret">jane@example.com</p>', { maskTextClass: 'secret' }],
+    ['maskTextSelector', '<p data-private>jane@example.com</p>', { maskTextSelector: '[data-private]' }],
+  ])('the content of %s elements', async (name, html, replayOptions) => {
+    const result = await capture(html, replayOptions, () => {});
+
+    expectHiddenInBoth(result, 'jane@example.com', 'avatar');
+  });
+});
