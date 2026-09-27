@@ -747,20 +747,23 @@ class GleapNetworkIntercepter {
         throw error;
       }
 
-      // Observe the app's own promise without chaining it: the app gets exactly what fetch
-      // returned, and a rejection it does not handle stays unhandled as before.
+      // Pass the outcome through unchanged. A rejection handler on the app's own promise would
+      // mark it as handled, so a failing request the app never awaits would no longer reach
+      // `unhandledrejection` (and error trackers); the chained promise rethrows instead.
       if (started && promise && typeof promise.then === 'function') {
         try {
-          promise.then(
+          return promise.then(
             (response) => {
               try {
                 self.finishFetch(started, response);
               } catch (exp) {}
+              return response;
             },
             (error) => {
               try {
                 self.failFetch(started, error);
               } catch (exp) {}
+              throw error;
             }
           );
         } catch (exp) {}
