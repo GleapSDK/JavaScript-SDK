@@ -135,7 +135,7 @@ describe('sanitizeNetworkLogs bodies', () => {
 
   test('returns unchanged and unparseable bodies untouched instead of re-encoding them', () => {
     const formatted = '{ "id": 1,\n  "name": "Ann" }';
-    const truncated = '{"password":"a","name":"Ann"' + '\n… [truncated, more than 150000 bytes]';
+    const truncated = '{"id":1,"name":"Ann"' + '\n… [truncated, more than 150000 bytes]';
     const log = entry({
       request: { headers: {}, payload: formatted },
       response: { status: 200, statusText: 'OK', headers: {}, responseText: truncated },
@@ -147,6 +147,16 @@ describe('sanitizeNetworkLogs bodies', () => {
     expect(result.response.responseText).toBe(truncated);
     expect(sanitizeOne(entry({ request: { headers: {}, payload: 'plain text' } }), ['x']).request.payload).toBe(
       'plain text'
+    );
+  });
+
+  test('masks ignored keys in JSON that was cut at the size limit', () => {
+    const marker = '\n… [truncated, 200000 bytes]';
+    const truncated = '{"user":{"password":"pw-0","name":"n"},"token":"abc","items":[{"Token":"x"' + marker;
+    const log = entry({ response: { status: 200, statusText: 'OK', headers: {}, responseText: truncated } });
+
+    expect(sanitizeOne(log, ['password', 'token']).response.responseText).toBe(
+      '{"user":{"password":"[REDACTED]","name":"n"},"token":"[REDACTED]","items":[{"Token":"[REDACTED]"' + marker
     );
   });
 

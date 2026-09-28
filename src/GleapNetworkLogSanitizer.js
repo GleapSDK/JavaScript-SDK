@@ -288,6 +288,41 @@ const removeJsonProps = (root, rules) => {
   return changed;
 };
 
+// A JSON value in text: a string (its closing quote optional, so a string cut at the end of a
+// truncated body is matched too), a number, true, false or null. Objects and arrays are left
+// alone; the keys inside them are matched on their own.
+const JSON_TEXT_VALUE_PATTERN = '("(?:[^"\\\\]|\\\\.)*"?|-?\\d[0-9.eE+-]*|true|false|null)';
+const TRUNCATION_MARKER_PATTERN = /\n… \[truncated, [^\]]*\]$/;
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// JSON that does not parse (a body cut at the size limit) cannot have keys removed, so the values
+// of matching keys are masked in the text instead: every prop, plus the last segment of a dotted
+// prop (its path cannot be followed). Returns the body unchanged when nothing matched.
+const maskUnparsableJson = (body, rules) => {
+  const keys = [];
+  for (let i = 0; i < rules.props.length; i++) {
+    const prop = rules.props[i];
+    const lastSegment = prop.slice(prop.lastIndexOf('.') + 1);
+    if (keys.indexOf(prop) === -1) {
+      keys.push(prop);
+    }
+    if (lastSegment.length > 0 && keys.indexOf(lastSegment) === -1) {
+      keys.push(lastSegment);
+    }
+  }
+
+  // Keep the SDK's own truncation marker out of reach of a cut string value.
+  const marker = TRUNCATION_MARKER_PATTERN.exec(body);
+  const head = marker ? body.slice(0, marker.index) : body;
+  let masked = head;
+  for (let i = 0; i < keys.length; i++) {
+    const pattern = new RegExp('"(' + escapeRegExp(keys[i]) + ')"(\\s*:\\s*)' + JSON_TEXT_VALUE_PATTERN, 'gi');
+    masked = masked.replace(pattern, '"$1"$2"' + REDACTED_VALUE + '"');
+  }
+  return masked === head ? body : masked + (marker ? marker[0] : '');
+};
+
 const isFormBody = (body, contentType) => {
   if (contentType) {
     return contentType.toLowerCase().indexOf('application/x-www-form-urlencoded') !== -1;
@@ -298,7 +333,8 @@ const isFormBody = (body, contentType) => {
 /**
  * Removes props from a request payload / response text:
  * JSON bodies at any depth (plus dotted paths from the root), form bodies by param name.
- * A body that is unchanged, or that does not parse (e.g. truncated), is returned untouched.
+ * In JSON that does not parse (e.g. truncated) the values of matching keys are masked instead.
+ * A body that is unchanged is returned untouched.
  */
 export const redactBody = (body, contentType, rules) => {
   if (rules.props.length === 0 || body === null || body === undefined) {
@@ -318,6 +354,7 @@ export const redactBody = (body, contentType, rules) => {
         if (parsed && typeof parsed === 'object') {
           return removeJsonProps(parsed, rules) ? JSON.stringify(parsed) : body;
         }
+        return maskUnparsableJson(body, rules);
       }
 
       if (isFormBody(body, contentType)) {
