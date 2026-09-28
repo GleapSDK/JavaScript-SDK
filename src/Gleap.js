@@ -209,10 +209,11 @@ class Gleap {
   }
 
   /**
-   * Attaches external network logs.
+   * Attaches external network logs (an array, or its JSON string). Replaces the previously
+   * attached logs; they are redacted and blacklisted like the captured ones.
    */
   static attachNetworkLogs(networkLogs) {
-    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
+    GleapNetworkIntercepter.getInstance().setExternalRequests(gleapDataParser(networkLogs));
   }
 
   /**
@@ -515,7 +516,8 @@ class Gleap {
   }
 
   /**
-   * Sets the network logger blacklist.
+   * Sets the network logger blacklist (urls containing an entry are left out). Each call
+   * replaces the previous list; the project's blacklist from the dashboard applies as well.
    * @param {Array} networkLogBlacklist
    */
   static setNetworkLogsBlacklist(networkLogBlacklist) {
@@ -523,7 +525,8 @@ class Gleap {
   }
 
   /**
-   * Sets the network logger props to ignore.
+   * Sets the network logger props to ignore (removed from headers, bodies and query params).
+   * Each call replaces the previous list; the project's props from the dashboard apply as well.
    * @param {Array} filters
    */
   static setNetworkLogPropsToIgnore(filters) {

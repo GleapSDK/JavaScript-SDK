@@ -201,13 +201,10 @@ export default class GleapConfigManager {
 
       GleapNetworkIntercepter.getInstance().setLoadAllResources(flowConfig.sendNetworkResources ? true : false);
 
-      if (flowConfig.networkLogPropsToIgnore) {
-        GleapNetworkIntercepter.getInstance().setFilters(flowConfig.networkLogPropsToIgnore);
-      }
-
-      if (flowConfig.networkLogBlacklist) {
-        GleapNetworkIntercepter.getInstance().setBlacklist(flowConfig.networkLogBlacklist);
-      }
+      // Replaced (not appended) on every apply: the cached config is applied first, then the
+      // server's. The lists set through the Gleap.* setters are kept separately.
+      GleapNetworkIntercepter.getInstance().setRemoteFilters(flowConfig.networkLogPropsToIgnore || []);
+      GleapNetworkIntercepter.getInstance().setRemoteBlacklist(flowConfig.networkLogBlacklist || []);
 
       GleapTranslationManager.getInstance().updateRTLSupport();
 

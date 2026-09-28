@@ -7,6 +7,7 @@ import Gleap, {
   GleapCustomDataManager,
   GleapMetaDataManager,
   GleapNetworkIntercepter,
+  GleapReplayRecorder,
   GleapTagManager,
 } from './Gleap';
 
@@ -114,7 +115,11 @@ export default class GleapFeedback {
 
     // Prepare screenshot
     if (!(this.excludeData && this.excludeData.screenshot)) {
-      var screenshotDataPromise = startScreenCapture(gleapInstance.isLiveMode()).then((screenshotData) => {
+      // The replay options go along so form fields are masked the same way as in replays.
+      var screenshotDataPromise = startScreenCapture(
+        gleapInstance.isLiveMode(),
+        GleapReplayRecorder.getInstance().customOptions
+      ).then((screenshotData) => {
         if (screenshotData) {
           const snapshotPosition = gleapInstance.getGlobalDataItem('snapshotPosition');
           screenshotData['x'] = snapshotPosition.x;
