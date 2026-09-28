@@ -47,6 +47,14 @@ Gleap.setRegion("us");
 Gleap.initialize("SDK-TOKEN");
 ```
 
+### Dark mode (optional)
+
+The widget can match your app's dark/light mode. Enable "Adapt to dark / light mode" in the dashboard (Look & feel → Color scheme) and set the dark colors there: header colors, UI color and background. In dark mode the widget uses these dark colors, plus the dark logo, header image and composer glow set in the dashboard; without dark colors it keeps its normal colors. Override the scheme at runtime, e.g. from your own theme toggle (only takes effect while "Adapt to dark / light mode" is enabled in the dashboard):
+
+```
+Gleap.setColorScheme("auto"); // or "light", "dark", "default" (dashboard setting)
+```
+
 Congrats, you are now all set! Report your first bug by using the feedback button.
 
 ## 🤝 Need help?

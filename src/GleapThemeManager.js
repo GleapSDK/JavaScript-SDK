@@ -6,8 +6,24 @@ export const COLOR_SCHEME_LIGHT = 'light';
 export const COLOR_SCHEME_DARK = 'dark';
 
 const COLOR_SCHEMES = [COLOR_SCHEME_AUTO, COLOR_SCHEME_LIGHT, COLOR_SCHEME_DARK];
-const DEFAULT_LIGHT_BACKGROUND = '#ffffff';
-const DEFAULT_DARK_BACKGROUND = '#18181b';
+
+// Base (light) palette keys and their dark palette counterparts, set in the dashboard.
+const PALETTE_KEYS = [
+  ['headerColor', 'darkHeaderColor'],
+  ['headerColor2', 'darkHeaderColor2'],
+  ['headerColor3', 'darkHeaderColor3'],
+  ['color', 'darkColor'],
+  ['backgroundColor', 'darkBackgroundColor'],
+];
+
+// Header logo, header background image and composer glow, and their dark
+// counterparts from the dashboard. A present dark value is used as-is ('' means
+// none in dark mode); configs saved before these existed keep the base value.
+const DARK_ASSET_KEYS = [
+  ['logo', 'darkLogo'],
+  ['bgImage', 'darkBgImage'],
+  ['aurora', 'darkAurora'],
+];
 
 // Attributes the common theming setups (Tailwind, Bootstrap, MUI, daisyUI, GitHub
 // Primer, next-themes, …) put on <html>/<body> to mark the active theme.
@@ -66,18 +82,8 @@ export const parseColor = (color) => {
 const yiq = ({ r, g, b }) => (r * 299 + g * 587 + b * 114) / 1000;
 
 /**
- * Whether the widget renders the given background as dark. Same threshold as
- * calculateContrast (UI.js) and the Messenger-App's theme, so "dark" here means
- * exactly "the widget switches to light text".
- */
-export const isDarkWidgetBackground = (color) => {
-  const parsed = parseColor(color);
-  return parsed ? yiq(parsed) < 160 : false;
-};
-
-/**
  * The widget styles derive hover/shade colours and alpha suffixes from the
- * background, which only works for #rrggbb. Returns that form or null.
+ * colors, which only works for #rrggbb. Returns that form for #rgb/#rrggbb, else null.
  */
 const normalizeHexColor = (color) => {
   if (typeof color !== 'string' || !/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(color.trim())) {
@@ -203,7 +209,8 @@ export const detectHostColorScheme = () => {
 
 export default class GleapThemeManager {
   // Runtime override set via Gleap.setColorScheme. 'default' defers to the
-  // color scheme configured in the dashboard (flowConfig.colorScheme).
+  // color scheme configured in the dashboard (flowConfig.colorScheme). Only
+  // applies while dark / light mode is enabled in the dashboard.
   colorScheme = COLOR_SCHEME_DEFAULT;
   lightBackgroundColor = null;
   darkBackgroundColor = null;
@@ -222,11 +229,12 @@ export default class GleapThemeManager {
   }
 
   /**
-   * Sets the widget color scheme, overriding the dashboard setting.
+   * Sets the widget color scheme, overriding the dashboard setting. Only takes
+   * effect while dark / light mode is enabled in the dashboard.
    * @param {'default'|'auto'|'light'|'dark'} colorScheme - 'default' uses the dashboard setting,
    * 'auto' follows the host page, 'light'/'dark' force a scheme.
    * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options - Background
-   * colors (#rrggbb) used when the dashboard background doesn't match the active scheme.
+   * colors (#rgb/#rrggbb) that override the dashboard background in light / dark mode.
    */
   setColorScheme(colorScheme, options = {}) {
     this.colorScheme = normalizeColorScheme(colorScheme);
@@ -249,33 +257,58 @@ export default class GleapThemeManager {
   }
 
   /**
-   * The configured scheme: the runtime override, else the dashboard setting.
+   * The configured scheme: 'default' (never themed) while dark / light mode is
+   * disabled in the dashboard (colorScheme missing, unknown or 'default'), else
+   * the runtime override, else the dashboard setting.
    */
   getColorScheme(flowConfig = this.getDashboardConfig()) {
+    const dashboardScheme = normalizeColorScheme(flowConfig?.colorScheme);
+    if (dashboardScheme === COLOR_SCHEME_DEFAULT) {
+      return COLOR_SCHEME_DEFAULT;
+    }
     if (this.colorScheme !== COLOR_SCHEME_DEFAULT) {
       return this.colorScheme;
     }
-    return normalizeColorScheme(flowConfig?.colorScheme);
+    return dashboardScheme;
+  }
+
+  /**
+   * Whether there are dark colors to use: a valid dark palette color from the
+   * dashboard or a runtime dark background. Without one there is no dark mode.
+   */
+  hasDarkPalette(flowConfig = this.getDashboardConfig()) {
+    if (this.darkBackgroundColor) {
+      return true;
+    }
+    return !!flowConfig && PALETTE_KEYS.some(([, darkKey]) => normalizeHexColor(flowConfig[darkKey]) !== null);
   }
 
   /**
    * The scheme the widget should render in, or null to keep the dashboard colors.
+   * Null while dark / light mode is disabled in the dashboard, even with a
+   * runtime scheme. Dark is only active when there is a dark palette.
    */
   getActiveColorScheme(flowConfig = this.getDashboardConfig()) {
     const colorScheme = this.getColorScheme(flowConfig);
+    let scheme = null;
     if (colorScheme === COLOR_SCHEME_AUTO) {
-      return this.detectedScheme || detectHostColorScheme();
+      scheme = this.detectedScheme || detectHostColorScheme();
+    } else if (colorScheme === COLOR_SCHEME_LIGHT || colorScheme === COLOR_SCHEME_DARK) {
+      scheme = colorScheme;
     }
-    if (colorScheme === COLOR_SCHEME_LIGHT || colorScheme === COLOR_SCHEME_DARK) {
-      return colorScheme;
+    if (scheme === COLOR_SCHEME_DARK && !this.hasDarkPalette(flowConfig)) {
+      return null;
     }
-    return null;
+    return scheme;
   }
 
   /**
-   * Returns the flow config with the background adjusted to the active scheme.
-   * A dashboard background that already matches the scheme is kept, so a
-   * project that is designed dark stays exactly as designed in dark mode.
+   * Returns the flow config with the palette of the active scheme applied.
+   * The base colors are the light palette. Dark mode replaces each base color
+   * with its dark counterpart from the dashboard (darkHeaderColor…, darkColor,
+   * darkBackgroundColor) when that is set; the runtime backgrounds win. It also
+   * uses the dark logo, header image and composer glow (darkLogo, darkBgImage,
+   * darkAurora) when those are present.
    */
   applyToFlowConfig(flowConfig) {
     const scheme = this.getActiveColorScheme(flowConfig);
@@ -283,25 +316,33 @@ export default class GleapThemeManager {
       return flowConfig;
     }
 
-    const configuredBackground = flowConfig.backgroundColor || DEFAULT_LIGHT_BACKGROUND;
-    const configuredIsDark = isDarkWidgetBackground(configuredBackground);
-    if ((scheme === COLOR_SCHEME_DARK) === configuredIsDark) {
-      return flowConfig;
+    if (scheme === COLOR_SCHEME_LIGHT) {
+      if (!this.lightBackgroundColor) {
+        return flowConfig;
+      }
+      return {
+        ...flowConfig,
+        backgroundColor: this.lightBackgroundColor,
+      };
     }
 
-    let backgroundColor;
-    if (scheme === COLOR_SCHEME_DARK) {
-      backgroundColor =
-        this.darkBackgroundColor || normalizeHexColor(flowConfig.darkBackgroundColor) || DEFAULT_DARK_BACKGROUND;
-    } else {
-      backgroundColor =
-        this.lightBackgroundColor || normalizeHexColor(flowConfig.lightBackgroundColor) || DEFAULT_LIGHT_BACKGROUND;
+    const themed = { ...flowConfig };
+    PALETTE_KEYS.forEach(([key, darkKey]) => {
+      const darkValue = normalizeHexColor(flowConfig[darkKey]);
+      if (darkValue) {
+        themed[key] = darkValue;
+      }
+    });
+    if (this.darkBackgroundColor) {
+      themed.backgroundColor = this.darkBackgroundColor;
     }
-
-    return {
-      ...flowConfig,
-      backgroundColor,
-    };
+    DARK_ASSET_KEYS.forEach(([key, darkKey]) => {
+      const darkValue = flowConfig[darkKey];
+      if (darkValue !== undefined && darkValue !== null) {
+        themed[key] = darkValue;
+      }
+    });
+    return themed;
   }
 
   /**
@@ -334,13 +375,23 @@ export default class GleapThemeManager {
     }
   }
 
-  applyToChecklists() {
+  /**
+   * Applies the active scheme to all checklists. With `rerender`, loaded
+   * checklists are rendered again so they pick up the current UI color.
+   */
+  applyToChecklists(rerender = false) {
     if (typeof document === 'undefined') {
       return;
     }
     const checklists = document.querySelectorAll('gleap-checklist');
     for (let i = 0; i < checklists.length; i++) {
-      this.applyToChecklist(checklists[i]);
+      const checklist = checklists[i];
+      this.applyToChecklist(checklist);
+      if (rerender && checklist._hasLoaded && checklist.checklistData && typeof checklist.renderChecklist === 'function') {
+        try {
+          checklist.renderChecklist(checklist.checklistData);
+        } catch (e) {}
+      }
     }
   }
 

@@ -12,6 +12,17 @@ import Gleap, {
   GleapModalManager,
 } from './Gleap';
 
+// The flow config colors a color scheme can change.
+const THEMED_COLOR_KEYS = ['color', 'headerColor', 'headerColor2', 'headerColor3', 'backgroundColor'];
+// The header logo, header background image and composer glow a color scheme can change.
+const THEMED_ASSET_KEYS = ['logo', 'bgImage', 'aurora'];
+
+// Compared by value, as aurora is an object.
+const themedValues = (keys, flowConfig) => JSON.stringify(keys.map((key) => flowConfig?.[key]));
+
+const colorSchemeKey = (scheme, flowConfig) =>
+  `${scheme}|${themedValues([...THEMED_COLOR_KEYS, ...THEMED_ASSET_KEYS], flowConfig)}`;
+
 const parseIntWithDefault = (val, def) => {
   const parsed = parseInt(val);
   if (isNaN(parsed)) {
@@ -135,23 +146,28 @@ export default class GleapConfigManager {
     const themeManager = GleapThemeManager.getInstance();
     const flowConfig = themeManager.applyToFlowConfig(this.rawFlowConfig);
     // The active scheme also drives the chatbar style, so a change matters even
-    // when the background already fit.
-    const appliedColorScheme = `${themeManager.getActiveColorScheme(this.rawFlowConfig)}|${flowConfig.backgroundColor}`;
+    // when the colors already fit.
+    const appliedColorScheme = colorSchemeKey(themeManager.getActiveColorScheme(this.rawFlowConfig), flowConfig);
     if (appliedColorScheme === this.appliedColorScheme) {
       return;
     }
     this.appliedColorScheme = appliedColorScheme;
-    const backgroundChanged = flowConfig.backgroundColor !== this.flowConfig?.backgroundColor;
+    const previous = this.flowConfig;
+    const colorsChanged = themedValues(THEMED_COLOR_KEYS, flowConfig) !== themedValues(THEMED_COLOR_KEYS, previous);
+    const assetsChanged = themedValues(THEMED_ASSET_KEYS, flowConfig) !== themedValues(THEMED_ASSET_KEYS, previous);
     this.flowConfig = flowConfig;
 
     const chatbar = GleapAiChatbarManager.getInstance();
     if (chatbar.comReady) {
       chatbar._sendConfigUpdate();
     }
-    if (backgroundChanged) {
+    if (colorsChanged) {
       this.applyStylesFromConfig();
-      GleapFrameManager.getInstance().sendConfigUpdate();
       GleapModalManager.getInstance().sendModalData();
+      themeManager.applyToChecklists(flowConfig.color !== previous?.color);
+    }
+    if (colorsChanged || assetsChanged) {
+      GleapFrameManager.getInstance().sendConfigUpdate();
     }
   }
 
@@ -174,9 +190,11 @@ export default class GleapConfigManager {
       const themeManager = GleapThemeManager.getInstance();
       themeManager.updateWatching();
       const flowConfig = themeManager.applyToFlowConfig(config.flowConfig);
+      const previous = this.flowConfig;
       this.flowConfig = flowConfig;
-      this.appliedColorScheme = `${themeManager.getActiveColorScheme(config.flowConfig)}|${flowConfig.backgroundColor}`;
-      themeManager.applyToChecklists();
+      this.appliedColorScheme = colorSchemeKey(themeManager.getActiveColorScheme(config.flowConfig), flowConfig);
+      // Rendered checklists bake in the UI color, so re-render them when it changed.
+      themeManager.applyToChecklists(!!previous && previous.color !== flowConfig.color);
 
       // Update styles.
       this.applyStylesFromConfig();
