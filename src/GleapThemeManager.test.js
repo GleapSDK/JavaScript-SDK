@@ -228,10 +228,10 @@ describe('applyToFlowConfig', () => {
     expect(manager.getActiveColorScheme(lightConfig)).toBeNull();
     expect(manager.applyToFlowConfig(lightConfig)).toBe(lightConfig);
 
-    manager.setColorScheme('default');
+    const withoutOverride = new GleapThemeManager();
     const dashboardDark = { ...lightConfig, colorScheme: 'dark' };
-    expect(manager.getActiveColorScheme(dashboardDark)).toBeNull();
-    expect(manager.applyToFlowConfig(dashboardDark)).toBe(dashboardDark);
+    expect(withoutOverride.getActiveColorScheme(dashboardDark)).toBeNull();
+    expect(withoutOverride.applyToFlowConfig(dashboardDark)).toBe(dashboardDark);
   });
 
   test('a runtime dark background alone enables dark mode and swaps only the background', () => {
@@ -293,13 +293,12 @@ describe('applyToFlowConfig', () => {
     const manager = GleapThemeManager.getInstance();
     const dashboard = { ...paletteConfig, colorScheme: 'light' };
 
-    manager.setColorScheme('dark');
-    expect(manager.applyToFlowConfig(dashboard).headerColor).toBe('#220000');
-
-    // 'default' removes the override again.
-    manager.setColorScheme('default');
+    // Before any call, the dashboard setting applies.
     expect(manager.getColorScheme(dashboard)).toBe('light');
     expect(manager.applyToFlowConfig(dashboard)).toBe(dashboard);
+
+    manager.setColorScheme('dark');
+    expect(manager.applyToFlowConfig(dashboard).headerColor).toBe('#220000');
   });
 
   test('the runtime scheme applies when the dashboard follows the host app', () => {
@@ -401,13 +400,19 @@ describe('applyToFlowConfig', () => {
     });
   });
 
-  test('an unknown scheme resets to the dashboard colors', () => {
+  test('"default" and unknown runtime schemes behave like "auto"', () => {
     const manager = GleapThemeManager.getInstance();
-    manager.setColorScheme('dark');
-    manager.setColorScheme('sepia');
-    expect(manager.colorScheme).toBe('default');
-    expect(manager.getColorScheme(paletteConfig)).toBe('light');
+    ['default', 'sepia', undefined].forEach((value) => {
+      manager.setColorScheme('light');
+      manager.setColorScheme(value);
+      expect(manager.colorScheme).toBe('auto');
+      expect(manager.getColorScheme(paletteConfig)).toBe('auto');
+    });
+
+    // Follows the host, although the dashboard says light.
     expect(manager.applyToFlowConfig(paletteConfig)).toBe(paletteConfig);
+    setPrefersDark(true);
+    expect(manager.applyToFlowConfig(paletteConfig).backgroundColor).toBe('#0b1020');
   });
 });
 
@@ -494,7 +499,7 @@ describe('auto color scheme', () => {
   test('stops watching when switching away from auto', async () => {
     const manager = GleapThemeManager.getInstance();
     manager.setColorScheme('auto');
-    manager.setColorScheme('default');
+    manager.setColorScheme('light');
     expect(mediaListeners).toHaveLength(0);
 
     mockRefreshColorScheme.mockClear();

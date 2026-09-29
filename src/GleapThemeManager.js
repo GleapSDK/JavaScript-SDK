@@ -93,8 +93,13 @@ const normalizeHexColor = (color) => {
   return '#' + [parsed.r, parsed.g, parsed.b].map((c) => c.toString(16).padStart(2, '0')).join('');
 };
 
-const normalizeColorScheme = (colorScheme) =>
+// The dashboard setting: 'default' (dark / light mode off) unless it is one of the schemes.
+const normalizeDashboardColorScheme = (colorScheme) =>
   COLOR_SCHEMES.indexOf(colorScheme) !== -1 ? colorScheme : COLOR_SCHEME_DEFAULT;
+
+// The runtime scheme: 'light' or 'dark' force a mode, anything else follows the host ('auto').
+const normalizeRuntimeColorScheme = (colorScheme) =>
+  colorScheme === COLOR_SCHEME_LIGHT || colorScheme === COLOR_SCHEME_DARK ? colorScheme : COLOR_SCHEME_AUTO;
 
 // Marks <gleap-checklist> elements without an explicit `dark` attribute as dark.
 const CHECKLIST_DARK_ATTRIBUTE = 'data-gleap-dark';
@@ -208,10 +213,11 @@ export const detectHostColorScheme = () => {
 };
 
 export default class GleapThemeManager {
-  // Runtime override set via Gleap.setColorScheme. 'default' defers to the
-  // color scheme configured in the dashboard (flowConfig.colorScheme). Only
-  // applies while dark / light mode is enabled in the dashboard.
-  colorScheme = COLOR_SCHEME_DEFAULT;
+  // Runtime override set via Gleap.setColorScheme ('auto', 'light' or 'dark').
+  // Null until the first call, so the color scheme configured in the dashboard
+  // (flowConfig.colorScheme) applies. Only applies while dark / light mode is
+  // enabled in the dashboard.
+  colorScheme = null;
   lightBackgroundColor = null;
   darkBackgroundColor = null;
   detectedScheme = null;
@@ -231,13 +237,13 @@ export default class GleapThemeManager {
   /**
    * Sets the widget color scheme, overriding the dashboard setting. Only takes
    * effect while dark / light mode is enabled in the dashboard.
-   * @param {'default'|'auto'|'light'|'dark'} colorScheme - 'default' uses the dashboard setting,
-   * 'auto' follows the host page, 'light'/'dark' force a scheme.
+   * @param {'auto'|'light'|'dark'} colorScheme - 'auto' follows the host page, 'light'/'dark'
+   * force a scheme. Any other value (including the former 'default') is treated as 'auto'.
    * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options - Background
    * colors (#rgb/#rrggbb) that override the dashboard background in light / dark mode.
    */
   setColorScheme(colorScheme, options = {}) {
-    this.colorScheme = normalizeColorScheme(colorScheme);
+    this.colorScheme = normalizeRuntimeColorScheme(colorScheme);
     this.lightBackgroundColor = normalizeHexColor(options?.lightBackgroundColor);
     this.darkBackgroundColor = normalizeHexColor(options?.darkBackgroundColor);
 
@@ -259,17 +265,15 @@ export default class GleapThemeManager {
   /**
    * The configured scheme: 'default' (never themed) while dark / light mode is
    * disabled in the dashboard (colorScheme missing, unknown or 'default'), else
-   * the runtime override, else the dashboard setting.
+   * the runtime override once Gleap.setColorScheme was called, else the
+   * dashboard setting.
    */
   getColorScheme(flowConfig = this.getDashboardConfig()) {
-    const dashboardScheme = normalizeColorScheme(flowConfig?.colorScheme);
+    const dashboardScheme = normalizeDashboardColorScheme(flowConfig?.colorScheme);
     if (dashboardScheme === COLOR_SCHEME_DEFAULT) {
       return COLOR_SCHEME_DEFAULT;
     }
-    if (this.colorScheme !== COLOR_SCHEME_DEFAULT) {
-      return this.colorScheme;
-    }
-    return dashboardScheme;
+    return this.colorScheme || dashboardScheme;
   }
 
   /**
