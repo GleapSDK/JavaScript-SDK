@@ -9,12 +9,45 @@ import Gleap, {
 } from './Gleap';
 import { gleapDataParser } from './GleapHelper';
 
+// At most this many events wait for a ping; the oldest ones (other than a session start) make room.
+const MAX_QUEUED_EVENTS = 500;
+// One ping carries the oldest events up to these limits; the rest follows once it was delivered.
+const MAX_EVENTS_PER_PING = 100;
+const MAX_PING_BYTES = 256 * 1024;
+// A ping still without an answer after this long counts as failed.
+const PING_TIMEOUT_MS = 30 * 1000;
+// After failed pings: 3 s, doubled per failure up to 60 s, each ±20 % so clients don't retry in step.
+const PING_BACKOFF_FIRST_MS = 3 * 1000;
+const PING_BACKOFF_MAX_MS = 60 * 1000;
+const PING_BACKOFF_JITTER = 0.2;
+// A longer Retry-After from the server applies, up to this long.
+const PING_MAX_RETRY_AFTER_MS = 5 * 60 * 1000;
+const SESSION_STARTED_EVENT = 'sessionStarted';
+
+let textEncoder = null;
+const byteLength = (text) => {
+  try {
+    if (!textEncoder && typeof TextEncoder !== 'undefined') {
+      textEncoder = new TextEncoder();
+    }
+    if (textEncoder) {
+      return textEncoder.encode(text).length;
+    }
+  } catch (exp) {}
+  return text.length;
+};
+
 export default class GleapStreamedEvent {
   eventArray = [];
+  // Events waiting for a ping, oldest first.
   streamedEventArray = [];
   eventMaxLength = 500;
-  errorCount = 0;
-  streamingEvents = false;
+  // The ping waiting for its answer, 0 when none is: never more than one at a time.
+  pingInFlight = 0;
+  lastPingId = 0;
+  // Failed pings in a row, and the time (Date.now()) before which no ping goes out.
+  pingFailures = 0;
+  pingRetryAt = 0;
   lastUrl = undefined;
   mainLoopTimeout = null;
   socket = null;
@@ -207,15 +240,9 @@ export default class GleapStreamedEvent {
     this.cleanupMainLoop();
   }
 
-  resetErrorCountLoop() {
-    setInterval(() => {
-      this.errorCount = 0;
-    }, 60000);
-  }
-
   cleanupMainLoop() {
     if (this.mainLoopTimeout) {
-      clearInterval(this.mainLoopTimeout);
+      clearTimeout(this.mainLoopTimeout);
       this.mainLoopTimeout = null;
     }
   }
@@ -233,7 +260,6 @@ export default class GleapStreamedEvent {
 
   start() {
     this.startPageListener();
-    this.resetErrorCountLoop();
   }
 
   trackInitialEvents() {
@@ -286,23 +312,44 @@ export default class GleapStreamedEvent {
       this.eventArray.shift();
     }
 
-    // Check max size of streamed event log
-    if (this.streamedEventArray.length > this.eventMaxLength) {
-      this.streamedEventArray.shift();
+    this.trimStreamedEvents();
+  }
+
+  // Keeps the events waiting for a ping at the limit: the oldest one that is not a session start
+  // makes room, or the oldest one when all are.
+  trimStreamedEvents() {
+    while (this.streamedEventArray.length > MAX_QUEUED_EVENTS) {
+      const index = this.streamedEventArray.findIndex((event) => !event || event.name !== SESSION_STARTED_EVENT);
+      this.streamedEventArray.splice(index !== -1 ? index : 0, 1);
     }
   }
 
   runEventStreamLoop = () => {
     const self = this;
-    this.streamEvents();
+    try {
+      this.streamEvents();
+    } catch (exp) {}
 
     this.mainLoopTimeout = setTimeout(function () {
       self.runEventStreamLoop();
     }, 2500);
   };
 
+  /**
+   * Streams the queued events to the backend: only with a session and an open WebSocket, one
+   * request at a time, the oldest events first and at most 100 events or about 256 KB per request.
+   * Events leave the queue once a 2xx answer delivered them, and the rest of a longer queue follows
+   * right away. After a 429, a 5xx, any other error answer, a network error or a timeout the events
+   * stay queued and the requests back off (see pingDidFinish); the loop ticks in between do nothing.
+   */
   streamEvents = () => {
-    if (!GleapSession.getInstance().ready || this.streamingEvents || this.errorCount > 2) {
+    const sessionInstance = GleapSession.getInstance();
+    const session = sessionInstance.session;
+    if (!sessionInstance.ready || !session || !session.gleapId || !session.gleapHash) {
+      return;
+    }
+
+    if (this.pingInFlight || Date.now() < this.pingRetryAt) {
       return;
     }
 
@@ -316,41 +363,149 @@ export default class GleapStreamedEvent {
       return;
     }
 
-    const self = this;
-    this.streamingEvents = true;
+    const { events, hasMore } = this.nextPingBatch();
+    if (events.length === 0) {
+      return;
+    }
+
+    this.lastPingId += 1;
+    const pingId = this.lastPingId;
+    this.pingInFlight = pingId;
 
     const http = new XMLHttpRequest();
-    http.open('POST', GleapSession.getInstance().apiUrl + '/sessions/events');
-    http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-    GleapSession.getInstance().injectSession(http);
-    http.onerror = () => {
-      self.errorCount++;
-      self.streamingEvents = false;
+    let timeout = null;
+    // Runs once per ping: later calls find another (or no) ping in flight.
+    const finish = () => {
+      clearTimeout(timeout);
+      this.pingDidFinish(pingId, events, hasMore, http);
     };
-    http.onreadystatechange = function (e) {
-      if (http.readyState === 4) {
-        if (http.status === 200 || http.status === 201) {
-          self.errorCount = 0;
-        } else {
-          self.errorCount++;
+    timeout = setTimeout(() => {
+      try {
+        http.abort();
+      } catch (exp) {}
+      finish();
+    }, PING_TIMEOUT_MS);
+
+    try {
+      http.open('POST', sessionInstance.apiUrl + '/sessions/events');
+      http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+      sessionInstance.injectSession(http);
+      http.onerror = finish;
+      http.onreadystatechange = function () {
+        if (http.readyState === 4) {
+          finish();
         }
+      };
 
-        self.streamingEvents = false;
-      }
-    };
-
-    const sessionDuration = GleapMetaDataManager.getInstance().getSessionDuration();
-    http.send(
-      JSON.stringify({
-        time: sessionDuration,
-        events: this.streamedEventArray,
-        opened: GleapFrameManager.getInstance().isOpened(),
-        type: 'js',
-        sdkVersion: SDK_VERSION,
-        ws: true,
-      })
-    );
-
-    this.streamedEventArray = [];
+      http.send(
+        JSON.stringify({
+          time: GleapMetaDataManager.getInstance().getSessionDuration(),
+          events,
+          opened: GleapFrameManager.getInstance().isOpened(),
+          type: 'js',
+          sdkVersion: SDK_VERSION,
+          ws: true,
+        })
+      );
+    } catch (exp) {
+      finish();
+    }
   };
+
+  /**
+   * The answer to a ping (or its timeout). A 2xx removes exactly the events it carried and resets the
+   * backoff. Anything else keeps them queued; the next ping waits 3 s, doubled per failure in a row
+   * up to 60 s, each ±20 %, or the server's longer Retry-After (up to 5 minutes).
+   */
+  pingDidFinish(pingId, sentEvents, hasMore, http) {
+    // Nobody waits for this answer any more.
+    if (this.pingInFlight !== pingId) {
+      return;
+    }
+    this.pingInFlight = 0;
+
+    const status = http.status;
+    if (status >= 200 && status < 300) {
+      this.pingFailures = 0;
+      this.pingRetryAt = 0;
+      this.removeSentEvents(sentEvents);
+      if (hasMore) {
+        this.streamEvents();
+      }
+      return;
+    }
+
+    let retryAfter = -1;
+    try {
+      retryAfter = GleapStreamedEvent.parseRetryAfter(http.getResponseHeader('Retry-After'));
+    } catch (exp) {}
+    this.pingFailures += 1;
+    let delay = GleapStreamedEvent.pingBackoffDelay(this.pingFailures, Math.random());
+    if (retryAfter > 0) {
+      delay = Math.max(delay, Math.min(retryAfter, PING_MAX_RETRY_AFTER_MS));
+    }
+    this.pingRetryAt = Date.now() + delay;
+  }
+
+  // The oldest queued events for one ping: at most 100, and no more than about 256 KB of JSON (a
+  // single larger event goes alone). An event that cannot be sent as JSON is dropped, so it does not
+  // hold back the others.
+  nextPingBatch() {
+    const events = [];
+    const broken = [];
+    // The brackets of the array, and a comma per event.
+    let bytes = 2;
+    for (let i = 0; i < this.streamedEventArray.length && events.length < MAX_EVENTS_PER_PING; i++) {
+      const event = this.streamedEventArray[i];
+      let size;
+      try {
+        size = byteLength(JSON.stringify(event)) + 1;
+      } catch (exp) {
+        broken.push(event);
+        continue;
+      }
+      if (events.length > 0 && bytes + size > MAX_PING_BYTES) {
+        break;
+      }
+      events.push(event);
+      bytes += size;
+    }
+    if (broken.length > 0) {
+      this.streamedEventArray = this.streamedEventArray.filter((event) => broken.indexOf(event) === -1);
+    }
+    return { events, hasMore: events.length < this.streamedEventArray.length };
+  }
+
+  // Removes exactly the delivered events; events tracked while the ping was in flight wait for the next one.
+  removeSentEvents(sentEvents) {
+    const sent = new Set(sentEvents);
+    this.streamedEventArray = this.streamedEventArray.filter((event) => !sent.has(event));
+  }
+
+  /**
+   * The delay (ms) after `failures` failed pings in a row: 3 s doubled per failure up to 60 s, times a
+   * factor between 0.8 and 1.2 (from `random` in [0, 1)), never more than 60 s.
+   */
+  static pingBackoffDelay(failures, random) {
+    const doublings = Math.min(Math.max(failures - 1, 0), 5);
+    const base = Math.min(PING_BACKOFF_FIRST_MS * Math.pow(2, doublings), PING_BACKOFF_MAX_MS);
+    const factor = 1 - PING_BACKOFF_JITTER + 2 * PING_BACKOFF_JITTER * Math.min(Math.max(random, 0), 1);
+    return Math.min(base * factor, PING_BACKOFF_MAX_MS);
+  }
+
+  /**
+   * A Retry-After value (delay-seconds or an HTTP date) in ms from `now`: 0 for a date in the past,
+   * -1 without a valid value.
+   */
+  static parseRetryAfter(value, now = Date.now()) {
+    const trimmed = typeof value === 'string' ? value.trim() : '';
+    if (!trimmed) {
+      return -1;
+    }
+    if (/^\d+$/.test(trimmed)) {
+      return parseInt(trimmed, 10) * 1000;
+    }
+    const date = Date.parse(trimmed);
+    return isNaN(date) ? -1 : Math.max(0, date - now);
+  }
 }
