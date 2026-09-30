@@ -772,6 +772,19 @@ export const injectStyledCSS = (
       max-width: 690px !important;
     }
 
+    /* Expanded by the end user (expand/collapse button in the messenger header).
+       Below 451px the widget is full screen anyway. The inner max-height must beat
+       the inline 700px set by GleapFrameManager.setAppMode. */
+    @media only screen and (min-width: 451px) {
+      .gleap-frame-container--expanded {
+        max-width: 690px !important;
+      }
+
+      .gleap-frame-container--expanded .gleap-frame-container-inner {
+        max-height: none !important;
+      }
+    }
+
     .gleap-frame-container--survey-full {
       position: fixed;
       top: 0 !important;
