@@ -177,12 +177,12 @@ describe('event pings', () => {
     expect(names(lastRequest().events)).toEqual(['a', 'b']);
   });
 
-  test('backs off 3, 6, 12, 24, 48, 60 s on 429, 5xx, other 4xx and network errors, and resets after a 2xx', () => {
+  test('backs off 3, 6, 12, 24, 48, 60 s on 429, 5xx, 408 and network errors, and resets after a 2xx', () => {
     const streamer = createStreamer();
     streamer.logEvent('a');
     streamer.streamEvents();
 
-    const failures = [(r) => r.respond(429), (r) => r.respond(503), (r) => r.respond(400), (r) => r.fail()];
+    const failures = [(r) => r.respond(429), (r) => r.respond(503), (r) => r.respond(408), (r) => r.fail()];
     [3000, 6000, 12000, 24000, 48000, 60000, 60000].forEach((delay, i) => {
       failures[i % failures.length](lastRequest());
       expect(names(streamer.streamedEventArray)).toEqual(['a']);
@@ -271,6 +271,18 @@ describe('event pings', () => {
     lastRequest().respond(200);
     expect(requests).toHaveLength(4);
     expect(streamer.streamedEventArray).toHaveLength(0);
+  });
+
+  test('drops the events of a ping the server refuses (other 4xx) and still backs off', () => {
+    const streamer = createStreamer();
+    streamer.logEvent('a');
+    streamer.streamEvents();
+    streamer.logEvent('b');
+    lastRequest().respond(413);
+    expect(names(streamer.streamedEventArray)).toEqual(['b']);
+    expect(tickAfter(streamer, 2999)).toBe(false);
+    expect(tickAfter(streamer, 1)).toBe(true);
+    expect(names(lastRequest().events)).toEqual(['b']);
   });
 
   test('keeps a ping at about 256 KB, a larger event goes alone', () => {

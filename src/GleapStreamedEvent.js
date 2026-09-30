@@ -438,8 +438,9 @@ export default class GleapStreamedEvent {
    * Streams the queued events to the backend: only with a session and an open WebSocket, one
    * request at a time, the oldest events first and at most 100 events or about 256 KB per request.
    * Events leave the queue once a 2xx answer delivered them, and the rest of a longer queue follows
-   * right away. After a 429, a 5xx, any other error answer, a network error or a timeout the events
-   * stay queued and the requests back off (see pingDidFinish); the loop ticks in between do nothing.
+   * right away. After a network error, a timeout, 408, 429 or a 5xx the events stay queued, any other
+   * error answer drops them; either way the requests back off (see pingDidFinish) and the loop ticks
+   * in between do nothing.
    */
   streamEvents = () => {
     const sessionInstance = GleapSession.getInstance();
@@ -513,7 +514,8 @@ export default class GleapStreamedEvent {
 
   /**
    * The answer to a ping (or its timeout). A 2xx removes exactly the events it carried and resets the
-   * backoff. Anything else keeps them queued; the next ping waits 3 s, doubled per failure in a row
+   * backoff. A network error, a timeout, 408, 429 or a 5xx keeps them queued, any other answer drops
+   * them. After a failure the next ping waits 3 s, doubled per failure in a row
    * up to 60 s, each ±20 %, or the server's longer Retry-After (up to 5 minutes).
    */
   pingDidFinish(pingId, sentEvents, hasMore, http) {
@@ -532,6 +534,12 @@ export default class GleapStreamedEvent {
         this.streamEvents();
       }
       return;
+    }
+
+    // The server refused these events for good (e.g. 400, 401, 413): drop them, so they do not
+    // hold back the rest of the queue. The next ping still backs off.
+    if (!GleapStreamedEvent.isRetryablePingStatus(status)) {
+      this.removeSentEvents(sentEvents);
     }
 
     let retryAfter = -1;
@@ -596,6 +604,14 @@ export default class GleapStreamedEvent {
    */
   static reconnectDelay(attempts, random) {
     return jitteredBackoff(WS_RECONNECT_FIRST_MS, attempts, WS_RECONNECT_MAX_MS, random);
+  }
+
+  /**
+   * Whether a failed ping is worth sending again: no answer (network error, timeout), 408, 429 or
+   * a 5xx. Other error answers mean the server will not take these events.
+   */
+  static isRetryablePingStatus(status) {
+    return !status || status === 408 || status === 429 || status >= 500;
   }
 
   /**
