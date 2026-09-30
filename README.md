@@ -60,3 +60,11 @@ Congrats, you are now all set! Report your first bug by using the feedback butto
 ## 🤝 Need help?
 
 We are here to help! hello@gleap.io
+
+## Releasing
+
+1. Set `version` in `package.json` and add a `## X.Y.Z` section to `CHANGELOG.md`.
+2. Merge to `master`. Cloudflare Workers Builds deploys the CDN build (`sdk.gleap.io`) on every push to `master`.
+3. `git tag X.Y.Z && git push origin X.Y.Z` (plain version, no `v`).
+
+The `Release` workflow checks that the tag matches `package.json`, runs the tests, publishes `gleap` to npm with trusted publishing (GitHub OIDC, no token; prerelease tags go to the `next` dist-tag) and creates the GitHub release from the CHANGELOG section. One-time setup: `npm trust github gleap --repo GleapSDK/JavaScript-SDK --file release.yml --allow-publish`.
