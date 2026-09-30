@@ -19,10 +19,25 @@ const PING_TIMEOUT_MS = 30 * 1000;
 // After failed pings: 3 s, doubled per failure up to 60 s, each ±20 % so clients don't retry in step.
 const PING_BACKOFF_FIRST_MS = 3 * 1000;
 const PING_BACKOFF_MAX_MS = 60 * 1000;
-const PING_BACKOFF_JITTER = 0.2;
+const BACKOFF_JITTER = 0.2;
 // A longer Retry-After from the server applies, up to this long.
 const PING_MAX_RETRY_AFTER_MS = 5 * 60 * 1000;
 const SESSION_STARTED_EVENT = 'sessionStarted';
+// WebSocket reconnects: 1 s, doubled per failed connection up to 60 s, each ±20 %.
+const WS_RECONNECT_FIRST_MS = 1000;
+const WS_RECONNECT_MAX_MS = 60 * 1000;
+// A connection that stayed open this long, or received a message, starts the backoff over.
+const WS_STABLE_MS = 10 * 1000;
+
+// `firstMs` doubled `doublings` times up to `maxMs`, times a factor between 0.8 and 1.2 (from `random`
+// in [0, 1)), never more than `maxMs`.
+const jitteredBackoff = (firstMs, doublings, maxMs, random) => {
+  const base = Math.min(firstMs * Math.pow(2, Math.min(Math.max(doublings, 0), 16)), maxMs);
+  const factor = 1 - BACKOFF_JITTER + 2 * BACKOFF_JITTER * Math.min(Math.max(random, 0), 1);
+  return Math.min(base * factor, maxMs);
+};
+
+const isOffline = () => typeof navigator !== 'undefined' && !!navigator && navigator.onLine === false;
 
 let textEncoder = null;
 const byteLength = (text) => {
@@ -54,10 +69,17 @@ export default class GleapStreamedEvent {
   connectedWebSocketGleapId = null;
   connectionTimeout = null;
   pingWS = null;
+  // The pending reconnect (never more than one), the failed connections in a row, and when the
+  // current socket opened (Date.now(), 0 while not open).
+  reconnectTimeout = null;
+  reconnectAttempts = 0;
+  socketOpenedAt = 0;
+  networkListenersAdded = false;
   handleOpenBound = null;
   handleErrorBound = null;
   handleMessageBound = null;
   handleCloseBound = null;
+  handleOnlineBound = null;
 
   // GleapStreamedEvent singleton
   static instance;
@@ -75,9 +97,13 @@ export default class GleapStreamedEvent {
     this.handleErrorBound = this.handleError.bind(this);
     this.handleMessageBound = this.handleMessage.bind(this);
     this.handleCloseBound = this.handleClose.bind(this);
+    this.handleOnlineBound = this.handleOnline.bind(this);
   }
 
+  // Closes the socket on purpose: its listeners go first, so this close never schedules a reconnect.
   cleanupWebSocket() {
+    this.clearReconnectTimeout();
+
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
       this.connectionTimeout = null;
@@ -85,7 +111,9 @@ export default class GleapStreamedEvent {
 
     if (this.pingWS) {
       clearInterval(this.pingWS);
+      this.pingWS = null;
     }
+    this.socketOpenedAt = 0;
 
     if (this.socket) {
       this.socket.removeEventListener('open', this.handleOpenBound);
@@ -100,9 +128,10 @@ export default class GleapStreamedEvent {
   initWebSocket() {
     this.cleanupWebSocket();
 
-    this.connectedWebSocketGleapId = GleapSession.getInstance().session.gleapId;
+    const session = GleapSession.getInstance().session;
+    this.connectedWebSocketGleapId = session ? session.gleapId : null;
 
-    if (!GleapSession.getInstance().session || !GleapSession.getInstance().sdkKey) {
+    if (!session || !session.gleapId || !GleapSession.getInstance().sdkKey) {
       return;
     }
 
@@ -117,9 +146,68 @@ export default class GleapStreamedEvent {
     this.socket.addEventListener('message', this.handleMessageBound);
     this.socket.addEventListener('error', this.handleErrorBound);
     this.socket.addEventListener('close', this.handleCloseBound);
+    this.addNetworkListeners();
+  }
+
+  clearReconnectTimeout() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+  }
+
+  /**
+   * Reconnects after 1 s, then 2, 4, 8, 16, 32 and at most 60 s (±20 %) while connections keep
+   * failing. Nothing is scheduled while the browser is offline: the 'online' event reconnects.
+   */
+  scheduleReconnect() {
+    this.clearReconnectTimeout();
+    if (isOffline()) {
+      return;
+    }
+
+    const delay = GleapStreamedEvent.reconnectDelay(this.reconnectAttempts, Math.random());
+    this.reconnectAttempts += 1;
+    this.reconnectTimeout = setTimeout(() => {
+      this.reconnectTimeout = null;
+      if (!isOffline()) {
+        this.initWebSocket();
+      }
+    }, delay);
+  }
+
+  addNetworkListeners() {
+    if (this.networkListenersAdded || typeof window === 'undefined' || !window || typeof window.addEventListener !== 'function') {
+      return;
+    }
+    window.addEventListener('online', this.handleOnlineBound);
+    this.networkListenersAdded = true;
+  }
+
+  removeNetworkListeners() {
+    if (!this.networkListenersAdded) {
+      return;
+    }
+    try {
+      window.removeEventListener('online', this.handleOnlineBound);
+    } catch (exp) {}
+    this.networkListenersAdded = false;
+  }
+
+  // Back online: reconnect right away, with a fresh backoff.
+  handleOnline() {
+    if (this.socket && this.socket.readyState === this.socket.OPEN) {
+      return;
+    }
+    this.reconnectAttempts = 0;
+    this.initWebSocket();
   }
 
   handleOpen(event) {
+    this.socketOpenedAt = Date.now();
+    if (this.pingWS) {
+      clearInterval(this.pingWS);
+    }
     this.pingWS = setInterval(() => {
       if (this.socket.readyState === this.socket.OPEN) {
         this.socket.send('PING');
@@ -134,15 +222,20 @@ export default class GleapStreamedEvent {
   }
 
   handleMessage(event) {
+    this.reconnectAttempts = 0;
     this.processMessage(JSON.parse(event.data));
   }
 
   handleError(error) {}
 
+  // The connection dropped (the SDK's own closes remove this listener first): reconnect with backoff,
+  // which starts over only after a connection that stayed open for 10 s or received a message.
   handleClose(event) {
-    setTimeout(() => {
-      this.initWebSocket();
-    }, 5000);
+    if (this.socketOpenedAt && Date.now() - this.socketOpenedAt >= WS_STABLE_MS) {
+      this.reconnectAttempts = 0;
+    }
+    this.cleanupWebSocket();
+    this.scheduleReconnect();
   }
 
   processMessage(message) {
@@ -238,6 +331,11 @@ export default class GleapStreamedEvent {
 
   stop() {
     this.cleanupMainLoop();
+    this.cleanupWebSocket();
+    this.removeNetworkListeners();
+    this.reconnectAttempts = 0;
+    // So the next restart() connects again.
+    this.connectedWebSocketGleapId = null;
   }
 
   cleanupMainLoop() {
@@ -248,7 +346,8 @@ export default class GleapStreamedEvent {
   }
 
   restart() {
-    // Only reconnect websockets when needed.
+    // Only reconnect websockets when needed. The new connection cancels a pending reconnect, so a
+    // stale one can't replace it later.
     if (this.connectedWebSocketGleapId !== GleapSession.getInstance().session.gleapId) {
       this.initWebSocket();
     }
@@ -487,10 +586,16 @@ export default class GleapStreamedEvent {
    * factor between 0.8 and 1.2 (from `random` in [0, 1)), never more than 60 s.
    */
   static pingBackoffDelay(failures, random) {
-    const doublings = Math.min(Math.max(failures - 1, 0), 5);
-    const base = Math.min(PING_BACKOFF_FIRST_MS * Math.pow(2, doublings), PING_BACKOFF_MAX_MS);
-    const factor = 1 - PING_BACKOFF_JITTER + 2 * PING_BACKOFF_JITTER * Math.min(Math.max(random, 0), 1);
-    return Math.min(base * factor, PING_BACKOFF_MAX_MS);
+    return jitteredBackoff(PING_BACKOFF_FIRST_MS, failures - 1, PING_BACKOFF_MAX_MS, random);
+  }
+
+  /**
+   * The delay (ms) before the next WebSocket reconnect after `attempts` failed connections in a row:
+   * 1 s doubled per attempt up to 60 s, times a factor between 0.8 and 1.2 (from `random` in [0, 1)),
+   * never more than 60 s.
+   */
+  static reconnectDelay(attempts, random) {
+    return jitteredBackoff(WS_RECONNECT_FIRST_MS, attempts, WS_RECONNECT_MAX_MS, random);
   }
 
   /**

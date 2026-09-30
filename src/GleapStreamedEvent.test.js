@@ -300,3 +300,203 @@ describe('event pings', () => {
     expect(streamer.streamedEventArray[499].name).toBe('e599');
   });
 });
+
+describe('WebSocket reconnects', () => {
+  let sockets;
+  let sessionInstance;
+  let online;
+  let navigatorDescriptor;
+
+  class FakeWebSocket {
+    constructor(url) {
+      this.url = url;
+      this.OPEN = 1;
+      this.readyState = 0;
+      this.listeners = {};
+      sockets.push(this);
+    }
+    addEventListener(type, listener) {
+      (this.listeners[type] = this.listeners[type] || []).push(listener);
+    }
+    removeEventListener(type, listener) {
+      this.listeners[type] = (this.listeners[type] || []).filter((l) => l !== listener);
+    }
+    emit(type, event = {}) {
+      (this.listeners[type] || []).slice().forEach((listener) => listener(event));
+    }
+    send() {}
+    open() {
+      this.readyState = 1;
+      this.emit('open');
+    }
+    // Closed by the SDK: the browser still fires 'close' at the listeners left on it.
+    close() {
+      this.closedBySdk = true;
+      this.readyState = 3;
+      this.emit('close', { code: 1005 });
+    }
+    // Dropped by the network or the server.
+    drop() {
+      this.readyState = 3;
+      this.emit('close', { code: 1006 });
+    }
+  }
+
+  const createStreamer = () => {
+    const streamer = new GleapStreamedEvent();
+    streamer.initWebSocket();
+    return streamer;
+  };
+  const latest = () => sockets[sockets.length - 1];
+  // Advances the clock; true when a new socket was opened in that time.
+  const reconnectsAfter = (ms) => {
+    const count = sockets.length;
+    jest.advanceTimersByTime(ms);
+    return sockets.length > count;
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    sockets = [];
+    online = true;
+    global.WebSocket = FakeWebSocket;
+    global.SDK_VERSION = 'test';
+    global.window = new EventTarget();
+    navigatorDescriptor = Object.getOwnPropertyDescriptor(global, 'navigator');
+    Object.defineProperty(global, 'navigator', { configurable: true, get: () => ({ onLine: online }) });
+    sessionInstance = { session: { gleapId: 'id', gleapHash: 'hash' }, sdkKey: 'key', wsApiUrl: 'wss://ws.test' };
+    GleapSession.getInstance.mockReturnValue(sessionInstance);
+    // No jitter: every delay is exactly its base value.
+    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+    delete global.WebSocket;
+    delete global.SDK_VERSION;
+    delete global.window;
+    delete global.navigator;
+    if (navigatorDescriptor) {
+      Object.defineProperty(global, 'navigator', navigatorDescriptor);
+    }
+  });
+
+  test('reconnects after 1, 2, 4, 8, 16, 32 and at most 60 s, with ±20 % jitter', () => {
+    createStreamer();
+    [1000, 2000, 4000, 8000, 16000, 32000, 60000, 60000].forEach((delay) => {
+      latest().drop();
+      expect(reconnectsAfter(delay - 1)).toBe(false);
+      expect(reconnectsAfter(1)).toBe(true);
+    });
+
+    expect(GleapStreamedEvent.reconnectDelay(0, 0)).toBe(800);
+    expect(GleapStreamedEvent.reconnectDelay(0, 0.999999)).toBeCloseTo(1200, 0);
+    expect(GleapStreamedEvent.reconnectDelay(5, 0)).toBe(25600);
+    expect(GleapStreamedEvent.reconnectDelay(5, 0.999999)).toBeCloseTo(38400, 0);
+    expect(GleapStreamedEvent.reconnectDelay(6, 0)).toBe(48000);
+    expect(GleapStreamedEvent.reconnectDelay(6, 0.999999)).toBe(60000);
+    expect(GleapStreamedEvent.reconnectDelay(100, 0.999999)).toBe(60000);
+  });
+
+  test('the backoff starts over only after a connection stayed open 10 s or received a message', () => {
+    createStreamer();
+    latest().drop();
+    expect(reconnectsAfter(1000)).toBe(true);
+
+    // Accepted, then closed before 10 s: still backs off.
+    latest().open();
+    jest.advanceTimersByTime(9999);
+    latest().drop();
+    expect(reconnectsAfter(1999)).toBe(false);
+    expect(reconnectsAfter(1)).toBe(true);
+
+    // Open for 10 s: 1 s again.
+    latest().open();
+    jest.advanceTimersByTime(10000);
+    latest().drop();
+    expect(reconnectsAfter(999)).toBe(false);
+    expect(reconnectsAfter(1)).toBe(true);
+
+    // A message counts as a working connection too.
+    latest().drop();
+    expect(reconnectsAfter(2000)).toBe(true);
+    latest().open();
+    latest().emit('message', { data: JSON.stringify({ name: 'noop' }) });
+    latest().drop();
+    expect(reconnectsAfter(999)).toBe(false);
+    expect(reconnectsAfter(1)).toBe(true);
+  });
+
+  test('only one reconnect is pending, and a new connection (restart after identify) cancels it', () => {
+    const streamer = createStreamer();
+    latest().open();
+    latest().drop();
+    streamer.handleClose({});
+    // Just the reconnect: no second one and no ping interval of the dropped socket.
+    expect(jest.getTimerCount()).toBe(1);
+
+    jest.spyOn(streamer, 'trackInitialEvents').mockImplementation(() => {});
+    jest.spyOn(streamer, 'runEventStreamLoop').mockImplementation(() => {});
+    sessionInstance.session = { gleapId: 'id2', gleapHash: 'hash2' };
+    streamer.restart();
+    expect(sockets).toHaveLength(2);
+    const fresh = latest();
+    fresh.open();
+
+    // The stale reconnect never fires to replace the fresh socket.
+    expect(reconnectsAfter(120000)).toBe(false);
+    expect(fresh.closedBySdk).toBeUndefined();
+    expect(fresh.url).toContain('gleapId=id2');
+  });
+
+  test('offline: no reconnect until the browser is back online, then right away with a fresh backoff', () => {
+    createStreamer();
+    latest().drop();
+    expect(reconnectsAfter(1000)).toBe(true);
+    latest().drop();
+
+    // Offline while a reconnect is pending: it does not connect, and nothing retries.
+    online = false;
+    expect(reconnectsAfter(10 * 60 * 1000)).toBe(false);
+
+    online = true;
+    window.dispatchEvent(new Event('online'));
+    expect(sockets).toHaveLength(3);
+    latest().drop();
+    expect(reconnectsAfter(999)).toBe(false);
+    expect(reconnectsAfter(1)).toBe(true);
+
+    // A drop while offline schedules nothing.
+    online = false;
+    latest().drop();
+    expect(jest.getTimerCount()).toBe(0);
+
+    // Back online with an open socket: it is kept.
+    online = true;
+    window.dispatchEvent(new Event('online'));
+    latest().open();
+    window.dispatchEvent(new Event('online'));
+    expect(sockets).toHaveLength(5);
+    expect(latest().closedBySdk).toBeUndefined();
+  });
+
+  test('closes by the SDK itself never reconnect', () => {
+    const streamer = createStreamer();
+    const first = latest();
+    first.open();
+    streamer.cleanupWebSocket();
+    expect(first.closedBySdk).toBe(true);
+    expect(reconnectsAfter(120000)).toBe(false);
+
+    // Gleap.destroy(): closes the socket, and 'online' no longer reconnects.
+    streamer.initWebSocket();
+    const second = latest();
+    second.open();
+    streamer.stop();
+    expect(second.closedBySdk).toBe(true);
+    expect(reconnectsAfter(120000)).toBe(false);
+    window.dispatchEvent(new Event('online'));
+    expect(sockets).toHaveLength(2);
+  });
+});
