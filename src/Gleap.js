@@ -39,6 +39,7 @@ import { dispatchSSEEvent, parseSSEStream } from './GleapSSEParser';
 import GleapStreamedEvent from './GleapStreamedEvent';
 import GleapTabCommunication from './GleapTabCommunication';
 import GleapTagManager from './GleapTagManager';
+import GleapThemeManager from './GleapThemeManager';
 import GleapTranslationManager from './GleapTranslationManager';
 import { injectStyledCSS } from './UI';
 
@@ -208,10 +209,11 @@ class Gleap {
   }
 
   /**
-   * Attaches external network logs.
+   * Attaches external network logs (an array, or its JSON string). Replaces the previously
+   * attached logs; they are redacted and blacklisted like the captured ones.
    */
   static attachNetworkLogs(networkLogs) {
-    GleapNetworkIntercepter.getInstance().externalRequests = gleapDataParser(networkLogs);
+    GleapNetworkIntercepter.getInstance().setExternalRequests(gleapDataParser(networkLogs));
   }
 
   /**
@@ -514,7 +516,8 @@ class Gleap {
   }
 
   /**
-   * Sets the network logger blacklist.
+   * Sets the network logger blacklist (urls containing an entry are left out). Each call
+   * replaces the previous list; the project's blacklist from the dashboard applies as well.
    * @param {Array} networkLogBlacklist
    */
   static setNetworkLogsBlacklist(networkLogBlacklist) {
@@ -522,7 +525,8 @@ class Gleap {
   }
 
   /**
-   * Sets the network logger props to ignore.
+   * Sets the network logger props to ignore (removed from headers, bodies and query params).
+   * Each call replaces the previous list; the project's props from the dashboard apply as well.
    * @param {Array} filters
    */
   static setNetworkLogPropsToIgnore(filters) {
@@ -846,6 +850,27 @@ class Gleap {
    */
   static triggerCustomAction(name) {
     GleapCustomActionManager.triggerCustomAction(name);
+  }
+
+  /**
+   * Sets the widget's color scheme, overriding the "Color scheme" setting in the dashboard.
+   * Until this is called, the dashboard setting applies.
+   * Only takes effect when "Adapt to dark / light mode" is enabled in the dashboard;
+   * while it is disabled the widget is never themed, whatever is set here.
+   * - 'auto': follows the host app's dark/light mode (theme classes/attributes such as
+   *   `class="dark"` or `data-theme="dark"`, the CSS color-scheme, the page background,
+   *   then the OS preference) and switches live when it changes.
+   * - 'light' / 'dark': forces a scheme, e.g. from your app's own theme toggle.
+   * Any other value (including the former 'default') is treated as 'auto'.
+   * Dark mode uses the dark colors set in the dashboard (header colors, UI color,
+   * background) and the dark logo, header image and composer glow set there;
+   * without dark colors the widget keeps its normal colors.
+   * The options override the background of the respective scheme.
+   * @param {'auto'|'light'|'dark'} colorScheme
+   * @param {{ lightBackgroundColor?: string, darkBackgroundColor?: string }} options
+   */
+  static setColorScheme(colorScheme, options = {}) {
+    GleapThemeManager.getInstance().setColorScheme(colorScheme, options);
   }
 
   /**
@@ -1664,6 +1689,7 @@ export {
   GleapStreamedEvent,
   GleapTabCommunication,
   GleapTagManager,
+  GleapThemeManager,
   GleapTranslationManager,
   handleGleapLink,
   parseSSEStream,

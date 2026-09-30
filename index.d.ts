@@ -237,6 +237,28 @@ export namespace Gleap {
   function close(): void;
   function hide(): void;
   function setUseCookies(useCookies: boolean): void;
+  /**
+   * Sets the widget's color scheme, overriding the dashboard's "Color scheme"
+   * setting, which applies until this is called. Only takes effect when "Adapt
+   * to dark / light mode" is enabled in the dashboard; while it is disabled the
+   * widget is never themed. "auto" follows the host app's dark/light mode (theme
+   * classes/attributes like `class="dark"` or `data-theme="dark"`, the CSS
+   * color-scheme, the page background, then the OS preference) and switches
+   * live. "light"/"dark" force a scheme. Any other value (including the former
+   * "default") is treated as "auto". Dark mode uses the dark colors set in the
+   * dashboard (header colors, UI color, background) and the dark logo, header
+   * image and composer glow set there; without dark colors the widget keeps
+   * its normal colors.
+   */
+  function setColorScheme(
+    colorScheme: "auto" | "light" | "dark",
+    options?: {
+      /** #rrggbb background used in light mode. Defaults to the dashboard background. */
+      lightBackgroundColor?: string;
+      /** #rrggbb background used in dark mode. Defaults to the dashboard's dark background. Also enables dark mode without dark colors in the dashboard. */
+      darkBackgroundColor?: string;
+    }
+  ): void;
   function setEnvironment(environment: "dev" | "staging" | "prod"): void;
   /**
    * Env data keys (e.g. "currentUrl", "userAgent") that are removed before a

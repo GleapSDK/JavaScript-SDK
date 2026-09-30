@@ -199,6 +199,10 @@ export const injectStyledCSS = (
     ? calculateShadeColor(backgroundColor, 30)
     : calculateShadeColor(backgroundColor, -12);
   const hoverHoverColor = isDarkMode ? calculateShadeColor(backgroundColor, 80) : calculateShadeColor(backgroundColor, -30);
+  // Tour popovers keep their white card on light backgrounds and follow the
+  // widget background once it is dark (the tour message already uses its contrast).
+  const tourPopoverColor = isDarkMode ? backgroundColor : '#fff';
+  const tourTextColor = isDarkMode ? contrastBackgroundColor : '#2d2d2d';
 
   var borderRadius = parseInt(borderRadius, 10);
   const buttonBorderRadius = Math.round(borderRadius * 1.05);
@@ -2678,18 +2682,19 @@ export const injectStyledCSS = (
     .gleap-tour-popover {
       all: unset;
       box-sizing: border-box;
-      color: #2d2d2d;
+      color: ${tourTextColor};
       margin: 0;
       padding: 15px;
       border-radius: ${formItemBorderRadius}px;
       min-width: 250px;
       max-width: 300px;
       box-shadow: 0 1px 10px #0006;
+      ${isDarkMode ? 'outline: 1px solid rgba(255, 255, 255, 0.1);' : ''}
       z-index: 1000000000;
       position: fixed;
       top: 0;
       right: 0;
-      background-color: #fff;
+      background-color: ${tourPopoverColor};
     }
     
     .gleap-tour-popover * {
@@ -2717,7 +2722,7 @@ export const injectStyledCSS = (
       font-size: 30px;
       font-weight: 500;
       line-height: 32px;
-      color: #d2d2d2;
+      color: ${isDarkMode ? subTextColor : '#d2d2d2'};
       z-index: 1;
       text-align: center;
       transition: color;
@@ -2726,7 +2731,7 @@ export const injectStyledCSS = (
     
     .gleap-tour-popover-close-btn:hover,
     .gleap-tour-popover-close-btn:focus {
-      color: #2d2d2d;
+      color: ${tourTextColor};
     }
     
     .gleap-tour-popover-title[style*="block"] + .gleap-tour-popover-description {
@@ -2753,7 +2758,7 @@ export const injectStyledCSS = (
     .gleap-tour-popover-progress-text {
       font-size: 13px;
       font-weight: 400;
-      color: #727272;
+      color: ${isDarkMode ? subTextColor : '#727272'};
       zoom: 1;
     }
     
@@ -2810,7 +2815,7 @@ export const injectStyledCSS = (
     .gleap-tour-popover-arrow {
       content: "";
       position: absolute;
-      border: 5px solid #fff;
+      border: 5px solid ${tourPopoverColor};
     }
     
     .gleap-tour-popover-arrow-side-over {

@@ -73,23 +73,7 @@ export default class GleapModalManager {
           this._clearLoadWatchdog();
         }
         if (data.name === 'modal-loaded' && this.modalData) {
-          const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
-          const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
-          const backgroundColor = flowConfig.backgroundColor ? flowConfig.backgroundColor : '#FFFFFF';
-
-          this.lastSentMaxHeight = this._maxModalHeight();
-
-          this._postMessage({
-            name: 'modal-data',
-            data: {
-              ...this.modalData,
-              primaryColor: primaryColor,
-              backgroundColor: backgroundColor,
-              // Tell the card its bounds so it scrolls its own content instead of
-              // reporting a height we'd silently clip.
-              maxHeight: this.lastSentMaxHeight,
-            },
-          });
+          this.sendModalData();
         }
         if (data.name === 'modal-height') {
           const height = data?.data?.height;
@@ -264,6 +248,34 @@ export default class GleapModalManager {
     this._postMessage({
       name: 'modal-max-height',
       data: { maxHeight },
+    });
+  }
+
+  /**
+   * Sends the modal content with the current widget colors. Called again when
+   * the color scheme changes so an open modal follows it.
+   */
+  sendModalData() {
+    if (!this.modalLoaded || !this.modalData) {
+      return;
+    }
+
+    const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
+    const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
+    const backgroundColor = flowConfig.backgroundColor ? flowConfig.backgroundColor : '#FFFFFF';
+
+    this.lastSentMaxHeight = this._maxModalHeight();
+
+    this._postMessage({
+      name: 'modal-data',
+      data: {
+        ...this.modalData,
+        primaryColor: primaryColor,
+        backgroundColor: backgroundColor,
+        // Tell the card its bounds so it scrolls its own content instead of
+        // reporting a height we'd silently clip.
+        maxHeight: this.lastSentMaxHeight,
+      },
     });
   }
 

@@ -14,7 +14,7 @@
  * @attr {string} checklistId - The outbound ID of the checklist to display. Required.
  * @attr {boolean} [info=true] - Whether to display the info section (title, description, sender).
  * @attr {boolean} [progressbar=true] - Whether to display the progress bar.
- * @attr {boolean} [dark=false] - Apply dark mode styling.
+ * @attr {boolean} [dark=false] - Apply dark mode styling. Without it, the checklist follows the active widget color scheme.
  * @attr {boolean} [floating=false] - When set to "true", shows a small bubble that expands on click.
  *
  * @cssprop --color-bg - Background color.
@@ -40,6 +40,7 @@
  */
 import ChecklistNetworkManager from './ChecklistNetworkManager';
 import Gleap, { GleapConfigManager, GleapSession, GleapTranslationManager, GleapEventManager } from './Gleap';
+import GleapThemeManager from './GleapThemeManager';
 
 export const registerGleapChecklist = () => {
   if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
@@ -88,6 +89,7 @@ export const registerGleapChecklist = () => {
 
       // --- Lifecycle Callbacks ---
       connectedCallback() {
+        GleapThemeManager.getInstance().applyToChecklist(this);
         window.addEventListener('checkListUpdate', this._boundHandleChecklistUpdate);
         window.addEventListener('session-updated', this._boundHandleSessionUpdate);
         window.addEventListener('resize', (this._boundResizeHandler = this.handleResize.bind(this)));
@@ -692,6 +694,7 @@ export const registerGleapChecklist = () => {
 
         const flowConfig = GleapConfigManager.getInstance().getFlowConfig();
         const primaryColor = flowConfig.color ? flowConfig.color : '#485BFF';
+        GleapThemeManager.getInstance().applyToChecklist(this);
 
         const styles = `
           <style>
@@ -721,7 +724,8 @@ export const registerGleapChecklist = () => {
               font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
               box-sizing: border-box;
             }
-            :host([dark]) {
+            :host([dark]),
+            :host([data-gleap-dark]) {
               --color-bg: #1f2937;
               --color-font-title: #f9fafb;
               --color-font-text: #d1d5db;
