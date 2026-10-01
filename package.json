@@ -86,6 +86,7 @@
     "@floating-ui/dom": "^1.7.5",
     "@rrweb/packer": "^2.1.0",
     "@rrweb/record": "^2.1.0",
+    "modern-screenshot": "4.7.0",
     "unique-selector": "^0.5.0"
   }
 }

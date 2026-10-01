@@ -6,7 +6,9 @@ import Gleap, {
   GleapSession,
   GleapAdminManager,
   GleapEventManager,
+  GleapCaptureManager,
 } from './Gleap';
+import { getWebSocketCaps } from './GleapCaptureSettings';
 import { gleapDataParser } from './GleapHelper';
 
 // At most this many events wait for a ping; the oldest ones (other than a session start) make room.
@@ -135,12 +137,21 @@ export default class GleapStreamedEvent {
       return;
     }
 
+    // What this page can capture for capture requests (contract §4, "SDK realtime").
+    let caps = '';
+    try {
+      const capabilities = getWebSocketCaps();
+      if (capabilities.length > 0) {
+        caps = '&caps=' + capabilities.join(',');
+      }
+    } catch (exp) {}
+
     this.socket = new WebSocket(
       `${GleapSession.getInstance().wsApiUrl}?gleapId=${
         GleapSession.getInstance().session.gleapId
       }&gleapHash=${GleapSession.getInstance().session.gleapHash}&apiKey=${
         GleapSession.getInstance().sdkKey
-      }&sdkVersion=${SDK_VERSION}`
+      }&sdkVersion=${SDK_VERSION}${caps}`
     );
     this.socket.addEventListener('open', this.handleOpenBound);
     this.socket.addEventListener('message', this.handleMessageBound);
@@ -282,6 +293,11 @@ export default class GleapStreamedEvent {
         if (u != null) {
           GleapNotificationManager.getInstance().setNotificationCount(u);
         }
+      }
+
+      // A log request from a teammate, AI agent or workflow (capture requests, kind 'logs').
+      if (message.name === 'capture-request' && GleapCaptureManager) {
+        GleapCaptureManager.getInstance().handleServerRequest(message.data);
       }
 
       if (message.name === 'checklist' && message?.data && window) {

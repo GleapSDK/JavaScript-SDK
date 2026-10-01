@@ -409,6 +409,18 @@ export namespace Gleap {
     }[];
     errorHandler?: (error: Error) => void;
   }): void;
+  /**
+   * Enables or disables screenshots and screen recordings that teammates, AI agents or workflows
+   * ask the customer for in the widget (default: enabled). While disabled, the widget offers
+   * uploading a file instead. Can be called before initialize.
+   */
+  function setCaptureEnabled(enabled: boolean): void;
+  /**
+   * Enables or disables sending logs when teammates, AI agents or workflows request them
+   * (default: enabled). Only data a bug report carries is sent: console and network logs, custom
+   * data, environment data and events. Can be called before initialize.
+   */
+  function setRemoteLogCollectionEnabled(enabled: boolean): void;
 }
 export default Gleap;
 

@@ -7,6 +7,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import GleapAudioManager from './GleapAudioManager';
 import GleapBannerManager from './GleapBannerManager';
+import GleapCaptureManager from './GleapCaptureManager';
 import { registerGleapChecklist } from './GleapChecklist';
 import GleapClickListener from './GleapClickListener';
 import GleapConfigManager from './GleapConfigManager';
@@ -279,6 +280,11 @@ class Gleap {
               // Check for URL params.
               Gleap.checkForUrlParams();
 
+              // A capture request that was in progress before this page load.
+              try {
+                GleapCaptureManager.getInstance().resumeFromStorage();
+              } catch (exp) {}
+
               // Notify event.
               GleapEventManager.notifyEvent('initialized');
             });
@@ -354,6 +360,9 @@ class Gleap {
    * @returns
    */
   static destroy() {
+    try {
+      GleapCaptureManager.getInstance().destroy();
+    } catch (exp) {}
     GleapReplayRecorder.getInstance().stop();
     GleapStreamedEvent.getInstance().stop();
     GleapFrameManager.getInstance().destroy();
@@ -539,6 +548,26 @@ class Gleap {
    */
   static setReplayOptions(options) {
     GleapReplayRecorder.getInstance().setOptions(options);
+  }
+
+  /**
+   * Enables or disables screenshots and screen recordings that teammates, AI agents or workflows
+   * ask the customer for in the widget (default: enabled). While disabled, the widget offers
+   * uploading a file instead. Can be called before initialize.
+   * @param {boolean} enabled
+   */
+  static setCaptureEnabled(enabled) {
+    GleapCaptureManager.getInstance().setCaptureEnabled(enabled);
+  }
+
+  /**
+   * Enables or disables sending logs when teammates, AI agents or workflows request them (default:
+   * enabled). Only data a bug report carries is sent (console and network logs, custom data,
+   * environment data, events). Can be called before initialize.
+   * @param {boolean} enabled
+   */
+  static setRemoteLogCollectionEnabled(enabled) {
+    GleapCaptureManager.getInstance().setRemoteLogCollectionEnabled(enabled);
   }
 
   /**
@@ -1667,6 +1696,7 @@ export {
   GleapAiChatbarManager,
   GleapAudioManager,
   GleapBannerManager,
+  GleapCaptureManager,
   GleapClickListener,
   GleapConfigManager,
   GleapConsoleLogManager,
