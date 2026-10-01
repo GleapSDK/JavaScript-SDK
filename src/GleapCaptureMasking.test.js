@@ -21,6 +21,7 @@ jest.mock('./Gleap', () => ({
 }));
 
 import { buildMaskSelector, collectMaskRects } from './GleapCaptureScreenshot';
+import { applyPrivacyVeil, buildVeilRules } from './GleapCaptureVeil';
 import { describeElement, PageRecording } from './GleapCaptureRecorder';
 import { unpack } from '@rrweb/packer';
 
@@ -121,6 +122,106 @@ describe('screenshot black boxes', () => {
       '<input type="password" data-rect="10,10,20,20"><input type="password" data-rect="40,40,30,30">';
 
     expect(rectsFor({}).sort()).toEqual(['110,110,20,20', '140,140,10,10']);
+  });
+});
+
+describe('privacy veil over screen recordings', () => {
+  // jsdom can't evaluate :is() with :not(... *); the plain form of each rule (what browsers without
+  // :is() get) shows which elements a rule covers.
+  const veiledIds = (privacyOptions, maskSelectors) => {
+    const selectors = buildVeilRules(privacyOptions, maskSelectors).map((entry) =>
+      (entry.fallback || entry.rules[0]).replace(/\s*\{[^}]*\}\s*$/, '')
+    );
+    return Array.from(document.querySelectorAll('[id]'))
+      .filter((element) => selectors.some((selector) => element.matches(selector)))
+      .map((element) => element.id);
+  };
+
+  test('covers what screenshots mask: private fields, masked and blocked elements, maskSelectors, payment frames', () => {
+    document.body.innerHTML = `
+      <input id="name" value="Jane Doe">
+      <input id="password" type="password">
+      <input id="otp" autocomplete="one-time-code">
+      <input id="card" autocomplete="cc-number">
+      <input id="csc" autocomplete="section-pay cc-csc">
+      <input id="marked" class="gl-mask">
+      <textarea id="ignored" gleap-ignore="value"></textarea>
+      <div gleap-ignore="value"><input id="ignored-inner"><input id="ignored-checkbox" type="checkbox"></div>
+      <p id="iban" class="rr-mask">IBAN</p>
+      <div id="salary" class="gl-block">salary</div>
+      <div id="blocked" class="rr-block">blocked</div>
+      <div id="tax" class="secret-panel">tax id</div>
+      <iframe id="titled-frame" title="Secure card payment input frame"></iframe>
+      <iframe id="stripe-frame" src="https://js.stripe.com/v3/elements-inner-card.html"></iframe>
+      <iframe id="video" src="https://www.youtube.com/embed/abc"></iframe>
+      <p id="visible">Visible text</p>
+      <button id="pay">Pay</button>`;
+
+    expect(veiledIds({}, ['.secret-panel'])).toEqual([
+      'password',
+      'otp',
+      'card',
+      'csc',
+      'marked',
+      'ignored',
+      'ignored-inner',
+      'iban',
+      'salary',
+      'blocked',
+      'tax',
+      'titled-frame',
+      'stripe-frame',
+    ]);
+  });
+
+  test("the site's replay options: classes, selectors and maskAllInputs", () => {
+    document.body.innerHTML = `
+      <input id="name" value="Jane">
+      <select id="plan"><option>Pro</option></select>
+      <input id="agree" type="checkbox">
+      <div id="private-class" class="private">a</div>
+      <div id="private-attr" data-private>b</div>
+      <p id="visible">c</p>`;
+
+    expect(veiledIds({ maskAllInputs: true, blockClass: 'private', maskTextSelector: '[data-private]' }, [])).toEqual([
+      'name',
+      'plan',
+      'private-class',
+      'private-attr',
+    ]);
+  });
+
+  test('stays on the page until removed or the page is left; RegExp class names found now and later', async () => {
+    document.body.innerHTML = `
+      <input id="password" type="password">
+      <span id="pii" class="pii-card">4242</span>
+      <p id="visible">Visible</p>`;
+    const filterOf = (id) => window.getComputedStyle(document.getElementById(id)).filter || '';
+    const ruleText = () =>
+      Array.from(document.querySelectorAll('style'))
+        .map((style) => Array.from(style.sheet.cssRules, (rule) => rule.cssText).join('\n'))
+        .join('\n');
+
+    const veil = applyPrivacyVeil({ privacyOptions: { maskTextClass: /^pii-/ }, maskSelectors: [] });
+    expect(filterOf('password')).toBe('blur(12px)');
+    expect(filterOf('visible')).not.toContain('blur');
+    expect(ruleText()).toContain('.pii-card');
+
+    const later = document.createElement('div');
+    later.className = 'pii-iban';
+    document.body.appendChild(later);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(ruleText()).toContain('.pii-iban');
+
+    veil.remove();
+    veil.remove();
+    expect(document.querySelectorAll('style').length).toBe(0);
+    expect(filterOf('password')).not.toContain('blur');
+
+    applyPrivacyVeil({});
+    expect(document.querySelectorAll('style').length).toBe(1);
+    window.dispatchEvent(new Event('pagehide'));
+    expect(document.querySelectorAll('style').length).toBe(0);
   });
 });
 

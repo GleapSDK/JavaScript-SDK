@@ -25,9 +25,55 @@ export const GLEAP_UI_SELECTOR = [
 
 // Frames that take card details. Their content is not the page's, so no class or field rule can
 // reach inside; a tab capture would show what the customer typed.
-const PAYMENT_FRAME_HOSTS =
-  /(^|\.)(stripe\.com|stripe\.network|braintreegateway\.com|braintree-api\.com|paypal\.com|adyen\.com|adyenpayments\.com|checkout\.com|squareup\.com|squareupsandbox\.com|recurly\.com|chargebee\.com|paddle\.com|mollie\.com|klarna\.com|worldpay\.com|authorize\.net|razorpay\.com|2checkout\.com|cybersource\.com|spreedly\.com|gocardless\.com|payu\.com|mercadopago\.com|paystack\.co|flutterwave\.com)$/i;
-const PAYMENT_FRAME_LABEL = /card|payment|cvc|cvv|security code|expir|iban/i;
+const PAYMENT_FRAME_HOST_NAMES = [
+  'stripe.com',
+  'stripe.network',
+  'braintreegateway.com',
+  'braintree-api.com',
+  'paypal.com',
+  'adyen.com',
+  'adyenpayments.com',
+  'checkout.com',
+  'squareup.com',
+  'squareupsandbox.com',
+  'recurly.com',
+  'chargebee.com',
+  'paddle.com',
+  'mollie.com',
+  'klarna.com',
+  'worldpay.com',
+  'authorize.net',
+  'razorpay.com',
+  '2checkout.com',
+  'cybersource.com',
+  'spreedly.com',
+  'gocardless.com',
+  'payu.com',
+  'mercadopago.com',
+  'paystack.co',
+  'flutterwave.com',
+];
+const PAYMENT_FRAME_HOSTS = new RegExp(
+  '(^|\\.)(' + PAYMENT_FRAME_HOST_NAMES.map((host) => host.replace(/\./g, '\\.')).join('|') + ')$',
+  'i'
+);
+const PAYMENT_FRAME_LABEL_WORDS = ['card', 'payment', 'cvc', 'cvv', 'security code', 'expir', 'iban'];
+const PAYMENT_FRAME_LABEL = new RegExp(PAYMENT_FRAME_LABEL_WORDS.join('|'), 'i');
+
+/**
+ * isPaymentFrame as one CSS selector, for masking the live page (the privacy veil over screen
+ * recordings). A host in the src matches a bit more loosely than isPaymentFrame's host test.
+ */
+export const paymentFrameSelector = () => {
+  const parts = ['iframe[allow*="payment" i]'];
+  PAYMENT_FRAME_LABEL_WORDS.forEach((word) => {
+    parts.push('iframe[title*="' + word + '" i]', 'iframe[name*="' + word + '" i]');
+  });
+  PAYMENT_FRAME_HOST_NAMES.forEach((host) => {
+    parts.push('iframe[src*="//' + host + '" i]', 'iframe[src*=".' + host + '" i]');
+  });
+  return parts.join(', ');
+};
 
 const now = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
 
@@ -66,7 +112,7 @@ const withTimeout = (promise, ms, label) =>
     );
   });
 
-const cssEscape = (value) => {
+export const cssEscape = (value) => {
   try {
     if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
       return CSS.escape(value);
@@ -91,9 +137,16 @@ const validSelector = (selector) => {
  * One selector for everything masked as a whole (block and mask markers, the site's replay options
  * and flowConfig.capture.maskSelectors). Invalid parts are left out.
  */
-export const buildMaskSelector = (privacyOptions, maskSelectors) => {
+export const buildMaskSelector = (privacyOptions, maskSelectors) =>
+  maskSelectorParts(privacyOptions, maskSelectors).join(', ');
+
+/**
+ * The parts of buildMaskSelector: the block and mask markers first (one selector list), then each
+ * valid selector and class name of the site's replay options and flowConfig.capture.maskSelectors.
+ */
+export const maskSelectorParts = (privacyOptions, maskSelectors) => {
   const options = privacyOptions || {};
-  const parts = ['.rr-block', '.gl-block', '.rr-mask', '.gl-mask'];
+  const parts = ['.rr-block, .gl-block, .rr-mask, .gl-mask'];
   [options.blockSelector, options.maskTextSelector]
     .concat(Array.isArray(maskSelectors) ? maskSelectors : [])
     .forEach((selector) => {
@@ -110,10 +163,11 @@ export const buildMaskSelector = (privacyOptions, maskSelectors) => {
       }
     }
   });
-  return parts.join(', ');
+  return parts;
 };
 
-const classPatterns = (privacyOptions) => {
+// Class names given as a RegExp (blockClass, maskTextClass): no selector can express them.
+export const classPatterns = (privacyOptions) => {
   const options = privacyOptions || {};
   return [options.blockClass, options.maskTextClass].filter((value) => value && typeof value.test === 'function');
 };

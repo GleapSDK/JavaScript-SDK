@@ -218,6 +218,43 @@ export const getFieldValueMask = (element, options) => {
   };
 };
 
+// Field types whose value is never masked, as a :not() chain.
+const NOT_FIXED_VALUE_INPUT = FIXED_VALUE_INPUT_TYPES.map((type) => ':not([type="' + type + '" i])').join('');
+
+/**
+ * CSS selectors for the fields getFieldValueMask masks, for masking the live page (the privacy veil
+ * over screen recordings). A mask marker on a container is covered by the marker's own selector.
+ * @param {object} options The site's Gleap.setReplayOptions.
+ * @returns {string[]} one selector per entry (an entry a browser rejects leaves the others working)
+ */
+export const getMaskedFieldSelectors = (options) => {
+  options = options || {};
+  const selectors = ['input[type="password" i]', 'input[data-rr-is-password]'];
+  SENSITIVE_AUTOCOMPLETE_TOKENS.forEach((token) => {
+    selectors.push('input[autocomplete~="' + token + '" i]', 'textarea[autocomplete~="' + token + '" i]');
+  });
+  ['input' + NOT_FIXED_VALUE_INPUT, 'textarea', 'select'].forEach((field) => {
+    selectors.push(field + VALUE_MASK_MARKER_SELECTOR, VALUE_MASK_MARKER_SELECTOR + ' ' + field);
+  });
+
+  const kinds = resolveMaskInputOptions(options);
+  Object.keys(kinds).forEach((kind) => {
+    if (!kinds[kind] || FIXED_VALUE_INPUT_TYPES.indexOf(kind) >= 0 || !/^[a-z-]+$/.test(kind)) {
+      return;
+    }
+    if (kind === 'textarea' || kind === 'select') {
+      selectors.push(kind);
+      return;
+    }
+    selectors.push('input[type="' + kind + '" i]');
+    if (kind === 'text') {
+      // A field without a type is a text field.
+      selectors.push('input:not([type])');
+    }
+  });
+  return selectors;
+};
+
 // rrweb's text mask: every character but whitespace becomes '*', so words keep their length and
 // lines keep their breaks.
 const maskTextContent = (text) => String(text).replace(/[\S]/g, '*');

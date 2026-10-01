@@ -561,9 +561,10 @@ class Gleap {
   }
 
   /**
-   * Enables or disables sending logs when teammates, AI agents or workflows request them (default:
-   * enabled). Only data a bug report carries is sent (console and network logs, custom data,
-   * environment data, events). Can be called before initialize.
+   * Enables or disables sending logs when teammates, AI agents or workflows request them, on their
+   * own or along with a screenshot or screen recording (default: enabled). Only data a bug report
+   * carries is sent (console and network logs, custom data, environment data, events). Can be
+   * called before initialize.
    * @param {boolean} enabled
    */
   static setRemoteLogCollectionEnabled(enabled) {

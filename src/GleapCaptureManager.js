@@ -32,6 +32,7 @@ import {
   setRemoteLogCollectionEnabled,
 } from './GleapCaptureSettings';
 import GleapCaptureUI, { resolveCaptureLabels } from './GleapCaptureUI';
+import { applyPrivacyVeil } from './GleapCaptureVeil';
 
 // Capture requests on the web (contract §7): the Messenger asks for a screenshot or a recording
 // (capture-start), this page shows the capture bar, captures, and hands the result back (screenshot:
@@ -171,6 +172,37 @@ export default class GleapCaptureManager {
   maskSelectors() {
     const selectors = getCaptureConfig().maskSelectors;
     return Array.isArray(selectors) ? selectors.filter((selector) => typeof selector === 'string') : [];
+  }
+
+  // Logs go along with a screenshot or recording unless the request says otherwise or the app
+  // switched remote log collection off (Gleap.setRemoteLogCollectionEnabled(false)).
+  attachesLogs(session) {
+    return !!(session && session.options && session.options.attachLogs) && isRemoteLogCollectionEnabled();
+  }
+
+  // A screen recording is video and can't be masked afterwards: while it runs, the live page blurs
+  // what screenshots mask.
+  applyVeil(session) {
+    this.liftVeil(session);
+    try {
+      session.veil = applyPrivacyVeil({ privacyOptions: this.privacyOptions(), maskSelectors: this.maskSelectors() });
+    } catch (exp) {
+      session.veil = null;
+    }
+  }
+
+  // veil: a particular one (default: the session's).
+  liftVeil(session, veil) {
+    const target = veil || session.veil;
+    if (!target) {
+      return;
+    }
+    if (session.veil === target) {
+      session.veil = null;
+    }
+    try {
+      target.remove();
+    } catch (exp) {}
   }
 
   // ----- Messenger bridge -------------------------------------------------------------------------
@@ -388,6 +420,7 @@ export default class GleapCaptureManager {
         session.recording.cancel();
       }
     } catch (exp) {}
+    this.liftVeil(session);
     try {
       if (session.timeline) {
         session.timeline.stop();
@@ -527,7 +560,7 @@ export default class GleapCaptureManager {
 
     // The logs as they are at the moment of the capture.
     let logsBundle = null;
-    if (session.options.attachLogs && this.logsPostedFor.indexOf(session.requestId) === -1) {
+    if (this.attachesLogs(session) && this.logsPostedFor.indexOf(session.requestId) === -1) {
       try {
         logsBundle = buildLogsBundle({ include: session.options.include, deviceId: this.getDeviceId() });
       } catch (exp) {}
@@ -599,7 +632,8 @@ export default class GleapCaptureManager {
   }
 
   postLogs(requestId, bundle) {
-    if (this.logsPostedFor.indexOf(requestId) !== -1) {
+    // Also checked here: the app may switch log collection off between the capture and Send.
+    if (!isRemoteLogCollectionEnabled() || this.logsPostedFor.indexOf(requestId) !== -1) {
       return;
     }
     this.logsPostedFor.push(requestId);
@@ -651,15 +685,30 @@ export default class GleapCaptureManager {
     if (this.usesScreenRecording(session)) {
       // Called inside the Start click: getDisplayMedia needs that user activation.
       const streamPromise = requestDisplayStream(isDesktopChromium());
+      // The veil is up while the customer picks what to share, so even the first frame has it.
+      this.applyVeil(session);
+      const veil = session.veil;
       session.phase = 'starting';
       this.ui.showRecordBar({ busy: true, mic: this.micState(session), interrupted: session.interrupted });
       streamPromise
+        .then((stream) => (veil ? veil.ready() : Promise.resolve()).then(() => stream))
         .then((stream) => {
           if (!active()) {
             stopStream(stream);
             return null;
           }
-          const recording = new DisplayRecording({ maxDurationSec, onTick, onStop, onError });
+          const recording = new DisplayRecording({
+            maxDurationSec,
+            onTick,
+            onStop,
+            onError,
+            // Nothing more can be recorded (stopped, "Stop sharing", failed or cancelled).
+            onReleased: () => {
+              if (veil) {
+                this.liftVeil(session, veil);
+              }
+            },
+          });
           session.recording = recording;
           return recording.start(stream, !!this.micState(session) && session.micOn).then((started) => {
             if (active()) {
@@ -697,6 +746,7 @@ export default class GleapCaptureManager {
    */
   offerPageRecording(session, error) {
     const name = error && error.name;
+    this.liftVeil(session);
     session.phase = 'fallback';
     session.recording = null;
     session.fallbackState = name === 'NotAllowedError' || name === 'SecurityError' ? 'declined' : 'failed';
@@ -737,6 +787,7 @@ export default class GleapCaptureManager {
   }
 
   onRecordingStopped(session, result) {
+    this.liftVeil(session);
     session.recording = null;
     session.result = result;
     session.timelineEntries = session.timeline ? session.timeline.stop(result.endedAt) : [];
@@ -777,7 +828,7 @@ export default class GleapCaptureManager {
     this.sendState(session.requestId, 'uploading', { progress: 0 });
 
     // Logs for the recording window go along (in parallel with the upload).
-    if (session.options.attachLogs) {
+    if (this.attachesLogs(session)) {
       try {
         this.postLogs(
           session.requestId,

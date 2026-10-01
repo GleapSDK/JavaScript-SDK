@@ -109,7 +109,8 @@ export class DisplayRecording {
   onEndedBound = null;
 
   /**
-   * @param {{maxDurationSec: number, onTick: function(number), onStop: function(object), onError: function(Error)}} options
+   * @param {{maxDurationSec: number, onTick: function(number), onStop: function(object), onError: function(Error), onReleased?: function()}} options
+   * onReleased: the screen is no longer captured (on every path; may be called more than once).
    */
   constructor(options) {
     this.options = options;
@@ -328,6 +329,12 @@ export class DisplayRecording {
     this.onEndedBound = null;
     stopTracks(this.stream);
     stopTracks(this.micStream);
+    // Nothing more can be recorded (the recorder stopped first): the privacy veil may go.
+    if (this.options.onReleased) {
+      try {
+        this.options.onReleased();
+      } catch (exp) {}
+    }
   }
 
   cleanup() {

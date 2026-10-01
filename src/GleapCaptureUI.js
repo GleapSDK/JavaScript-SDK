@@ -194,6 +194,8 @@ export default class GleapCaptureUI {
         padding: '0',
         border: '0',
         transform: 'none',
+        // The privacy veil blurs rr-block / gl-block elements; never this one.
+        filter: 'none',
         'pointer-events': 'none',
       };
       Object.keys(hostStyles).forEach((property) => host.style.setProperty(property, hostStyles[property], 'important'));

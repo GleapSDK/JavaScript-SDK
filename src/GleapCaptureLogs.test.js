@@ -164,6 +164,24 @@ describe('log requests from the websocket', () => {
     expect(api.postCaptureLogs).not.toHaveBeenCalled();
   });
 
+  test('logs along with a screenshot or recording: none when the app switched log collection off', async () => {
+    const settings = require('./GleapCaptureSettings');
+    const session = { options: { attachLogs: true } };
+
+    settings.setRemoteLogCollectionEnabled(false);
+    expect(manager.attachesLogs(session)).toBe(false);
+    manager.postLogs('cr-8', { consoleLog: [] });
+    await flush();
+    expect(api.postCaptureLogs).not.toHaveBeenCalled();
+
+    settings.setRemoteLogCollectionEnabled(true);
+    expect(manager.attachesLogs(session)).toBe(true);
+    expect(manager.attachesLogs({ options: { attachLogs: false } })).toBe(false);
+    manager.postLogs('cr-8', { consoleLog: [] });
+    await flush();
+    expect(api.postCaptureLogs).toHaveBeenCalledTimes(1);
+  });
+
   test('ignores other kinds, expired requests and requests that are already final', async () => {
     manager.handleServerRequest({ id: 'cr-5', kind: 'screenshot' });
     manager.handleServerRequest({ id: 'cr-6', kind: 'logs', expiresAt: iso(Date.now() - 1000) });
