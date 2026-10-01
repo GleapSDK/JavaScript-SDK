@@ -73,6 +73,8 @@ export default class GleapFeedback {
   screenshotData = undefined;
   webReplay = undefined;
   screenRecordingUrl = undefined;
+  // The form's recording this report uploads (see forgetSentScreenRecording).
+  screenRecordingData = undefined;
   spamToken = undefined;
 
   constructor(type, priority, formData, isSilent, excludeData, outboundId, spamToken) {
@@ -102,9 +104,11 @@ export default class GleapFeedback {
       this.webReplay = webReplay;
     }
 
-    // Prepare screen recording
-    var screenRecordingData = gleapInstance.getGlobalDataItem('screenRecordingData');
+    // Prepare screen recording. It was made in the feedback form, so a silent (crash) report never
+    // takes it along.
+    var screenRecordingData = this.isSilent ? null : gleapInstance.getGlobalDataItem('screenRecordingData');
     if (screenRecordingData != null) {
+      this.screenRecordingData = screenRecordingData;
       var recordingUrlPromise = GleapScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
         if (recordingUrl) {
           this.screenRecordingUrl = recordingUrl;
@@ -199,7 +203,18 @@ export default class GleapFeedback {
     });
   }
 
+  // The recording went out with this report: a later report must not upload it again.
+  forgetSentScreenRecording() {
+    try {
+      const gleapInstance = Gleap.getInstance();
+      if (this.screenRecordingData && gleapInstance.getGlobalDataItem('screenRecordingData') === this.screenRecordingData) {
+        gleapInstance.setGlobalDataItem('screenRecordingData', null);
+      }
+    } catch (exp) {}
+  }
+
   sendFeedback() {
+    const self = this;
     return new Promise((resolve, reject) => {
       this.takeSnapshot()
         .then(() => {
@@ -216,6 +231,7 @@ export default class GleapFeedback {
             http.onreadystatechange = function (e) {
               if (http.readyState === 4) {
                 if (http.status === 200 || http.status === 201) {
+                  self.forgetSentScreenRecording();
                   try {
                     const feedback = JSON.parse(http.responseText);
                     resolve(feedback);
