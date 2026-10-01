@@ -1423,6 +1423,36 @@ export const injectStyledCSS = (
       pointer-events: none;
       animation: none !important;
     }
+
+    /* Capture requests: hidden while the customer captures the page (the iframe stays alive), and
+       the whole viewport while the Messenger's capture editor is open. */
+    .gleap-frame-container--capture-hidden {
+      visibility: hidden !important;
+      pointer-events: none !important;
+      animation: none !important;
+    }
+
+    .gleap-frame-container--capture-editor {
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      max-width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      transform: none !important;
+      animation: none !important;
+    }
+
+    .gleap-frame-container--capture-editor .gleap-frame-container-inner {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: none !important;
+    }
     
     .bb-feedback-button {
       margin: 0px;

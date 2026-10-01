@@ -25,8 +25,15 @@ export default class GleapClickListener {
         handleGleapLink(anchor.href);
       }
 
-      if (!GleapFrameManager.getInstance().isOpened()) {
-        GleapConsoleLogManager.getInstance().addLog(getDOMElementDescription(e.target), 'CLICK');
+      // While a capture request hides the widget the customer uses the page, so clicks count; the
+      // capture bar's own clicks don't.
+      const frameManager = GleapFrameManager.getInstance();
+      const captureHidden = typeof frameManager.isCaptureHidden === 'function' && frameManager.isCaptureHidden();
+      if (!frameManager.isOpened() || captureHidden) {
+        const ownCaptureUi = e.target.closest ? e.target.closest('.gleap-capture-root') : null;
+        if (!ownCaptureUi) {
+          GleapConsoleLogManager.getInstance().addLog(getDOMElementDescription(e.target), 'CLICK');
+        }
       }
     });
   }

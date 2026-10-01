@@ -41,6 +41,7 @@
 import ChecklistNetworkManager from './ChecklistNetworkManager';
 import Gleap, { GleapConfigManager, GleapSession, GleapTranslationManager, GleapEventManager } from './Gleap';
 import GleapThemeManager from './GleapThemeManager';
+import { isOutboundActionBlocked } from './GleapCaptureSettings';
 
 export const registerGleapChecklist = () => {
   if (typeof customElements !== 'undefined' && typeof HTMLElement !== 'undefined' && typeof window !== 'undefined') {
@@ -1007,6 +1008,8 @@ export const registerGleapChecklist = () => {
               if (!this.checklistData?.outbound?.config?.steps || typeof Gleap === 'undefined') return;
               const step = this.checklistData.outbound.config.steps[index];
               if (!step || !step.action || step.action === 'none') return;
+              // Nothing opens while the widget is hidden for a capture.
+              if (isOutboundActionBlocked('start-custom-action')) return;
               try {
                 if (step.action === 'BOT') Gleap.startBot(step.botId);
                 else if (step.action === 'CUSTOM_ACTION') Gleap.triggerCustomAction(step.actionBody);

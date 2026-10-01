@@ -158,6 +158,19 @@ export class GleapScreenRecorder {
       this.mediaRecorder.stop();
     } catch (_) {}
 
+    this.releaseCapture();
+
+    this.rerender();
+  }
+
+  // Stops the timer and every captured track: the screen (what Chrome uses for the recording
+  // indicator), the composed stream and the microphone.
+  releaseCapture() {
+    if (this.recordingTimer) {
+      clearInterval(this.recordingTimer);
+      this.recordingTimer = null;
+    }
+
     // Stop composed stream tracks
     this.stopStreamTracks(this.stream);
 
@@ -174,8 +187,6 @@ export class GleapScreenRecorder {
     }
 
     this._displayVideoTrack = null;
-
-    this.rerender();
   }
 
   async startAudioRecording() {
@@ -309,8 +320,14 @@ export class GleapScreenRecorder {
 
     const videoTrack = this.getFirstVideoTrack(stream);
     if (videoTrack) {
+      // The browser's "Stop sharing" ends the screen track: stop like the Stop button does, so the
+      // timer and the microphone stop too (the recorder's onstop prepares the recording).
       videoTrack.onended = function () {
-        self.prepareRecording(recordedChunks);
+        if (self.isRecording) {
+          self.stopScreenRecording();
+        } else {
+          self.releaseCapture();
+        }
       };
     }
 

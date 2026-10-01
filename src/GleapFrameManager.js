@@ -1,6 +1,7 @@
 import Gleap, {
   GleapAudioManager,
   GleapBannerManager,
+  GleapCaptureManager,
   GleapConfigManager,
   GleapConsoleLogManager,
   GleapCustomActionManager,
@@ -18,6 +19,7 @@ import Gleap, {
   GleapTranslationManager,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
+import { getCaptureCapabilities } from './GleapCaptureSettings';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
 import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
@@ -39,6 +41,8 @@ export default class GleapFrameManager {
   widgetExpanded = undefined;
   appliedWidgetExpanded = false;
   lastWidgetSizeUpdate = null;
+  // Hidden while the customer answers a capture request (see setCaptureHidden).
+  captureHidden = false;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -169,7 +173,8 @@ export default class GleapFrameManager {
   }
 
   registerEscListener() {
-    if (this.escListener) {
+    // While a capture request hides the widget, Escape belongs to the page and the capture bar.
+    if (this.escListener || this.captureHidden) {
       return;
     }
 
@@ -208,6 +213,70 @@ export default class GleapFrameManager {
     this.markerManager = undefined;
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
+    this.captureHidden = false;
+    try {
+      if (GleapCaptureManager) {
+        GleapCaptureManager.getInstance().onWidgetDestroyed();
+      }
+    } catch (e) {}
+  }
+
+  /**
+   * Hides the widget while the customer answers a capture request (capture bar, recording) without
+   * closing it: the Messenger keeps its state and connection and gets the result when it shows again.
+   * @param {boolean} hidden
+   * @param {boolean} reopen When showing it again: reopen the widget if it was closed meanwhile.
+   */
+  setCaptureHidden(hidden, reopen = true) {
+    this.captureHidden = !!hidden;
+    const container = this.gleapFrameContainer;
+    if (container) {
+      container.classList.toggle('gleap-frame-container--capture-hidden', this.captureHidden);
+    }
+    if (this.captureHidden) {
+      // Escape belongs to the page (and the capture bar) meanwhile.
+      this.unregisterEscListener();
+      this.setCaptureEditorOpen(false);
+      return;
+    }
+    if (!container) {
+      return;
+    }
+    if (!this.widgetOpened) {
+      if (reopen) {
+        this.showWidget();
+      }
+    } else {
+      this.registerEscListener();
+    }
+  }
+
+  isCaptureHidden() {
+    return this.captureHidden;
+  }
+
+  /**
+   * The Messenger's capture editor (annotating a screenshot) uses the whole viewport.
+   */
+  setCaptureEditorOpen(open) {
+    if (this.gleapFrameContainer) {
+      this.gleapFrameContainer.classList.toggle('gleap-frame-container--capture-editor', !!open);
+    }
+  }
+
+  /**
+   * Tells the Messenger what this page can capture (contract §7). Sent after every ping.
+   */
+  sendCaptureCapabilities() {
+    if (!this.comReady) {
+      return;
+    }
+    try {
+      this.sendMessage({
+        name: 'capture-capabilities',
+        data: getCaptureCapabilities(),
+      });
+    } catch (e) {}
   }
 
   isOpened() {
@@ -498,6 +567,7 @@ export default class GleapFrameManager {
     }
 
     this.hideMarkerManager();
+    this.setCaptureEditorOpen(false);
     if (this.gleapFrameContainer) {
       const container = this.gleapFrameContainer;
       container.classList.remove('gleap-frame-container--animate');
@@ -611,6 +681,7 @@ export default class GleapFrameManager {
         this.comReady = true;
         this.sendConfigUpdate();
         this.sendSessionUpdate();
+        this.sendCaptureCapabilities();
         this.workThroughQueue();
         setTimeout(() => {
           this.runWidgetShouldOpenCallback();
@@ -810,6 +881,16 @@ export default class GleapFrameManager {
 
       if (data.name === 'start-screen-drawing') {
         this.showDrawingScreen(data.data);
+      }
+
+      if (
+        GleapCaptureManager &&
+        (data.name === 'capture-start' ||
+          data.name === 'capture-cancel' ||
+          data.name === 'capture-editor' ||
+          data.name === 'capture-done')
+      ) {
+        GleapCaptureManager.getInstance().handleMessengerMessage(data);
       }
     });
 
