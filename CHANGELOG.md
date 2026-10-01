@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.0.1
+Fixed: the SDK's injected styles made the host page slower. The product tour rule `.gleap-tour-popover-navigation-btns button + button` ends in a bare `button`, so Chrome restyled sibling elements across the whole page whenever a node was inserted anywhere, not only inside Gleap's UI (on a page with ~19k nodes, ~2,000 extra elements per popover open or close). The tour buttons are now spaced with `gap` on their flex container, which looks the same; when the Previous button is hidden, the Next button no longer keeps a stray 4px margin.
+
 ## 19.0.0
 Added widget color schemes, so the widget can match the host app's dark/light mode. Turn it on in the dashboard (Widget → Look & feel → Adapt to dark / light mode, delivered as `colorScheme` in the flow config) or at runtime with `Gleap.setColorScheme("auto" | "light" | "dark", options?)`, which overrides the dashboard (until the first call, the dashboard setting applies):
 `"auto"` follows the host app and switches live when it changes. It looks at theme markers on `<html>`/`<body>` (classes like `dark`/`light`, attributes like `data-theme`, `data-bs-theme`, `data-color-scheme`, `data-mode`), then the page's CSS `color-scheme`, then the page background, and finally the OS `prefers-color-scheme`.

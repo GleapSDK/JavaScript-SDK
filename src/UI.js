@@ -2806,10 +2806,7 @@ export const injectStyledCSS = (
       display: flex;
       flex-grow: 1;
       justify-content: flex-end;
-    }
-    
-    .gleap-tour-popover-navigation-btns button + button {
-      margin-left: 4px;
+      gap: 4px;
     }
     
     .gleap-tour-popover-arrow {
