@@ -4,6 +4,7 @@ import { GleapConsoleLogManager, GleapNetworkIntercepter, GleapReplayRecorder } 
 import { isMobile } from './GleapHelper';
 import { isBlockedElement, isMaskMarker } from './GleapInputMasking';
 import { approximateSize } from './GleapReplayRecorder';
+import { fixWebmDuration } from './GleapWebmDuration';
 
 // Recordings for capture requests (contract §8): the screen through getDisplayMedia + MediaRecorder
 // on desktop browsers, a page recording (rrweb) where there is no getDisplayMedia (phones, tablets).
@@ -262,7 +263,23 @@ export class DisplayRecording {
       this.options.onError(new Error('empty-recording'));
       return;
     }
-    this.options.onStop(result);
+    const deliver = (finalBlob) => {
+      result.blob = finalBlob;
+      try {
+        this.options.onStop(result);
+      } catch (error) {
+        try {
+          this.options.onError(error);
+        } catch (exp) {}
+      }
+    };
+    if (baseType !== 'video/webm') {
+      deliver(blob);
+      return;
+    }
+    // WebM from MediaRecorder has no duration, so players couldn't seek it (MP4 has one). The patch
+    // falls back to the file as recorded on any problem.
+    fixWebmDuration(blob, result.durationMs).then(deliver);
   }
 
   fail(error) {
