@@ -8,7 +8,9 @@ import {
   GleapSession,
   GleapStreamedEvent,
 } from './Gleap';
+import { packEvents } from './GleapCaptureRecorder';
 import { CAPTURE_PLATFORM, CAPTURE_SDK_TYPE, getSdkVersion } from './GleapCaptureSettings';
+import { toJsonParts } from './GleapCaptureTasks';
 
 // Server calls and the log bundle of capture requests (contract §4 and §9). Every call resolves
 // (never rejects) with { status, data }; status 0 means no answer.
@@ -18,6 +20,8 @@ const MAX_LOGS_BODY_BYTES = 19 * 1024 * 1024;
 // Log entries this long before a recording started still count as part of it.
 const RECORDING_LOG_LEAD_MS = 10 * 1000;
 const JSON_TIMEOUT_MS = 30 * 1000;
+// A large body gets more time: 30 s plus a second per 64 KB.
+const timeoutForSize = (bytes) => JSON_TIMEOUT_MS + Math.ceil((bytes || 0) / (64 * 1024)) * 1000;
 
 const DEFAULT_INCLUDE = {
   consoleLog: true,
@@ -76,6 +80,12 @@ export const sendCaptureApiRequest = (method, path, body, options = {}) =>
     }
   });
 
+/**
+ * The request as the server has it ({ status, expiresAt, ... }).
+ */
+export const getCaptureRequest = (requestId) =>
+  sendCaptureApiRequest('GET', '/v3/shared/capture-requests/' + encodeURIComponent(String(requestId)));
+
 const postJson = (requestId, action, payload) =>
   sendCaptureApiRequest('POST', capturePath(requestId, action), JSON.stringify(payload || {}));
 
@@ -94,50 +104,47 @@ export const reportCaptureEvent = (requestId, type, reason) => {
 
 export const completeCaptureRequest = (requestId, payload) => postJson(requestId, 'complete', payload);
 
-/**
- * JSON text of a value; the custom data (set by the host app, may hold cycles) is dropped when the
- * whole value cannot be serialized.
- */
-const stringifyBundle = (bundle) => {
+const gzipBlob = (blob) => {
   try {
-    return JSON.stringify(bundle);
-  } catch (exp) {
-    const withoutCustomData = Object.assign({}, bundle);
-    delete withoutCustomData.customData;
-    return JSON.stringify(withoutCustomData);
-  }
-};
-
-const gzipText = (text) => {
-  try {
-    if (
-      typeof CompressionStream === 'function' &&
-      typeof Response === 'function' &&
-      typeof Blob === 'function' &&
-      typeof Blob.prototype.stream === 'function'
-    ) {
-      const stream = new Blob([text], { type: 'application/json' }).stream().pipeThrough(new CompressionStream('gzip'));
-      return new Response(stream).blob().catch(() => null);
+    if (typeof CompressionStream === 'function' && typeof Response === 'function' && typeof blob.stream === 'function') {
+      return new Response(blob.stream().pipeThrough(new CompressionStream('gzip'))).blob().catch(() => null);
     }
   } catch (exp) {}
   return Promise.resolve(null);
 };
 
-const encodeJson = (value) => {
-  const text = stringifyBundle(value);
-  return gzipText(text).then((gzipped) =>
-    gzipped ? { body: gzipped, gzip: true, size: gzipped.size } : { body: text, gzip: false, size: text.length }
-  );
+// The replay's events packed (in slices) if they aren't yet.
+const withPackedReplay = (bundle) => {
+  const replay = bundle.webReplay;
+  if (!replay || replay.packed || !Array.isArray(replay.events)) {
+    return Promise.resolve(bundle);
+  }
+  return packEvents(replay.events).then((packed) => {
+    if (!packed) {
+      return bundle;
+    }
+    return Object.assign({}, bundle, { webReplay: Object.assign({}, replay, { events: packed, packed: true }) });
+  });
 };
+
+// Serialized in slices into a Blob (no single huge string), then gzipped when the browser can.
+const encodeJson = (value) =>
+  toJsonParts(value).then((parts) => {
+    const blob = new Blob(parts, { type: 'application/json' });
+    return gzipBlob(blob).then((gzipped) =>
+      gzipped ? { body: gzipped, gzip: true, size: gzipped.size } : { body: blob, gzip: false, size: blob.size }
+    );
+  });
 
 /**
  * The request body for a log bundle: gzip when the browser can (CompressionStream), plain JSON
  * otherwise. A bundle over the size limit goes without its replay; null when it is still too large.
- * @returns {Promise<{body: Blob|string, gzip: boolean, size: number}|null>}
+ * The main thread is never blocked for long: packing and serializing run in slices.
+ * @returns {Promise<{body: Blob, gzip: boolean, size: number}|null>}
  */
 export const encodeLogsBundle = (bundle) =>
-  Promise.resolve()
-    .then(() => encodeJson(bundle))
+  withPackedReplay(bundle)
+    .then((ready) => encodeJson(ready))
     .then((encoded) => {
       if (encoded.size <= MAX_LOGS_BODY_BYTES) {
         return encoded;
@@ -153,7 +160,10 @@ export const encodeLogsBundle = (bundle) =>
 export const postCaptureLogs = (requestId, bundle) =>
   encodeLogsBundle(bundle).then((encoded) =>
     encoded
-      ? sendCaptureApiRequest('POST', capturePath(requestId, 'logs'), encoded.body, { gzip: encoded.gzip })
+      ? sendCaptureApiRequest('POST', capturePath(requestId, 'logs'), encoded.body, {
+          gzip: encoded.gzip,
+          timeoutMs: timeoutForSize(encoded.size),
+        })
       : { status: 413, data: null }
   );
 
@@ -292,7 +302,8 @@ export const buildLogsBundle = (options = {}) => {
   }
   if (include.replays && webReplaysEnabled()) {
     try {
-      const replay = GleapReplayRecorder.getInstance().getReplayData();
+      // Unpacked here (cheap); encodeLogsBundle packs it in slices.
+      const replay = GleapReplayRecorder.getInstance().getReplaySnapshot();
       if (replay && replay.startDate && Array.isArray(replay.events) && replay.events.length > 0) {
         bundle.webReplay = replay;
       }

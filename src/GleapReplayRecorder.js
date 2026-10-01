@@ -323,6 +323,22 @@ export default class GleapReplayRecorder {
   }
 
   /**
+   * The current replay without packing its events (capture requests pack them in slices).
+   */
+  getReplaySnapshot() {
+    return {
+      startDate: this.startDate,
+      events: [].concat(...this.segments),
+      packed: false,
+      baseUrl: window.location.origin,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      isMobile: isMobile(),
+      type: 'rrweb',
+    };
+  }
+
+  /**
    * Get the current replay data
    * @returns {Promise<void>}
    */

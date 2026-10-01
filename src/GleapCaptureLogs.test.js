@@ -6,7 +6,7 @@
 // and nothing when the app switched it off (Gleap.setRemoteLogCollectionEnabled(false)).
 
 const mockFlowConfig = { enableWebReplays: true, capture: {} };
-const mockReplay = { startDate: 1, events: ['packed'], packed: true, type: 'rrweb' };
+const mockReplay = { startDate: 1, events: [{ type: 4, data: { href: 'https://app.test' } }], packed: false, type: 'rrweb' };
 const iso = (ms) => new Date(ms).toISOString();
 
 jest.mock('./Gleap', () => ({
@@ -34,7 +34,7 @@ jest.mock('./Gleap', () => ({
   GleapCustomDataManager: { getInstance: () => ({ getCustomData: () => ({ plan: 'pro' }) }) },
   GleapMetaDataManager: { getInstance: () => ({ getMetaData: () => ({ browser: 'Chrome' }), sessionStart: new Date(500) }) },
   GleapStreamedEvent: { getInstance: () => ({ getEventArray: () => [{ name: 'pageView', date: new Date(51000) }] }) },
-  GleapReplayRecorder: { getInstance: () => ({ getReplayData: () => mockReplay, customOptions: {} }) },
+  GleapReplayRecorder: { getInstance: () => ({ getReplaySnapshot: () => mockReplay, customOptions: {} }) },
   GleapSession: {
     getInstance: () => ({ session: { gleapId: 'g1' }, sdkKey: 'key', apiUrl: 'https://api.test', injectSession: () => {} }),
   },
@@ -44,7 +44,8 @@ jest.mock('./Gleap', () => ({
   GleapTranslationManager: { getInstance: () => ({ isRTLLayout: false }) },
 }));
 
-import { buildLogsBundle, normalizeInclude } from './GleapCaptureApi';
+import { buildLogsBundle, encodeLogsBundle, normalizeInclude } from './GleapCaptureApi';
+import { unpack } from '@rrweb/packer';
 
 describe('log bundle', () => {
   const allKeys = ['consoleLog', 'networkLogs', 'customData', 'metaData', 'customEventLog'];
@@ -81,6 +82,30 @@ describe('log bundle', () => {
     expect(bundle.networkLogs.map((entry) => entry.url)).toEqual(['https://app.test/b']);
     expect(bundle.windowStart).toBe(iso(50000));
     expect(bundle.windowEnd).toBe(iso(60000));
+  });
+
+  test('encoded in slices to valid JSON: the replay packed, data that cannot be serialized left out', async () => {
+    const bundle = buildLogsBundle({ include: { replays: true } });
+    const cyclic = { plan: 'pro' };
+    cyclic.self = cyclic;
+    bundle.customData = cyclic;
+    bundle.consoleLog = Array.from({ length: 120 }, (value, index) => ({ log: 'line ' + index }));
+
+    const encoded = await encodeLogsBundle(bundle);
+    const text = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsText(encoded.body);
+    });
+    const parsed = JSON.parse(text);
+
+    expect(parsed.customData).toBeUndefined();
+    expect(parsed.consoleLog).toHaveLength(120);
+    expect(parsed.consoleLog[119]).toEqual({ log: 'line 119' });
+    expect(parsed.webReplay.packed).toBe(true);
+    expect(unpack(parsed.webReplay.events[0])).toEqual(expect.objectContaining(mockReplay.events[0]));
+    expect(parsed).toEqual(expect.objectContaining({ platform: 'web', sdkType: 'JAVASCRIPT' }));
   });
 
   test('include defaults: everything but replays', () => {

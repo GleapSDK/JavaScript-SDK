@@ -5,6 +5,7 @@ import { isMobile } from './GleapHelper';
 import { isBlockedElement, isMaskMarker } from './GleapInputMasking';
 import { approximateSize } from './GleapReplayRecorder';
 import { fixWebmDuration } from './GleapWebmDuration';
+import { now, toJsonParts, yieldToPage } from './GleapCaptureTasks';
 
 // Recordings for capture requests (contract §8): the screen through getDisplayMedia + MediaRecorder
 // on desktop browsers, a page recording (rrweb) where there is no getDisplayMedia (phones, tablets).
@@ -107,6 +108,7 @@ export class DisplayRecording {
   recorderStopped = false;
   stopTimeout = null;
   onEndedBound = null;
+  recorderError = null;
 
   /**
    * @param {{maxDurationSec: number, onTick: function(number), onStop: function(object), onError: function(Error), onReleased?: function()}} options
@@ -170,18 +172,30 @@ export class DisplayRecording {
         throw error;
       }
       this.recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          this.chunks.push(event.data);
-        }
+        try {
+          if (event.data && event.data.size > 0) {
+            this.chunks.push(event.data);
+          }
+        } catch (exp) {}
       };
       this.recorder.onstop = () => {
-        this.recorderStopped = true;
-        this.finish();
+        try {
+          this.recorderStopped = true;
+          this.finish();
+        } catch (exp) {}
       };
-      this.recorder.onerror = (event) => this.fail((event && event.error) || new Error('recorder-error'));
+      this.recorder.onerror = (event) => {
+        try {
+          this.onRecorderError((event && event.error) || new Error('recorder-error'));
+        } catch (exp) {}
+      };
 
       // The browser's "Stop sharing" ends the track: that is a Stop.
-      this.onEndedBound = () => this.stop();
+      this.onEndedBound = () => {
+        try {
+          this.stop();
+        } catch (exp) {}
+      };
       this.videoTrack.addEventListener('ended', this.onEndedBound);
 
       try {
@@ -193,13 +207,15 @@ export class DisplayRecording {
       this.startedAt = Date.now();
       const maxMs = this.options.maxDurationSec * 1000;
       this.timer = setInterval(() => {
-        const elapsed = Date.now() - this.startedAt;
         try {
-          this.options.onTick(Math.floor(elapsed / 1000));
+          const elapsed = Date.now() - this.startedAt;
+          try {
+            this.options.onTick(Math.floor(elapsed / 1000));
+          } catch (exp) {}
+          if (elapsed >= maxMs) {
+            this.stop();
+          }
         } catch (exp) {}
-        if (elapsed >= maxMs) {
-          this.stop();
-        }
       }, 250);
       return { hasMicrophone: !!micTrack };
     });
@@ -234,7 +250,21 @@ export class DisplayRecording {
     this.releaseTracks();
     // The last chunk and then 'stop' follow (also when the recorder stopped by itself because the
     // shared screen ended); finish then. Just in case 'stop' never comes:
-    this.stopTimeout = setTimeout(() => this.finish(), 3000);
+    this.stopTimeout = setTimeout(() => {
+      try {
+        this.finish();
+      } catch (exp) {}
+    }, 3000);
+  }
+
+  // The recorder failed midway: what it recorded so far still arrives (dataavailable, then stop) and
+  // is offered like after a Stop; with nothing recorded the error is reported.
+  onRecorderError(error) {
+    if (this.finished) {
+      return;
+    }
+    this.recorderError = error;
+    this.stop();
   }
 
   finish() {
@@ -261,7 +291,7 @@ export class DisplayRecording {
       method: this.settings.displaySurface === 'browser' ? 'tab' : 'display',
     };
     if (blob.size === 0) {
-      this.options.onError(new Error('empty-recording'));
+      this.options.onError(this.recorderError || new Error('empty-recording'));
       return;
     }
     const deliver = (finalBlob) => {
@@ -371,8 +401,79 @@ const combineSelectors = (selectors) =>
  * A page recording (rrweb) with every input masked and without canvas. The file has exactly the
  * shape of a bug report's webReplay, so the dashboard's replay player shows it.
  */
+// @rrweb/packer's format: latin1 text of zlib(JSON of the event plus v: MARK).
+const PACKER_MARK = 'v1';
+// Events this large (a full snapshot of a big page) are compressed by the browser
+// (CompressionStream, off the main thread) instead of fflate's synchronous zlib.
+const LARGE_EVENT_CHARS = 200 * 1024;
+
+const toLatin1 = (bytes) => {
+  let text = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    text += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return text;
+};
+
+// A packed event (string), or a promise of one for a large event.
+const packEvent = (event) => {
+  if (typeof CompressionStream === 'function' && typeof Response === 'function') {
+    const json = JSON.stringify(Object.assign({}, event, { v: PACKER_MARK }));
+    if (json.length > LARGE_EVENT_CHARS) {
+      return new Response(new Blob([json]).stream().pipeThrough(new CompressionStream('deflate')))
+        .arrayBuffer()
+        .then((buffer) => toLatin1(new Uint8Array(buffer)));
+    }
+  }
+  return pack(event);
+};
+
+/**
+ * The events packed (@rrweb/packer format) in slices, so the page never waits long; null when
+ * packing failed (the raw events go then). Rejects when cancelled.
+ */
+export const packEvents = (events, isCancelled) =>
+  new Promise((resolve, reject) => {
+    const packed = new Array(events.length);
+    let index = 0;
+    const step = () => {
+      try {
+        if (isCancelled && isCancelled()) {
+          reject(new Error('cancelled'));
+          return;
+        }
+        const start = now();
+        while (index < events.length) {
+          const result = packEvent(events[index]);
+          const at = index;
+          index += 1;
+          if (typeof result !== 'string') {
+            result.then(
+              (value) => {
+                packed[at] = value;
+                step();
+              },
+              () => resolve(null)
+            );
+            return;
+          }
+          packed[at] = result;
+          if (now() - start > 25 && index < events.length) {
+            yieldToPage().then(step);
+            return;
+          }
+        }
+        resolve(packed);
+      } catch (exp) {
+        resolve(null);
+      }
+    };
+    step();
+  });
+
 export class PageRecording {
   events = [];
+  cancelled = false;
   size = 0;
   stopFunction = null;
   timer = null;
@@ -401,22 +502,29 @@ export class PageRecording {
     try {
       this.stopFunction = record({
         emit: (event) => {
-          if (this.finished) {
-            return;
-          }
-          this.events.push(event);
-          this.size += approximateSize(event);
-          if (this.size > MAX_PAGE_RECORDING_SIZE) {
-            setTimeout(() => this.stop(), 0);
-          }
+          try {
+            if (this.finished) {
+              return;
+            }
+            this.events.push(event);
+            this.size += approximateSize(event);
+            if (this.size > MAX_PAGE_RECORDING_SIZE) {
+              setTimeout(() => {
+                try {
+                  this.stop();
+                } catch (exp) {}
+              }, 0);
+            }
+          } catch (exp) {}
         },
         maskAllInputs: true,
         blockClass: privacyOptions.blockClass || 'rr-block',
+        // The standard markers count also when the site set classes of its own.
         blockSelector: combineSelectors(
-          ['.gl-block', privacyOptions.blockSelector].concat(this.options.maskSelectors || [])
+          ['.rr-block', '.gl-block', privacyOptions.blockSelector].concat(this.options.maskSelectors || [])
         ),
         maskTextClass: privacyOptions.maskTextClass || 'rr-mask',
-        maskTextSelector: combineSelectors(['.gl-mask', privacyOptions.maskTextSelector]),
+        maskTextSelector: combineSelectors(['.rr-mask', '.gl-mask', privacyOptions.maskTextSelector]),
         inlineStylesheet: true,
         recordCanvas: false,
         collectFonts: false,
@@ -460,16 +568,19 @@ export class PageRecording {
 
     const maxMs = this.options.maxDurationSec * 1000;
     this.timer = setInterval(() => {
-      const elapsed = Date.now() - this.startedAt;
       try {
-        this.options.onTick(Math.floor(elapsed / 1000));
+        const elapsed = Date.now() - this.startedAt;
+        try {
+          this.options.onTick(Math.floor(elapsed / 1000));
+        } catch (exp) {}
+        if (elapsed >= maxMs) {
+          this.stop();
+        }
       } catch (exp) {}
-      if (elapsed >= maxMs) {
-        this.stop();
-      }
     }, 250);
   }
 
+  // Packs and serializes the events in slices (up to ~25 MB), then hands over the file.
   stop() {
     if (this.finished) {
       return;
@@ -478,47 +589,53 @@ export class PageRecording {
     this.endedAt = Date.now();
     this.cleanup();
 
-    let events = this.events;
-    let packed = false;
-    try {
-      events = this.events.map((event) => pack(event));
-      packed = true;
-    } catch (exp) {
-      events = this.events;
-    }
+    const raw = this.events;
     this.events = [];
-    const replay = {
-      startDate: this.startedAt,
-      events,
-      packed,
-      baseUrl: window.location.origin,
-      width: this.width,
-      height: this.height,
-      isMobile: isMobile(),
-      type: 'rrweb',
-    };
-    let blob;
-    try {
-      blob = new Blob([JSON.stringify(replay)], { type: 'application/json' });
-    } catch (error) {
-      this.options.onError(error);
-      return;
-    }
-    this.options.onStop({
-      blob,
-      type: 'application/json',
-      fileName: 'page-recording.json',
-      startedAt: this.startedAt,
-      endedAt: this.endedAt,
-      durationMs: Math.max(0, this.endedAt - this.startedAt),
-      width: this.width,
-      height: this.height,
-      method: 'rrweb',
-    });
+    const cancelled = () => this.cancelled;
+    packEvents(raw, cancelled)
+      .then((packedEvents) =>
+        toJsonParts(
+          {
+            startDate: this.startedAt,
+            events: packedEvents || raw,
+            packed: !!packedEvents,
+            baseUrl: window.location.origin,
+            width: this.width,
+            height: this.height,
+            isMobile: isMobile(),
+            type: 'rrweb',
+          },
+          cancelled
+        )
+      )
+      .then((parts) => {
+        if (this.cancelled) {
+          return;
+        }
+        this.options.onStop({
+          blob: new Blob(parts, { type: 'application/json' }),
+          type: 'application/json',
+          fileName: 'page-recording.json',
+          startedAt: this.startedAt,
+          endedAt: this.endedAt,
+          durationMs: Math.max(0, this.endedAt - this.startedAt),
+          width: this.width,
+          height: this.height,
+          method: 'rrweb',
+        });
+      })
+      .catch((error) => {
+        if (!this.cancelled) {
+          try {
+            this.options.onError(error);
+          } catch (exp) {}
+        }
+      });
   }
 
   cancel() {
     this.finished = true;
+    this.cancelled = true;
     this.events = [];
     this.cleanup();
   }
@@ -553,12 +670,17 @@ const collapse = (text, max) => {
   return value.length > max ? value.slice(0, max - 1) + '…' : value;
 };
 
-const isPrivate = (element, privacyOptions) => {
+// Inside a blocked or masked element, or one of flowConfig.capture.maskSelectors (through shadow roots).
+const isPrivate = (element, privacyOptions, maskSelector) => {
   let current = element;
   while (current) {
     if (current.nodeType === 1) {
       try {
-        if (isBlockedElement(current, privacyOptions) || isMaskMarker(current, privacyOptions)) {
+        if (
+          isBlockedElement(current, privacyOptions) ||
+          isMaskMarker(current, privacyOptions) ||
+          (!!maskSelector && current.matches(maskSelector))
+        ) {
           return true;
         }
       } catch (exp) {}
@@ -582,20 +704,21 @@ const fieldName = (field) =>
 
 /**
  * How an element is named in the timeline: its role plus a short accessible name. Never a field
- * value, and no text inside masked or blocked elements.
+ * value, and no text inside masked or blocked elements (markers, replay options, maskSelectors).
+ * @param {string[]} [maskSelectors] flowConfig.capture.maskSelectors
  */
-export const describeElement = (element, privacyOptions) => {
+export const describeElement = (element, privacyOptions, maskSelectors) => {
   if (!element || element.nodeType !== 1) {
     return 'element';
   }
   const tag = element.tagName.toLowerCase();
   const role = element.getAttribute('role') || (tag === 'a' ? 'link' : tag);
+  const hidden = isPrivate(element, privacyOptions, combineSelectors(Array.isArray(maskSelectors) ? maskSelectors : []));
   if (tag === 'input' || tag === 'select' || tag === 'textarea') {
-    return (
-      (element.type === 'checkbox' || element.type === 'radio' ? element.type : 'field') + ' "' + fieldName(element) + '"'
-    );
+    const kind = element.type === 'checkbox' || element.type === 'radio' ? element.type : 'field';
+    return hidden ? kind : kind + ' "' + fieldName(element) + '"';
   }
-  if (isPrivate(element, privacyOptions)) {
+  if (hidden) {
     return role;
   }
   const name = collapse(
@@ -630,8 +753,9 @@ export class CaptureTimeline {
   lastInputField = null;
   lastInputAt = 0;
 
-  constructor({ privacyOptions, isOwnElement }) {
+  constructor({ privacyOptions, maskSelectors, isOwnElement }) {
     this.privacyOptions = privacyOptions || {};
+    this.maskSelectors = Array.isArray(maskSelectors) ? maskSelectors : [];
     this.isOwnElement = isOwnElement || (() => false);
   }
 
@@ -671,7 +795,7 @@ export class CaptureTimeline {
         const control = this.target(event);
         // Only controls are named; other elements go by their tag, without their text.
         const label = control
-          ? describeElement(control, this.privacyOptions)
+          ? describeElement(control, this.privacyOptions, this.maskSelectors)
           : event.target && event.target.tagName
             ? event.target.tagName.toLowerCase()
             : 'page';
@@ -694,7 +818,8 @@ export class CaptureTimeline {
         this.lastInputAt = now;
         this.add(
           'input',
-          (event.type === 'change' ? 'Changed ' : 'Typed in ') + describeElement(field, this.privacyOptions)
+          (event.type === 'change' ? 'Changed ' : 'Typed in ') +
+            describeElement(field, this.privacyOptions, this.maskSelectors)
         );
       } catch (exp) {}
     };

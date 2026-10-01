@@ -1,6 +1,7 @@
 import { createContext, destroyContext, domToCanvas } from 'modern-screenshot';
 import { GleapNetworkIntercepter } from './Gleap';
 import { getFieldValueMask, isBlockedElement, isMaskMarker } from './GleapInputMasking';
+import { now, yieldToPage } from './GleapCaptureTasks';
 
 // Screenshots for capture requests (contract §8). Desktop Chromium grabs one frame of the current
 // tab (getDisplayMedia, one click in the browser's share dialog); everything else, and a declined or
@@ -12,7 +13,8 @@ export const MAX_CAPTURE_EDGE = 2560;
 const JPEG_QUALITY = 0.85;
 const TRANSPARENT_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
-// Gleap's own UI never appears in a capture.
+// Gleap's own UI never appears in a capture: the widget, launcher, notifications, banners, modals,
+// tooltips, tours, the admin helper and the capture UI itself.
 export const GLEAP_UI_SELECTOR = [
   '.gleap-frame-container',
   '.bb-feedback-button',
@@ -21,7 +23,22 @@ export const GLEAP_UI_SELECTOR = [
   '.gleap-capture-root',
   '.gleap-image-view',
   '.bb-capture-editor',
+  '.gleap-b',
+  '.gleap-modal-wrapper',
+  '.gleap-tooltip',
+  '.gleap-tour-popover',
+  '.gleap-tour-overlay',
+  '#copilot-pointer-container',
+  '#copilot-joined-container',
+  '.gleap-audio-unmute-modal-overlay',
+  '.gleap-admin-frame-container',
+  '.gleap-admin-collapse-ui',
+  '.click-wave',
 ].join(', ');
+
+// Gleap UI that can sit in the page's flow (checklists placed in the page, tooltip hotspots inside
+// the page's elements): left blank in a capture, keeping its space.
+export const GLEAP_INFLOW_UI_SELECTOR = 'gleap-checklist, .gleap-tooltip-anchor';
 
 // Frames that take card details. Their content is not the page's, so no class or field rule can
 // reach inside; a tab capture would show what the customer typed.
@@ -74,8 +91,6 @@ export const paymentFrameSelector = () => {
   });
   return parts.join(', ');
 };
-
-const now = () => (typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now());
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -589,13 +604,35 @@ const grabFrame = (track, stream) => {
     .then((frame) => frame || viaVideo());
 };
 
+// The longest Gleap's UI (the capture bar too) stays hidden for a tab frame.
+const TAB_CAPTURE_MAX_MS = 15000;
+
+// Rects from getBoundingClientRect are in the layout viewport; a tab frame shows the visual viewport
+// (pinch zoom) stretched over the window.
+const toVisualViewport = (rects) => {
+  const viewport = window.visualViewport;
+  const zoom = viewport && viewport.scale ? viewport.scale : 1;
+  if (!viewport || (zoom === 1 && !viewport.offsetLeft && !viewport.offsetTop)) {
+    return rects;
+  }
+  return rects.map((rect) => ({
+    x: (rect.x - viewport.offsetLeft) * zoom,
+    y: (rect.y - viewport.offsetTop) * zoom,
+    width: rect.width * zoom,
+    height: rect.height * zoom,
+  }));
+};
+
 /**
  * Takes one frame of the shared tab with Gleap's UI hidden, then stops sharing right away.
- * Rejects when the shared surface is not this tab (or no usable frame came).
+ * Rejects when the shared surface is not this tab, no usable frame came, or after
+ * TAB_CAPTURE_MAX_MS.
  */
-export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, maskSelectors }) => {
+export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, maskSelectors, isActive }) => {
   const track = stream && stream.getVideoTracks ? stream.getVideoTracks()[0] : null;
+  let done = false;
   const finish = () => {
+    done = true;
     stopStream(stream);
     setUiHidden(false);
   };
@@ -613,6 +650,9 @@ export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, mask
   }
 
   const attempt = (index) => {
+    if (done) {
+      throw new Error('tab-timeout');
+    }
     if (index >= 3) {
       throw new Error('no-usable-frame');
     }
@@ -623,10 +663,10 @@ export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, mask
     return grabFrame(track, stream).then((frame) => {
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const rects = rectsBefore.concat(collectMaskRects({ privacyOptions, maskSelectors }));
+      const rects = toVisualViewport(rectsBefore.concat(collectMaskRects({ privacyOptions, maskSelectors })));
       let canvas = null;
       try {
-        if (frame && frame.width > 0 && frame.height > 0) {
+        if (!done && frame && frame.width > 0 && frame.height > 0) {
           // The frame must show this viewport (a different tab, or a resize in between, doesn't).
           const viewportRatio = viewportWidth / viewportHeight;
           if (Math.abs(frame.width / frame.height - viewportRatio) / viewportRatio <= 0.04) {
@@ -646,6 +686,10 @@ export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, mask
           }
         } catch (exp) {}
       }
+      if (done) {
+        releaseCanvas(canvas);
+        throw new Error('tab-timeout');
+      }
       if (!canvas) {
         return wait(150).then(() => attempt(index + 1));
       }
@@ -661,18 +705,40 @@ export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, mask
   };
 
   setUiHidden(true);
-  return nextPaint()
-    .then(() => attempt(0))
-    .then(
-      (capture) => {
-        finish();
-        return capture;
-      },
-      (error) => {
-        finish();
-        throw error;
+  return new Promise((resolve, reject) => {
+    let watch = null;
+    const settle = (error, capture) => {
+      if (done) {
+        if (capture) {
+          releaseCanvas(capture.canvas);
+        }
+        return;
       }
+      clearInterval(watch);
+      finish();
+      if (error) {
+        reject(error);
+      } else {
+        resolve(capture);
+      }
+    };
+    // Cancelled meanwhile: stop sharing right away.
+    watch = setInterval(() => {
+      try {
+        if (isActive && !isActive()) {
+          settle(new Error('aborted'));
+        }
+      } catch (exp) {}
+    }, 200);
+    withTimeout(
+      nextPaint().then(() => attempt(0)),
+      TAB_CAPTURE_MAX_MS,
+      'tab-timeout'
+    ).then(
+      (capture) => settle(null, capture),
+      (error) => settle(error)
     );
+  });
 };
 
 const cloneNamesMatch = (original, clone) => {
@@ -704,21 +770,240 @@ const isViewportFilling = (rect) =>
   Math.abs(rect.right - window.innerWidth) <= 20 &&
   Math.abs(rect.bottom - window.innerHeight) <= 20;
 
+// Everything this close to the viewport is rendered; boxes further away are rendered empty.
+const VIEWPORT_MARGIN = 200;
+// The DOM render gives up after this long or this many elements (the customer can upload a file).
+const RENDER_DEADLINE_MS = 10000;
+const MAX_RENDER_ELEMENTS = 10000;
+// Safari and Firefox decode the images inside the rendered SVG late, so modern-screenshot redraws
+// it once per image, waiting longer each time (fixSvgXmlDecode). A couple of redraws do the job.
+const MAX_IMAGE_REDRAWS = 2;
+const IMAGE_PROPERTIES = ['background-image', 'border-image-source', 'mask-image', '-webkit-mask-image', 'list-style-image'];
+
+const nearViewport = (rect, box) =>
+  (rect.width > 0 || rect.height > 0) &&
+  rect.bottom > box.top &&
+  rect.top < box.bottom &&
+  rect.right > box.left &&
+  rect.left < box.right;
+
+const childElements = (element) => {
+  const list = [];
+  const add = (nodes) => {
+    for (let i = 0; i < nodes.length; i++) {
+      list.push(nodes[i]);
+    }
+  };
+  try {
+    if (element.shadowRoot) {
+      add(element.shadowRoot.children);
+    }
+    add(element.children);
+  } catch (exp) {}
+  return list;
+};
+
 /**
- * The modern-screenshot hooks that keep the clone private and show the scrolled state. The filter
- * runs right before an element is cloned and onCloneEachNode right after it (children first), so a
- * stack pairs every clone with its original. If a pair ever doesn't match, the clone is left
- * alone: the black boxes painted from the live page still cover everything masked.
+ * The elements (with a box) whose whole subtree, open shadow roots included, is away from the
+ * viewport. Measured in slices.
+ * @returns {Promise<Set<Element>>}
  */
-const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
+const findOffscreenElements = (isStopped) =>
+  new Promise((resolve, reject) => {
+    const offscreen = new Set();
+    const box = {
+      top: -VIEWPORT_MARGIN,
+      left: -VIEWPORT_MARGIN,
+      bottom: window.innerHeight + VIEWPORT_MARGIN,
+      right: window.innerWidth + VIEWPORT_MARGIN,
+    };
+    const root = document.documentElement;
+    const stack = [{ element: root, children: childElements(root), index: 0, visible: true, sized: false }];
+    const step = () => {
+      try {
+        if (isStopped()) {
+          reject(new Error('aborted'));
+          return;
+        }
+        const start = now();
+        while (stack.length) {
+          const frame = stack[stack.length - 1];
+          if (frame.index < frame.children.length) {
+            const child = frame.children[frame.index];
+            frame.index += 1;
+            let rect = null;
+            try {
+              rect = child.getBoundingClientRect();
+            } catch (exp) {}
+            stack.push({
+              element: child,
+              children: childElements(child),
+              index: 0,
+              visible: !!rect && nearViewport(rect, box),
+              sized: !!rect && rect.width > 0 && rect.height > 0,
+            });
+          } else {
+            stack.pop();
+            if (stack.length) {
+              if (frame.visible) {
+                stack[stack.length - 1].visible = true;
+              } else if (frame.sized) {
+                offscreen.add(frame.element);
+              }
+            }
+          }
+          if (stack.length && now() - start > 25) {
+            yieldToPage().then(step);
+            return;
+          }
+        }
+        resolve(offscreen);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    step();
+  });
+
+// Boxes whose size and place don't depend on their content (it is in the clone as copied width and
+// height): no margin of a child collapses through them. Inline content and table parts never.
+const BOX_DISPLAYS = { block: true, 'flow-root': true, 'list-item': true, flex: true, grid: true, table: true };
+const CONTAINING_DISPLAYS = { flex: true, 'inline-flex': true, grid: true, 'inline-grid': true };
+
+const canEmpty = (element) => {
+  try {
+    if (element.ownerDocument !== document || element === document.body) {
+      return false;
+    }
+    const style = window.getComputedStyle(element);
+    if (!BOX_DISPLAYS[style.display]) {
+      return false;
+    }
+    if (style.display !== 'block' && style.display !== 'list-item') {
+      return true;
+    }
+    const scrolls = (value) => value === 'hidden' || value === 'scroll' || value === 'auto';
+    if (
+      scrolls(style.overflowX) ||
+      scrolls(style.overflowY) ||
+      style.float !== 'none' ||
+      style.position === 'absolute' ||
+      style.position === 'fixed'
+    ) {
+      return true;
+    }
+    const parent = element.parentElement;
+    if (parent && CONTAINING_DISPLAYS[window.getComputedStyle(parent).display]) {
+      return true;
+    }
+    const edge = (side) => parseFloat(style['padding' + side]) > 0 || parseFloat(style['border' + side + 'Width']) > 0;
+    return edge('Top') && edge('Bottom');
+  } catch (exp) {
+    return false;
+  }
+};
+
+// modern-screenshot never gets a <video> (it waits for a seek that may never come, e.g. for camera
+// streams or videos that don't load): this takes its place, with its computed style. The current
+// frame when the page may read it, else the poster, else a dark box.
+const createVideoPlaceholder = (video, { offscreen, masked }) => {
+  let src = null;
+  if (!offscreen && !masked) {
+    try {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      if (video.readyState >= 2 && width > 0 && height > 0) {
+        const factor = Math.min(1, 1280 / Math.max(width, height));
+        const canvas = createCanvas(width * factor, height * factor);
+        try {
+          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+          src = canvas.toDataURL('image/jpeg', JPEG_QUALITY);
+        } finally {
+          releaseCanvas(canvas);
+        }
+      }
+    } catch (exp) {
+      // A cross-origin video taints the canvas.
+      src = null;
+    }
+    if (!src) {
+      try {
+        src = video.poster || null;
+      } catch (exp) {}
+    }
+  }
+  const placeholder = document.createElement(src ? 'img' : 'div');
+  try {
+    const style = window.getComputedStyle(video);
+    for (let i = 0; i < style.length; i++) {
+      const name = style[i];
+      // Visibility stays inherited, so a masked (hidden) container hides this as well.
+      if (name !== 'visibility') {
+        placeholder.style.setProperty(name, style.getPropertyValue(name));
+      }
+    }
+  } catch (exp) {}
+  if (src) {
+    placeholder.setAttribute('src', src);
+    placeholder.setAttribute('alt', '');
+  } else {
+    placeholder.style.setProperty('background-color', '#1f2430');
+  }
+  if (masked) {
+    placeholder.style.setProperty('visibility', 'hidden', 'important');
+  }
+  return placeholder;
+};
+
+/**
+ * The modern-screenshot hooks that keep the clone private, small and show the scrolled state. The
+ * filter runs right before a node is cloned and onCloneEachNode right after an element (children
+ * first), so a stack pairs every clone with its original. If a pair ever doesn't match, the clone
+ * is left alone: the black boxes painted from the live page still cover everything masked.
+ * checkActive throws to stop the render (cancelled or out of time).
+ */
+const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll, checkActive) => {
   const stack = [root];
   const extraSelector = (Array.isArray(maskSelectors) ? maskSelectors : []).map(validSelector).filter(Boolean).join(', ');
   const scrollingElement = document.scrollingElement || document.documentElement;
-  // canYield: set once modern-screenshot's style sandbox is loaded (see renderDom).
-  const state = { broken: false, offsetX: 0, offsetY: 0, lastYield: now(), canYield: false };
+  // offscreen: from findOffscreenElements; canYield: set once the style sandbox is in place.
+  const state = {
+    broken: false,
+    offsetX: 0,
+    offsetY: 0,
+    lastYield: now(),
+    canYield: false,
+    elements: 0,
+    offscreen: null,
+  };
+  // Per parent: how many children its clone got so far, and the video stand-ins to insert.
+  const childCounts = new Map();
+  const pendingVideos = new Map();
+  // Away from the viewport: cloned without their content.
+  const emptied = new Set();
+
+  const isMasked = (element) => {
+    try {
+      return (
+        isBlockedElement(element, privacyOptions) ||
+        isMaskMarker(element, privacyOptions) ||
+        (!!extraSelector && element.matches(extraSelector))
+      );
+    } catch (exp) {
+      return false;
+    }
+  };
+
+  const countChild = (parent) => childCounts.set(parent, (childCounts.get(parent) || 0) + 1);
 
   const filter = (node) => {
+    checkActive();
+    const parent = stack[stack.length - 1];
+    if (emptied.has(parent)) {
+      return false;
+    }
     if (!node || node.nodeType !== 1) {
+      countChild(parent);
       return true;
     }
     const tag = String(node.tagName).toUpperCase();
@@ -730,10 +1015,30 @@ const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
     if (isGleapUiRoot(node) || (typeof node.id === 'string' && node.id.indexOf('__SANDBOX__') === 0)) {
       return false;
     }
+    if (tag === 'VIDEO') {
+      const list = pendingVideos.get(parent) || [];
+      list.push({
+        index: childCounts.get(parent) || 0,
+        placeholder: createVideoPlaceholder(node, {
+          offscreen: !!state.offscreen && state.offscreen.has(node),
+          masked: isMasked(node),
+        }),
+      });
+      pendingVideos.set(parent, list);
+      return false;
+    }
+    state.elements += 1;
+    if (state.elements > MAX_RENDER_ELEMENTS) {
+      throw new Error('render-budget');
+    }
+    countChild(parent);
     stack.push(node);
     // A same-origin frame's document element is cloned (and reported) as well.
     if ((tag === 'IFRAME' || tag === 'FRAME') && hasSameOriginDocument(node)) {
       stack.push(node);
+    }
+    if (state.offscreen && state.offscreen.has(node) && canEmpty(node)) {
+      emptied.add(node);
     }
     return true;
   };
@@ -766,15 +1071,11 @@ const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
       return;
     }
     const frame = tag === 'IFRAME' || tag === 'FRAME';
-    let masked = false;
+    let hidden = false;
     try {
-      masked =
-        isBlockedElement(original, privacyOptions) ||
-        isMaskMarker(original, privacyOptions) ||
-        (!!extraSelector && original.matches(extraSelector)) ||
-        (frame && isPaymentFrame(original));
+      hidden = isMasked(original) || (frame && isPaymentFrame(original)) || original.matches(GLEAP_INFLOW_UI_SELECTOR);
     } catch (exp) {}
-    if (masked) {
+    if (hidden) {
       hide(clone);
     }
     if (frame && String(clone.nodeName).toUpperCase() === 'HTML') {
@@ -819,7 +1120,30 @@ const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
     }
   };
 
+  const insertVideos = (original, clone) => {
+    const list = pendingVideos.get(original);
+    if (!list) {
+      return;
+    }
+    pendingVideos.delete(original);
+    list.forEach((entry, inserted) => {
+      clone.insertBefore(entry.placeholder, clone.childNodes[entry.index + inserted] || null);
+    });
+  };
+
+  // Nothing of it shows: no image downloads for it.
+  const dropImages = (clone) => {
+    if (clone.style) {
+      IMAGE_PROPERTIES.forEach((property) => clone.style.setProperty(property, 'none', 'important'));
+    }
+    if (String(clone.nodeName).toUpperCase() === 'IMG') {
+      clone.removeAttribute('srcset');
+      clone.setAttribute('src', TRANSPARENT_GIF);
+    }
+  };
+
   const onCloneEachNode = (clone) => {
+    checkActive();
     if (!clone || clone.nodeType !== 1) {
       return undefined;
     }
@@ -829,14 +1153,19 @@ const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
     }
     if (!state.broken) {
       try {
+        insertVideos(original, clone);
         maskClone(original, clone);
         restoreScroll(original, clone);
+        if (state.offscreen && state.offscreen.has(original)) {
+          dropImages(clone);
+        }
       } catch (exp) {}
     }
+    childCounts.delete(original);
     // Cloning reads every element's computed style: give the page a chance to breathe.
     if (state.canYield && now() - state.lastYield > 40) {
       state.lastYield = now();
-      return wait(0);
+      return yieldToPage();
     }
     return undefined;
   };
@@ -851,8 +1180,16 @@ const createCloneHooks = (root, privacyOptions, maskSelectors, pageScroll) => {
   return { filter, onCloneEachNode, onCloneNode, state };
 };
 
-// modern-screenshot reads default styles from a hidden srcdoc frame it creates on first use. Made and
+const SANDBOX_HTML = '<!DOCTYPE html><meta charset="UTF-8"><title></title><body>';
+// Stands in for the style sandbox when none could be made: modern-screenshot then copies every
+// style instead of creating its own sandbox (which would leak under Trusted Types).
+const SANDBOX_STUB = { contentWindow: null, remove: () => {} };
+
+// modern-screenshot reads default styles from a hidden frame it creates on first use. Made and
 // loaded up front instead: the render then may yield to the page without racing the frame's load.
+// srcdoc is set before the frame is inserted (inserting a frame without one fires a synchronous
+// load for about:blank); under Trusted Types, where srcdoc can't be set, the initial about:blank
+// document serves.
 const createStyleSandbox = () =>
   new Promise((resolve) => {
     const frame = document.createElement('iframe');
@@ -863,45 +1200,69 @@ const createStyleSandbox = () =>
     frame.setAttribute('aria-hidden', 'true');
     frame.style.visibility = 'hidden';
     frame.style.position = 'fixed';
+    let srcdoc = false;
+    try {
+      frame.srcdoc = SANDBOX_HTML;
+      srcdoc = true;
+    } catch (exp) {}
+    const usable = () => {
+      try {
+        const doc = frame.contentDocument;
+        return !!(
+          doc &&
+          doc.body &&
+          doc.readyState === 'complete' &&
+          (!srcdoc || frame.contentWindow.location.href === 'about:srcdoc')
+        );
+      } catch (exp) {
+        return false;
+      }
+    };
     let settled = false;
-    const done = () => {
+    let timer = null;
+    const settle = (ready) => {
       if (settled) {
         return;
       }
       settled = true;
-      let ready = false;
-      try {
-        const doc = frame.contentDocument;
-        ready = !!(doc && doc.body && doc.readyState === 'complete' && frame.contentWindow.location.href === 'about:srcdoc');
-      } catch (exp) {}
+      clearTimeout(timer);
+      frame.removeEventListener('load', onLoad);
       if (!ready) {
-        frame.remove();
+        try {
+          frame.remove();
+        } catch (exp) {}
       }
       resolve(ready ? frame : null);
     };
-    frame.addEventListener('load', done);
-    setTimeout(done, 1500);
+    const onLoad = () => {
+      if (usable()) {
+        settle(true);
+      }
+    };
+    frame.addEventListener('load', onLoad);
+    timer = setTimeout(() => settle(usable()), 1500);
     try {
       (document.body || document.documentElement).appendChild(frame);
-      frame.srcdoc = '<!DOCTYPE html><meta charset="UTF-8"><title></title><body>';
     } catch (exp) {
-      done();
+      settle(false);
+      return;
+    }
+    if (!srcdoc) {
+      settle(usable());
     }
   });
 
-// Images still loading inside the viewport are worth waiting for; offscreen lazy images never load.
-const mediaLoadingInViewport = () => {
+// Images still loading near the viewport are worth waiting for; offscreen lazy images never load.
+const imagesLoadingInViewport = () => {
   try {
     const viewportHeight = window.innerHeight;
-    const media = document.querySelectorAll('img, video');
-    for (let i = 0; i < media.length; i++) {
-      const element = media[i];
-      const loading =
-        element.tagName === 'IMG' ? !element.complete : element.readyState < 2 && !!(element.currentSrc || element.src);
-      if (!loading) {
+    const images = document.images;
+    for (let i = 0; i < images.length; i++) {
+      const image = images[i];
+      if (image.complete) {
         continue;
       }
-      const rect = element.getBoundingClientRect();
+      const rect = image.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.top < viewportHeight) {
         return true;
       }
@@ -910,11 +1271,12 @@ const mediaLoadingInViewport = () => {
   return false;
 };
 
-// Images far below the fold don't show; they get a transparent pixel instead of a download.
+// Images away from the viewport don't show; they get a transparent pixel instead of a download.
 const createImageFetcher = () => {
   try {
-    const limit = window.innerHeight + 400;
-    const below = new Set();
+    const top = -VIEWPORT_MARGIN;
+    const bottom = window.innerHeight + VIEWPORT_MARGIN;
+    const away = new Set();
     const needed = new Set();
     const images = document.images;
     for (let i = 0; i < images.length; i++) {
@@ -922,111 +1284,227 @@ const createImageFetcher = () => {
       if (!url) {
         continue;
       }
-      if (images[i].getBoundingClientRect().top > limit) {
-        below.add(url);
+      const rect = images[i].getBoundingClientRect();
+      if (rect.top > bottom || rect.bottom < top) {
+        away.add(url);
       } else {
         needed.add(url);
       }
     }
-    needed.forEach((url) => below.delete(url));
-    if (below.size === 0) {
+    // Posters stand in for videos (createVideoPlaceholder).
+    const videos = document.querySelectorAll('video[poster]');
+    for (let i = 0; i < videos.length; i++) {
+      const rect = videos[i].getBoundingClientRect();
+      if (!(rect.top > bottom || rect.bottom < top)) {
+        needed.add(videos[i].poster);
+      }
+    }
+    needed.forEach((url) => away.delete(url));
+    if (away.size === 0) {
       return null;
     }
-    return (url) => Promise.resolve(below.has(url) ? TRANSPARENT_GIF : false);
+    return (url) => Promise.resolve(away.has(url) ? TRANSPARENT_GIF : false);
   } catch (exp) {
     return null;
   }
 };
 
-/**
- * Renders the visible part of the page in the browser.
- */
-export const renderDom = ({ privacyOptions, maskSelectors }) => {
-  const root = document.documentElement;
-  const width = Math.max(1, root.clientWidth || window.innerWidth);
-  const height = Math.max(1, root.clientHeight || window.innerHeight);
-  const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), MAX_CAPTURE_EDGE / Math.max(width, height));
-  const pageScroll = { x: window.scrollX || 0, y: window.scrollY || 0 };
-  const rects = collectMaskRects({ privacyOptions, maskSelectors });
-  const background = pageBackgroundColor();
-  const hooks = createCloneHooks(root, privacyOptions, maskSelectors, pageScroll);
+// Network logging is paused while renders download assets; overlapping renders share one pause.
+let networkLogPauses = 0;
+let networkLogsWereStopped = false;
 
-  // Its asset downloads (fonts, images) are not the app's traffic: keep them out of the network logs.
+const pauseNetworkLogs = () => {
   let interceptor = null;
-  let wasStopped = false;
   try {
     interceptor = GleapNetworkIntercepter.getInstance();
-    wasStopped = !!interceptor.stopped;
-    interceptor.setStopped(true);
-  } catch (exp) {
-    interceptor = null;
-  }
-
-  let context = null;
-  const cleanup = () => {
-    if (context) {
-      try {
-        destroyContext(context);
-      } catch (exp) {}
-      context = null;
+    if (networkLogPauses === 0) {
+      networkLogsWereStopped = !!interceptor.stopped;
+      interceptor.setStopped(true);
     }
-    if (interceptor) {
-      interceptor.setStopped(wasStopped);
+    networkLogPauses += 1;
+  } catch (exp) {
+    return () => {};
+  }
+  let resumed = false;
+  return () => {
+    if (resumed) {
+      return;
+    }
+    resumed = true;
+    networkLogPauses = Math.max(0, networkLogPauses - 1);
+    if (networkLogPauses === 0) {
+      try {
+        interceptor.setStopped(networkLogsWereStopped);
+      } catch (exp) {}
     }
   };
+};
 
-  return Promise.resolve()
-    .then(() =>
-      createContext(root, {
-        width,
-        height,
-        scale,
-        backgroundColor: null,
-        filter: hooks.filter,
-        onCloneEachNode: hooks.onCloneEachNode,
-        onCloneNode: hooks.onCloneNode,
-        // The clone isn't scrollable: shift the page instead. Fixed and sticky elements keep their
-        // places relative to the image, as they do relative to the viewport.
-        style: {
-          position: 'relative',
-          top: -pageScroll.y + 'px',
-          left: -pageScroll.x + 'px',
-          overflow: 'visible',
-        },
-        features: { restoreScrollPosition: false },
-        fetchFn: createImageFetcher(),
-        // How long to wait for images that are still loading; the render itself gets longer below.
-        timeout: mediaLoadingInViewport() ? 3000 : 50,
-      })
-    )
-    .then((created) => {
-      context = created;
-      context.timeout = 8000;
-      return createStyleSandbox();
-    })
-    .then((sandbox) => {
-      if (sandbox) {
-        // destroyContext removes it again.
-        context.sandbox = sandbox;
-        hooks.state.canYield = true;
+/**
+ * Renders the visible part of the page in the browser. Gives up (and cleans up) when isActive()
+ * turns false, after RENDER_DEADLINE_MS or beyond MAX_RENDER_ELEMENTS.
+ */
+export const renderDom = ({ privacyOptions, maskSelectors, isActive }) =>
+  new Promise((resolve, reject) => {
+    const root = document.documentElement;
+    const width = Math.max(1, root.clientWidth || window.innerWidth);
+    const height = Math.max(1, root.clientHeight || window.innerHeight);
+    const scale = Math.min(Math.max(window.devicePixelRatio || 1, 1), MAX_CAPTURE_EDGE / Math.max(width, height));
+    const pageScroll = { x: window.scrollX || 0, y: window.scrollY || 0 };
+    const rects = collectMaskRects({ privacyOptions, maskSelectors });
+    const background = pageBackgroundColor();
+
+    let stopped = null;
+    const isStopped = () => {
+      if (!stopped && isActive && !isActive()) {
+        stopped = 'aborted';
       }
-      return domToCanvas(context);
-    })
-    .then(
-      (canvas) => {
-        cleanup();
+      return !!stopped;
+    };
+    const checkActive = () => {
+      if (isStopped()) {
+        throw new Error(stopped);
+      }
+    };
+    const hooks = createCloneHooks(root, privacyOptions, maskSelectors, pageScroll, checkActive);
+
+    // Its asset downloads (fonts, images) are not the app's traffic: keep them out of the network logs.
+    const resumeNetworkLogs = pauseNetworkLogs();
+    let context = null;
+    let sandbox = null;
+    let settled = false;
+    let deadline = null;
+    let watch = null;
+    const cleanup = () => {
+      clearTimeout(deadline);
+      clearInterval(watch);
+      if (context) {
+        try {
+          // Removes the sandbox as well.
+          destroyContext(context);
+        } catch (exp) {}
+        context = null;
+      }
+      if (sandbox) {
+        try {
+          sandbox.remove();
+        } catch (exp) {}
+        sandbox = null;
+      }
+      resumeNetworkLogs();
+    };
+    const finish = (error, result) => {
+      if (settled) {
+        if (result) {
+          releaseCanvas(result.canvas);
+        }
+        return;
+      }
+      settled = true;
+      cleanup();
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result);
+      }
+    };
+    deadline = setTimeout(() => {
+      try {
+        stopped = stopped || 'render-timeout';
+        finish(new Error('render-timeout'));
+      } catch (exp) {}
+    }, RENDER_DEADLINE_MS);
+    // A cancel cleans up right away, also while modern-screenshot waits for images.
+    watch = setInterval(() => {
+      try {
+        if (isStopped()) {
+          finish(new Error(stopped));
+        }
+      } catch (exp) {}
+    }, 200);
+
+    Promise.all([findOffscreenElements(isStopped), createStyleSandbox()])
+      .then(([offscreen, frame]) => {
+        if (settled) {
+          if (frame) {
+            frame.remove();
+          }
+          return null;
+        }
+        sandbox = frame;
+        checkActive();
+        hooks.state.offscreen = offscreen;
+        return createContext(root, {
+          width,
+          height,
+          scale,
+          backgroundColor: null,
+          filter: hooks.filter,
+          onCloneEachNode: hooks.onCloneEachNode,
+          onCloneNode: hooks.onCloneNode,
+          onCreateForeignObjectSvg: () => {
+            if (context) {
+              context.drawImageCount = Math.min(context.drawImageCount || 0, MAX_IMAGE_REDRAWS);
+            }
+          },
+          // The clone isn't scrollable: shift the page instead. Fixed and sticky elements keep their
+          // places relative to the image, as they do relative to the viewport.
+          style: {
+            position: 'relative',
+            top: -pageScroll.y + 'px',
+            left: -pageScroll.x + 'px',
+            overflow: 'visible',
+          },
+          features: { restoreScrollPosition: false },
+          fetchFn: createImageFetcher(),
+          // How long to wait for images that are still loading; the render itself gets longer below.
+          timeout: imagesLoadingInViewport() ? 3000 : 50,
+        });
+      })
+      .then((created) => {
+        if (!created) {
+          return null;
+        }
+        if (settled) {
+          try {
+            destroyContext(created);
+          } catch (exp) {}
+          return null;
+        }
+        context = created;
+        context.timeout = 8000;
+        // modern-screenshot would make its own sandbox lazily: ours (removed by destroyContext), or
+        // the stub.
+        context.sandbox = sandbox || SANDBOX_STUB;
+        sandbox = null;
+        hooks.state.canYield = true;
+        checkActive();
+        return domToCanvas(context);
+      })
+      .then((canvas) => {
+        if (!canvas) {
+          return;
+        }
+        if (settled) {
+          releaseCanvas(canvas);
+          return;
+        }
         if (sampleCanvas(canvas) === 'transparent') {
           releaseCanvas(canvas);
-          throw new Error('render-empty');
+          finish(new Error('render-empty'));
+          return;
         }
-        return { canvas, scaleX: canvas.width / width, scaleY: canvas.height / height, rects, background, method: 'dom' };
-      },
-      (error) => {
-        cleanup();
-        throw error;
-      }
-    );
-};
+        finish(null, {
+          canvas,
+          scaleX: canvas.width / width,
+          scaleY: canvas.height / height,
+          rects,
+          background,
+          method: 'dom',
+        });
+      })
+      .catch((error) => finish(error));
+  });
 
 /**
  * Takes the screenshot: the shared tab when `streamPromise` (from requestTabStream) delivers one,
@@ -1042,7 +1520,9 @@ export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, 
             stopStream(stream);
             return null;
           }
-          return captureFromTabStream(stream, { setUiHidden, privacyOptions, maskSelectors }).catch(() => null);
+          return captureFromTabStream(stream, { setUiHidden, privacyOptions, maskSelectors, isActive: active }).catch(
+            () => null
+          );
         },
         () => null
       )
@@ -1056,7 +1536,7 @@ export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, 
         }
         throw new Error('aborted');
       }
-      return capture || renderDom({ privacyOptions, maskSelectors });
+      return capture || renderDom({ privacyOptions, maskSelectors, isActive: active });
     })
     .then((capture) => {
       try {

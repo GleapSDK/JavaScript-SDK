@@ -69,6 +69,7 @@ const STYLES =
   'button:hover{background:rgba(255,255,255,.2)}' +
   'button:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
   'button[disabled]{opacity:.55;cursor:default}' +
+  'button[aria-disabled=true]{cursor:default}' +
   '.primary,.primary:hover{background:var(--primary);color:var(--on-primary)}' +
   '.stop,.stop:hover{background:#e5484d;color:#fff}' +
   '.icon{width:36px;padding:0}' +
@@ -263,7 +264,7 @@ export default class GleapCaptureUI {
     button.disabled = !!disabled;
     button.addEventListener('click', (event) => {
       event.stopPropagation();
-      if (!button.disabled) {
+      if (!button.disabled && button.getAttribute('aria-disabled') !== 'true') {
         this.action(action);
       }
     });
@@ -323,10 +324,12 @@ export default class GleapCaptureUI {
     bar.setAttribute('aria-label', label);
     if (!recording) {
       bar.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
-          event.stopPropagation();
-          this.action('cancel');
-        }
+        try {
+          if (event.key === 'Escape') {
+            event.stopPropagation();
+            this.action('cancel');
+          }
+        } catch (exp) {}
       });
     }
     this.place(bar);
@@ -347,13 +350,15 @@ export default class GleapCaptureUI {
   enableDragging(bar, grip) {
     let start = null;
     const move = (event) => {
-      if (start) {
-        this.position = {
-          left: Math.max(8, Math.min(window.innerWidth - bar.offsetWidth - 8, start.left + event.clientX - start.x)),
-          top: Math.max(8, Math.min(window.innerHeight - bar.offsetHeight - 8, start.top + event.clientY - start.y)),
-        };
-        this.place(bar);
-      }
+      try {
+        if (start) {
+          this.position = {
+            left: Math.max(8, Math.min(window.innerWidth - bar.offsetWidth - 8, start.left + event.clientX - start.x)),
+            top: Math.max(8, Math.min(window.innerHeight - bar.offsetHeight - 8, start.top + event.clientY - start.y)),
+          };
+          this.place(bar);
+        }
+      } catch (exp) {}
     };
     const up = () => {
       start = null;
@@ -362,26 +367,30 @@ export default class GleapCaptureUI {
       window.removeEventListener('pointercancel', up, true);
     };
     const down = (event) => {
-      if (event.button) {
-        return;
-      }
-      event.preventDefault();
-      const rect = bar.getBoundingClientRect();
-      start = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
-      window.addEventListener('pointermove', move, true);
-      window.addEventListener('pointerup', up, true);
-      window.addEventListener('pointercancel', up, true);
+      try {
+        if (event.button) {
+          return;
+        }
+        event.preventDefault();
+        const rect = bar.getBoundingClientRect();
+        start = { x: event.clientX, y: event.clientY, left: rect.left, top: rect.top };
+        window.addEventListener('pointermove', move, true);
+        window.addEventListener('pointerup', up, true);
+        window.addEventListener('pointercancel', up, true);
+      } catch (exp) {}
     };
     grip.addEventListener('pointerdown', down);
     this.cleanupDrag = up;
   }
 
+  // While busy it does nothing but keeps the focus (aria-disabled, not disabled).
   busyButton(text, action, iconName, busy) {
-    const button = this.button(busy ? null : text, action, 'primary', busy ? null : iconName, busy);
+    const button = this.button(busy ? null : text, action, 'primary', busy ? null : iconName);
     if (busy) {
       button.appendChild(el('span', 'spin'));
       button.appendChild(document.createTextNode(text));
       button.setAttribute('aria-busy', 'true');
+      button.setAttribute('aria-disabled', 'true');
     }
     return button;
   }
@@ -396,7 +405,8 @@ export default class GleapCaptureUI {
       el('div', 'hint', [labels.barScreenshotHint]),
       [
         this.busyButton(labels.barCapture, 'capture', 'camera', busy),
-        this.button(labels.barCancel, 'cancel', null, null, busy),
+        // Stays available while the capture runs: Cancel stops it.
+        this.button(labels.barCancel, 'cancel'),
       ],
       0
     );
@@ -409,16 +419,12 @@ export default class GleapCaptureUI {
   showRecordBar({ busy, mic, interrupted }) {
     const labels = this.labels;
     const start = interrupted ? labels.recordAgain : labels.barStart;
-    this.bar(
-      start,
-      el('div', 'hint', [interrupted ? labels.recordingInterrupted : labels.barRecordHint]),
-      [
-        this.busyButton(start, 'start', 'record', busy),
-        this.micToggle(mic, busy),
-        this.button(labels.barCancel, 'cancel', null, null, busy),
-      ].filter(Boolean),
-      0
-    );
+    const buttons = [
+      this.busyButton(start, 'start', 'record', busy),
+      this.micToggle(mic, busy),
+      this.button(labels.barCancel, 'cancel'),
+    ].filter(Boolean);
+    this.bar(start, el('div', 'hint', [interrupted ? labels.recordingInterrupted : labels.barRecordHint]), buttons, 0);
   }
 
   /**

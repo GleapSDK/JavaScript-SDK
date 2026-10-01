@@ -1,4 +1,5 @@
 import Gleap, { GleapConfigManager, GleapFrameManager } from './Gleap';
+import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
 
 // How long the card renderer gets to announce itself (`modal-loaded`) before we assume the
@@ -92,6 +93,10 @@ export default class GleapModalManager {
         }
         if (data.name === 'modal-close') {
           this.hideModal();
+        }
+        // While the widget is hidden for a capture (screenshot or recording), actions open nothing.
+        if (isOutboundActionBlocked(data.name)) {
+          return;
         }
         if (data.name === 'start-conversation') {
           Gleap.startBot(data.data?.botId);

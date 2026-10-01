@@ -9,6 +9,7 @@ import {
   buildLogsBundle,
   claimCaptureRequest,
   completeCaptureRequest,
+  getCaptureRequest,
   normalizeInclude,
   postCaptureLogs,
   reportCaptureEvent,
@@ -46,8 +47,35 @@ const DEVICE_KEY = 'gleap-capture-device';
 const RESUME_MAX_AGE_MS = 30 * 60 * 1000;
 const WATCHDOG_MS = 1000;
 const MAX_HANDLED_LOG_REQUESTS = 100;
-// Gleap UI hidden while the customer captures the page (the widget itself is hidden by the frame manager).
-const HIDDEN_GLEAP_UI_SELECTOR = '.bb-feedback-button, .gleap-notification-container, .gleap-chatbar';
+// Statuses after which a request takes no capture any more (contract §1).
+const FINAL_STATUSES = ['completed', 'skipped', 'cancelled', 'expired'];
+// Gleap UI hidden while the customer captures the page (the widget itself is hidden by the frame
+// manager): launcher, notifications, banners, modals, tooltips, tours, checklists, the admin helper.
+const HIDDEN_GLEAP_UI_SELECTOR = [
+  '.bb-feedback-button',
+  '.gleap-notification-container',
+  '.gleap-chatbar',
+  '.gleap-b',
+  '.gleap-modal-wrapper',
+  '.gleap-tooltip',
+  '.gleap-tooltip-anchor',
+  '.gleap-tour-popover',
+  '.gleap-tour-overlay',
+  '#copilot-pointer-container',
+  '#copilot-joined-container',
+  '.gleap-audio-unmute-modal-overlay',
+  '.gleap-admin-frame-container',
+  '.gleap-admin-collapse-ui',
+  'gleap-checklist',
+].join(', ');
+
+const isTopWindow = () => {
+  try {
+    return window.top === window.self;
+  } catch (exp) {
+    return false;
+  }
+};
 
 const readStorage = (key) => {
   try {
@@ -108,6 +136,8 @@ export default class GleapCaptureManager {
   ui = null;
   watchdog = null;
   hiddenElements = [];
+  // Escape while the bar is hidden for a tab frame.
+  hiddenEscape = null;
   handledLogRequests = [];
   logsPostedFor = [];
   deviceId = null;
@@ -338,7 +368,10 @@ export default class GleapCaptureManager {
   }
 
   startSession(params) {
-    const flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
+    let flowConfig = {};
+    try {
+      flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
+    } catch (exp) {}
     const session = {
       key: ++sessionCounter,
       requestId: params.requestId,
@@ -352,30 +385,40 @@ export default class GleapCaptureManager {
       interrupted: params.phase === 'interrupted',
       pageRecording: params.pageRecording === true,
       micOn: false,
+      // When the request first showed its bar (kept across page loads; restored bars expire from it).
+      createdAt: typeof params.createdAt === 'number' ? params.createdAt : Date.now(),
       startedAt: Date.now(),
       lastTick: -1,
       lastProgressSent: 0,
     };
     this.session = session;
 
-    let rtl = false;
+    // The bar first: when it can't be shown, the widget stays and the request fails (upload offered).
     try {
-      rtl = !!GleapTranslationManager.getInstance().isRTLLayout;
-    } catch (exp) {}
-    this.ui = new GleapCaptureUI({
-      labels: params.labels,
-      primaryColor: flowConfig.color,
-      rtl,
-      onAction: (action) => this.onUiAction(session, action),
-    });
-    this.ui.autoFocus = !session.resumed;
+      let rtl = false;
+      try {
+        rtl = !!GleapTranslationManager.getInstance().isRTLLayout;
+      } catch (exp) {}
+      this.ui = new GleapCaptureUI({
+        labels: params.labels,
+        primaryColor: flowConfig.color,
+        rtl,
+        onAction: (action) => this.onUiAction(session, action),
+      });
+      this.ui.autoFocus = !session.resumed;
+      this.renderBar(session);
+    } catch (error) {
+      this.failSession(session, 'failed', errorReason(error));
+      return;
+    }
 
     if (!session.resumed) {
-      GleapFrameManager.getInstance().setCaptureHidden(true);
+      try {
+        GleapFrameManager.getInstance().setCaptureHidden(true);
+      } catch (exp) {}
     }
     this.hideGleapUi();
     this.startWatchdog();
-    this.renderBar(session);
     this.persist(session);
     this.sendState(session.requestId, 'bar');
   }
@@ -437,8 +480,14 @@ export default class GleapCaptureManager {
     session.result = null;
 
     this.stopWatchdog();
+    if (this.hiddenEscape) {
+      document.removeEventListener('keydown', this.hiddenEscape, true);
+      this.hiddenEscape = null;
+    }
     if (this.ui) {
-      this.ui.destroy();
+      try {
+        this.ui.destroy();
+      } catch (exp) {}
       this.ui = null;
     }
     this.showGleapUi();
@@ -550,8 +599,9 @@ export default class GleapCaptureManager {
       return;
     }
     const config = getCaptureConfig();
-    // Called inside the Capture click: the tab capture needs that user activation.
-    const useTab = config.webScreenshotMethod !== 'dom-only' && isDesktopChromium() && hasDisplayMedia();
+    // Called inside the Capture click: the tab capture needs that user activation. Not from inside a
+    // frame: the tab shows the whole page, the masks only know this frame.
+    const useTab = config.webScreenshotMethod !== 'dom-only' && isDesktopChromium() && hasDisplayMedia() && isTopWindow();
     const streamPromise = useTab ? requestTabStream() : null;
 
     session.phase = 'capturing';
@@ -643,13 +693,26 @@ export default class GleapCaptureManager {
     postCaptureLogs(requestId, bundle).catch(() => {});
   }
 
-  // Hides the capture bar and Gleap's UI for the moment a tab frame is taken.
+  // Hides the capture bar and Gleap's UI for the moment a tab frame is taken; Escape still cancels.
   setCaptureUiHidden(hidden) {
     if (this.ui) {
       this.ui.setVisible(!hidden);
     }
+    if (this.hiddenEscape) {
+      document.removeEventListener('keydown', this.hiddenEscape, true);
+      this.hiddenEscape = null;
+    }
     if (hidden) {
       this.hideGleapUi();
+      const session = this.session;
+      this.hiddenEscape = (event) => {
+        try {
+          if (event.key === 'Escape' && session && this.session === session) {
+            this.cancelSession(session, 'cancelled');
+          }
+        } catch (exp) {}
+      };
+      document.addEventListener('keydown', this.hiddenEscape, true);
     }
   }
 
@@ -746,6 +809,12 @@ export default class GleapCaptureManager {
    */
   offerPageRecording(session, error) {
     const name = error && error.name;
+    // Whatever got started of the screen recording stops here.
+    try {
+      if (session.recording) {
+        session.recording.cancel();
+      }
+    } catch (exp) {}
     this.liftVeil(session);
     session.phase = 'fallback';
     session.recording = null;
@@ -763,6 +832,7 @@ export default class GleapCaptureManager {
     session.lastTick = 0;
     session.timeline = new CaptureTimeline({
       privacyOptions: this.privacyOptions(),
+      maskSelectors: this.maskSelectors(),
       isOwnElement: (node) => !!(this.ui && this.ui.isOwnElement(node)),
     });
     session.timeline.start(startedAt);
@@ -1013,7 +1083,8 @@ export default class GleapCaptureManager {
           pageRecording: session.pageRecording === true,
           gleapId,
           sdkKey,
-          at: Date.now(),
+          // The original start: a bar restored on every page load still expires.
+          at: session.createdAt,
         })
       );
     } catch (exp) {}
@@ -1050,16 +1121,37 @@ export default class GleapCaptureManager {
         writeStorage(STORAGE_KEY, null);
         return;
       }
-      this.startSession({
-        requestId: stored.requestId,
-        kind: stored.kind,
-        ticketShareToken: stored.ticketShareToken,
-        options: stored.options,
-        labels: stored.labels,
-        // The customer already switched to a page recording because screen sharing didn't start.
-        pageRecording: stored.pageRecording === true,
-        resumed: true,
-        phase: stored.kind === 'recording' && stored.phase === 'recording' ? 'interrupted' : 'bar',
+      // Only while the request is still open (answered elsewhere, cancelled or expired meanwhile:
+      // no bar). Without an answer from the server the bar comes back.
+      getCaptureRequest(stored.requestId).then((response) => {
+        try {
+          const data = response.data;
+          const gone =
+            (response.status >= 400 && response.status < 500) ||
+            (data && FINAL_STATUSES.indexOf(data.status) !== -1) ||
+            (data && data.expiresAt && Date.parse(data.expiresAt) < Date.now());
+          if (gone) {
+            if (!this.session) {
+              writeStorage(STORAGE_KEY, null);
+            }
+            return;
+          }
+          if (this.session) {
+            return;
+          }
+          this.startSession({
+            requestId: stored.requestId,
+            kind: stored.kind,
+            ticketShareToken: stored.ticketShareToken,
+            options: stored.options,
+            labels: stored.labels,
+            // The customer already switched to a page recording because screen sharing didn't start.
+            pageRecording: stored.pageRecording === true,
+            createdAt: stored.at,
+            resumed: true,
+            phase: stored.kind === 'recording' && stored.phase === 'recording' ? 'interrupted' : 'bar',
+          });
+        } catch (exp) {}
       });
     } catch (exp) {}
   }

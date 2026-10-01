@@ -280,6 +280,18 @@ describe('page recordings (no screen capture)', () => {
     );
   });
 
+  test('the standard markers stay private when the site set classes of its own', async () => {
+    const { file } = await record(
+      '<p class="rr-mask">standard mask</p><div class="rr-block">standard block</div>' +
+        '<p class="own-mask">own mask</p><div class="own-block">own block</div><p>Visible text</p>',
+      { privacyOptions: { blockClass: 'own-block', maskTextClass: 'own-mask' } }
+    );
+    const recorded = JSON.stringify(file.events.map((event) => (file.packed ? unpack(event) : event)));
+
+    ['standard mask', 'standard block', 'own mask', 'own block'].forEach((secret) => expect(recorded).not.toContain(secret));
+    expect(recorded).toContain('Visible text');
+  });
+
   test('the session replay pauses meanwhile and resumes afterwards', async () => {
     mockReplayRecorder.pauseForCapture.mockReturnValueOnce(true);
     mockReplayRecorder.resumeAfterCapture.mockClear();
@@ -300,5 +312,15 @@ describe('timeline labels', () => {
     expect(describeElement(document.getElementById('pw'), {})).toBe('field "Password"');
     expect(describeElement(document.getElementById('pay'), {})).toBe('button');
     expect(describeElement(document.getElementById('save'), {})).toBe('button "Save"');
+  });
+
+  test('nothing named inside flowConfig.capture.maskSelectors', () => {
+    document.body.innerHTML = `
+      <div class="secret-panel"><button id="secret">Refund 99-1234567</button>
+      <label for="tax">Tax ID 99-1234567</label><input id="tax"></div>`;
+
+    expect(describeElement(document.getElementById('secret'), {}, ['.secret-panel'])).toBe('button');
+    expect(describeElement(document.getElementById('tax'), {}, ['.secret-panel'])).toBe('field');
+    expect(describeElement(document.getElementById('secret'), {}, [])).toBe('button "Refund 99-1234567"');
   });
 });

@@ -1,4 +1,4 @@
-import { GleapConfigManager } from './Gleap';
+import { GleapConfigManager, GleapFrameManager } from './Gleap';
 
 // Capture requests (screenshots, screen recordings and log collection asked for by teammates, AI
 // agents or workflows): the local switches and what this browser can do. Kept free of heavy imports,
@@ -22,6 +22,32 @@ export const setRemoteLogCollectionEnabled = (enabled) => {
 };
 
 export const isRemoteLogCollectionEnabled = () => remoteLogCollectionEnabled;
+
+// Banner, modal and checklist actions that open something (the widget, a tour, a form, a URL, the
+// app's custom action).
+const OUTBOUND_OPEN_ACTIONS = [
+  'start-conversation',
+  'start-custom-action',
+  'start-product-tour',
+  'open-url',
+  'show-form',
+  'show-survey',
+  'show-news-article',
+  'show-help-article',
+  'show-checklist',
+];
+
+/**
+ * Whether such an action is held back: nothing opens while the widget is hidden for a capture.
+ * @param {string} name the action (message name)
+ */
+export const isOutboundActionBlocked = (name) => {
+  try {
+    return OUTBOUND_OPEN_ACTIONS.indexOf(name) !== -1 && GleapFrameManager.getInstance().isCaptureHidden();
+  } catch (exp) {
+    return false;
+  }
+};
 
 export const getSdkVersion = () => {
   try {

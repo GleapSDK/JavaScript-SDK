@@ -1,4 +1,5 @@
 import Gleap, { GleapFrameManager } from './Gleap';
+import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
 
 export default class GleapBannerManager {
@@ -64,6 +65,10 @@ export default class GleapBannerManager {
         }
         if (data.name === 'banner-close') {
           this.removeBannerUI();
+        }
+        // While the widget is hidden for a capture (screenshot or recording), actions open nothing.
+        if (isOutboundActionBlocked(data.name)) {
+          return;
         }
         if (data.name === 'start-conversation') {
           Gleap.startBot(data.data?.botId);
