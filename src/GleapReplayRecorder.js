@@ -66,6 +66,8 @@ export default class GleapReplayRecorder {
   forcedCheckoutTimeout = undefined;
   stopFunction = undefined;
   customOptions = {};
+  // A capture request's page recording runs rrweb itself, and rrweb records one session per page.
+  pausedForCapture = false;
 
   // GleapReplayRecorder singleton
   static instance;
@@ -93,13 +95,33 @@ export default class GleapReplayRecorder {
 
   /**
    * Start replays
+   * @param {boolean} keepBuffer Continue the current buffer in a new checkpoint (after a capture
+   * request's page recording) instead of starting over.
    * @returns
    */
-  start() {
-    this.stop();
+  start(keepBuffer = false) {
+    if (keepBuffer && this.startDate) {
+      if (this.stopFunction) {
+        try {
+          this.stopFunction();
+        } catch (e) {}
+        this.stopFunction = undefined;
+      }
+      // The new recording opens with its own full snapshot, so it is a checkpoint of its own.
+      if (this.segments[this.segments.length - 1].length > 0) {
+        this.segments.push([]);
+        this.segmentSizes.push(0);
+        this.incrementalSize = 0;
+        while (this.segments.length > MAX_CHECKPOINTS) {
+          this.dropOldestSegment();
+        }
+      }
+    } else {
+      this.stop();
 
-    this.startDate = Date.now();
-    this.resetBuffer();
+      this.startDate = Date.now();
+      this.resetBuffer();
+    }
 
     var options = {
       inlineStylesheet: true,
@@ -190,7 +212,7 @@ export default class GleapReplayRecorder {
    * far.
    */
   startIfNotRunning() {
-    if (this.stopFunction) {
+    if (this.stopFunction || this.pausedForCapture) {
       return;
     }
 
@@ -207,8 +229,40 @@ export default class GleapReplayRecorder {
       this.stopFunction = undefined;
     }
 
+    this.pausedForCapture = false;
     this.startDate = undefined;
     this.resetBuffer();
+  }
+
+  /**
+   * Pauses a running replay while a capture request records the page (see pausedForCapture). The
+   * buffer is kept.
+   * @returns {boolean} whether it was running (and so must be resumed)
+   */
+  pauseForCapture() {
+    if (!this.stopFunction) {
+      return false;
+    }
+    try {
+      this.stopFunction();
+    } catch (e) {}
+    this.stopFunction = undefined;
+    clearTimeout(this.forcedCheckoutTimeout);
+    this.forcedCheckoutTimeout = undefined;
+    this.pausedForCapture = true;
+    return true;
+  }
+
+  /**
+   * Continues a replay paused by pauseForCapture, in a new checkpoint. Nothing when it was stopped
+   * in the meantime.
+   */
+  resumeAfterCapture() {
+    if (!this.pausedForCapture) {
+      return;
+    }
+    this.pausedForCapture = false;
+    this.start(true);
   }
 
   resetBuffer() {
