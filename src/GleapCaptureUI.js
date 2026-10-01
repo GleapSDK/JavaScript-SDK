@@ -13,9 +13,10 @@ export const DEFAULT_CAPTURE_LABELS = {
   barCapture: 'Capture',
   barCancel: 'Cancel',
   barRecordHint: 'Go to where the issue happens, then start recording.',
-  barStart: 'Start recording',
+  barStart: 'Start',
   barStop: 'Stop',
   barRecording: 'Recording',
+  barDragHint: 'Drag to move',
   microphone: 'Microphone',
   previewTitle: 'Send this recording?',
   previewSend: 'Send',
@@ -57,7 +58,7 @@ const STYLES =
   ':host{all:initial}' +
   '.bar,.overlay{font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:#fff;letter-spacing:normal;text-align:start;-webkit-font-smoothing:antialiased;box-sizing:border-box;pointer-events:auto;animation:in .18s ease-out both}' +
   '.bar *,.overlay *{box-sizing:border-box}' +
-  '.bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:min(680px,calc(100vw - 32px));padding:8px;border-radius:16px;background:rgba(22,22,26,.97);box-shadow:0 12px 40px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.1)}' +
+  '.bar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;width:max-content;max-width:min(680px,calc(100vw - 32px));padding:8px;border-radius:28px;background:rgba(22,22,26,.97);box-shadow:0 12px 40px rgba(0,0,0,.3),0 0 0 1px rgba(255,255,255,.1)}' +
   '.moved{transform:none}' +
   '.grip{flex:none;align-self:stretch;width:18px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.45);cursor:grab;touch-action:none}' +
   '.hint{flex:1 1 auto;min-width:0;padding:0 6px}' +
@@ -65,14 +66,14 @@ const STYLES =
   '.dot{flex:none;width:10px;height:10px;border-radius:50%;background:#ff4d4f;animation:pulse 1.4s ease-in-out infinite}' +
   '.timer{font-variant-numeric:tabular-nums;color:rgba(255,255,255,.85)}' +
   '.actions{flex:none;display:flex;align-items:center;gap:8px}' +
-  'button{-webkit-appearance:none;appearance:none;margin:0;border:0;border-radius:10px;min-height:36px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:600;white-space:nowrap;cursor:pointer;color:#fff;background:rgba(255,255,255,.12)}' +
+  'button{-webkit-appearance:none;appearance:none;margin:0;border:0;border-radius:999px;min-height:36px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:600;white-space:nowrap;cursor:pointer;color:#fff;background:rgba(255,255,255,.12)}' +
   'button:hover{background:rgba(255,255,255,.2)}' +
   'button:focus-visible{outline:2px solid #fff;outline-offset:2px}' +
   'button[disabled]{opacity:.55;cursor:default}' +
   'button[aria-disabled=true]{cursor:default}' +
   '.primary,.primary:hover{background:var(--primary);color:var(--on-primary)}' +
   '.stop,.stop:hover{background:#e5484d;color:#fff}' +
-  '.icon{width:36px;padding:0}' +
+  '.icon{width:36px;padding:0;border-radius:50%}' +
   '.icon[aria-pressed=false]{color:rgba(255,255,255,.55)}' +
   '.spin{flex:none;width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite}' +
   'svg{flex:none;width:18px;height:18px}' +
@@ -117,6 +118,9 @@ const ICONS = {
   ],
   clock: ['M12 20.5a8.5 8.5 0 1 0 0-17 8.5 8.5 0 0 0 0 17ZM12 7.5V12l3 2'],
   pointer: ['M6 3.5 18.5 12l-5.6 1.3-2.7 5.2Z'],
+  send: [
+    'M14.54 21.69a.5.5 0 0 0 .94-.03l6.5-19a.5.5 0 0 0-.64-.63l-19 6.5a.5.5 0 0 0-.02.93l7.93 3.18a2 2 0 0 1 1.11 1.11zM21.85 2.15l-10.94 10.94',
+  ],
 };
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -258,8 +262,9 @@ export default class GleapCaptureUI {
     } catch (exp) {}
   }
 
-  button(text, action, className, iconName, disabled) {
-    const button = el('button', className, [iconName ? icon(iconName) : null, text]);
+  button(text, action, className, iconName, disabled, iconAfter) {
+    const symbol = iconName ? icon(iconName) : null;
+    const button = el('button', className, iconAfter ? [text, symbol] : [symbol, text]);
     button.type = 'button';
     button.disabled = !!disabled;
     button.addEventListener('click', (event) => {
@@ -318,6 +323,7 @@ export default class GleapCaptureUI {
     this.reset();
     const grip = el('div', 'grip', [icon('grip')]);
     grip.setAttribute('aria-hidden', 'true');
+    grip.title = this.labels.barDragHint;
     const actions = el('div', 'actions', buttons);
     const bar = el('div', 'bar' + (recording ? ' recording' : ''), [grip, content, actions]);
     bar.setAttribute('role', 'region');
@@ -413,7 +419,7 @@ export default class GleapCaptureUI {
   }
 
   /**
-   * Recording bar before the start: hint · Start recording · (microphone) · Cancel. After a page
+   * Recording bar before the start: hint · Start · (microphone) · Cancel. After a page
    * load it says the recording stopped, with Record again.
    */
   showRecordBar({ busy, mic, interrupted }) {
@@ -441,21 +447,19 @@ export default class GleapCaptureUI {
   }
 
   /**
-   * While recording: red dot · Recording 0:12 / 1:00 · (microphone) · Stop.
+   * While recording: red dot · 0:12 / 1:00 · (microphone) · round Stop (its label is the accessible
+   * name; the bar's is Recording).
    */
   showRecordingBar({ mic, maxSec }) {
     const labels = this.labels;
     this.maxSec = maxSec;
     const timer = el('span', 'timer', [formatDuration(0) + ' / ' + formatDuration(maxSec)]);
     timer.setAttribute('role', 'timer');
-    const buttons = [this.micToggle(mic), this.button(labels.barStop, 'stop', 'stop', 'stop')].filter(Boolean);
-    this.bar(
-      labels.barRecording,
-      el('div', 'hint rec', [el('span', 'dot'), labels.barRecording, timer]),
-      buttons,
-      buttons.length - 1,
-      true
-    );
+    const stop = this.button(null, 'stop', 'stop icon', 'stop');
+    stop.setAttribute('aria-label', labels.barStop);
+    stop.title = labels.barStop;
+    const buttons = [this.micToggle(mic), stop].filter(Boolean);
+    this.bar(labels.barRecording, el('div', 'hint rec', [el('span', 'dot'), timer]), buttons, buttons.length - 1, true);
     this.timer = timer;
   }
 
@@ -523,7 +527,7 @@ export default class GleapCaptureUI {
     const buttons = {
       cancel: this.button(labels.barCancel, 'cancel'),
       retake: this.button(labels.previewRetake, 'retake'),
-      send: this.button(labels.previewSend, 'send', 'primary'),
+      send: this.button(labels.previewSend, 'send', 'primary', 'send', false, true),
     };
     this.previewButtons = buttons;
     const title = el('div', 'title', [labels.previewTitle]);
