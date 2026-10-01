@@ -318,6 +318,7 @@ export default class GleapCaptureManager {
       resumed: !!params.resumed,
       phase: params.phase,
       interrupted: params.phase === 'interrupted',
+      pageRecording: params.pageRecording === true,
       micOn: false,
       startedAt: Date.now(),
       lastTick: -1,
@@ -362,9 +363,15 @@ export default class GleapCaptureManager {
     const allowed =
       session.options.audio === true &&
       getCaptureConfig().allowMicrophone === true &&
-      getRecordingMethod() === 'display' &&
+      this.usesScreenRecording(session) &&
       hasUserMedia();
     return allowed ? { available: true, on: session.micOn } : null;
+  }
+
+  // Screen recording (getDisplayMedia) unless the browser has none or the customer chose a page
+  // recording after screen sharing didn't start.
+  usesScreenRecording(session) {
+    return getRecordingMethod() === 'display' && !session.pageRecording;
   }
 
   /**
@@ -469,6 +476,10 @@ export default class GleapCaptureManager {
         case 'start':
           this.startRecording(session);
           break;
+        case 'record-page':
+          session.pageRecording = true;
+          this.startRecording(session);
+          break;
         case 'stop':
           if (session.recording) {
             session.recording.stop();
@@ -484,7 +495,12 @@ export default class GleapCaptureManager {
           this.retakeRecording(session);
           break;
         case 'cancel':
-          this.cancelSession(session, 'cancelled');
+          if (session.phase === 'fallback') {
+            // Screen sharing didn't start and the customer doesn't want a page recording either.
+            this.failSession(session, session.fallbackState, session.fallbackReason);
+          } else {
+            this.cancelSession(session, 'cancelled');
+          }
           break;
         default:
           break;
@@ -606,7 +622,7 @@ export default class GleapCaptureManager {
   // ----- Recording --------------------------------------------------------------------------------
 
   startRecording(session) {
-    if (session.kind !== 'recording' || (session.phase !== 'bar' && session.phase !== 'interrupted')) {
+    if (session.kind !== 'recording' || ['bar', 'interrupted', 'fallback'].indexOf(session.phase) === -1) {
       return;
     }
     const active = () => this.session === session;
@@ -632,7 +648,7 @@ export default class GleapCaptureManager {
       }
     };
 
-    if (getRecordingMethod() === 'display') {
+    if (this.usesScreenRecording(session)) {
       // Called inside the Start click: getDisplayMedia needs that user activation.
       const streamPromise = requestDisplayStream(isDesktopChromium());
       session.phase = 'starting';
@@ -654,11 +670,9 @@ export default class GleapCaptureManager {
           });
         })
         .catch((error) => {
-          if (!active()) {
-            return;
+          if (active()) {
+            this.offerPageRecording(session, error);
           }
-          const declined = error && (error.name === 'NotAllowedError' || error.name === 'SecurityError');
-          this.failSession(session, declined ? 'declined' : 'failed', errorReason(error));
         });
       return;
     }
@@ -674,6 +688,22 @@ export default class GleapCaptureManager {
     session.recording = recording;
     recording.start();
     this.onRecordingStarted(session, recording.startedAt, false);
+  }
+
+  /**
+   * Screen sharing didn't start (declined in the picker, blocked by a policy, unavailable, or the
+   * recorder couldn't start): the bar stays and offers a page recording instead. Only a Cancel
+   * there reports the outcome ('declined' when sharing was refused).
+   */
+  offerPageRecording(session, error) {
+    const name = error && error.name;
+    session.phase = 'fallback';
+    session.recording = null;
+    session.fallbackState = name === 'NotAllowedError' || name === 'SecurityError' ? 'declined' : 'failed';
+    session.fallbackReason = errorReason(error);
+    this.ui.showPageRecordingOffer();
+    this.persist(session);
+    this.sendState(session.requestId, 'bar');
   }
 
   onRecordingStarted(session, startedAt, hasMicrophone) {
@@ -899,7 +929,7 @@ export default class GleapCaptureManager {
       return;
     }
     let phase = null;
-    if (session.phase === 'bar' || session.phase === 'capturing' || session.phase === 'starting') {
+    if (['bar', 'capturing', 'starting', 'fallback'].indexOf(session.phase) !== -1) {
       phase = session.interrupted ? 'recording' : 'bar';
     } else if (
       session.kind === 'recording' &&
@@ -929,6 +959,7 @@ export default class GleapCaptureManager {
           options: session.options,
           labels: session.rawLabels,
           phase,
+          pageRecording: session.pageRecording === true,
           gleapId,
           sdkKey,
           at: Date.now(),
@@ -974,6 +1005,8 @@ export default class GleapCaptureManager {
         ticketShareToken: stored.ticketShareToken,
         options: stored.options,
         labels: stored.labels,
+        // The customer already switched to a page recording because screen sharing didn't start.
+        pageRecording: stored.pageRecording === true,
         resumed: true,
         phase: stored.kind === 'recording' && stored.phase === 'recording' ? 'interrupted' : 'bar',
       });

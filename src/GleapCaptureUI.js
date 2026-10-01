@@ -26,6 +26,8 @@ export const DEFAULT_CAPTURE_LABELS = {
   permissionDenied: 'Screen capture was blocked. You can upload a file instead.',
   notSupported: "Screen capture isn't available here. You can upload a file instead.",
   failed: "That didn't work. Please try again or upload a file.",
+  recordPage: 'Record this page',
+  recordPageHint: "Screen sharing didn't start. You can record this page instead.",
 };
 
 /**
@@ -413,6 +415,19 @@ export default class GleapCaptureUI {
         this.micToggle(mic, busy),
         this.button(labels.barCancel, 'cancel', null, null, busy),
       ].filter(Boolean),
+      0
+    );
+  }
+
+  /**
+   * Screen sharing didn't start (declined, blocked or unavailable): hint · Record this page · Cancel.
+   */
+  showPageRecordingOffer() {
+    const labels = this.labels;
+    this.bar(
+      labels.recordPage,
+      el('div', 'hint', [labels.recordPageHint]),
+      [this.button(labels.recordPage, 'record-page', 'primary', 'record'), this.button(labels.barCancel, 'cancel')],
       0
     );
   }
