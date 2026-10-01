@@ -607,6 +607,11 @@ export default class GleapCaptureManager {
     session.phase = 'capturing';
     this.ui.showScreenshotBar(true);
     this.sendState(session.requestId, 'capturing');
+    if (useTab) {
+      // Hidden before the browser's share dialog shows: a tab stream can still hand out frames
+      // painted before a later hide, so the bar may never be on the page while the tab is shared.
+      this.setCaptureUiHidden(true);
+    }
 
     // The logs as they are at the moment of the capture.
     let logsBundle = null;

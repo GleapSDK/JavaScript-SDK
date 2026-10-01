@@ -606,6 +606,8 @@ const grabFrame = (track, stream) => {
 
 // The longest Gleap's UI (the capture bar too) stays hidden for a tab frame.
 const TAB_CAPTURE_MAX_MS = 15000;
+// After the hide is painted: tab frames reach the track a few frames late.
+const TAB_FRAME_SETTLE_MS = 120;
 
 // Rects from getBoundingClientRect are in the layout viewport; a tab frame shows the visual viewport
 // (pinch zoom) stretched over the window.
@@ -731,7 +733,9 @@ export const captureFromTabStream = (stream, { setUiHidden, privacyOptions, mask
       } catch (exp) {}
     }, 200);
     withTimeout(
-      nextPaint().then(() => attempt(0)),
+      nextPaint()
+        .then(() => wait(TAB_FRAME_SETTLE_MS))
+        .then(() => attempt(0)),
       TAB_CAPTURE_MAX_MS,
       'tab-timeout'
     ).then(
@@ -1524,7 +1528,12 @@ export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, 
             () => null
           );
         },
-        () => null
+        () => {
+          // Declined or failed: the bar (hidden for the share dialog) shows its busy state again
+          // while the page is rendered instead.
+          setUiHidden(false);
+          return null;
+        }
       )
     : Promise.resolve(null);
 
