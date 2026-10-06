@@ -48,6 +48,8 @@ export default class GleapFrameManager {
   // Card and page surveys stay invisible until the messenger reports their height (no tall blank flash).
   surveyAwaitingHeight = false;
   surveyRevealTimeout = null;
+  // The messenger fell back to a legacy (pre Surveys 2.0) survey: use the old survey chrome.
+  surveyLegacy = false;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -105,13 +107,20 @@ export default class GleapFrameManager {
     return this.appMode === 'survey_full' || this.appMode === 'survey_web';
   }
 
-  // Card and page surveys size their frame to the survey (height-update from the messenger).
+  // Legacy full-screen surveys keep the old centred card.
+  isLegacyFullSurvey() {
+    return this.surveyLegacy && this.isFullSurvey();
+  }
+
+  // Card and page surveys (and legacy full-screen ones) size their frame to the survey (height-update).
   isAutoHeightSurvey() {
-    return this.appMode === 'survey' || this.appMode === 'survey_page';
+    return this.appMode === 'survey' || this.appMode === 'survey_page' || this.isLegacyFullSurvey();
   }
 
   setAppMode(appMode) {
     this.appMode = appMode;
+    // A new survey starts as Surveys 2.0 until the messenger says otherwise (survey-legacy).
+    this.surveyLegacy = false;
     this.updateFrameStyle();
 
     // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
@@ -187,7 +196,7 @@ export default class GleapFrameManager {
     }
 
     innerContainer.style.height = '';
-    if (this.appMode === 'survey') {
+    if (this.appMode === 'survey' || this.isLegacyFullSurvey()) {
       innerContainer.style.maxHeight = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
     } else if (this.isFullSurvey()) {
       // Full screen: the messenger fills the viewport and draws the background itself.
@@ -248,16 +257,22 @@ export default class GleapFrameManager {
       this.surveyRevealTimeout = null;
     }
     const container = this.gleapFrameContainer;
-    if (container && container.classList.contains('gleap-frame-container--measuring')) {
+    if (container) {
       container.classList.remove('gleap-frame-container--measuring');
-      this.notifySurveyShown();
     }
   }
 
-  notifySurveyShown() {
-    GleapEventManager.notifyEvent('survey-shown', {
-      format: this.appMode === 'survey_page' ? 'page' : this.isFullSurvey() ? 'full' : 'card',
-    });
+  /**
+   * The v2 survey wasn't found and the messenger runs the legacy survey flow: switch to the
+   * pre-Surveys 2.0 chrome for the current format.
+   */
+  setSurveyLegacy() {
+    if (!this.isSurvey() || this.surveyLegacy) {
+      return;
+    }
+    this.surveyLegacy = true;
+    this.updateFrameStyle();
+    this.applyInnerSize();
   }
 
   // The widget is full screen at <= 450px and the expanded CSS only applies from
@@ -585,6 +600,7 @@ export default class GleapFrameManager {
     const extendedStyle = 'gleap-frame-container--extended';
     const surveyFullStyle = 'gleap-frame-container--survey-full';
     const surveyPageStyle = 'gleap-frame-container--survey-page';
+    const surveyLegacyStyle = 'gleap-frame-container--survey-legacy';
     const classicStyle = 'gleap-frame-container--classic';
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
@@ -600,6 +616,7 @@ export default class GleapFrameManager {
       surveyStyle,
       surveyFullStyle,
       surveyPageStyle,
+      surveyLegacyStyle,
     ];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
@@ -641,6 +658,9 @@ export default class GleapFrameManager {
     if (this.appMode === 'survey_page') {
       this.gleapFrameContainer.classList.add(surveyPageStyle);
     }
+    if (this.surveyLegacy && this.isSurvey()) {
+      this.gleapFrameContainer.classList.add(surveyLegacyStyle);
+    }
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
     }
@@ -667,7 +687,6 @@ export default class GleapFrameManager {
         this.closeTimeout = null;
       }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--closing');
-      const wasHidden = this.gleapFrameContainer.classList.contains('gleap-frame-container--hidden');
       if (this.isAutoHeightSurvey() && this.surveyAwaitingHeight) {
         this.gleapFrameContainer.classList.add('gleap-frame-container--measuring');
         if (!this.surveyRevealTimeout) {
@@ -678,9 +697,6 @@ export default class GleapFrameManager {
         }
       } else {
         this.gleapFrameContainer.classList.remove('gleap-frame-container--measuring');
-        if (wasHidden && this.isSurvey()) {
-          this.notifySurveyShown();
-        }
       }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
@@ -919,6 +935,20 @@ export default class GleapFrameManager {
             this.revealSurvey();
           }
         }
+      }
+
+      if (data.name === 'survey-legacy') {
+        this.setSurveyLegacy();
+      }
+
+      // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)
+      if (
+        data.name === 'survey-shown' ||
+        data.name === 'survey-answered' ||
+        data.name === 'survey-completed' ||
+        data.name === 'survey-closed'
+      ) {
+        GleapEventManager.notifyEvent(data.name, data.data || {});
       }
 
       if (data.name === 'notify-event') {

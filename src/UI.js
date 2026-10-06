@@ -825,7 +825,6 @@ export const injectStyledCSS = (
       width: 100% !important;
       height: 100% !important;
       max-width: none !important;
-      max-height: none !important;
       border-radius: 0;
     }
 
@@ -835,6 +834,34 @@ export const injectStyledCSS = (
 
     .gleap-frame-container--survey-full.gleap-frame-container--closing {
       animation: gleapWidgetFadeOut 0.22s ease-in both !important;
+    }
+
+    /* Legacy surveys (the messenger fell back to the pre-2.0 flow): the old survey chrome. */
+    .gleap-frame-container--survey.gleap-frame-container--survey-legacy {
+      max-width: 410px;
+      border-radius: ${containerRadius * 1.5}px;
+      box-shadow: 0px 5px 40px 0px rgba(9, 14, 21, 0.16);
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy .gleap-frame-container-inner {
+      width: calc(100% - 24px) !important;
+      max-width: 640px !important;
+      height: calc(100% - 40px) !important;
+      border-radius: ${containerRadius}px;
+      overflow: hidden;
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy .gleap-frame-container-inner:before {
+      display: block;
     }
 
     /* Surveys 2.0 — page: an inline frame in the host's container, as tall as the survey. */
@@ -2473,6 +2500,24 @@ export const injectStyledCSS = (
 
       .gleap-frame-container--survey-page .gleap-frame-container-inner {
         width: 100% !important;
+      }
+
+      /* Legacy card surveys: the old full-width panel at the bottom (no sheet chrome). */
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy,
+      [dir=rtl].gleap-frame-container--survey.gleap-frame-container--survey-legacy {
+        max-width: 100% !important;
+        padding: 0;
+        border-radius: 0 !important;
+        box-shadow: 0px 5px 40px 0px rgba(9, 14, 21, 0.16);
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy:after {
+        display: none;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy .gleap-frame-container-inner {
+        height: calc(100vh - 12px) !important;
+        height: calc(100dvh - 12px - env(safe-area-inset-top, 0px)) !important;
       }
 
       .bb-tooltip {
