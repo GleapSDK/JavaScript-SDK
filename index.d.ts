@@ -276,7 +276,26 @@ export namespace Gleap {
     feedbackFlow: string,
     showBackButton?: boolean
   ): void;
-  function showSurvey(surveyId: string, format?: string): void;
+  type SurveyFormat = "card" | "full" | "page";
+  interface ShowSurveyOptions {
+    /** card = corner popover (bottom sheet on phones), full = full screen, page = inline in `container`. Default: card. */
+    format?: SurveyFormat;
+    /** Values for the survey's hidden fields. */
+    fields?: Record<string, string>;
+    /** Signed personal-link token: attaches the response to that contact. */
+    personalToken?: string;
+    /** Element (or CSS selector) the page format renders into. Default: document.body. */
+    container?: HTMLElement | string;
+    /** Continue a started response where it was left. */
+    resume?: boolean;
+  }
+  /**
+   * Shows a survey. The legacy format strings ("survey", "survey_full", "survey_web") keep working.
+   */
+  function showSurvey(
+    surveyId: string,
+    formatOrOptions?: "survey" | "survey_full" | "survey_web" | string | ShowSurveyOptions
+  ): void;
   function on(
     event:
       | "initialized"
@@ -291,6 +310,7 @@ export namespace Gleap {
       | "agent-error"
       | "agent-conversation-created"
       | "agent-tool-executed"
+      | "survey-shown"
       | string,
     callback: (data?: any) => void
   ): void;
