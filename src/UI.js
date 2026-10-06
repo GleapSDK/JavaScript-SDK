@@ -825,6 +825,7 @@ export const injectStyledCSS = (
       width: 100% !important;
       height: 100% !important;
       max-width: none !important;
+      max-height: none !important;
       border-radius: 0;
     }
 

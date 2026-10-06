@@ -731,6 +731,16 @@ export default class GleapFrameManager {
 
     GleapEventManager.notifyEvent('open');
     this.registerEscListener();
+
+    // Full-screen surveys take the keyboard (digits, letters, Enter) right away. The
+    // messenger can't pull focus into its cross-origin frame without a user gesture
+    // (a survey shown by a trigger has none), so the host page focuses the frame.
+    if (this.isFullSurvey() && !this.isLegacyFullSurvey()) {
+      try {
+        const frame = this.gleapFrameContainer.querySelector('.gleap-frame');
+        if (frame) frame.focus({ preventScroll: true });
+      } catch (e) {}
+    }
   }
 
   updateUI() {
