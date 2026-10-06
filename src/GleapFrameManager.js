@@ -43,6 +43,11 @@ export default class GleapFrameManager {
   lastWidgetSizeUpdate = null;
   // Hidden while the customer answers a capture request (see setCaptureHidden).
   captureHidden = false;
+  // Where the messenger frame is mounted: null = document.body, else the inline survey container.
+  frameHost = null;
+  // Card and page surveys stay invisible until the messenger reports their height (no tall blank flash).
+  surveyAwaitingHeight = false;
+  surveyRevealTimeout = null;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -88,19 +93,171 @@ export default class GleapFrameManager {
   }
 
   isSurvey() {
-    return this.appMode === 'survey' || this.appMode === 'survey_full' || this.appMode === 'survey_web';
+    return (
+      this.appMode === 'survey' ||
+      this.appMode === 'survey_full' ||
+      this.appMode === 'survey_web' ||
+      this.appMode === 'survey_page'
+    );
+  }
+
+  isFullSurvey() {
+    return this.appMode === 'survey_full' || this.appMode === 'survey_web';
+  }
+
+  // Card and page surveys size their frame to the survey (height-update from the messenger).
+  isAutoHeightSurvey() {
+    return this.appMode === 'survey' || this.appMode === 'survey_page';
   }
 
   setAppMode(appMode) {
     this.appMode = appMode;
     this.updateFrameStyle();
 
-    const innerContainer = document.querySelector('.gleap-frame-container-inner');
-    if ((this.appMode === 'widget' || this.appMode === 'survey_full' || this.appMode === 'survey_web') && innerContainer) {
-      innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
+    // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
+    this.surveyAwaitingHeight = this.isAutoHeightSurvey() && (!this.comReady || !this.frameHeight);
+    this.applyInnerSize();
+
+    // Lay the hidden frame out (invisibly) so the messenger can measure the survey right away.
+    const container = this.gleapFrameContainer;
+    if (this.surveyAwaitingHeight && container && container.classList.contains('gleap-frame-container--hidden')) {
+      container.classList.add('gleap-frame-container--measuring');
+      container.classList.remove('gleap-frame-container--hidden');
+    } else if (!this.surveyAwaitingHeight && container && container.classList.contains('gleap-frame-container--measuring')) {
+      // Switched to a mode that doesn't wait (widget, full screen): back to the regular hidden state.
+      container.classList.remove('gleap-frame-container--measuring');
+      if (!this.widgetOpened) {
+        container.classList.add('gleap-frame-container--hidden');
+      }
+      if (this.surveyRevealTimeout) {
+        clearTimeout(this.surveyRevealTimeout);
+        this.surveyRevealTimeout = null;
+      }
     }
 
     this.sendWidgetSizeUpdate();
+    if (this.isSurvey()) {
+      this.sendSafeAreaInsets();
+    }
+  }
+
+  /**
+   * Mounts the messenger frame in `host` (an inline survey page) or in document.body (null).
+   * Moving an iframe reloads its document, so a frame mounted elsewhere is replaced by a fresh one;
+   * queued messages (start-survey) are delivered to it once it pings.
+   */
+  setFrameHost(host) {
+    const target = host && host.nodeType === 1 ? host : null;
+    this.frameHost = target;
+
+    const container = this.gleapFrameContainer;
+    if (!container || typeof document === 'undefined') {
+      return;
+    }
+    const desiredParent = target || document.body;
+    if (container.parentNode === desiredParent) {
+      return;
+    }
+
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+    this.unregisterEscListener();
+    this.destroy();
+    this.comReady = false;
+    this.frameHeight = 0;
+    this.lastWidgetSizeUpdate = null;
+  }
+
+  // Sizes the frame's inner container for the current mode.
+  applyInnerSize() {
+    const innerContainer = this.gleapFrameContainer
+      ? this.gleapFrameContainer.querySelector('.gleap-frame-container-inner')
+      : null;
+    if (!innerContainer) {
+      return;
+    }
+
+    if (this.appMode === 'survey_page') {
+      // Inline: the frame is exactly as tall as the survey.
+      innerContainer.style.maxHeight = 'none';
+      innerContainer.style.height = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
+      return;
+    }
+
+    innerContainer.style.height = '';
+    if (this.appMode === 'survey') {
+      innerContainer.style.maxHeight = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
+    } else if (this.isFullSurvey()) {
+      // Full screen: the messenger fills the viewport and draws the background itself.
+      innerContainer.style.maxHeight = 'none';
+    } else {
+      innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
+    }
+  }
+
+  /**
+   * The page's safe-area insets (notch, home indicator) in px. env() always resolves to 0 inside the
+   * messenger iframe, so the full-screen survey gets them from here.
+   */
+  getSafeAreaInsets() {
+    const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+    try {
+      if (typeof document === 'undefined' || !document.body || typeof window.getComputedStyle !== 'function') {
+        return insets;
+      }
+      const probe = document.createElement('div');
+      probe.style.position = 'fixed';
+      probe.style.top = '0';
+      probe.style.left = '0';
+      probe.style.width = '0';
+      probe.style.height = '0';
+      probe.style.visibility = 'hidden';
+      probe.style.pointerEvents = 'none';
+      probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+      probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+      probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+      probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+      document.body.appendChild(probe);
+      const style = window.getComputedStyle(probe);
+      insets.top = parseFloat(style.paddingTop) || 0;
+      insets.right = parseFloat(style.paddingRight) || 0;
+      insets.bottom = parseFloat(style.paddingBottom) || 0;
+      insets.left = parseFloat(style.paddingLeft) || 0;
+      probe.remove();
+    } catch (e) {}
+    return insets;
+  }
+
+  sendSafeAreaInsets() {
+    if (!this.comReady) {
+      return;
+    }
+    this.sendMessage({
+      name: 'survey-safe-area',
+      data: this.getSafeAreaInsets(),
+    });
+  }
+
+  // Shows a card/page survey that waited for its height (or gave up waiting).
+  revealSurvey() {
+    this.surveyAwaitingHeight = false;
+    if (this.surveyRevealTimeout) {
+      clearTimeout(this.surveyRevealTimeout);
+      this.surveyRevealTimeout = null;
+    }
+    const container = this.gleapFrameContainer;
+    if (container && container.classList.contains('gleap-frame-container--measuring')) {
+      container.classList.remove('gleap-frame-container--measuring');
+      this.notifySurveyShown();
+    }
+  }
+
+  notifySurveyShown() {
+    GleapEventManager.notifyEvent('survey-shown', {
+      format: this.appMode === 'survey_page' ? 'page' : this.isFullSurvey() ? 'full' : 'card',
+    });
   }
 
   // The widget is full screen at <= 450px and the expanded CSS only applies from
@@ -170,11 +327,15 @@ export default class GleapFrameManager {
       this.updateFrameStyle();
     }
     this.sendWidgetSizeUpdate();
+    if (this.widgetOpened && this.isFullSurvey()) {
+      this.sendSafeAreaInsets();
+    }
   }
 
   registerEscListener() {
     // While a capture request hides the widget, Escape belongs to the page and the capture bar.
-    if (this.escListener || this.captureHidden) {
+    // An inline survey page can't be closed.
+    if (this.escListener || this.captureHidden || this.appMode === 'survey_page') {
       return;
     }
 
@@ -211,6 +372,10 @@ export default class GleapFrameManager {
     this.injectedFrame = false;
     this.widgetOpened = false;
     this.markerManager = undefined;
+    if (this.surveyRevealTimeout) {
+      clearTimeout(this.surveyRevealTimeout);
+      this.surveyRevealTimeout = null;
+    }
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
     this.captureHidden = false;
@@ -314,11 +479,18 @@ export default class GleapFrameManager {
         // fails (e.g. CORS not available on the frameUrl), the helper falls back to direct
         // src loading, preserving the original behavior.
         var elem = document.createElement('div');
-        elem.className = 'gleap-frame-container gleap-frame-container--hidden rr-block';
+        // A card/page survey waiting for its height starts laid out but invisible, so the messenger can
+        // measure it before it shows; everything else starts hidden.
+        const startState =
+          this.isAutoHeightSurvey() && this.surveyAwaitingHeight
+            ? 'gleap-frame-container--measuring'
+            : 'gleap-frame-container--hidden';
+        elem.className = `gleap-frame-container ${startState} rr-block`;
         elem.innerHTML = `<div class="gleap-frame-container-inner">${widgetLoaderMarkup(
           GleapConfigManager.getInstance().getFlowConfig()
         )}<iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
-        document.body.appendChild(elem);
+        const host = this.frameHost && document.body.contains(this.frameHost) ? this.frameHost : document.body;
+        host.appendChild(elem);
 
         // Image-type loader: fade the background image in once it has loaded.
         // Until then (or if it fails) the plain white fallback stays.
@@ -412,6 +584,7 @@ export default class GleapFrameManager {
     const surveyStyle = 'gleap-frame-container--survey';
     const extendedStyle = 'gleap-frame-container--extended';
     const surveyFullStyle = 'gleap-frame-container--survey-full';
+    const surveyPageStyle = 'gleap-frame-container--survey-page';
     const classicStyle = 'gleap-frame-container--classic';
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
@@ -426,6 +599,7 @@ export default class GleapFrameManager {
       noButtonStyleLeft,
       surveyStyle,
       surveyFullStyle,
+      surveyPageStyle,
     ];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
@@ -461,8 +635,11 @@ export default class GleapFrameManager {
     if (this.appMode === 'survey') {
       this.gleapFrameContainer.classList.add(surveyStyle);
     }
-    if (this.appMode === 'survey_full' || this.appMode === 'survey_web') {
+    if (this.isFullSurvey()) {
       this.gleapFrameContainer.classList.add(surveyFullStyle);
+    }
+    if (this.appMode === 'survey_page') {
+      this.gleapFrameContainer.classList.add(surveyPageStyle);
     }
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
@@ -490,6 +667,21 @@ export default class GleapFrameManager {
         this.closeTimeout = null;
       }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--closing');
+      const wasHidden = this.gleapFrameContainer.classList.contains('gleap-frame-container--hidden');
+      if (this.isAutoHeightSurvey() && this.surveyAwaitingHeight) {
+        this.gleapFrameContainer.classList.add('gleap-frame-container--measuring');
+        if (!this.surveyRevealTimeout) {
+          this.surveyRevealTimeout = setTimeout(() => {
+            this.surveyRevealTimeout = null;
+            this.revealSurvey();
+          }, 1200);
+        }
+      } else {
+        this.gleapFrameContainer.classList.remove('gleap-frame-container--measuring');
+        if (wasHidden && this.isSurvey()) {
+          this.notifySurveyShown();
+        }
+      }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
@@ -561,8 +753,8 @@ export default class GleapFrameManager {
   }
 
   hideWidget(resetRoutes = false) {
-    // Prevent for survey web.
-    if (this.appMode === 'survey_web') {
+    // The standalone survey page (legacy) and inline survey pages can't be closed.
+    if (this.appMode === 'survey_web' || this.appMode === 'survey_page') {
       return;
     }
 
@@ -577,8 +769,14 @@ export default class GleapFrameManager {
         this.closeTimeout = null;
       }
 
-      // Survey-full has no open/close animation, hide it instantly.
-      if (container.classList.contains('gleap-frame-container--survey-full')) {
+      if (this.surveyRevealTimeout) {
+        clearTimeout(this.surveyRevealTimeout);
+        this.surveyRevealTimeout = null;
+      }
+
+      if (container.classList.contains('gleap-frame-container--measuring')) {
+        // Never shown: nothing to animate.
+        container.classList.remove('gleap-frame-container--measuring');
         container.classList.add('gleap-frame-container--hidden');
       } else {
         // Play the close animation, then remove from view once it finishes.
@@ -712,14 +910,14 @@ export default class GleapFrameManager {
       }
 
       if (data.name === 'height-update') {
-        this.frameHeight = data.data;
-
-        const innerContainer = document.querySelector('.gleap-frame-container-inner');
-        if (
-          (this.appMode === 'survey' || this.appMode === 'survey_full' || this.appMode === 'survey_web') &&
-          innerContainer
-        ) {
-          innerContainer.style.maxHeight = `${this.frameHeight}px`;
+        const height = parseInt(data.data, 10);
+        if (height > 0) {
+          this.frameHeight = height;
+          // Full-screen surveys fill the viewport; only card and page surveys follow the height.
+          if (this.isAutoHeightSurvey()) {
+            this.applyInnerSize();
+            this.revealSurvey();
+          }
         }
       }
 

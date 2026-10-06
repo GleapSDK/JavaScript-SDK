@@ -291,11 +291,13 @@ export default class GleapFeedbackButtonManager {
       this.feedbackButton.classList.add('bb-feedback-button--bottomleft');
     }
 
-    if (GleapFrameManager.getInstance().isOpened()) {
+    const appMode = GleapFrameManager.getInstance().appMode;
+
+    // An inline survey page doesn't open the messenger: the launcher keeps its state.
+    if (GleapFrameManager.getInstance().isOpened() && appMode !== 'survey_page') {
       this.feedbackButton.classList.add('bb-feedback-button--open');
     }
 
-    const appMode = GleapFrameManager.getInstance().appMode;
     if (appMode === 'survey' || appMode === 'survey_full' || appMode === 'survey_web') {
       this.feedbackButton.classList.add('bb-feedback-button--survey');
     }
