@@ -1,6 +1,7 @@
 import { loadIcon } from './UI';
 import GleapAdminHelper from './GleapAdminHelper';
 import Gleap, { GleapModalManager, GleapProductTours, GleapBannerManager } from './Gleap';
+import { isGleapAdminOrigin, resolveGleapAdminOrigin } from './GleapAdminOrigins';
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -14,6 +15,8 @@ export default class GleapAdminManager {
   adminHelper = null;
   status = 'navigate';
   initialized = false;
+  // Dashboard origin that opened the admin session (set from the validated `load` message).
+  adminOrigin = null;
 
   // GleapAdminManager singleton
   static instance;
@@ -105,7 +108,7 @@ export default class GleapAdminManager {
 
     // Add window message listener.
     window.addEventListener('message', (event) => {
-      if (event.origin !== 'https://app.gleap.io') {
+      if (!isGleapAdminOrigin(event.origin)) {
         return;
       }
 
@@ -114,6 +117,9 @@ export default class GleapAdminManager {
 
         if (data.type === 'admin') {
           if (data.name === 'load') {
+            if (!self.adminOrigin) {
+              self.adminOrigin = resolveGleapAdminOrigin(event.origin);
+            }
             self.configData = data.data;
             self.initAdminHelper();
           }
@@ -230,7 +236,9 @@ export default class GleapAdminManager {
             ...data,
             type: 'admin',
           }),
-          '*'
+          // `init` goes out before the dashboard origin is known; everything after `load` is
+          // only delivered to the dashboard that opened the session.
+          this.adminOrigin || '*'
         );
       }
     } catch (e) {}
@@ -244,7 +252,7 @@ export default class GleapAdminManager {
             ...data,
             type: 'tourbuilder',
           }),
-          '*'
+          resolveGleapAdminOrigin(this.adminOrigin)
         );
       }
     } catch (e) {}
@@ -309,7 +317,7 @@ export default class GleapAdminManager {
     // Inject widget HTML.
     var elem = document.createElement('div');
     elem.className = 'gleap-admin-frame-container';
-    elem.innerHTML = `<iframe src="https://app.gleap.io/${
+    elem.innerHTML = `<iframe src="${resolveGleapAdminOrigin(this.adminOrigin)}/${
       this?.configData?.type === 'tooltips' ? 'tooltipbuilder' : 'producttourbuilder'
     }" class="gleap-admin-frame" scrolling="no" title="Gleap Admin Window" allow="autoplay; encrypted-media; fullscreen;" frameborder="0"></iframe>`;
     document.body.appendChild(elem);
