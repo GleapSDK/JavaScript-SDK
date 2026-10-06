@@ -1088,6 +1088,9 @@ class Gleap {
       if (surveyOptions.outboundAction) {
         messageData.outboundAction = surveyOptions.outboundAction;
       }
+      if (surveyOptions.resumeData) {
+        messageData.resumeData = surveyOptions.resumeData;
+      }
       messageData.safeArea = GleapFrameManager.getInstance().getSafeAreaInsets();
     }
 
@@ -1591,6 +1594,7 @@ class Gleap {
           Gleap.showSurvey(action.actionType, {
             format: action.format,
             resume: action.resume === true,
+            resumeData: action.resume === true ? action.data : undefined,
             outboundAction: action._id || action.id,
           });
         }

@@ -88,6 +88,10 @@ export const normalizeSurveyOptions = (formatOrOptions) => {
   if (typeof options.outboundAction === 'string' && options.outboundAction.length > 0) {
     normalized.outboundAction = options.outboundAction;
   }
+  // Server-side resume state for a reminder delivery (answers so far, lastBlockId).
+  if (options.resumeData && typeof options.resumeData === 'object' && !Array.isArray(options.resumeData)) {
+    normalized.resumeData = options.resumeData;
+  }
 
   return normalized;
 };
