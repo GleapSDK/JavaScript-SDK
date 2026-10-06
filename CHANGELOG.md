@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+Surveys 2.0: `Gleap.showSurvey(surveyId, options)` takes `{ format: 'card' | 'full' | 'page', fields, personalToken, container, resume }`; the old format strings (`'survey'`, `'survey_full'`, `'survey_web'`) keep working. A survey shown before the SDK is ready now opens once it is.
+New survey containers: the card is a 348px corner popover with an enter animation and becomes a bottom sheet (handle, scrim, home-indicator inset) on phones; full screen covers the whole viewport and the survey draws its own background and close button (no more centred 640px card over a blurred backdrop); `page` renders inline in `container` (or `document.body`) and grows with the survey. Card and page surveys only appear once their height is known. Reduced motion is respected. New event `survey-shown`.
+New standalone `survey-embed.js` (~3 KB): `<div data-gleap-survey="ID" data-api-key="KEY" data-mode="inline|popup|tab">` loads the SDK on demand and shows the survey inline, as a popup or behind a side tab.
+
 ## 19.1.1
 Fixed: the product tour and tooltip visual editor now works from the dashboard on app.gleap.ai. The SDK accepts the editor's messages from exactly `https://app.gleap.ai` and `https://app.gleap.io` (no lookalike domains), loads the editor from the dashboard that opened it, and sends its replies only to that dashboard.
 
