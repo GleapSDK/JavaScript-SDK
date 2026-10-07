@@ -345,6 +345,20 @@ export default class GleapFrameManager {
     }
   }
 
+  scrollSurveyPageIntoView(smooth) {
+    try {
+      const container = this.gleapFrameContainer;
+      if (this.appMode !== 'survey_page' || !container || typeof window === 'undefined') {
+        return;
+      }
+      const top = container.getBoundingClientRect().top;
+      if (top >= 0) {
+        return;
+      }
+      window.scrollTo({ top: Math.max(0, window.scrollY + top - 16), behavior: smooth ? 'smooth' : 'auto' });
+    } catch (e) {}
+  }
+
   /**
    * The v2 survey wasn't found and the messenger runs the legacy survey flow: switch to the
    * pre-Surveys 2.0 chrome for the current format.
@@ -1087,6 +1101,12 @@ export default class GleapFrameManager {
 
       if (data.name === 'survey-theme' && data.data) {
         this.setSurveyTheme(data.data);
+      }
+
+      // Survey page: a new step after a tall one the visitor scrolled down — bring the frame's top
+      // back into view (the next question would otherwise start above the fold).
+      if (data.name === 'survey-scroll-into-view') {
+        this.scrollSurveyPageIntoView(data.data && data.data.smooth !== false);
       }
 
       // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)
