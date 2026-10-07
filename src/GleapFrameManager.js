@@ -41,6 +41,8 @@ export default class GleapFrameManager {
   // The end user's expand/collapse choice (undefined = not read from the cache yet).
   widgetExpanded = undefined;
   surveyKeyboard = false;
+  // The card survey sheet is lifted above the on-screen keyboard (updateSurveyKeyboardInset).
+  surveySheetLifted = false;
   appliedWidgetExpanded = false;
   lastWidgetSizeUpdate = null;
   // Hidden while the customer answers a capture request (see setCaptureHidden).
@@ -98,7 +100,16 @@ export default class GleapFrameManager {
         // Phones: keep the card survey sheet above the on-screen keyboard (iOS Safari
         // draws the keyboard over fixed elements; visualViewport shrinks instead).
         if (window.visualViewport) {
-          const onViewport = () => this.updateSurveyKeyboardInset();
+          // visualViewport fires scroll/resize many times a second while any page scrolls:
+          // at most one update per frame (and it returns early unless a card survey sheet is up).
+          let viewportFrame = null;
+          const onViewport = () => {
+            if (viewportFrame !== null) return;
+            viewportFrame = window.requestAnimationFrame(() => {
+              viewportFrame = null;
+              this.updateSurveyKeyboardInset();
+            });
+          };
           window.visualViewport.addEventListener('resize', onViewport);
           window.visualViewport.addEventListener('scroll', onViewport);
         }
@@ -282,11 +293,16 @@ export default class GleapFrameManager {
       if (!container) {
         return;
       }
-      const inner = container.querySelector('.gleap-frame-container-inner');
       const vv = window.visualViewport;
       const isSheet = this.appMode === 'survey' && !this.surveyLegacy && window.innerWidth <= 450;
       const keyboard = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
       if (!isSheet || !vv || keyboard < 80) {
+        // Nothing lifted: nothing to undo (the common case, on every scroll of every page).
+        if (!this.surveySheetLifted) {
+          return;
+        }
+        this.surveySheetLifted = false;
+        const inner = container.querySelector('.gleap-frame-container-inner');
         container.style.removeProperty('bottom');
         container.style.removeProperty('max-height');
         if (inner) {
@@ -295,7 +311,9 @@ export default class GleapFrameManager {
         this.sendSheetViewport(0, false);
         return;
       }
+      const inner = container.querySelector('.gleap-frame-container-inner');
       const visible = Math.max(160, vv.height - 24);
+      this.surveySheetLifted = true;
       container.style.setProperty('bottom', keyboard + 8 + 'px', 'important');
       container.style.setProperty('max-height', visible + 'px', 'important');
       if (inner) {
