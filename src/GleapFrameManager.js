@@ -54,6 +54,9 @@ export default class GleapFrameManager {
   surveyLegacy = false;
   // Surveys 2.0 corners reported by the messenger (survey-theme): 'sharp' | 'pill', null = rounded.
   surveyCorners = null;
+  // ...and the survey's surface colour + light/dark (survey-theme), null = the widget's colours.
+  surveySurface = null;
+  surveyDark = null;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -136,6 +139,8 @@ export default class GleapFrameManager {
     this.surveyLegacy = false;
     // ...and rounded until the messenger reports the survey's corners (survey-theme).
     this.surveyCorners = null;
+    this.surveySurface = null;
+    this.surveyDark = null;
     this.updateFrameStyle();
 
     // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
@@ -364,6 +369,26 @@ export default class GleapFrameManager {
     }
     this.surveyCorners = next;
     this.updateFrameStyle();
+  }
+
+  /**
+   * survey-theme: corners, plus the survey's surface colour and light/dark. The phone sheet (handle
+   * strip included) is painted in the survey's surface, not the widget's background, and the frame
+   * takes the survey's color-scheme so the browser never draws an opaque canvas behind it.
+   */
+  setSurveyTheme(theme) {
+    const surface =
+      theme && typeof theme.surface === 'string' && /^#[0-9a-f]{3,8}$/i.test(theme.surface) ? theme.surface : null;
+    const dark = theme && typeof theme.dark === 'boolean' ? theme.dark : null;
+    const changed = surface !== this.surveySurface || dark !== this.surveyDark;
+    this.surveySurface = surface;
+    this.surveyDark = dark;
+    const corners = theme ? theme.corners : null;
+    if ((corners === 'sharp' || corners === 'pill' ? corners : null) !== this.surveyCorners) {
+      this.setSurveyCorners(corners);
+    } else if (changed) {
+      this.updateFrameStyle();
+    }
   }
 
   // The widget is full screen at <= 450px and the expanded CSS only applies from
@@ -694,6 +719,8 @@ export default class GleapFrameManager {
     const surveyLegacyStyle = 'gleap-frame-container--survey-legacy';
     const surveySharpStyle = 'gleap-frame-container--corners-sharp';
     const surveyPillStyle = 'gleap-frame-container--corners-pill';
+    const surveyDarkStyle = 'gleap-frame-container--survey-dark';
+    const surveyLightStyle = 'gleap-frame-container--survey-light';
     const classicStyle = 'gleap-frame-container--classic';
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
@@ -759,6 +786,15 @@ export default class GleapFrameManager {
     if (this.surveyCorners && this.isSurvey() && !this.surveyLegacy) {
       this.gleapFrameContainer.classList.add(this.surveyCorners === 'sharp' ? surveySharpStyle : surveyPillStyle);
     }
+    const surveyTheme = this.isSurvey() && !this.surveyLegacy;
+    const containerStyle = this.gleapFrameContainer.style;
+    if (surveyTheme && this.surveySurface) {
+      containerStyle.setProperty('--gleap-survey-surface', this.surveySurface);
+    } else {
+      containerStyle.removeProperty('--gleap-survey-surface');
+    }
+    this.gleapFrameContainer.classList.toggle(surveyDarkStyle, surveyTheme && this.surveyDark === true);
+    this.gleapFrameContainer.classList.toggle(surveyLightStyle, surveyTheme && this.surveyDark === false);
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
     }
@@ -1050,7 +1086,7 @@ export default class GleapFrameManager {
       }
 
       if (data.name === 'survey-theme' && data.data) {
-        this.setSurveyCorners(data.data.corners);
+        this.setSurveyTheme(data.data);
       }
 
       // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)

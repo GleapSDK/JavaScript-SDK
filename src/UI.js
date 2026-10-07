@@ -1508,6 +1508,21 @@ export const injectStyledCSS = (
       height: calc(100dvh - ${buttonY + 24}px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     }
 
+    /* Behind the survey card the frame shows the survey's surface, not the widget background. */
+    .gleap-frame-container--survey .gleap-frame-container-inner:before {
+      background-color: var(--gleap-survey-surface, ${backgroundColor});
+    }
+
+    /* The page frame takes the survey's color-scheme (the messenger sets the same on its document),
+       so the browser keeps the iframe transparent on the host's backdrop, whatever the host's scheme. */
+    .gleap-frame-container--survey-page {
+      color-scheme: light;
+    }
+
+    .gleap-frame-container--survey-page.gleap-frame-container--survey-dark {
+      color-scheme: dark;
+    }
+
     /* Smooth resizes between questions (not on the first measure, which happens before --animate). */
     .gleap-frame-container--survey.gleap-frame-container--animate .gleap-frame-container-inner {
       transition: max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1633,6 +1648,15 @@ export const injectStyledCSS = (
 
     .bb-feedback-button--hidden {
       display: none !important;
+    }
+
+    /* A survey takes the launcher's corner: the launcher steps aside while it is open (a pill or
+       sharp card would otherwise show the launcher peeking out behind its corner). */
+    .bb-feedback-button--open.bb-feedback-button--survey {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.15s ease, visibility 0s linear 0.15s;
     }
     
     .bb-feedback-button-text {
@@ -2483,7 +2507,8 @@ export const injectStyledCSS = (
         box-sizing: border-box;
         padding-top: 15px;
         padding-bottom: 0;
-        background-color: ${backgroundColor};
+        /* The survey's surface (survey-theme), so a dark survey has no light handle strip. */
+        background-color: var(--gleap-survey-surface, ${backgroundColor});
         border-radius: 32px 32px 40px 40px !important;
         overflow: hidden;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 100vmax rgba(10, 12, 16, 0.25);
@@ -2511,6 +2536,14 @@ export const injectStyledCSS = (
         border-radius: 5px;
         background-color: ${isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(16, 24, 40, 0.16)'};
         pointer-events: none;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-dark:after {
+        background-color: rgba(255, 255, 255, 0.28);
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-light:after {
+        background-color: rgba(16, 24, 40, 0.16);
       }
 
       .gleap-frame-container--survey .gleap-frame-container-inner {
