@@ -264,6 +264,7 @@ export default class GleapFrameManager {
         if (inner) {
           inner.style.removeProperty('max-height');
         }
+        this.sendSheetViewport(0, false);
         return;
       }
       const visible = Math.max(160, vv.height - 24);
@@ -273,7 +274,24 @@ export default class GleapFrameManager {
         // The handle area takes 15px; the survey scrolls inside what is left.
         inner.style.setProperty('max-height', visible - 15 + 'px', 'important');
       }
+      this.sendSheetViewport(visible - 15, true);
     } catch (e) {}
+  }
+
+  /**
+   * Tells the messenger the room the card sheet has (same `sheet-viewport` message as the native
+   * shells' appnew.html), so it pins the header and Next and scrolls the question in between.
+   * Closed keyboard = { maxHeight: 0, keyboard: false }: no cap, the sheet's own layout again.
+   * Sent on change only; nothing is sent until the keyboard first opened.
+   */
+  sendSheetViewport(maxHeight, keyboard) {
+    const data = { maxHeight: Math.max(0, Math.floor(maxHeight)), keyboard: !!keyboard };
+    const last = this.lastSheetViewport;
+    if (!this.comReady || (last ? last.maxHeight === data.maxHeight && last.keyboard === data.keyboard : !data.keyboard)) {
+      return;
+    }
+    this.lastSheetViewport = data;
+    this.sendMessage({ name: 'sheet-viewport', data });
   }
 
   sendSafeAreaInsets() {
