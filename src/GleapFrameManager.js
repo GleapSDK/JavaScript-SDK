@@ -52,6 +52,8 @@ export default class GleapFrameManager {
   surveyRevealTimeout = null;
   // The messenger fell back to a legacy (pre Surveys 2.0) survey: use the old survey chrome.
   surveyLegacy = false;
+  // Surveys 2.0 corners reported by the messenger (survey-theme): 'sharp' | 'pill', null = rounded.
+  surveyCorners = null;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -132,6 +134,8 @@ export default class GleapFrameManager {
     this.appMode = appMode;
     // A new survey starts as Surveys 2.0 until the messenger says otherwise (survey-legacy).
     this.surveyLegacy = false;
+    // ...and rounded until the messenger reports the survey's corners (survey-theme).
+    this.surveyCorners = null;
     this.updateFrameStyle();
 
     // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
@@ -347,6 +351,19 @@ export default class GleapFrameManager {
     this.surveyLegacy = true;
     this.updateFrameStyle();
     this.applyInnerSize();
+  }
+
+  /**
+   * The survey's corners (Sharp / Rounded / Pill): the card popover and the phone sheet round
+   * their outline to match. Messengers that never send it leave the rounded outline.
+   */
+  setSurveyCorners(corners) {
+    const next = corners === 'sharp' || corners === 'pill' ? corners : null;
+    if (next === this.surveyCorners) {
+      return;
+    }
+    this.surveyCorners = next;
+    this.updateFrameStyle();
   }
 
   // The widget is full screen at <= 450px and the expanded CSS only applies from
@@ -675,6 +692,8 @@ export default class GleapFrameManager {
     const surveyFullStyle = 'gleap-frame-container--survey-full';
     const surveyPageStyle = 'gleap-frame-container--survey-page';
     const surveyLegacyStyle = 'gleap-frame-container--survey-legacy';
+    const surveySharpStyle = 'gleap-frame-container--corners-sharp';
+    const surveyPillStyle = 'gleap-frame-container--corners-pill';
     const classicStyle = 'gleap-frame-container--classic';
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
@@ -691,6 +710,8 @@ export default class GleapFrameManager {
       surveyFullStyle,
       surveyPageStyle,
       surveyLegacyStyle,
+      surveySharpStyle,
+      surveyPillStyle,
     ];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
@@ -734,6 +755,9 @@ export default class GleapFrameManager {
     }
     if (this.surveyLegacy && this.isSurvey()) {
       this.gleapFrameContainer.classList.add(surveyLegacyStyle);
+    }
+    if (this.surveyCorners && this.isSurvey() && !this.surveyLegacy) {
+      this.gleapFrameContainer.classList.add(this.surveyCorners === 'sharp' ? surveySharpStyle : surveyPillStyle);
     }
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
@@ -1023,6 +1047,10 @@ export default class GleapFrameManager {
 
       if (data.name === 'survey-legacy') {
         this.setSurveyLegacy();
+      }
+
+      if (data.name === 'survey-theme' && data.data) {
+        this.setSurveyCorners(data.data.corners);
       }
 
       // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)

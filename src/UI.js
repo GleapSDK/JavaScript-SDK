@@ -769,10 +769,19 @@ export const injectStyledCSS = (
       bottom: ${buttonY}px !important;
       bottom: calc(${buttonY}px + env(safe-area-inset-bottom, 0px)) !important;
       max-width: 348px;
-      border-radius: 18px;
+      border-radius: 24px;
       box-shadow: 0 14px 44px rgba(16, 24, 40, 0.18), 0 0 0 1px rgba(16, 24, 40, 0.06);
       animation: gleapSurveyCardIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both, gleapWidgetFade 0.18s ease-out both;
       transition: none;
+    }
+
+    /* The survey's corners (survey-theme from the messenger); rounded is the 24px above. */
+    .gleap-frame-container--survey.gleap-frame-container--corners-sharp {
+      border-radius: 10px;
+    }
+
+    .gleap-frame-container--survey.gleap-frame-container--corners-pill {
+      border-radius: 32px;
     }
 
     /* Card and page surveys stay invisible until the messenger reports their height. */
@@ -2481,6 +2490,14 @@ export const injectStyledCSS = (
         transform-origin: center bottom;
         transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         animation: gleapWidgetSlideUp 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both, gleapWidgetFade 0.2s ease-out both;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--corners-sharp {
+        border-radius: 14px !important;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--corners-pill {
+        border-radius: 40px 40px 46px 46px !important;
       }
 
       .gleap-frame-container--survey:after {
