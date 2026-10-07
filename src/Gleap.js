@@ -1091,7 +1091,9 @@ class Gleap {
       if (surveyOptions.resumeData) {
         messageData.resumeData = surveyOptions.resumeData;
       }
-      messageData.safeArea = GleapFrameManager.getInstance().getSafeAreaInsets();
+      const safeArea = GleapFrameManager.getInstance().getSafeAreaInsets();
+      // The card sheet floats above the home indicator, so the survey itself needs no bottom inset.
+      messageData.safeArea = surveyOptions.format === 'card' ? { ...safeArea, bottom: 0 } : safeArea;
     }
 
     GleapFrameManager.getInstance().sendMessage(

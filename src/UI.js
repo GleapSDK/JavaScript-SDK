@@ -2457,46 +2457,48 @@ export const injectStyledCSS = (
         max-height: calc(var(--glvh, 1vh) * 100) !important;
       }
 
-      /* Card surveys become a bottom sheet: handle area, 22px top radius, scrim, home indicator inset. */
+      /* Card surveys become a floating sheet (iOS 26 style): inset from the edges and above the
+         home indicator, rounded on all corners, layered shadow, dimmed page behind. */
       .gleap-frame-container--survey,
       [dir=rtl].gleap-frame-container--survey {
         top: auto !important;
-        bottom: 0px !important;
-        left: 0px !important;
-        right: 0px !important;
-        width: 100% !important;
-        max-width: 100% !important;
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        max-width: none !important;
         height: auto !important;
         min-height: 0 !important;
-        max-height: calc(100vh - 12px) !important;
-        max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px)) !important;
+        max-height: calc(100vh - 24px) !important;
+        max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
         box-sizing: border-box;
         padding-top: 15px;
-        padding-bottom: env(safe-area-inset-bottom, 0px);
+        padding-bottom: 0;
         background-color: ${backgroundColor};
-        border-radius: 22px 22px 0 0 !important;
-        box-shadow: 0 -6px 30px rgba(0, 0, 0, 0.18), 0 0 0 100vmax rgba(10, 12, 16, 0.28);
+        border-radius: 32px 32px 40px 40px !important;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 100vmax rgba(10, 12, 16, 0.25);
         transform-origin: center bottom;
-        animation: gleapWidgetSlideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) both, gleapWidgetFade 0.2s ease-out both;
+        animation: gleapWidgetSlideUp 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both, gleapWidgetFade 0.2s ease-out both;
       }
 
       .gleap-frame-container--survey:after {
         content: "";
         position: absolute;
-        top: 7px;
+        top: 8px;
         left: 50%;
         width: 36px;
-        height: 4px;
+        height: 5px;
         margin-left: -18px;
-        border-radius: 4px;
+        border-radius: 5px;
         background-color: ${isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(16, 24, 40, 0.16)'};
         pointer-events: none;
       }
 
       .gleap-frame-container--survey .gleap-frame-container-inner {
         width: 100% !important;
-        height: calc(100vh - 27px) !important;
-        height: calc(100dvh - 27px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+        height: calc(100vh - 39px) !important;
+        height: calc(100dvh - 39px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
       }
 
       .gleap-frame-container--survey-page .gleap-frame-container-inner {
@@ -2506,10 +2508,9 @@ export const injectStyledCSS = (
       /* Legacy card surveys: the old full-width panel at the bottom (no sheet chrome). */
       .gleap-frame-container--survey.gleap-frame-container--survey-legacy,
       [dir=rtl].gleap-frame-container--survey.gleap-frame-container--survey-legacy {
-        max-width: 100% !important;
         padding: 0;
-        border-radius: 0 !important;
-        box-shadow: 0px 5px 40px 0px rgba(9, 14, 21, 0.16);
+        border-radius: 28px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08);
       }
 
       .gleap-frame-container--survey.gleap-frame-container--survey-legacy:after {
