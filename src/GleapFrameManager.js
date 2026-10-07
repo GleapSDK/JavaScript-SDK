@@ -1021,6 +1021,15 @@ export default class GleapFrameManager {
 
       if (data.name === 'notify-event') {
         GleapEventManager.notifyEvent(data.data.type, data.data.data);
+
+        // Surveys 2.0 report completion as notify-event outbound-sent; track the same
+        // `outbound-<id>-submitted` event as the legacy submit path so targeting rules match.
+        const sent = data.data && data.data.type === 'outbound-sent' ? data.data.data : null;
+        if (sent && sent.outboundId && sent.responseId) {
+          const formData = Object.assign({}, sent.formData || {});
+          delete formData.reportedBy;
+          Gleap.trackEvent(`outbound-${sent.outboundId}-submitted`, formData);
+        }
       }
 
       if (data.name === 'cleanup-drawings') {
