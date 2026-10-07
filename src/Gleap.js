@@ -1071,6 +1071,7 @@ class Gleap {
       surveyOptions && surveyOptions.format === 'page' ? surveyOptions.container : null
     );
     GleapFrameManager.getInstance().setAppMode(appMode);
+    GleapFrameManager.getInstance().surveyKeyboard = !!(surveyOptions && surveyOptions.format === 'page' && surveyOptions.keyboard);
 
     const messageData = {
       flow: feedbackFlow,

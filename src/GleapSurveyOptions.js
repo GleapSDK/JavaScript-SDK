@@ -82,6 +82,11 @@ export const normalizeSurveyOptions = (formatOrOptions) => {
     container: format === 'page' ? resolveContainer(options.container) : null,
   };
 
+  // Page format only: answer with the keyboard while focus is on the host page
+  // (the survey page sets it; inline embeds on content pages leave it off).
+  if (options.keyboard === true) {
+    normalized.keyboard = true;
+  }
   if (typeof options.personalToken === 'string' && options.personalToken.length > 0) {
     normalized.personalToken = options.personalToken;
   }

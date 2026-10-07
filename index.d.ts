@@ -284,6 +284,8 @@ export namespace Gleap {
     fields?: Record<string, string>;
     /** Signed personal-link token: attaches the response to that contact. */
     personalToken?: string;
+    /** Page format: answer with the keyboard while focus is on the host page. */
+    keyboard?: boolean;
     /** Element (or CSS selector) the page format renders into. Default: document.body. */
     container?: HTMLElement | string;
     /** Continue a started response where it was left. */

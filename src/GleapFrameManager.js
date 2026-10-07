@@ -40,6 +40,7 @@ export default class GleapFrameManager {
   queue = [];
   // The end user's expand/collapse choice (undefined = not read from the cache yet).
   widgetExpanded = undefined;
+  surveyKeyboard = false;
   appliedWidgetExpanded = false;
   lastWidgetSizeUpdate = null;
   // Hidden while the customer answers a capture request (see setCaptureHidden).
@@ -87,6 +88,8 @@ export default class GleapFrameManager {
         window.addEventListener('resize', appHeight);
         window.addEventListener('resize', () => this.handleViewportResize());
         appHeight();
+        // Survey page: forward answer keys typed on the host page into the frame.
+        document.addEventListener('keydown', (event) => this.forwardSurveyKey(event));
         // Phones: keep the card survey sheet above the on-screen keyboard (iOS Safari
         // draws the keyboard over fixed elements; visualViewport shrinks instead).
         if (window.visualViewport) {
@@ -245,6 +248,22 @@ export default class GleapFrameManager {
       probe.remove();
     } catch (e) {}
     return insets;
+  }
+
+  forwardSurveyKey(event) {
+    try {
+      if (!this.surveyKeyboard || this.appMode !== 'survey_page' || !this.comReady) return;
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      const tag = target && target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+      const key = event.key;
+      if (!/^[a-z0-9]$/i.test(key) && key !== 'Enter' && key !== 'ArrowUp' && key !== 'ArrowDown') return;
+      // Buttons and links on the host page keep their own Enter.
+      if (key === 'Enter' && (tag === 'BUTTON' || tag === 'A')) return;
+      event.preventDefault();
+      this.sendMessage({ name: 'survey-key', data: { key, shiftKey: event.shiftKey } });
+    } catch (e) {}
   }
 
   // Lifts the floating card sheet above the keyboard and caps its height to what is visible.
