@@ -2479,6 +2479,7 @@ export const injectStyledCSS = (
         overflow: hidden;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 100vmax rgba(10, 12, 16, 0.25);
         transform-origin: center bottom;
+        transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         animation: gleapWidgetSlideUp 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both, gleapWidgetFade 0.2s ease-out both;
       }
 

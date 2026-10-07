@@ -86,6 +86,13 @@ export default class GleapFrameManager {
         window.addEventListener('resize', appHeight);
         window.addEventListener('resize', () => this.handleViewportResize());
         appHeight();
+        // Phones: keep the card survey sheet above the on-screen keyboard (iOS Safari
+        // draws the keyboard over fixed elements; visualViewport shrinks instead).
+        if (window.visualViewport) {
+          const onViewport = () => this.updateSurveyKeyboardInset();
+          window.visualViewport.addEventListener('resize', onViewport);
+          window.visualViewport.addEventListener('scroll', onViewport);
+        }
       } catch (e) {}
     }
   }
@@ -237,6 +244,35 @@ export default class GleapFrameManager {
       probe.remove();
     } catch (e) {}
     return insets;
+  }
+
+  // Lifts the floating card sheet above the keyboard and caps its height to what is visible.
+  updateSurveyKeyboardInset() {
+    try {
+      const container = this.gleapFrameContainer;
+      if (!container) {
+        return;
+      }
+      const inner = container.querySelector('.gleap-frame-container-inner');
+      const vv = window.visualViewport;
+      const isSheet = this.appMode === 'survey' && !this.surveyLegacy && window.innerWidth <= 450;
+      const keyboard = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+      if (!isSheet || !vv || keyboard < 80) {
+        container.style.removeProperty('bottom');
+        container.style.removeProperty('max-height');
+        if (inner) {
+          inner.style.removeProperty('max-height');
+        }
+        return;
+      }
+      const visible = Math.max(160, vv.height - 24);
+      container.style.setProperty('bottom', keyboard + 8 + 'px', 'important');
+      container.style.setProperty('max-height', visible + 'px', 'important');
+      if (inner) {
+        // The handle area takes 15px; the survey scrolls inside what is left.
+        inner.style.setProperty('max-height', visible - 15 + 'px', 'important');
+      }
+    } catch (e) {}
   }
 
   sendSafeAreaInsets() {
