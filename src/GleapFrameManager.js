@@ -20,6 +20,7 @@ import Gleap, {
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import { getCaptureCapabilities } from './GleapCaptureSettings';
+import { forwardSurveyAnalyticsEvent } from './GleapSurveyAnalyticsForwarder';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
 import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
@@ -990,11 +991,14 @@ export default class GleapFrameManager {
       // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)
       if (
         data.name === 'survey-shown' ||
+        data.name === 'survey-step-viewed' ||
         data.name === 'survey-answered' ||
         data.name === 'survey-completed' ||
         data.name === 'survey-closed'
       ) {
         GleapEventManager.notifyEvent(data.name, data.data || {});
+        // Optional push to the site's GA4 / GTM / Meta Pixel (off by default).
+        forwardSurveyAnalyticsEvent(data.name, data.data || {});
       }
 
       if (data.name === 'notify-event') {

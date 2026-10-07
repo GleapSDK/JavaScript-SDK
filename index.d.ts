@@ -305,6 +305,16 @@ export namespace Gleap {
     /** true when a started response was continued (resume). */
     resumed: boolean;
   }
+  interface SurveyStepViewedEvent {
+    surveyId: string;
+    version: number;
+    responseId: string;
+    /** Zero-based position of the question in the survey. */
+    stepIndex: number;
+    /** Question (block) key. */
+    key: string;
+    [key: string]: any;
+  }
   interface SurveyAnsweredEvent {
     surveyId: string;
     version: number;
@@ -328,6 +338,8 @@ export namespace Gleap {
   }
   /** The survey is visible. */
   function on(event: "survey-shown", callback: (data: SurveyShownEvent) => void): void;
+  /** A question became visible. */
+  function on(event: "survey-step-viewed", callback: (data: SurveyStepViewedEvent) => void): void;
   /** An answer was saved. */
   function on(event: "survey-answered", callback: (data: SurveyAnsweredEvent) => void): void;
   /** The last question was answered and an ending is shown. `outbound-sent` keeps firing as before. */
