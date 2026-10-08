@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.2.1
+Surveys: questions asking for the email, name or phone of an identified contact are skipped (with the Surveys 2.0 "Skip when known" option). `Gleap.showSurvey` and every automatic survey now wait for an `identify` or `updateContact` still in flight (at most 5 s), so the survey starts with the identified contact instead of the guest.
+Fixed: a survey with nothing left to ask could leave an empty white card on screen (and `Gleap.isOpened()` true) when its frame was not loaded yet. A frame that was never shown now hides without the close animation and without a `close` event; `Gleap.close()` on a closed widget no longer fires `close`.
+Fixed: a survey card opened in a frame that had shown a card before was revealed before it had a height of its own; it now waits for its own content, like a fresh frame.
+
 ## 19.2.0
 Surveys 2.0: `Gleap.showSurvey(surveyId, options)` takes `{ format: 'card' | 'full' | 'page', fields, personalToken, container, resume }`; the old format strings (`'survey'`, `'survey_full'`, `'survey_web'`) keep working. A survey shown before the SDK is ready now opens once it is.
 New survey containers: the card is a 348px corner popover with an enter animation and becomes a bottom sheet (handle, scrim, home-indicator inset) on phones; full screen covers the whole viewport and the survey draws its own background and close button (no more centred 640px card over a blurred backdrop); `page` renders inline in `container` (or `document.body`) and grows with the survey. Card and page surveys only appear once their height is known. Reduced motion is respected. Legacy surveys (not yet migrated) keep the previous card and full-screen look.
