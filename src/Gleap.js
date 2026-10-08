@@ -43,6 +43,7 @@ import GleapTagManager from './GleapTagManager';
 import GleapThemeManager from './GleapThemeManager';
 import GleapTranslationManager from './GleapTranslationManager';
 import { injectStyledCSS } from './UI';
+import { normalizeSurveyOptions } from './GleapSurveyOptions';
 
 if (
   typeof window !== 'undefined' &&
@@ -339,7 +340,8 @@ class Gleap {
       const surveyFlow = urlParams.get('gleap_survey');
       const surveyFlowFormat = urlParams.get('gleap_survey_format');
       if (surveyFlow && surveyFlow.length > 0) {
-        Gleap.showSurvey(surveyFlow, surveyFlowFormat === 'survey_full' ? 'survey_full' : 'survey');
+        const fullScreen = surveyFlowFormat === 'survey_full' || surveyFlowFormat === 'full';
+        Gleap.showSurvey(surveyFlow, fullScreen ? 'survey_full' : 'survey');
       }
       const tourId = urlParams.get('gleap_tour');
       if (tourId && tourId.length > 0) {
@@ -991,16 +993,31 @@ class Gleap {
   }
 
   /**
-   * Shows a survey manually.
-   * @param {*} actionType
-   * @param {*} format
+   * Shows a survey.
+   *
+   * The second argument is either a legacy format string ('survey', 'survey_full', 'survey_web')
+   * or an options object: { format?: 'card' | 'full' | 'page', fields?: Record<string, string>,
+   * personalToken?: string, container?: HTMLElement | string, resume?: boolean }.
+   * @param {string} surveyId
+   * @param {string|object} formatOrOptions
    */
-  static showSurvey(actionType, format = 'survey') {
+  static showSurvey(surveyId, formatOrOptions = 'survey') {
+    // Called before the session is ready (right after initialize): show it once it is.
+    const sessionInstance = GleapSession.getInstance();
+    if (!sessionInstance.ready) {
+      sessionInstance.setOnSessionReady(() => {
+        Gleap.showSurvey(surveyId, formatOrOptions);
+      });
+      return;
+    }
+
+    const options = normalizeSurveyOptions(formatOrOptions);
     Gleap.startFeedbackFlowWithOptions(
-      actionType,
+      surveyId,
       {
         hideBackButton: true,
-        format,
+        format: options.appMode,
+        survey: options,
       },
       true
     );
@@ -1028,7 +1045,7 @@ class Gleap {
    * Starts the bug reporting flow.
    */
   static startFeedbackFlowWithOptions(feedbackFlow, options = {}, isSurvey = false) {
-    const { autostartDrawing, hideBackButton, format } = options;
+    const { autostartDrawing, hideBackButton, format, survey } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
       return;
@@ -1045,16 +1062,45 @@ class Gleap {
       action = 'start-survey';
     }
 
-    GleapFrameManager.getInstance().setAppMode(isSurvey ? format : 'widget');
+    const surveyOptions = isSurvey ? survey || normalizeSurveyOptions(format) : null;
+    const appMode = surveyOptions ? surveyOptions.appMode : 'widget';
+
+    // The page format renders inline: the messenger frame lives in the given container.
+    // Every other survey format (and the widget) lives in document.body.
+    GleapFrameManager.getInstance().setFrameHost(
+      surveyOptions && surveyOptions.format === 'page' ? surveyOptions.container : null
+    );
+    GleapFrameManager.getInstance().setAppMode(appMode);
+    GleapFrameManager.getInstance().surveyKeyboard = !!(surveyOptions && surveyOptions.format === 'page' && surveyOptions.keyboard);
+
+    const messageData = {
+      flow: feedbackFlow,
+      hideBackButton: hideBackButton,
+      // `format` stays the messenger app mode ('survey' | 'survey_full' | 'survey_web' | 'survey_page').
+      format: surveyOptions ? appMode : format,
+    };
+    if (surveyOptions) {
+      messageData.surveyFormat = surveyOptions.format;
+      messageData.fields = surveyOptions.fields;
+      if (surveyOptions.personalToken) {
+        messageData.personalToken = surveyOptions.personalToken;
+      }
+      messageData.resume = surveyOptions.resume;
+      if (surveyOptions.outboundAction) {
+        messageData.outboundAction = surveyOptions.outboundAction;
+      }
+      if (surveyOptions.resumeData) {
+        messageData.resumeData = surveyOptions.resumeData;
+      }
+      const safeArea = GleapFrameManager.getInstance().getSafeAreaInsets();
+      // The card sheet floats above the home indicator, so the survey itself needs no bottom inset.
+      messageData.safeArea = surveyOptions.format === 'card' ? { ...safeArea, bottom: 0 } : safeArea;
+    }
 
     GleapFrameManager.getInstance().sendMessage(
       {
         name: action,
-        data: {
-          flow: feedbackFlow,
-          hideBackButton: hideBackButton,
-          format,
-        },
+        data: messageData,
       },
       true
     );
@@ -1544,7 +1590,16 @@ class Gleap {
         } else if (action.actionType === 'tour') {
           Gleap.startProductTourWithConfig(action.outbound, action.data, false);
         } else {
-          Gleap.showSurvey(action.actionType, action.format);
+          // An inline survey page owns the messenger frame: never swap it for a triggered survey.
+          if (GleapFrameManager.getInstance().appMode === 'survey_page') {
+            continue;
+          }
+          Gleap.showSurvey(action.actionType, {
+            format: action.format,
+            resume: action.resume === true,
+            resumeData: action.resume === true ? action.data : undefined,
+            outboundAction: action._id || action.id,
+          });
         }
       }
     }

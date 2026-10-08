@@ -20,6 +20,7 @@ import Gleap, {
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
 import { getCaptureCapabilities } from './GleapCaptureSettings';
+import { forwardSurveyAnalyticsEvent } from './GleapSurveyAnalyticsForwarder';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
 import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
@@ -39,10 +40,25 @@ export default class GleapFrameManager {
   queue = [];
   // The end user's expand/collapse choice (undefined = not read from the cache yet).
   widgetExpanded = undefined;
+  surveyKeyboard = false;
+  // The card survey sheet is lifted above the on-screen keyboard (updateSurveyKeyboardInset).
+  surveySheetLifted = false;
   appliedWidgetExpanded = false;
   lastWidgetSizeUpdate = null;
   // Hidden while the customer answers a capture request (see setCaptureHidden).
   captureHidden = false;
+  // Where the messenger frame is mounted: null = document.body, else the inline survey container.
+  frameHost = null;
+  // Card and page surveys stay invisible until the messenger reports their height (no tall blank flash).
+  surveyAwaitingHeight = false;
+  surveyRevealTimeout = null;
+  // The messenger fell back to a legacy (pre Surveys 2.0) survey: use the old survey chrome.
+  surveyLegacy = false;
+  // Surveys 2.0 corners reported by the messenger (survey-theme): 'sharp' | 'pill', null = rounded.
+  surveyCorners = null;
+  // ...and the survey's surface colour + light/dark (survey-theme), null = the widget's colours.
+  surveySurface = null;
+  surveyDark = null;
   urlHandler = function (url, newTab) {
     if (url && url.length > 0) {
       if (newTab) {
@@ -79,6 +95,24 @@ export default class GleapFrameManager {
         window.addEventListener('resize', appHeight);
         window.addEventListener('resize', () => this.handleViewportResize());
         appHeight();
+        // Survey page: forward answer keys typed on the host page into the frame.
+        document.addEventListener('keydown', (event) => this.forwardSurveyKey(event));
+        // Phones: keep the card survey sheet above the on-screen keyboard (iOS Safari
+        // draws the keyboard over fixed elements; visualViewport shrinks instead).
+        if (window.visualViewport) {
+          // visualViewport fires scroll/resize many times a second while any page scrolls:
+          // at most one update per frame (and it returns early unless a card survey sheet is up).
+          let viewportFrame = null;
+          const onViewport = () => {
+            if (viewportFrame !== null) return;
+            viewportFrame = window.requestAnimationFrame(() => {
+              viewportFrame = null;
+              this.updateSurveyKeyboardInset();
+            });
+          };
+          window.visualViewport.addEventListener('resize', onViewport);
+          window.visualViewport.addEventListener('scroll', onViewport);
+        }
       } catch (e) {}
     }
   }
@@ -88,19 +122,305 @@ export default class GleapFrameManager {
   }
 
   isSurvey() {
-    return this.appMode === 'survey' || this.appMode === 'survey_full' || this.appMode === 'survey_web';
+    return (
+      this.appMode === 'survey' ||
+      this.appMode === 'survey_full' ||
+      this.appMode === 'survey_web' ||
+      this.appMode === 'survey_page'
+    );
+  }
+
+  isFullSurvey() {
+    return this.appMode === 'survey_full' || this.appMode === 'survey_web';
+  }
+
+  // Legacy full-screen surveys keep the old centred card.
+  isLegacyFullSurvey() {
+    return this.surveyLegacy && this.isFullSurvey();
+  }
+
+  // Card and page surveys (and legacy full-screen ones) size their frame to the survey (height-update).
+  isAutoHeightSurvey() {
+    return this.appMode === 'survey' || this.appMode === 'survey_page' || this.isLegacyFullSurvey();
   }
 
   setAppMode(appMode) {
     this.appMode = appMode;
+    // A new survey starts as Surveys 2.0 until the messenger says otherwise (survey-legacy).
+    this.surveyLegacy = false;
+    // ...and rounded until the messenger reports the survey's corners (survey-theme).
+    this.surveyCorners = null;
+    this.surveySurface = null;
+    this.surveyDark = null;
     this.updateFrameStyle();
 
-    const innerContainer = document.querySelector('.gleap-frame-container-inner');
-    if ((this.appMode === 'widget' || this.appMode === 'survey_full' || this.appMode === 'survey_web') && innerContainer) {
-      innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
+    // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
+    this.surveyAwaitingHeight = this.isAutoHeightSurvey() && (!this.comReady || !this.frameHeight);
+    this.applyInnerSize();
+
+    // Lay the hidden frame out (invisibly) so the messenger can measure the survey right away.
+    const container = this.gleapFrameContainer;
+    if (this.surveyAwaitingHeight && container && container.classList.contains('gleap-frame-container--hidden')) {
+      container.classList.add('gleap-frame-container--measuring');
+      container.classList.remove('gleap-frame-container--hidden');
+    } else if (!this.surveyAwaitingHeight && container && container.classList.contains('gleap-frame-container--measuring')) {
+      // Switched to a mode that doesn't wait (widget, full screen): back to the regular hidden state.
+      container.classList.remove('gleap-frame-container--measuring');
+      if (!this.widgetOpened) {
+        container.classList.add('gleap-frame-container--hidden');
+      }
+      if (this.surveyRevealTimeout) {
+        clearTimeout(this.surveyRevealTimeout);
+        this.surveyRevealTimeout = null;
+      }
     }
 
     this.sendWidgetSizeUpdate();
+    if (this.isSurvey()) {
+      this.sendSafeAreaInsets();
+    }
+  }
+
+  /**
+   * Mounts the messenger frame in `host` (an inline survey page) or in document.body (null).
+   * Moving an iframe reloads its document, so a frame mounted elsewhere is replaced by a fresh one;
+   * queued messages (start-survey) are delivered to it once it pings.
+   */
+  setFrameHost(host) {
+    const target = host && host.nodeType === 1 ? host : null;
+    this.frameHost = target;
+
+    const container = this.gleapFrameContainer;
+    if (!container || typeof document === 'undefined') {
+      return;
+    }
+    const desiredParent = target || document.body;
+    if (container.parentNode === desiredParent) {
+      return;
+    }
+
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+    this.unregisterEscListener();
+    this.destroy();
+    this.comReady = false;
+    this.frameHeight = 0;
+    this.lastWidgetSizeUpdate = null;
+  }
+
+  // Sizes the frame's inner container for the current mode.
+  applyInnerSize() {
+    const innerContainer = this.gleapFrameContainer
+      ? this.gleapFrameContainer.querySelector('.gleap-frame-container-inner')
+      : null;
+    if (!innerContainer) {
+      return;
+    }
+
+    if (this.appMode === 'survey_page') {
+      // Inline: the frame is exactly as tall as the survey.
+      innerContainer.style.maxHeight = 'none';
+      innerContainer.style.height = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
+      return;
+    }
+
+    innerContainer.style.height = '';
+    if (this.appMode === 'survey' || this.isLegacyFullSurvey()) {
+      innerContainer.style.maxHeight = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
+    } else if (this.isFullSurvey()) {
+      // Full screen: the messenger fills the viewport and draws the background itself.
+      innerContainer.style.maxHeight = 'none';
+    } else {
+      innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
+    }
+  }
+
+  /**
+   * The page's safe-area insets (notch, home indicator) in px. env() always resolves to 0 inside the
+   * messenger iframe, so the full-screen survey gets them from here.
+   */
+  getSafeAreaInsets() {
+    const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+    try {
+      if (typeof document === 'undefined' || !document.body || typeof window.getComputedStyle !== 'function') {
+        return insets;
+      }
+      const probe = document.createElement('div');
+      probe.style.position = 'fixed';
+      probe.style.top = '0';
+      probe.style.left = '0';
+      probe.style.width = '0';
+      probe.style.height = '0';
+      probe.style.visibility = 'hidden';
+      probe.style.pointerEvents = 'none';
+      probe.style.paddingTop = 'env(safe-area-inset-top, 0px)';
+      probe.style.paddingRight = 'env(safe-area-inset-right, 0px)';
+      probe.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+      probe.style.paddingLeft = 'env(safe-area-inset-left, 0px)';
+      document.body.appendChild(probe);
+      const style = window.getComputedStyle(probe);
+      insets.top = parseFloat(style.paddingTop) || 0;
+      insets.right = parseFloat(style.paddingRight) || 0;
+      insets.bottom = parseFloat(style.paddingBottom) || 0;
+      insets.left = parseFloat(style.paddingLeft) || 0;
+      probe.remove();
+    } catch (e) {}
+    return insets;
+  }
+
+  forwardSurveyKey(event) {
+    try {
+      if (!this.surveyKeyboard || this.appMode !== 'survey_page' || !this.comReady) return;
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target;
+      const tag = target && target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (target && target.isContentEditable)) return;
+      const key = event.key;
+      if (!/^[a-z0-9]$/i.test(key) && key !== 'Enter' && key !== 'ArrowUp' && key !== 'ArrowDown') return;
+      // Buttons and links on the host page keep their own Enter.
+      if (key === 'Enter' && (tag === 'BUTTON' || tag === 'A')) return;
+      event.preventDefault();
+      this.sendMessage({ name: 'survey-key', data: { key, shiftKey: event.shiftKey } });
+    } catch (e) {}
+  }
+
+  // Lifts the floating card sheet above the keyboard and caps its height to what is visible.
+  updateSurveyKeyboardInset() {
+    try {
+      const container = this.gleapFrameContainer;
+      if (!container) {
+        return;
+      }
+      const vv = window.visualViewport;
+      const isSheet = this.appMode === 'survey' && !this.surveyLegacy && window.innerWidth <= 450;
+      const keyboard = vv ? Math.max(0, window.innerHeight - (vv.height + vv.offsetTop)) : 0;
+      if (!isSheet || !vv || keyboard < 80) {
+        // Nothing lifted: nothing to undo (the common case, on every scroll of every page).
+        if (!this.surveySheetLifted) {
+          return;
+        }
+        this.surveySheetLifted = false;
+        const inner = container.querySelector('.gleap-frame-container-inner');
+        container.style.removeProperty('bottom');
+        container.style.removeProperty('max-height');
+        if (inner) {
+          inner.style.removeProperty('max-height');
+        }
+        this.sendSheetViewport(0, false);
+        return;
+      }
+      const inner = container.querySelector('.gleap-frame-container-inner');
+      const visible = Math.max(160, vv.height - 24);
+      this.surveySheetLifted = true;
+      container.style.setProperty('bottom', keyboard + 8 + 'px', 'important');
+      container.style.setProperty('max-height', visible + 'px', 'important');
+      if (inner) {
+        // The handle area takes 15px; the survey scrolls inside what is left.
+        inner.style.setProperty('max-height', visible - 15 + 'px', 'important');
+      }
+      this.sendSheetViewport(visible - 15, true);
+    } catch (e) {}
+  }
+
+  /**
+   * Tells the messenger the room the card sheet has (same `sheet-viewport` message as the native
+   * shells' appnew.html), so it pins the header and Next and scrolls the question in between.
+   * Closed keyboard = { maxHeight: 0, keyboard: false }: no cap, the sheet's own layout again.
+   * Sent on change only; nothing is sent until the keyboard first opened.
+   */
+  sendSheetViewport(maxHeight, keyboard) {
+    const data = { maxHeight: Math.max(0, Math.floor(maxHeight)), keyboard: !!keyboard };
+    const last = this.lastSheetViewport;
+    if (!this.comReady || (last ? last.maxHeight === data.maxHeight && last.keyboard === data.keyboard : !data.keyboard)) {
+      return;
+    }
+    this.lastSheetViewport = data;
+    this.sendMessage({ name: 'sheet-viewport', data });
+  }
+
+  sendSafeAreaInsets() {
+    if (!this.comReady) {
+      return;
+    }
+    this.sendMessage({
+      name: 'survey-safe-area',
+      data: this.getSafeAreaInsets(),
+    });
+  }
+
+  // Shows a card/page survey that waited for its height (or gave up waiting).
+  revealSurvey() {
+    this.surveyAwaitingHeight = false;
+    if (this.surveyRevealTimeout) {
+      clearTimeout(this.surveyRevealTimeout);
+      this.surveyRevealTimeout = null;
+    }
+    const container = this.gleapFrameContainer;
+    if (container) {
+      container.classList.remove('gleap-frame-container--measuring');
+    }
+  }
+
+  scrollSurveyPageIntoView(smooth) {
+    try {
+      const container = this.gleapFrameContainer;
+      if (this.appMode !== 'survey_page' || !container || typeof window === 'undefined') {
+        return;
+      }
+      const top = container.getBoundingClientRect().top;
+      if (top >= 0) {
+        return;
+      }
+      window.scrollTo({ top: Math.max(0, window.scrollY + top - 16), behavior: smooth ? 'smooth' : 'auto' });
+    } catch (e) {}
+  }
+
+  /**
+   * The v2 survey wasn't found and the messenger runs the legacy survey flow: switch to the
+   * pre-Surveys 2.0 chrome for the current format.
+   */
+  setSurveyLegacy() {
+    if (!this.isSurvey() || this.surveyLegacy) {
+      return;
+    }
+    this.surveyLegacy = true;
+    this.updateFrameStyle();
+    this.applyInnerSize();
+  }
+
+  /**
+   * The survey's corners (Sharp / Rounded / Pill): the card popover and the phone sheet round
+   * their outline to match. Messengers that never send it leave the rounded outline.
+   */
+  setSurveyCorners(corners) {
+    const next = corners === 'sharp' || corners === 'pill' ? corners : null;
+    if (next === this.surveyCorners) {
+      return;
+    }
+    this.surveyCorners = next;
+    this.updateFrameStyle();
+  }
+
+  /**
+   * survey-theme: corners, plus the survey's surface colour and light/dark. The phone sheet (handle
+   * strip included) is painted in the survey's surface, not the widget's background, and the frame
+   * takes the survey's color-scheme so the browser never draws an opaque canvas behind it.
+   */
+  setSurveyTheme(theme) {
+    const surface =
+      theme && typeof theme.surface === 'string' && /^#[0-9a-f]{3,8}$/i.test(theme.surface) ? theme.surface : null;
+    const dark = theme && typeof theme.dark === 'boolean' ? theme.dark : null;
+    const changed = surface !== this.surveySurface || dark !== this.surveyDark;
+    this.surveySurface = surface;
+    this.surveyDark = dark;
+    const corners = theme ? theme.corners : null;
+    if ((corners === 'sharp' || corners === 'pill' ? corners : null) !== this.surveyCorners) {
+      this.setSurveyCorners(corners);
+    } else if (changed) {
+      this.updateFrameStyle();
+    }
   }
 
   // The widget is full screen at <= 450px and the expanded CSS only applies from
@@ -170,11 +490,15 @@ export default class GleapFrameManager {
       this.updateFrameStyle();
     }
     this.sendWidgetSizeUpdate();
+    if (this.widgetOpened && this.isFullSurvey()) {
+      this.sendSafeAreaInsets();
+    }
   }
 
   registerEscListener() {
     // While a capture request hides the widget, Escape belongs to the page and the capture bar.
-    if (this.escListener || this.captureHidden) {
+    // An inline survey page can't be closed.
+    if (this.escListener || this.captureHidden || this.appMode === 'survey_page') {
       return;
     }
 
@@ -211,6 +535,10 @@ export default class GleapFrameManager {
     this.injectedFrame = false;
     this.widgetOpened = false;
     this.markerManager = undefined;
+    if (this.surveyRevealTimeout) {
+      clearTimeout(this.surveyRevealTimeout);
+      this.surveyRevealTimeout = null;
+    }
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
     this.captureHidden = false;
@@ -314,11 +642,18 @@ export default class GleapFrameManager {
         // fails (e.g. CORS not available on the frameUrl), the helper falls back to direct
         // src loading, preserving the original behavior.
         var elem = document.createElement('div');
-        elem.className = 'gleap-frame-container gleap-frame-container--hidden rr-block';
+        // A card/page survey waiting for its height starts laid out but invisible, so the messenger can
+        // measure it before it shows; everything else starts hidden.
+        const startState =
+          this.isAutoHeightSurvey() && this.surveyAwaitingHeight
+            ? 'gleap-frame-container--measuring'
+            : 'gleap-frame-container--hidden';
+        elem.className = `gleap-frame-container ${startState} rr-block`;
         elem.innerHTML = `<div class="gleap-frame-container-inner">${widgetLoaderMarkup(
           GleapConfigManager.getInstance().getFlowConfig()
         )}<iframe class="gleap-frame" scrolling="yes" allow="autoplay; encrypted-media; fullscreen; microphone *; display-capture *; camera *;" frameborder="0"></iframe></div>`;
-        document.body.appendChild(elem);
+        const host = this.frameHost && document.body.contains(this.frameHost) ? this.frameHost : document.body;
+        host.appendChild(elem);
 
         // Image-type loader: fade the background image in once it has loaded.
         // Until then (or if it fails) the plain white fallback stays.
@@ -412,6 +747,12 @@ export default class GleapFrameManager {
     const surveyStyle = 'gleap-frame-container--survey';
     const extendedStyle = 'gleap-frame-container--extended';
     const surveyFullStyle = 'gleap-frame-container--survey-full';
+    const surveyPageStyle = 'gleap-frame-container--survey-page';
+    const surveyLegacyStyle = 'gleap-frame-container--survey-legacy';
+    const surveySharpStyle = 'gleap-frame-container--corners-sharp';
+    const surveyPillStyle = 'gleap-frame-container--corners-pill';
+    const surveyDarkStyle = 'gleap-frame-container--survey-dark';
+    const surveyLightStyle = 'gleap-frame-container--survey-light';
     const classicStyle = 'gleap-frame-container--classic';
     const classicStyleLeft = 'gleap-frame-container--classic-left';
     const modernStyleLeft = 'gleap-frame-container--modern-left';
@@ -426,6 +767,10 @@ export default class GleapFrameManager {
       noButtonStyleLeft,
       surveyStyle,
       surveyFullStyle,
+      surveyPageStyle,
+      surveyLegacyStyle,
+      surveySharpStyle,
+      surveyPillStyle,
     ];
     for (let i = 0; i < allStyles.length; i++) {
       this.gleapFrameContainer.classList.remove(allStyles[i]);
@@ -461,9 +806,27 @@ export default class GleapFrameManager {
     if (this.appMode === 'survey') {
       this.gleapFrameContainer.classList.add(surveyStyle);
     }
-    if (this.appMode === 'survey_full' || this.appMode === 'survey_web') {
+    if (this.isFullSurvey()) {
       this.gleapFrameContainer.classList.add(surveyFullStyle);
     }
+    if (this.appMode === 'survey_page') {
+      this.gleapFrameContainer.classList.add(surveyPageStyle);
+    }
+    if (this.surveyLegacy && this.isSurvey()) {
+      this.gleapFrameContainer.classList.add(surveyLegacyStyle);
+    }
+    if (this.surveyCorners && this.isSurvey() && !this.surveyLegacy) {
+      this.gleapFrameContainer.classList.add(this.surveyCorners === 'sharp' ? surveySharpStyle : surveyPillStyle);
+    }
+    const surveyTheme = this.isSurvey() && !this.surveyLegacy;
+    const containerStyle = this.gleapFrameContainer.style;
+    if (surveyTheme && this.surveySurface) {
+      containerStyle.setProperty('--gleap-survey-surface', this.surveySurface);
+    } else {
+      containerStyle.removeProperty('--gleap-survey-surface');
+    }
+    this.gleapFrameContainer.classList.toggle(surveyDarkStyle, surveyTheme && this.surveyDark === true);
+    this.gleapFrameContainer.classList.toggle(surveyLightStyle, surveyTheme && this.surveyDark === false);
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
     }
@@ -490,6 +853,17 @@ export default class GleapFrameManager {
         this.closeTimeout = null;
       }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--closing');
+      if (this.isAutoHeightSurvey() && this.surveyAwaitingHeight) {
+        this.gleapFrameContainer.classList.add('gleap-frame-container--measuring');
+        if (!this.surveyRevealTimeout) {
+          this.surveyRevealTimeout = setTimeout(() => {
+            this.surveyRevealTimeout = null;
+            this.revealSurvey();
+          }, 1200);
+        }
+      } else {
+        this.gleapFrameContainer.classList.remove('gleap-frame-container--measuring');
+      }
       this.gleapFrameContainer.classList.remove('gleap-frame-container--hidden');
       if (showLoader) {
         this.gleapFrameContainer.classList.add(loadingClass);
@@ -523,6 +897,16 @@ export default class GleapFrameManager {
 
     GleapEventManager.notifyEvent('open');
     this.registerEscListener();
+
+    // Full-screen surveys take the keyboard (digits, letters, Enter) right away. The
+    // messenger can't pull focus into its cross-origin frame without a user gesture
+    // (a survey shown by a trigger has none), so the host page focuses the frame.
+    if (this.isFullSurvey() && !this.isLegacyFullSurvey()) {
+      try {
+        const frame = this.gleapFrameContainer.querySelector('.gleap-frame');
+        if (frame) frame.focus({ preventScroll: true });
+      } catch (e) {}
+    }
   }
 
   updateUI() {
@@ -561,8 +945,8 @@ export default class GleapFrameManager {
   }
 
   hideWidget(resetRoutes = false) {
-    // Prevent for survey web.
-    if (this.appMode === 'survey_web') {
+    // The standalone survey page (legacy) and inline survey pages can't be closed.
+    if (this.appMode === 'survey_web' || this.appMode === 'survey_page') {
       return;
     }
 
@@ -577,8 +961,14 @@ export default class GleapFrameManager {
         this.closeTimeout = null;
       }
 
-      // Survey-full has no open/close animation, hide it instantly.
-      if (container.classList.contains('gleap-frame-container--survey-full')) {
+      if (this.surveyRevealTimeout) {
+        clearTimeout(this.surveyRevealTimeout);
+        this.surveyRevealTimeout = null;
+      }
+
+      if (container.classList.contains('gleap-frame-container--measuring')) {
+        // Never shown: nothing to animate.
+        container.classList.remove('gleap-frame-container--measuring');
         container.classList.add('gleap-frame-container--hidden');
       } else {
         // Play the close animation, then remove from view once it finishes.
@@ -712,19 +1102,55 @@ export default class GleapFrameManager {
       }
 
       if (data.name === 'height-update') {
-        this.frameHeight = data.data;
-
-        const innerContainer = document.querySelector('.gleap-frame-container-inner');
-        if (
-          (this.appMode === 'survey' || this.appMode === 'survey_full' || this.appMode === 'survey_web') &&
-          innerContainer
-        ) {
-          innerContainer.style.maxHeight = `${this.frameHeight}px`;
+        const height = parseInt(data.data, 10);
+        if (height > 0) {
+          this.frameHeight = height;
+          // Full-screen surveys fill the viewport; only card and page surveys follow the height.
+          if (this.isAutoHeightSurvey()) {
+            this.applyInnerSize();
+            this.revealSurvey();
+          }
         }
+      }
+
+      if (data.name === 'survey-legacy') {
+        this.setSurveyLegacy();
+      }
+
+      if (data.name === 'survey-theme' && data.data) {
+        this.setSurveyTheme(data.data);
+      }
+
+      // Survey page: a new step after a tall one the visitor scrolled down — bring the frame's top
+      // back into view (the next question would otherwise start above the fold).
+      if (data.name === 'survey-scroll-into-view') {
+        this.scrollSurveyPageIntoView(data.data && data.data.smooth !== false);
+      }
+
+      // Surveys 2.0 lifecycle, reported by the messenger. (outbound-sent keeps coming as notify-event.)
+      if (
+        data.name === 'survey-shown' ||
+        data.name === 'survey-step-viewed' ||
+        data.name === 'survey-answered' ||
+        data.name === 'survey-completed' ||
+        data.name === 'survey-closed'
+      ) {
+        GleapEventManager.notifyEvent(data.name, data.data || {});
+        // Optional push to the site's GA4 / GTM / Meta Pixel (off by default).
+        forwardSurveyAnalyticsEvent(data.name, data.data || {});
       }
 
       if (data.name === 'notify-event') {
         GleapEventManager.notifyEvent(data.data.type, data.data.data);
+
+        // Surveys 2.0 report completion as notify-event outbound-sent; track the same
+        // `outbound-<id>-submitted` event as the legacy submit path so targeting rules match.
+        const sent = data.data && data.data.type === 'outbound-sent' ? data.data.data : null;
+        if (sent && sent.outboundId && sent.responseId) {
+          const formData = Object.assign({}, sent.formData || {});
+          delete formData.reportedBy;
+          Gleap.trackEvent(`outbound-${sent.outboundId}-submitted`, formData);
+        }
       }
 
       if (data.name === 'cleanup-drawings') {

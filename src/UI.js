@@ -774,8 +774,31 @@ export const injectStyledCSS = (
       object-fit: cover;
     }
 
+    /* Surveys 2.0 — card: a compact popover in the launcher's corner. */
     .gleap-frame-container--survey {
       bottom: ${buttonY}px !important;
+      bottom: calc(${buttonY}px + env(safe-area-inset-bottom, 0px)) !important;
+      max-width: 348px;
+      border-radius: 24px;
+      box-shadow: 0 14px 44px rgba(16, 24, 40, 0.18), 0 0 0 1px rgba(16, 24, 40, 0.06);
+      animation: gleapSurveyCardIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) both, gleapWidgetFade 0.18s ease-out both;
+      transition: none;
+    }
+
+    /* The survey's corners (survey-theme from the messenger); rounded is the 24px above. */
+    .gleap-frame-container--survey.gleap-frame-container--corners-sharp {
+      border-radius: 10px;
+    }
+
+    .gleap-frame-container--survey.gleap-frame-container--corners-pill {
+      border-radius: 32px;
+    }
+
+    /* Card and page surveys stay invisible until the messenger reports their height. */
+    .gleap-frame-container--measuring {
+      visibility: hidden !important;
+      animation: none !important;
+      pointer-events: none !important;
     }
 
     .gleap-frame-container--extended {
@@ -795,32 +818,106 @@ export const injectStyledCSS = (
       }
     }
 
-    .gleap-frame-container--survey-full {
+    /* Surveys 2.0 — full screen: the frame covers the viewport and the messenger draws the
+       brand-tinted, Typeform-style background and the close button itself. */
+    .gleap-frame-container--survey-full,
+    [dir=rtl].gleap-frame-container--survey-full {
       position: fixed;
       top: 0 !important;
       left: 0 !important;
       bottom: 0 !important;
       right: 0 !important;
-      width: 100vw !important;
-      max-width: 100vw !important;
+      width: 100% !important;
+      max-width: none !important;
       height: 100vh;
       height: 100dvh !important;
-      background-color: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(6px);
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
-      max-height: 100vh;
-      max-height: 100dvh !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      background-color: transparent;
       border-radius: 0 !important;
-      animation-name: none !important;
+      box-shadow: none !important;
+      transform: none;
+      animation: gleapWidgetFade 0.28s ease-out both !important;
     }
 
     .gleap-frame-container--survey-full .gleap-frame-container-inner {
+      width: 100% !important;
+      height: 100% !important;
+      max-width: none !important;
+      max-height: none !important;
+      border-radius: 0;
+    }
+
+    .gleap-frame-container--survey-full .gleap-frame-container-inner:before {
+      display: none;
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--closing {
+      animation: gleapWidgetFadeOut 0.22s ease-in both !important;
+    }
+
+    /* Legacy surveys (the messenger fell back to the pre-2.0 flow): the old survey chrome. */
+    .gleap-frame-container--survey.gleap-frame-container--survey-legacy {
+      max-width: 410px;
+      border-radius: ${containerRadius * 1.5}px;
+      box-shadow: 0px 5px 40px 0px rgba(9, 14, 21, 0.16);
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy {
+      display: flex !important;
+      justify-content: center !important;
+      align-items: center !important;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy .gleap-frame-container-inner {
+      width: calc(100% - 24px) !important;
       max-width: 640px !important;
-      width: calc(100% - 24px);
+      height: calc(100% - 40px) !important;
       border-radius: ${containerRadius}px;
       overflow: hidden;
+    }
+
+    .gleap-frame-container--survey-full.gleap-frame-container--survey-legacy .gleap-frame-container-inner:before {
+      display: block;
+    }
+
+    /* Surveys 2.0 — page: an inline frame in the host's container, as tall as the survey. */
+    .gleap-frame-container.gleap-frame-container--survey-page,
+    [dir=rtl].gleap-frame-container.gleap-frame-container--survey-page {
+      position: relative !important;
+      top: auto !important;
+      right: auto !important;
+      bottom: auto !important;
+      left: auto !important;
+      width: 100% !important;
+      max-width: none !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      z-index: auto;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      background-color: transparent;
+      transform: none !important;
+      animation: gleapWidgetFade 0.3s ease-out both !important;
+    }
+
+    .gleap-frame-container--survey-page .gleap-frame-container-inner {
+      width: 100% !important;
+      height: 360px;
+      max-height: none !important;
+    }
+
+    .gleap-frame-container--survey-page.gleap-frame-container--animate .gleap-frame-container-inner {
+      transition: height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gleap-frame-container--survey-page .gleap-frame-container-inner:before,
+    .gleap-frame-container--survey-page .gleap-frame-loader {
+      display: none;
     }
 
     .gleap-frame-container--classic {
@@ -902,6 +999,16 @@ export const injectStyledCSS = (
     @keyframes gleapWidgetOut {
       from { opacity: 1; transform: scale(1); }
       to { opacity: 0; transform: scale(0.96); }
+    }
+
+    @keyframes gleapWidgetFadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    @keyframes gleapSurveyCardIn {
+      from { transform: translateY(14px) scale(0.98); }
+      to { transform: translateY(0) scale(1); }
     }
 
     @keyframes gleapWidgetSlideUp {
@@ -1407,7 +1514,28 @@ export const injectStyledCSS = (
     }
 
     .gleap-frame-container--survey .gleap-frame-container-inner {
-      height: calc(100vh - 40px);
+      height: calc(100vh - ${buttonY + 24}px);
+      height: calc(100dvh - ${buttonY + 24}px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Behind the survey card the frame shows the survey's surface, not the widget background. */
+    .gleap-frame-container--survey .gleap-frame-container-inner:before {
+      background-color: var(--gleap-survey-surface, ${backgroundColor});
+    }
+
+    /* The page frame takes the survey's color-scheme (the messenger sets the same on its document),
+       so the browser keeps the iframe transparent on the host's backdrop, whatever the host's scheme. */
+    .gleap-frame-container--survey-page {
+      color-scheme: light;
+    }
+
+    .gleap-frame-container--survey-page.gleap-frame-container--survey-dark {
+      color-scheme: dark;
+    }
+
+    /* Smooth resizes between questions (not on the first measure, which happens before --animate). */
+    .gleap-frame-container--survey.gleap-frame-container--animate .gleap-frame-container-inner {
+      transition: max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
     
     .gleap-frame-container-inner:before {
@@ -1530,6 +1658,15 @@ export const injectStyledCSS = (
 
     .bb-feedback-button--hidden {
       display: none !important;
+    }
+
+    /* A survey takes the launcher's corner: the launcher steps aside while it is open (a pill or
+       sharp card would otherwise show the launcher peeking out behind its corner). */
+    .bb-feedback-button--open.bb-feedback-button--survey {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.15s ease, visibility 0s linear 0.15s;
     }
     
     .bb-feedback-button-text {
@@ -2359,19 +2496,91 @@ export const injectStyledCSS = (
         height: 100%;
       }
 
-      .gleap-frame-container:not(.gleap-frame-container--survey):not(.gleap-frame-container--survey-full) .gleap-frame-container-inner {
+      .gleap-frame-container:not(.gleap-frame-container--survey):not(.gleap-frame-container--survey-full):not(.gleap-frame-container--survey-page) .gleap-frame-container-inner {
         max-height: calc(var(--glvh, 1vh) * 100) !important;
       }
 
-      .gleap-frame-container--survey {
+      /* Card surveys become a floating sheet (iOS 26 style): inset from the edges and above the
+         home indicator, rounded on all corners, layered shadow, dimmed page behind. */
+      .gleap-frame-container--survey,
+      [dir=rtl].gleap-frame-container--survey {
+        top: auto !important;
+        bottom: calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 8px !important;
+        right: 8px !important;
+        width: auto !important;
+        max-width: none !important;
         height: auto !important;
-        top: initial !important;
-        bottom: 0px !important;
-        min-height: initial !important;
+        min-height: 0 !important;
+        max-height: calc(100vh - 24px) !important;
+        max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+        box-sizing: border-box;
+        padding-top: 15px;
+        padding-bottom: 0;
+        /* The survey's surface (survey-theme), so a dark survey has no light handle strip. */
+        background-color: var(--gleap-survey-surface, ${backgroundColor});
+        border-radius: 32px 32px 40px 40px !important;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 100vmax rgba(10, 12, 16, 0.25);
+        transform-origin: center bottom;
+        transition: bottom 0.25s cubic-bezier(0.16, 1, 0.3, 1), max-height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        animation: gleapWidgetSlideUp 0.5s cubic-bezier(0.22, 1.2, 0.36, 1) both, gleapWidgetFade 0.2s ease-out both;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--corners-sharp {
+        border-radius: 14px !important;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--corners-pill {
+        border-radius: 40px 40px 46px 46px !important;
+      }
+
+      .gleap-frame-container--survey:after {
+        content: "";
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        width: 36px;
+        height: 5px;
+        margin-left: -18px;
+        border-radius: 5px;
+        background-color: ${isDarkMode ? 'rgba(255, 255, 255, 0.28)' : 'rgba(16, 24, 40, 0.16)'};
+        pointer-events: none;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-dark:after {
+        background-color: rgba(255, 255, 255, 0.28);
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-light:after {
+        background-color: rgba(16, 24, 40, 0.16);
       }
 
       .gleap-frame-container--survey .gleap-frame-container-inner {
-        height: 100vh !important;
+        width: 100% !important;
+        height: calc(100vh - 39px) !important;
+        height: calc(100dvh - 39px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .gleap-frame-container--survey-page .gleap-frame-container-inner {
+        width: 100% !important;
+      }
+
+      /* Legacy card surveys: the old full-width panel at the bottom (no sheet chrome). */
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy,
+      [dir=rtl].gleap-frame-container--survey.gleap-frame-container--survey-legacy {
+        padding: 0;
+        border-radius: 28px !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy:after {
+        display: none;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--survey-legacy .gleap-frame-container-inner {
+        height: calc(100vh - 12px) !important;
+        height: calc(100dvh - 12px - env(safe-area-inset-top, 0px)) !important;
       }
 
       .bb-tooltip {
@@ -3053,6 +3262,24 @@ export const injectStyledCSS = (
       to {
         opacity: 1;
         transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-frame-container--survey,
+      .gleap-frame-container--survey-page,
+      .gleap-frame-container--survey-full {
+        animation: gleapWidgetFade 0.15s ease-out both !important;
+      }
+
+      .gleap-frame-container--survey.gleap-frame-container--closing,
+      .gleap-frame-container--survey-full.gleap-frame-container--closing {
+        animation: gleapWidgetFadeOut 0.15s ease-in both !important;
+      }
+
+      .gleap-frame-container--survey .gleap-frame-container-inner,
+      .gleap-frame-container--survey-page .gleap-frame-container-inner {
+        transition: none !important;
       }
     }
 

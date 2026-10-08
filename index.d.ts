@@ -276,7 +276,78 @@ export namespace Gleap {
     feedbackFlow: string,
     showBackButton?: boolean
   ): void;
-  function showSurvey(surveyId: string, format?: string): void;
+  type SurveyFormat = "card" | "full" | "page";
+  interface ShowSurveyOptions {
+    /** card = corner popover (bottom sheet on phones), full = full screen, page = inline in `container`. Default: card. */
+    format?: SurveyFormat;
+    /** Values for the survey's hidden fields. */
+    fields?: Record<string, string>;
+    /** Signed personal-link token: attaches the response to that contact. */
+    personalToken?: string;
+    /** Page format: answer with the keyboard while focus is on the host page. */
+    keyboard?: boolean;
+    /** Element (or CSS selector) the page format renders into. Default: document.body. */
+    container?: HTMLElement | string;
+    /** Continue a started response where it was left. */
+    resume?: boolean;
+  }
+  /**
+   * Shows a survey. The legacy format strings ("survey", "survey_full", "survey_web") keep working.
+   */
+  function showSurvey(
+    surveyId: string,
+    formatOrOptions?: "survey" | "survey_full" | "survey_web" | string | ShowSurveyOptions
+  ): void;
+  /** Surveys 2.0 events (reported by the survey renderer; not fired for legacy surveys). */
+  interface SurveyShownEvent {
+    surveyId: string;
+    version: number;
+    format: SurveyFormat;
+    responseId: string;
+    /** true when a started response was continued (resume). */
+    resumed: boolean;
+  }
+  interface SurveyStepViewedEvent {
+    surveyId: string;
+    version: number;
+    responseId: string;
+    /** Zero-based position of the question in the survey. */
+    stepIndex: number;
+    /** Question (block) key. */
+    key: string;
+    [key: string]: any;
+  }
+  interface SurveyAnsweredEvent {
+    surveyId: string;
+    version: number;
+    responseId: string;
+    [key: string]: any;
+  }
+  interface SurveyCompletedEvent {
+    surveyId: string;
+    version: number;
+    responseId: string;
+    endingId: string;
+    /** Answers keyed by question key. */
+    answers: Record<string, any>;
+  }
+  interface SurveyClosedEvent {
+    surveyId: string;
+    version: number;
+    responseId?: string;
+    /** Response status when closed (e.g. "in_progress", "completed"); none when nothing was answered. */
+    status?: string;
+  }
+  /** The survey is visible. */
+  function on(event: "survey-shown", callback: (data: SurveyShownEvent) => void): void;
+  /** A question became visible. */
+  function on(event: "survey-step-viewed", callback: (data: SurveyStepViewedEvent) => void): void;
+  /** An answer was saved. */
+  function on(event: "survey-answered", callback: (data: SurveyAnsweredEvent) => void): void;
+  /** The last question was answered and an ending is shown. `outbound-sent` keeps firing as before. */
+  function on(event: "survey-completed", callback: (data: SurveyCompletedEvent) => void): void;
+  /** The survey was closed (by the user or after its ending). */
+  function on(event: "survey-closed", callback: (data: SurveyClosedEvent) => void): void;
   function on(
     event:
       | "initialized"

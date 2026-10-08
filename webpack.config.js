@@ -140,6 +140,35 @@ const browserConfig = {
   },
 };
 
+// survey-embed.js: a small standalone loader for <div data-gleap-survey> embeds (loads the SDK on demand).
+const copyEmbedPlugin = {
+  apply: (compiler) => {
+    compiler.hooks.afterEmit.tap("AfterEmitEmbedPlugin", () => {
+      const nodeVersion = process.env.npm_package_version;
+      return exec(
+        `mkdir -p published/${nodeVersion} published/latest && cp ./build/embed/survey-embed.js published/${nodeVersion}/survey-embed.js && cp ./build/embed/survey-embed.js published/latest/survey-embed.js`,
+        (err, stdout, stderr) => {
+          if (stdout) process.stdout.write(stdout);
+          if (stderr) process.stderr.write(stderr);
+        }
+      );
+    });
+  },
+};
+
+const embedConfig = {
+  ...commonConfig(false, [copyEmbedPlugin]),
+  entry: {
+    "survey-embed": "./src/GleapSurveyEmbed.js",
+  },
+  devtool: false,
+  output: {
+    path: path.resolve(__dirname, "build/embed"),
+    filename: "[name].js",
+    clean: true,
+  },
+};
+
 const developmentConfig = {
   ...commonConfig(true, []),
   // ... additional development-specific settings ...
@@ -149,6 +178,6 @@ module.exports = (env) => {
   if (env && env.development) {
     return developmentConfig;
   } else {
-    return [esmConfig, cjsConfig, browserConfig];
+    return [esmConfig, cjsConfig, browserConfig, embedConfig];
   }
 };
