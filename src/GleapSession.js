@@ -50,6 +50,12 @@ export default class GleapSession {
   // never re-identified from stale state.
   lastIdentify = null;
   identifyInFlight = false;
+  // identify / updateContact requests still waiting for the server. A survey
+  // started meanwhile would get the previous contact (Surveys 2.0 skips the
+  // contact questions an identified contact already answered), so showSurvey
+  // waits for them (onContactSettled).
+  pendingContactUpdates = 0;
+  contactSettledListeners = [];
 
   // GleapSession singleton
   static instance;
@@ -145,6 +151,51 @@ export default class GleapSession {
     } else {
       this.onSessionReadyListener.push(onSessionReady);
     }
+  };
+
+  /**
+   * Counts an identify / updateContact request until it settles. The session
+   * it returns is applied (validateSession, session-update to the messenger)
+   * before the listeners run.
+   */
+  trackContactUpdate = (request) => {
+    this.pendingContactUpdates++;
+    const settle = () => {
+      this.pendingContactUpdates = Math.max(0, this.pendingContactUpdates - 1);
+      if (this.pendingContactUpdates > 0) {
+        return;
+      }
+      const listeners = this.contactSettledListeners;
+      this.contactSettledListeners = [];
+      for (let i = 0; i < listeners.length; i++) {
+        listeners[i]();
+      }
+    };
+    request.then(settle, settle);
+    return request;
+  };
+
+  /**
+   * Runs `callback` once no identify / updateContact request is in flight, or
+   * after `timeoutMs` at the latest.
+   */
+  onContactSettled = (callback, timeoutMs = 5000) => {
+    if (this.pendingContactUpdates === 0) {
+      callback();
+      return;
+    }
+    let done = false;
+    let timer = null;
+    const run = () => {
+      if (done) {
+        return;
+      }
+      done = true;
+      clearTimeout(timer);
+      callback();
+    };
+    timer = setTimeout(run, timeoutMs);
+    this.contactSettledListeners.push(run);
   };
 
   injectSession = (http) => {
@@ -477,7 +528,7 @@ export default class GleapSession {
     }
 
     const self = this;
-    return new Promise((resolve, reject) => {
+    return this.trackContactUpdate(new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
@@ -526,7 +577,7 @@ export default class GleapSession {
           })
         );
       });
-    });
+    }));
   };
 
   identifySession = (userId, userData, userHash, refreshFileSession = false) => {
@@ -541,7 +592,7 @@ export default class GleapSession {
     }
 
     const self = this;
-    return new Promise((resolve, reject) => {
+    return this.trackContactUpdate(new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
@@ -603,7 +654,7 @@ export default class GleapSession {
           })
         );
       });
-    });
+    }));
   };
 
   startProductTourConfig = (tourId) => {

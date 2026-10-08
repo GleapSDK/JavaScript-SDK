@@ -1011,16 +1011,20 @@ class Gleap {
       return;
     }
 
-    const options = normalizeSurveyOptions(formatOrOptions);
-    Gleap.startFeedbackFlowWithOptions(
-      surveyId,
-      {
-        hideBackButton: true,
-        format: options.appMode,
-        survey: options,
-      },
-      true
-    );
+    // The messenger reads the contact once, when the survey starts, to skip the contact questions
+    // it already knows: wait for an identify / updateContact still in flight (capped).
+    sessionInstance.onContactSettled(() => {
+      const options = normalizeSurveyOptions(formatOrOptions);
+      Gleap.startFeedbackFlowWithOptions(
+        surveyId,
+        {
+          hideBackButton: true,
+          format: options.appMode,
+          survey: options,
+        },
+        true
+      );
+    });
   }
 
   /**
