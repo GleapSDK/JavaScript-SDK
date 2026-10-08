@@ -156,8 +156,12 @@ export default class GleapFrameManager {
     this.surveyDark = null;
     this.updateFrameStyle();
 
-    // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
-    this.surveyAwaitingHeight = this.isAutoHeightSurvey() && (!this.comReady || !this.frameHeight);
+    // A card/page survey waits for its own height before it shows, also in a frame that already
+    // measured an earlier survey (the messenger reports none for a survey with nothing to ask).
+    if (this.isAutoHeightSurvey()) {
+      this.frameHeight = 0;
+    }
+    this.surveyAwaitingHeight = this.isAutoHeightSurvey();
     this.applyInnerSize();
 
     // Lay the hidden frame out (invisibly) so the messenger can measure the survey right away.
