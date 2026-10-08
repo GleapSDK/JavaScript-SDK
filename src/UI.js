@@ -449,6 +449,16 @@ export const injectStyledCSS = (
       margin-top: 0px;
     }
 
+    .gleap-b-shown.gleap-b-clip {
+      transition: padding 0.3s ease-out;
+      margin-top: 0px;
+      padding-top: calc(var(--gleap-margin-top) + var(--gleap-b-body-padding-top, 0px));
+    }
+
+    .gleap-b-clip .gleap-b {
+      top: 0px;
+    }
+
     .gleap-b {
       display: none;
       position: absolute;

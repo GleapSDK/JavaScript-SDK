@@ -2,6 +2,22 @@ import Gleap, { GleapFrameManager } from './Gleap';
 import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
 
+const clipsOverflow = (style) => {
+  if (!style) {
+    return false;
+  }
+
+  return [style.overflowX || style.overflow, style.overflowY || style.overflow].some(
+    (value) => !!value && value !== 'visible'
+  );
+};
+
+/**
+ * Whether body clips content outside its padding box. Body's overflow only clips when the root
+ * element's overflow is not `visible`; otherwise it is propagated to the viewport.
+ */
+export const bodyClipsInlineBanner = (htmlStyle, bodyStyle) => clipsOverflow(htmlStyle) && clipsOverflow(bodyStyle);
+
 export default class GleapBannerManager {
   bannerUrl = 'https://outboundmedia.gleap.io';
   bannerContainer = null;
@@ -61,6 +77,8 @@ export default class GleapBannerManager {
 
           if (this.bannerData?.format === 'floating') {
             document.body.classList.add('gleap-b-f');
+          } else {
+            this.applyInlineClipLayout();
           }
         }
         if (data.name === 'banner-close') {
@@ -111,6 +129,30 @@ export default class GleapBannerManager {
 
     document.body.classList.remove('gleap-b-shown');
     document.body.classList.remove('gleap-b-f');
+    document.body.classList.remove('gleap-b-clip');
+  }
+
+  /**
+   * The inline banner sits in body's top margin, above body's padding box. On pages whose
+   * body clips its overflow (app shells with `html, body { overflow: hidden }`) that area is
+   * cut off, so only an empty strip shows. There the banner moves into body's top padding,
+   * which body does not clip, on top of the page's own padding.
+   */
+  applyInlineClipLayout() {
+    // Already applied: body's padding now includes the banner, so it is no longer the page's own.
+    if (document.body.classList.contains('gleap-b-clip')) {
+      return;
+    }
+
+    try {
+      const bodyStyle = window.getComputedStyle(document.body);
+      if (!bodyClipsInlineBanner(window.getComputedStyle(document.documentElement), bodyStyle)) {
+        return;
+      }
+
+      document.documentElement.style.setProperty('--gleap-b-body-padding-top', bodyStyle.paddingTop || '0px');
+      document.body.classList.add('gleap-b-clip');
+    } catch (exp) {}
   }
 
   disable() {
