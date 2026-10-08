@@ -52,6 +52,8 @@ export default class GleapFrameManager {
   // Card and page surveys stay invisible until the messenger reports their height (no tall blank flash).
   surveyAwaitingHeight = false;
   surveyRevealTimeout = null;
+  // A freshly injected frame opens shortly after its first ping, unless it was closed meanwhile.
+  openAfterPingTimeout = null;
   // The messenger fell back to a legacy (pre Surveys 2.0) survey: use the old survey chrome.
   surveyLegacy = false;
   // Surveys 2.0 corners reported by the messenger (survey-theme): 'sharp' | 'pill', null = rounded.
@@ -154,8 +156,12 @@ export default class GleapFrameManager {
     this.surveyDark = null;
     this.updateFrameStyle();
 
-    // Wait for the survey's height before showing a card/page survey in a frame that has none yet.
-    this.surveyAwaitingHeight = this.isAutoHeightSurvey() && (!this.comReady || !this.frameHeight);
+    // A card/page survey waits for its own height before it shows, also in a frame that already
+    // measured an earlier survey (the messenger reports none for a survey with nothing to ask).
+    if (this.isAutoHeightSurvey()) {
+      this.frameHeight = 0;
+    }
+    this.surveyAwaitingHeight = this.isAutoHeightSurvey();
     this.applyInnerSize();
 
     // Lay the hidden frame out (invisibly) so the messenger can measure the survey right away.
@@ -539,6 +545,8 @@ export default class GleapFrameManager {
       clearTimeout(this.surveyRevealTimeout);
       this.surveyRevealTimeout = null;
     }
+    clearTimeout(this.openAfterPingTimeout);
+    this.openAfterPingTimeout = null;
     this.gleapFrameContainer = null;
     this.gleapFrame = null;
     this.captureHidden = false;
@@ -950,6 +958,15 @@ export default class GleapFrameManager {
       return;
     }
 
+    // A survey the messenger closes before it was shown (nothing to ask): it must not open after
+    // all, and there is nothing to animate and no close event without an open.
+    const wasOpened = this.widgetOpened;
+    const wasVisible = this.isOpened();
+    if (this.openAfterPingTimeout) {
+      clearTimeout(this.openAfterPingTimeout);
+      this.openAfterPingTimeout = null;
+    }
+
     this.hideMarkerManager();
     this.setCaptureEditorOpen(false);
     if (this.gleapFrameContainer) {
@@ -966,7 +983,7 @@ export default class GleapFrameManager {
         this.surveyRevealTimeout = null;
       }
 
-      if (container.classList.contains('gleap-frame-container--measuring')) {
+      if (!wasOpened || container.classList.contains('gleap-frame-container--measuring')) {
         // Never shown: nothing to animate.
         container.classList.remove('gleap-frame-container--measuring');
         container.classList.add('gleap-frame-container--hidden');
@@ -989,7 +1006,9 @@ export default class GleapFrameManager {
     this.widgetOpened = false;
     this.updateWidgetStatus();
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
-    GleapEventManager.notifyEvent('close');
+    if (wasVisible) {
+      GleapEventManager.notifyEvent('close');
+    }
     GleapNotificationManager.getInstance().reloadNotificationsFromCache();
 
     this.unregisterEscListener();
@@ -1073,7 +1092,9 @@ export default class GleapFrameManager {
         this.sendSessionUpdate();
         this.sendCaptureCapabilities();
         this.workThroughQueue();
-        setTimeout(() => {
+        clearTimeout(this.openAfterPingTimeout);
+        this.openAfterPingTimeout = setTimeout(() => {
+          this.openAfterPingTimeout = null;
           this.runWidgetShouldOpenCallback();
         }, 300);
       }
