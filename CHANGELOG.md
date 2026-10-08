@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+Fixed: inline banners did not show on pages whose `body` clips its overflow, the usual app-shell layout (`html, body { height: 100%; overflow: hidden }`). The banner sits in the body's top margin, which the body cut off, so only an empty strip appeared above the page. On such pages the banner now goes into the body's top padding (added to the page's own padding), which the body does not clip; with `box-sizing: border-box` the app also keeps fitting the viewport instead of losing the banner's height at the bottom. Pages that scroll normally and floating banners are unchanged.
+
 ## 19.1.1
 Fixed: the product tour and tooltip visual editor now works from the dashboard on app.gleap.ai. The SDK accepts the editor's messages from exactly `https://app.gleap.ai` and `https://app.gleap.io` (no lookalike domains), loads the editor from the dashboard that opened it, and sends its replies only to that dashboard.
 
