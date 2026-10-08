@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 19.2.0
 Surveys 2.0: `Gleap.showSurvey(surveyId, options)` takes `{ format: 'card' | 'full' | 'page', fields, personalToken, container, resume }`; the old format strings (`'survey'`, `'survey_full'`, `'survey_web'`) keep working. A survey shown before the SDK is ready now opens once it is.
 New survey containers: the card is a 348px corner popover with an enter animation and becomes a bottom sheet (handle, scrim, home-indicator inset) on phones; full screen covers the whole viewport and the survey draws its own background and close button (no more centred 640px card over a blurred backdrop); `page` renders inline in `container` (or `document.body`) and grows with the survey. Card and page surveys only appear once their height is known. Reduced motion is respected. Legacy surveys (not yet migrated) keep the previous card and full-screen look.
 New events `survey-shown`, `survey-answered`, `survey-completed` and `survey-closed` (with `surveyId`, `version`, `responseId`, …); `outbound-sent` keeps firing as before.
