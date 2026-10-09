@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.2.2
+Fixed: a product tour or tooltip selector that is not valid CSS, such as an attribute typed without its brackets (`data-test="x"` instead of `[data-test="x"]`), no longer throws. The bracketless form now finds its element; anything else counts as not found, so the tour ends cleanly instead of stopping with an error, copilot tours stop waiting after 5 s, and tooltips keep working.
+Fixed: the tour editor's element picker no longer stores ids and classes that Mantine and React 19 generate at runtime (`mantine-…` ids, `«r1»` / `_r_1_` from `useId`, Mantine 6 `mantine-<hash>`, Mantine 7 `m_<hash>` and `__m__-…` classes). They changed on the next page load, deploy or Mantine update and silently ended the tour; the picker now prefers stable names such as `mantine-Button-root`.
+
 ## 19.2.1
 Surveys: questions asking for the email, name or phone of an identified contact are skipped (with the Surveys 2.0 "Skip when known" option). `Gleap.showSurvey` and every automatic survey now wait for an `identify` or `updateContact` still in flight (at most 5 s), so the survey starts with the identified contact instead of the guest.
 Fixed: a survey with nothing left to ask could leave an empty white card on screen (and `Gleap.isOpened()` true) when its frame was not loaded yet. A frame that was never shown now hides without the close animation and without a `close` event; `Gleap.close()` on a closed widget no longer fires `close`.
