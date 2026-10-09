@@ -1,6 +1,7 @@
 import { GleapConfigManager, GleapTranslationManager } from './Gleap';
 import { applyGleapCSPNonce } from './GleapHelper';
 import { typeIntoElement } from './GleapInputFiller';
+import { querySelectorSafe } from './GleapSafeSelector';
 import { calculateContrast, loadIcon } from './UI';
 
 const localStorageKey = 'gleap-tour-data';
@@ -90,7 +91,7 @@ function waitForElement(selector, timeout = 5000) {
   let attempts = 0;
   return new Promise((resolve, reject) => {
     const interval = setInterval(() => {
-      const element = document.querySelector(selector);
+      const element = querySelectorSafe(selector);
       if (element) {
         clearInterval(interval);
         resolve(element);
@@ -204,7 +205,7 @@ export default class GleapCopilotTours {
           const steps = self.productTourData.steps;
           const currentStep = steps[self.currentActiveIndex];
           if (currentStep && currentStep.selector && currentStep.selector !== '') {
-            self.updatePointerPosition(document.querySelector(currentStep.selector), currentStep);
+            self.updatePointerPosition(querySelectorSafe(currentStep.selector), currentStep);
           }
         }
       });

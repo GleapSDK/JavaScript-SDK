@@ -2,6 +2,7 @@ import { loadIcon } from './UI';
 import GleapAdminHelper from './GleapAdminHelper';
 import Gleap, { GleapModalManager, GleapProductTours, GleapBannerManager } from './Gleap';
 import { isGleapAdminOrigin, resolveGleapAdminOrigin } from './GleapAdminOrigins';
+import { querySelectorSafe } from './GleapSafeSelector';
 
 export default class GleapAdminManager {
   libraryInstance = null;
@@ -158,7 +159,7 @@ export default class GleapAdminManager {
 
             // Find the element and highlight it.
             if (data?.data?.selector) {
-              const element = document.querySelector(data?.data?.selector);
+              const element = querySelectorSafe(data?.data?.selector);
               if (element) {
                 element.classList.add('gleap-admin-highlight');
               }
@@ -202,7 +203,7 @@ export default class GleapAdminManager {
 
           if (data.name === 'click') {
             try {
-              document.querySelector(data.data.selector).click();
+              querySelectorSafe(data.data.selector)?.click();
             } catch (e) {
               console.log(e);
             }
