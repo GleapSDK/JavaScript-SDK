@@ -1,3 +1,5 @@
+import { querySelectorSafe } from './GleapSafeSelector';
+
 const GleapTours = (function () {
   'use strict';
   let currentConfig = {};
@@ -234,15 +236,9 @@ const GleapTours = (function () {
     const { element } = step;
     let elemObj = element;
     if (typeof elemObj === 'string') {
-      try {
-        elemObj = document.querySelector(element);
-      } catch (error) {
-        // This will escape colons within IDs but not affect pseudo-classes or other valid uses of colons
-        let refactoredElement = element.replace(/(#[^#\s]+)/g, function (match) {
-          return match.replace(/:/g, '\\:');
-        });
-        elemObj = document.querySelector(refactoredElement);
-      }
+      // Stored selectors can be hand typed and invalid; that has to end in
+      // onElementNotFound below instead of an exception inside the retry timer.
+      elemObj = querySelectorSafe(element);
     }
     if (element && !elemObj && attemptTime >= 0) {
       setTimeout(() => {
@@ -277,13 +273,7 @@ const GleapTours = (function () {
     // Re-query the element if the cached reference is no longer in the DOM.
     if (!document.body.contains(activeHighlight) && activeStep.element && typeof activeStep.element === 'string') {
       try {
-        var freshEl = document.querySelector(activeStep.element);
-        if (!freshEl) {
-          var escaped = activeStep.element.replace(/(#[^#\s]+)/g, function (match) {
-            return match.replace(/:/g, '\\:');
-          });
-          freshEl = document.querySelector(escaped);
-        }
+        var freshEl = querySelectorSafe(activeStep.element);
         if (freshEl) {
           activeHighlight = freshEl;
           setState('__activeElement', freshEl);

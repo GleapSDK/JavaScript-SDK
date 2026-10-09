@@ -2,6 +2,7 @@ import { arrow, autoUpdate, computePosition, flip, offset, shift } from '@floati
 import { GleapSession } from './Gleap';
 import { loadIcon } from './UI';
 import { checkPageFilter, checkPageRules } from './GleapPageFilter';
+import { matchesSelectorSafe, querySelectorAllSafe } from './GleapSafeSelector';
 
 export default class GleapTooltipManager {
   tooltips = [];
@@ -40,7 +41,7 @@ export default class GleapTooltipManager {
   checkNodeTooltip(node) {
     if (this.filteredTooltips.length > 0) {
       this.filteredTooltips.forEach((tooltip) => {
-        if (tooltip.selector && node.matches(tooltip.selector)) {
+        if (tooltip.selector && matchesSelectorSafe(node, tooltip.selector)) {
           this.linkTooltip(node, tooltip);
         }
       });
@@ -449,7 +450,7 @@ export default class GleapTooltipManager {
       const tooltip = this.filteredTooltips[i];
 
       try {
-        const elements = document.querySelectorAll(tooltip.selector);
+        const elements = querySelectorAllSafe(tooltip.selector);
 
         for (let j = 0; j < elements.length; j++) {
           const element = elements[j];
