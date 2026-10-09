@@ -45,6 +45,7 @@ jest.mock('./GleapHelper', () => ({
 jest.mock('./UI', () => ({
   widgetLoaderMarkup: jest.fn(() => ''),
   widgetMaxHeight: 700,
+  widgetExpandMinWidth: 768,
 }));
 
 const EXPANDED_CLASS = 'gleap-frame-container--expanded';
@@ -178,6 +179,26 @@ describe('GleapFrameManager expand/collapse window', () => {
     expect(fm.gleapFrameContainer.classList.contains(EXPANDED_CLASS)).toBe(false);
   });
 
+  it.each([571, 767.5])('is not expandable on a %spx viewport too narrow for the expanded widget', (width) => {
+    // E.g. a phone with the page zoomed out: past the mobile breakpoint, so the
+    // floating widget shows, but an expanded one would cover nearly the whole page.
+    loadFromGleapCache.mockImplementation((key) => (key === 'widget-expanded' ? true : null));
+    viewportWidth = width;
+    const fm = setup();
+    fm.updateFrameStyle();
+
+    expect(fm.canExpandWidget()).toBe(false);
+    expect(fm.isWidgetExpanded()).toBe(false);
+    expect(fm.gleapFrameContainer.classList.contains(EXPANDED_CLASS)).toBe(false);
+  });
+
+  it('is expandable from the expand breakpoint on', () => {
+    viewportWidth = 768;
+    const fm = setup();
+
+    expect(fm.canExpandWidget()).toBe(true);
+  });
+
   it('collapses and hides the button when a config update turns the setting off', () => {
     const fm = setup();
     fm.setWidgetExpanded(true);
@@ -224,7 +245,7 @@ describe('GleapFrameManager expand/collapse window', () => {
     expect(sentSizeUpdates().pop().data).toEqual({ expandable: true, expanded: false });
   });
 
-  it('applies a stored expanded choice when the window widens past the mobile breakpoint', () => {
+  it('applies a stored expanded choice when the window widens past the expand breakpoint', () => {
     loadFromGleapCache.mockImplementation((key) => (key === 'widget-expanded' ? true : null));
     isMobile = true;
     const fm = setup();

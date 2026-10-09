@@ -29,6 +29,11 @@ export const calculateContrast = (hex) => {
 
 export const widgetMaxHeight = 700;
 
+// Narrowest viewport that leaves room around the 690px expanded widget. Below it the
+// expanded widget would cover nearly the whole page (e.g. a phone with the page zoomed
+// out just past the 450px mobile breakpoint), so the widget keeps its default size.
+export const widgetExpandMinWidth = 768;
+
 // Builds the loading placeholder shown while the messenger iframe boots.
 // Mirrors the Messenger-App home backgrounds (BG.svg / BGclassic.svg /
 // BGclassicnofade.svg) so the hand-off from loader to app is seamless.
@@ -806,9 +811,9 @@ export const injectStyledCSS = (
     }
 
     /* Expanded by the end user (expand/collapse button in the messenger header).
-       Below 451px the widget is full screen anyway. The inner max-height must beat
-       the inline 700px set by GleapFrameManager.setAppMode. */
-    @media only screen and (min-width: 451px) {
+       Only on viewports with room for it (see widgetExpandMinWidth). The inner
+       max-height must beat the inline 700px set by GleapFrameManager.setAppMode. */
+    @media only screen and (min-width: ${widgetExpandMinWidth}px) {
       .gleap-frame-container--expanded {
         max-width: 690px !important;
       }
