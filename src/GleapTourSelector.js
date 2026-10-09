@@ -18,9 +18,13 @@ import unique from './unique-selector/src/unique-selector';
 const GENERATED_ID_PATTERNS = [
   // Vue 3 `useId()` (`v-34`, and derived ids such as `input-v-34`).
   'v-\\d+',
-  // React 18 `useId()` and the libraries building on top of it.
+  // React `useId()`: `:r3:` (18), `«r3»` (19.0/19.1), `_r_3_` (19.2+), and the
+  // libraries building on top of it (Mantine: `mantine-r3`, or random
+  // `mantine-fsu9sfwdg` without React 18).
   ':r[0-9a-z]+:',
-  '(?:radix|headlessui|reach|floating-ui)-',
+  '«r[0-9a-z]+»',
+  '_r_[0-9a-z]+_',
+  '(?:radix|headlessui|reach|floating-ui|mantine)-',
   // Component libraries with mount counters.
   'mui-\\d+',
   '(?:mat|cdk)-[a-z-]+-?\\d+',
@@ -41,6 +45,15 @@ const GENERATED_CLASS_PATTERNS = [
   'sc-(?=[a-zA-Z0-9]*[A-Z])[a-zA-Z0-9]{5,}',
   // styled-jsx
   'jsx-\\d+',
+  // Mantine 6 (emotion with the `mantine` key).
+  'mantine-[a-z0-9]*\\d[a-z0-9]*',
+  // Mantine 7 component classes (`m_6d731127`). They change with every Mantine
+  // release; the static `mantine-Button-root` names next to them do not.
+  'm_[0-9a-f]{8}$',
+  // Mantine 7 scoped style classes, named after a React `useId()`.
+  '__m__-',
+  // A React `useId()` used as a class name.
+  '_r_[0-9a-z]+_',
 ];
 
 // CSS modules: `Button_root__2Hs3q`. The trailing hash has to look like base64
