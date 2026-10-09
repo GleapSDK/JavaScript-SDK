@@ -22,7 +22,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { getCaptureCapabilities } from './GleapCaptureSettings';
 import { forwardSurveyAnalyticsEvent } from './GleapSurveyAnalyticsForwarder';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
-import { widgetLoaderMarkup, widgetMaxHeight } from './UI';
+import { widgetExpandMinWidth, widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
 export default class GleapFrameManager {
   frameUrl = 'https://messenger-app.gleap.io';
@@ -429,14 +429,15 @@ export default class GleapFrameManager {
     }
   }
 
-  // The widget is full screen at <= 450px and the expanded CSS only applies from
-  // 451px (see UI.js). Test the same query as that CSS so a fractional (zoomed)
-  // viewport between the two never counts as expandable.
-  isMobileViewport() {
+  // The expanded CSS only applies from widgetExpandMinWidth (see UI.js); narrower
+  // viewports (mobile full screen, or a zoomed-out phone just past it) keep the
+  // default size. Test the same query as that CSS so a fractional (zoomed)
+  // viewport never counts as expandable while the CSS does not apply.
+  hasRoomToExpand() {
     try {
-      return typeof window.matchMedia === 'function' && !window.matchMedia('(min-width: 451px)').matches;
+      return typeof window.matchMedia !== 'function' || window.matchMedia(`(min-width: ${widgetExpandMinWidth}px)`).matches;
     } catch (e) {
-      return false;
+      return true;
     }
   }
 
@@ -445,7 +446,7 @@ export default class GleapFrameManager {
     if (flowConfig && flowConfig.hideExpandButton) {
       return false;
     }
-    return !this.isSurvey() && !this.isMobileViewport();
+    return !this.isSurvey() && this.hasRoomToExpand();
   }
 
   getWidgetExpandedPreference() {
