@@ -30,6 +30,15 @@ const WS_RECONNECT_FIRST_MS = 1000;
 const WS_RECONNECT_MAX_MS = 60 * 1000;
 // A connection that stayed open this long, or received a message, starts the backoff over.
 const WS_STABLE_MS = 10 * 1000;
+// One 'PING' text frame this often keeps idle proxies/load balancers (60 s idle timeout) from dropping
+// the socket. The server ignores what clients send.
+const WS_KEEPALIVE_MS = 25 * 1000;
+// Close code + reason for the SDK's own closes, so the server sees a normal close instead of 1005.
+const WS_CLOSE_NORMAL = 1000;
+const WS_CLOSE_REASON = 'client closing';
+// WebSocket readyState values (from the spec, so they don't depend on a global WebSocket).
+const WS_CONNECTING = 0;
+const WS_OPEN = 1;
 
 // `firstMs` doubled `doublings` times up to `maxMs`, times a factor between 0.8 and 1.2 (from `random`
 // in [0, 1)), never more than `maxMs`.
@@ -122,7 +131,9 @@ export default class GleapStreamedEvent {
       this.socket.removeEventListener('error', this.handleErrorBound);
       this.socket.removeEventListener('message', this.handleMessageBound);
       this.socket.removeEventListener('close', this.handleCloseBound);
-      this.socket.close();
+      try {
+        this.socket.close(WS_CLOSE_NORMAL, WS_CLOSE_REASON);
+      } catch (exp) {}
       this.socket = null;
     }
   }
@@ -205,9 +216,13 @@ export default class GleapStreamedEvent {
     this.networkListenersAdded = false;
   }
 
-  // Back online: reconnect right away, with a fresh backoff.
+  // Back online: reconnect right away, with a fresh backoff, unless a socket is open or still
+  // connecting.
   handleOnline() {
-    if (this.socket && this.socket.readyState === this.socket.OPEN) {
+    if (
+      this.socket &&
+      (this.socket.readyState === WS_OPEN || this.socket.readyState === WS_CONNECTING)
+    ) {
       return;
     }
     this.reconnectAttempts = 0;
@@ -220,11 +235,10 @@ export default class GleapStreamedEvent {
       clearInterval(this.pingWS);
     }
     this.pingWS = setInterval(() => {
-      if (this.socket.readyState === this.socket.OPEN) {
+      if (this.socket && this.socket.readyState === WS_OPEN) {
         this.socket.send('PING');
-        this.socket.send(0x9);
       }
-    }, 10000);
+    }, WS_KEEPALIVE_MS);
 
     if (this.connectionTimeout) {
       clearTimeout(this.connectionTimeout);
