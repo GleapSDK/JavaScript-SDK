@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.2.3
+Fixed: the SDK closed its websocket without a close code, so the server logged every page leave and reconnect as an abnormal close (1005); it now closes with 1000. Going back online no longer drops a socket that is still connecting and opens a second one. The keepalive is a single `PING` text frame every 25 s (was two frames every 10 s), which still keeps idle proxies and load balancers from cutting the connection.
+
 ## 19.2.2
 Fixed: a product tour or tooltip selector that is not valid CSS, such as an attribute typed without its brackets (`data-test="x"` instead of `[data-test="x"]`), no longer throws. The bracketless form now finds its element; anything else counts as not found, so the tour ends cleanly instead of stopping with an error, copilot tours stop waiting after 5 s, and tooltips keep working.
 Fixed: the tour editor's element picker no longer stores ids and classes that Mantine and React 19 generate at runtime (`mantine-…` ids, `«r1»` / `_r_1_` from `useId`, Mantine 6 `mantine-<hash>`, Mantine 7 `m_<hash>` and `__m__-…` classes). They changed on the next page load, deploy or Mantine update and silently ended the tour; the picker now prefers stable names such as `mantine-Button-root`.
