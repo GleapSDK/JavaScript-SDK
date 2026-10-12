@@ -854,7 +854,9 @@ export default class GleapCaptureUI {
       this.dot.classList.toggle('paused', !!paused);
     }
     if (this.pausedLabel) {
+      const before = this.pillRight();
       this.pausedLabel.style.display = paused ? '' : 'none';
+      this.keepPillRight(before);
     }
     const button = this.pauseButton;
     if (button) {
@@ -862,6 +864,36 @@ export default class GleapCaptureUI {
       button.setAttribute('aria-label', label);
       button.title = label;
       button.replaceChild(icon(paused ? 'play' : 'pause'), button.firstChild);
+    }
+  }
+
+  pillRight() {
+    try {
+      return this.pill ? this.pill.getBoundingClientRect().right : null;
+    } catch (exp) {
+      return null;
+    }
+  }
+
+  // "Paused" widens the pill. A centred (or dragged) pill would grow to both sides and move Pause /
+  // Resume away from the pointer that just clicked it, so the pill grows to the left instead.
+  // Phones dock the pill across the whole width; nothing moves there.
+  keepPillRight(before) {
+    const pill = this.pill;
+    const after = this.pillRight();
+    if (!pill || before === null || after === null || window.innerWidth <= 600) {
+      return;
+    }
+    const shift = after - before;
+    if (Math.abs(shift) < 0.5) {
+      return;
+    }
+    if (this.position) {
+      this.position = { left: this.position.left - shift, top: this.position.top };
+      this.place(pill);
+    } else {
+      const margin = (parseFloat(pill.style.marginLeft) || 0) - shift;
+      pill.style.marginLeft = Math.abs(margin) < 0.5 ? '' : margin + 'px';
     }
   }
 
