@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.0
+New capture experience: when Kai or a teammate asks for a screenshot or recording, the page shows a small frosted capture bar (Enter to capture, Esc to cancel) instead of the dark panel, with a shutter flash and the result flying into the chat card. Recordings can be paused and resumed, show a progress ring toward the time limit, and the default limit is now 2 minutes. The editor keeps all its tools with a cleaner toolbar. Works with older Messenger versions (no fly-in or pause there).
+
 ## 19.2.3
 Fixed: the SDK closed its websocket without a close code, so the server logged every page leave and reconnect as an abnormal close (1005); it now closes with 1000. Going back online no longer drops a socket that is still connecting and opens a second one. The keepalive is a single `PING` text frame every 25 s (was two frames every 10 s), which still keeps idle proxies and load balancers from cutting the connection.
 
