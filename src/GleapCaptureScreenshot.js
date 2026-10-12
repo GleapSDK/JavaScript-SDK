@@ -12,6 +12,17 @@ import { now, yieldToPage } from './GleapCaptureTasks';
 export const MAX_CAPTURE_EDGE = 2560;
 const JPEG_QUALITY = 0.85;
 const TRANSPARENT_GIF = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+// An <img> the render can't download (cross-origin without CORS headers, so the canvas may not read
+// it) gets a neutral tint instead of an empty hole, so the screenshot doesn't look like the app lost
+// the image. Stretches to any box. The tab capture and the classic server render keep such images.
+const IMAGE_PLACEHOLDER =
+  'data:image/svg+xml;charset=utf-8,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1" preserveAspectRatio="none">' +
+      '<rect width="1" height="1" fill="rgb(128,128,128)" fill-opacity="0.16"/></svg>'
+  );
+// CSS background images stay transparent (usually decoration).
+const imagePlaceholder = (imageDom) => (imageDom ? IMAGE_PLACEHOLDER : TRANSPARENT_GIF);
 
 // Gleap's own UI never appears in a capture: the widget, launcher, notifications, banners, modals,
 // tooltips, tours, the admin helper and the capture UI itself.
@@ -1313,6 +1324,26 @@ const createImageFetcher = () => {
   }
 };
 
+// The render downloads every image and font again (fetch). The logger is paused meanwhile, but the
+// browser still lists those downloads in Resource Timing: mark them so they never show up as the
+// app's requests (or failures) in the logs.
+const ignoreInNetworkLogs = (url, since) => {
+  try {
+    if (typeof url === 'string' && url.indexOf('data:') !== 0 && url.indexOf('blob:') !== 0) {
+      GleapNetworkIntercepter.getInstance().ignoreInternalRequest(url, null, since);
+    }
+  } catch (exp) {}
+};
+
+// Wraps createImageFetcher's result: every image the render asks for is marked before the download.
+const createTrackedImageFetcher = (since) => {
+  const fetchAway = createImageFetcher();
+  return (url) => {
+    ignoreInNetworkLogs(url, since);
+    return fetchAway ? fetchAway(url) : Promise.resolve(false);
+  };
+};
+
 // Network logging is paused while renders download assets; overlapping renders share one pause.
 let networkLogPauses = 0;
 let networkLogsWereStopped = false;
@@ -1374,6 +1405,7 @@ export const renderDom = ({ privacyOptions, maskSelectors, isActive }) =>
 
     // Its asset downloads (fonts, images) are not the app's traffic: keep them out of the network logs.
     const resumeNetworkLogs = pauseNetworkLogs();
+    const renderStart = now();
     let context = null;
     let sandbox = null;
     let settled = false;
@@ -1383,6 +1415,12 @@ export const renderDom = ({ privacyOptions, maskSelectors, isActive }) =>
       clearTimeout(deadline);
       clearInterval(watch);
       if (context) {
+        try {
+          // Fonts and CSS assets don't pass the image fetcher.
+          if (context.requests && typeof context.requests.forEach === 'function') {
+            context.requests.forEach((request, url) => ignoreInNetworkLogs(url, renderStart));
+          }
+        } catch (exp) {}
         try {
           // Removes the sandbox as well.
           destroyContext(context);
@@ -1460,7 +1498,13 @@ export const renderDom = ({ privacyOptions, maskSelectors, isActive }) =>
             overflow: 'visible',
           },
           features: { restoreScrollPosition: false },
-          fetchFn: createImageFetcher(),
+          fetchFn: createTrackedImageFetcher(renderStart),
+          // Passing `fetch` replaces modern-screenshot's defaults: keep its cache setting.
+          fetch: {
+            requestInit: { cache: 'force-cache' },
+            bypassingCache: false,
+            placeholderImage: imagePlaceholder,
+          },
           // How long to wait for images that are still loading; the render itself gets longer below.
           timeout: imagesLoadingInViewport() ? 3000 : 50,
         });

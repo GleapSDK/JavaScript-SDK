@@ -1,6 +1,14 @@
 import { isMobile, resizeImage } from './GleapHelper';
 import { getFieldValueMask, getTextMask, isBlockedElement, isMaskMarker } from './GleapInputMasking';
 import { isBlacklisted } from './ResourceExclusionList';
+import GleapNetworkIntercepter from './GleapNetworkIntercepter';
+
+// The screenshot's own downloads are not the app's traffic: keep them out of the network logs.
+const ignoreInNetworkLogs = (xhr, url) => {
+  try {
+    GleapNetworkIntercepter.getInstance().ignoreInternalRequest(url, xhr);
+  } catch (exp) {}
+};
 
 /**
  * Captures the page as HTML for the screenshot renderer.
@@ -111,6 +119,7 @@ const fetchCSSResource = (url) => {
       xhr.onerror = function (err) {
         resolve();
       };
+      ignoreInNetworkLogs(xhr, url);
       xhr.open('GET', url);
       xhr.responseType = 'blob';
       xhr.send();
@@ -154,6 +163,7 @@ const fetchItemResource = (elem) => {
         resolve();
       };
       var url = elem.src;
+      ignoreInNetworkLogs(xhr, url);
       xhr.open('GET', url);
       xhr.responseType = 'blob';
       xhr.send();
