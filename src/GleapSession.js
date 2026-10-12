@@ -56,6 +56,9 @@ export default class GleapSession {
   // waits for them (onContactSettled).
   pendingContactUpdates = 0;
   contactSettledListeners = [];
+  // Bumped whenever an identify / updateContact result (or a logout) replaces the session. A
+  // /sessions response for a request sent before that describes the previous contact and is dropped.
+  contactVersion = 0;
 
   // GleapSession singleton
   static instance;
@@ -245,6 +248,7 @@ export default class GleapSession {
     // replay state so the next session can't inherit a stale identity.
     this.lastIdentify = null;
     this.identifyInFlight = false;
+    this.contactVersion++;
 
     GleapFrameManager.getInstance().sendMessage(
       {
@@ -427,6 +431,7 @@ export default class GleapSession {
     }
 
     const self = this;
+    const contactVersionAtSend = this.contactVersion;
     const http = new XMLHttpRequest();
     http.open('POST', self.apiUrl + '/sessions');
     http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
@@ -439,6 +444,12 @@ export default class GleapSession {
     } catch (exp) {}
     http.onreadystatechange = function (e) {
       if (http.readyState === 4) {
+        // Gleap.identify() is sent right away against a cached session, so its answer (the new
+        // contact) can land first. This older answer must not switch back to the previous contact
+        // (or clear the new one).
+        if (self.contactVersion !== contactVersionAtSend) {
+          return;
+        }
         if (http.status === 200 || http.status === 201) {
           try {
             const sessionData = JSON.parse(http.responseText);
@@ -552,6 +563,7 @@ export default class GleapSession {
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
+                self.contactVersion++;
                 self.validateSession(sessionData);
                 resolve(sessionData);
               } catch (exp) {
@@ -620,6 +632,7 @@ export default class GleapSession {
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
+                self.contactVersion++;
                 self.validateSession(sessionData);
                 resolve(sessionData);
               } catch (exp) {

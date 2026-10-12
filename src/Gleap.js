@@ -1049,6 +1049,15 @@ class Gleap {
    * Starts the bug reporting flow.
    */
   static startFeedbackFlowWithOptions(feedbackFlow, options = {}, isSurvey = false) {
+    // Right after Gleap.identify() (e.g. a user switch in the same browser) the previous contact's
+    // session is still active: the messenger would file the report for that contact. Start once the
+    // identify / updateContact in flight has landed (capped at 5 s; immediate when none is).
+    GleapSession.getInstance().onContactSettled(() => {
+      Gleap.startFeedbackFlowNow(feedbackFlow, options, isSurvey);
+    });
+  }
+
+  static startFeedbackFlowNow(feedbackFlow, options = {}, isSurvey = false) {
     const { autostartDrawing, hideBackButton, format, survey } = options;
     const sessionInstance = GleapSession.getInstance();
     if (!sessionInstance.ready) {
@@ -1170,38 +1179,44 @@ class Gleap {
    * Starts a new conversation and attaches the bot with the given id.
    */
   static startBot(botId, showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode('widget');
-    GleapFrameManager.getInstance().sendMessage(
-      {
-        name: 'start-bot',
-        data: {
-          botId: botId ? botId : '',
-          hideBackButton: !showBackButton,
+    // Creates a conversation: wait for an identify still in flight (see startFeedbackFlowWithOptions).
+    GleapSession.getInstance().onContactSettled(() => {
+      GleapFrameManager.getInstance().setAppMode('widget');
+      GleapFrameManager.getInstance().sendMessage(
+        {
+          name: 'start-bot',
+          data: {
+            botId: botId ? botId : '',
+            hideBackButton: !showBackButton,
+          },
         },
-      },
-      true
-    );
+        true
+      );
 
-    GleapFrameManager.getInstance().showWidget();
+      GleapFrameManager.getInstance().showWidget();
+    });
   }
 
   /**
    * Starts a new conversation and attaches the bot with the given id.
    */
   static askAI(question, showBackButton = true) {
-    GleapFrameManager.getInstance().setAppMode('widget');
-    GleapFrameManager.getInstance().sendMessage(
-      {
-        name: 'ask-ai',
-        data: {
-          question,
-          hideBackButton: !showBackButton,
+    // Creates a conversation: wait for an identify still in flight (see startFeedbackFlowWithOptions).
+    GleapSession.getInstance().onContactSettled(() => {
+      GleapFrameManager.getInstance().setAppMode('widget');
+      GleapFrameManager.getInstance().sendMessage(
+        {
+          name: 'ask-ai',
+          data: {
+            question,
+            hideBackButton: !showBackButton,
+          },
         },
-      },
-      true
-    );
+        true
+      );
 
-    GleapFrameManager.getInstance().showWidget();
+      GleapFrameManager.getInstance().showWidget();
+    });
   }
 
   /**

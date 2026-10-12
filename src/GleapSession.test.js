@@ -236,6 +236,69 @@ describe('identify replay', () => {
   });
 });
 
+describe('user switch in the same browser', () => {
+  const OTHER_USER_SESSION = {
+    gleapId: 'gleap-id-b',
+    gleapHash: 'gleap-hash-b',
+    userId: 'user-2',
+    email: 'other@example.com',
+  };
+  const sessionsRequest = () => MockXhr.instances.find((xhr) => xhr.url && xhr.url.endsWith('/sessions'));
+
+  it('keeps the new contact when the older /sessions answer for the cached contact lands last', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-2', { email: 'other@example.com' });
+
+    identifyRequests()[0].respond(200, JSON.stringify(OTHER_USER_SESSION));
+    sessionsRequest().respond(200, JSON.stringify(CACHED_IDENTIFIED_SESSION));
+
+    expect(session.session.userId).toBe('user-2');
+    expect(session.session.gleapId).toBe('gleap-id-b');
+    expect(cacheStore['session-sdk-key'].userId).toBe('user-2');
+  });
+
+  it('does not clear the new contact when the older /sessions request is rejected', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-2', { email: 'other@example.com' });
+
+    identifyRequests()[0].respond(200, JSON.stringify(OTHER_USER_SESSION));
+    sessionsRequest().respond(404);
+
+    expect(session.session.userId).toBe('user-2');
+    expect(session.ready).toBe(true);
+  });
+
+  it('still applies the /sessions answer when no identify replaced the session', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    sessionsRequest().respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, name: 'Bec Renamed' }));
+
+    expect(session.session.name).toBe('Bec Renamed');
+  });
+
+  it('holds a flow start until the identify has landed', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-2', { email: 'other@example.com' });
+
+    const started = jest.fn(() => session.session.userId);
+    session.onContactSettled(started);
+    expect(started).not.toHaveBeenCalled();
+
+    identifyRequests()[0].respond(200, JSON.stringify(OTHER_USER_SESSION));
+    return Promise.resolve().then(() => {
+      expect(started).toHaveBeenCalledTimes(1);
+      expect(started.mock.results[0].value).toBe('user-2');
+    });
+  });
+});
+
 describe('authenticated file sessions', () => {
   it('keeps partial session updates independent of file identification', () => {
     const session = buildSession();
