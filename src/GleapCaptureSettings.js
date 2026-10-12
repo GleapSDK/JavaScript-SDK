@@ -8,6 +8,8 @@ export const CAPTURE_SDK_TYPE = 'JAVASCRIPT';
 export const CAPTURE_PLATFORM = 'web';
 // The longest recording any request can ask for (contract: maxDurationSec is clamped to 5..180).
 export const CAPTURE_MAX_RECORDING_SEC = 180;
+// The limit when a request doesn't set one.
+export const CAPTURE_DEFAULT_RECORDING_SEC = 120;
 
 // Module state, so the switches work before Gleap.initialize.
 let captureEnabled = true;
@@ -68,6 +70,14 @@ export const getCaptureConfig = () => {
     }
   } catch (exp) {}
   return {};
+};
+
+export const canPauseRecording = () => {
+  try {
+    return typeof MediaRecorder !== 'undefined' && typeof MediaRecorder.prototype.pause === 'function';
+  } catch (exp) {
+    return false;
+  }
 };
 
 export const hasDisplayMedia = () => {
@@ -165,6 +175,10 @@ export const getCaptureCapabilities = () => {
   capabilities.recordingMethod = recordingMethod;
   capabilities.maxRecordingSec = CAPTURE_MAX_RECORDING_SEC;
   capabilities.microphone = recordingMethod === 'display' && getCaptureConfig().allowMicrophone === true && hasUserMedia();
+  // Capture UI v2: screen recordings pause and resume (capture-state `paused`), and the sent result
+  // flies into the Messenger's card (capture-fly → capture-fly-done).
+  capabilities.pause = recordingMethod === 'display' && canPauseRecording();
+  capabilities.flyIn = true;
   return capabilities;
 };
 

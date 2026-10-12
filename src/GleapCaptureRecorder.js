@@ -109,6 +109,9 @@ export class DisplayRecording {
   stopTimeout = null;
   onEndedBound = null;
   recorderError = null;
+  // Pause / resume (capture UI v2): time spent paused doesn't count toward the limit or the length.
+  pausedAt = 0;
+  pausedMs = 0;
 
   /**
    * @param {{maxDurationSec: number, onTick: function(number), onStop: function(object), onError: function(Error), onReleased?: function()}} options
@@ -208,7 +211,7 @@ export class DisplayRecording {
       const maxMs = this.options.maxDurationSec * 1000;
       this.timer = setInterval(() => {
         try {
-          const elapsed = Date.now() - this.startedAt;
+          const elapsed = this.activeMs();
           try {
             this.options.onTick(Math.floor(elapsed / 1000));
           } catch (exp) {}
@@ -219,6 +222,52 @@ export class DisplayRecording {
       }, 250);
       return { hasMicrophone: !!micTrack };
     });
+  }
+
+  // Recorded time so far (without pauses), in ms.
+  activeMs(at) {
+    const now = at || Date.now();
+    const pausedNow = this.pausedAt ? now - this.pausedAt : 0;
+    return Math.max(0, now - this.startedAt - this.pausedMs - pausedNow);
+  }
+
+  isPaused() {
+    return !!this.pausedAt;
+  }
+
+  /**
+   * Pauses the recorder (and the timer with it). Returns whether it is paused now.
+   */
+  pause() {
+    if (this.finished || this.pausedAt || !this.recorder || this.recorder.state !== 'recording') {
+      return false;
+    }
+    try {
+      this.recorder.pause();
+    } catch (exp) {
+      return false;
+    }
+    this.pausedAt = Date.now();
+    return true;
+  }
+
+  /**
+   * Resumes after pause(). Returns whether it records again.
+   */
+  resume() {
+    if (this.finished || !this.pausedAt || !this.recorder) {
+      return false;
+    }
+    try {
+      if (this.recorder.state === 'paused') {
+        this.recorder.resume();
+      }
+    } catch (exp) {
+      return false;
+    }
+    this.pausedMs += Date.now() - this.pausedAt;
+    this.pausedAt = 0;
+    return true;
   }
 
   setMicrophoneEnabled(enabled) {
@@ -236,6 +285,11 @@ export class DisplayRecording {
       return;
     }
     this.endedAt = this.endedAt || Date.now();
+    // A stop while paused: the pause ends here (it doesn't count).
+    if (this.pausedAt) {
+      this.pausedMs += this.endedAt - this.pausedAt;
+      this.pausedAt = 0;
+    }
     this.clearTimer();
     if (!this.recorder || this.recorderStopped) {
       this.finish();
@@ -284,7 +338,7 @@ export class DisplayRecording {
       fileName: 'screen-recording.' + (baseType === 'video/mp4' ? 'mp4' : 'webm'),
       startedAt: this.startedAt,
       endedAt: this.endedAt,
-      durationMs: Math.max(0, this.endedAt - this.startedAt),
+      durationMs: Math.max(0, this.endedAt - this.startedAt - this.pausedMs),
       width: this.settings.width,
       height: this.settings.height,
       // 'tab' only for a browser tab; windows and screens (and browsers that don't say) are 'display'.
@@ -752,6 +806,8 @@ export class CaptureTimeline {
   lastUrl = '';
   lastInputField = null;
   lastInputAt = 0;
+  // [from, to] wall times the recording was paused; to is 0 while still paused.
+  pauses = [];
 
   constructor({ privacyOptions, maskSelectors, isOwnElement }) {
     this.privacyOptions = privacyOptions || {};
@@ -763,7 +819,41 @@ export class CaptureTimeline {
     if (this.entries.length >= MAX_TIMELINE_ENTRIES) {
       return;
     }
-    this.entries.push({ t: Math.max(0, (at || Date.now()) - this.startedAt), type, label: collapse(label, 200) });
+    const t = this.videoTime(at || Date.now());
+    if (t === null) {
+      return;
+    }
+    this.entries.push({ t, type, label: collapse(label, 200) });
+  }
+
+  pause(at) {
+    const last = this.pauses[this.pauses.length - 1];
+    if (!last || last[1]) {
+      this.pauses.push([at || Date.now(), 0]);
+    }
+  }
+
+  resume(at) {
+    const last = this.pauses[this.pauses.length - 1];
+    if (last && !last[1]) {
+      last[1] = at || Date.now();
+    }
+  }
+
+  // Ms into the video for a wall time (pauses cut out), or null while it was paused.
+  videoTime(time) {
+    let paused = 0;
+    for (let i = 0; i < this.pauses.length; i++) {
+      const from = this.pauses[i][0];
+      const to = this.pauses[i][1] || Infinity;
+      if (time >= from && time < to) {
+        return null;
+      }
+      if (time >= to) {
+        paused += to - from;
+      }
+    }
+    return Math.max(0, time - this.startedAt - paused);
   }
 
   // The control the event belongs to (through shadow roots), or null.

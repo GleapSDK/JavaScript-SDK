@@ -18,6 +18,7 @@ import {
 import { CaptureTimeline, DisplayRecording, PageRecording, requestDisplayStream } from './GleapCaptureRecorder';
 import { captureScreenshot, requestTabStream, stopStream } from './GleapCaptureScreenshot';
 import {
+  CAPTURE_DEFAULT_RECORDING_SEC,
   CAPTURE_MAX_RECORDING_SEC,
   CAPTURE_PLATFORM,
   CAPTURE_SDK_TYPE,
@@ -29,10 +30,11 @@ import {
   isCaptureSupported,
   isDesktopChromium,
   isRemoteLogCollectionEnabled,
+  canPauseRecording,
   setCaptureEnabled,
   setRemoteLogCollectionEnabled,
 } from './GleapCaptureSettings';
-import GleapCaptureUI, { resolveCaptureLabels } from './GleapCaptureUI';
+import GleapCaptureUI, { flashCapture, flyCapture, resolveCaptureLabels } from './GleapCaptureUI';
 import { applyPrivacyVeil } from './GleapCaptureVeil';
 
 // Capture requests on the web (contract §7): the Messenger asks for a screenshot or a recording
@@ -40,6 +42,18 @@ import { applyPrivacyVeil } from './GleapCaptureVeil';
 // capture-image, annotated and sent by the Messenger) or uploads and completes it itself
 // (recordings). Log requests arrive on the SDK websocket and are answered without the customer.
 // Idle until a request arrives: no timers, listeners or UI.
+//
+// Capture UI v2 additions to the contract (all optional, so older Messengers and SDKs keep working):
+// - capture-capabilities: `pause` (recordings can pause) and `flyIn` (this host draws the hand-off).
+// - capture-state `recording`: `paused: true` while paused. While paused the state repeats every
+//   second with the same elapsedSec, so a Messenger that doesn't know `paused` keeps a still timer.
+// - capture-state `done` (recordings): `thumbnail` (the first frame, a small JPEG data: URL),
+//   `durationSec` (recorded length without pauses) and `audio` (whether it has sound).
+// - capture-fly (Messenger → host): `{requestId, to, from?, src?, radius?}` — the card's media slot
+//   (`to`, frame coordinates) and, for screenshots, where the editor showed the image (`from`, the
+//   frame covered the viewport then) and what to fly (`src`, a data: URL). Without from / src the
+//   host flies its own recording preview. Answered with capture-fly-done `{requestId}` when the
+//   flyer lands (or at once when it can't fly), after which the card shows its media.
 
 const STORAGE_KEY = 'gleap-capture-session';
 const DEVICE_KEY = 'gleap-capture-device';
@@ -112,7 +126,7 @@ const randomHex = (bytes) => {
 const clampDuration = (value) => {
   const seconds = parseInt(value, 10);
   if (isNaN(seconds)) {
-    return 60;
+    return CAPTURE_DEFAULT_RECORDING_SEC;
   }
   return Math.max(5, Math.min(CAPTURE_MAX_RECORDING_SEC, seconds));
 };
@@ -129,6 +143,23 @@ const errorReason = (error) => {
 
 const isOk = (status) => status >= 200 && status < 300;
 
+// A flight's start is kept this long for the Messenger's capture-fly.
+const FLIGHT_MAX_AGE_MS = 15000;
+const MAX_FLIGHT_SRC_LENGTH = 1024 * 1024;
+
+const isImageDataUrl = (value) =>
+  typeof value === 'string' &&
+  value.length <= MAX_FLIGHT_SRC_LENGTH &&
+  /^data:image\/(jpeg|jpg|png|webp);base64,/i.test(value);
+
+const toRect = (value) => {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+  const rect = { x: Number(value.x), y: Number(value.y), width: Number(value.width), height: Number(value.height) };
+  return isFinite(rect.x) && isFinite(rect.y) && rect.width > 0 && rect.height > 0 ? rect : null;
+};
+
 let sessionCounter = 0;
 
 export default class GleapCaptureManager {
@@ -141,6 +172,8 @@ export default class GleapCaptureManager {
   handledLogRequests = [];
   logsPostedFor = [];
   deviceId = null;
+  // Where the last sent recording was shown, for its flight into the card.
+  flight = null;
 
   // GleapCaptureManager singleton
   static instance;
@@ -256,6 +289,9 @@ export default class GleapCaptureManager {
         case 'capture-done':
           this.onCaptureDone(data);
           break;
+        case 'capture-fly':
+          this.onCaptureFly(data);
+          break;
         default:
           break;
       }
@@ -332,6 +368,41 @@ export default class GleapCaptureManager {
   }
 
   /**
+   * Capture UI v2: flies the sent result into the card, then tells the Messenger it landed.
+   */
+  onCaptureFly(data) {
+    const requestId = typeof data.requestId === 'string' ? data.requestId : null;
+    if (!requestId) {
+      return;
+    }
+    const landed = () => {
+      try {
+        GleapFrameManager.getInstance().sendMessage({ name: 'capture-fly-done', data: { requestId } });
+      } catch (exp) {}
+    };
+    const stored =
+      this.flight && this.flight.requestId === requestId && Date.now() - this.flight.at < FLIGHT_MAX_AGE_MS
+        ? this.flight
+        : null;
+    this.flight = null;
+    let to = toRect(data.to);
+    try {
+      const frame = GleapFrameManager.getInstance().gleapFrame;
+      const box = frame ? frame.getBoundingClientRect() : null;
+      to = to && box && box.width > 0 ? { x: box.left + to.x, y: box.top + to.y, width: to.width, height: to.height } : null;
+    } catch (exp) {
+      to = null;
+    }
+    flyCapture({
+      src: isImageDataUrl(data.src) ? data.src : stored ? stored.src : null,
+      from: toRect(data.from) || (stored ? stored.from : null),
+      to,
+      radius: typeof data.radius === 'number' ? data.radius : 16,
+      done: landed,
+    });
+  }
+
+  /**
    * The widget iframe went away (Gleap.destroy, a language change): a capture in progress reopens the
    * conversation when it is done.
    */
@@ -390,6 +461,8 @@ export default class GleapCaptureManager {
       startedAt: Date.now(),
       lastTick: -1,
       lastProgressSent: 0,
+      lastStateAt: 0,
+      paused: false,
     };
     this.session = session;
 
@@ -570,6 +643,9 @@ export default class GleapCaptureManager {
         case 'mic':
           this.toggleMicrophone(session);
           break;
+        case 'pause':
+          this.togglePause(session);
+          break;
         case 'send':
           this.sendRecording(session);
           break;
@@ -661,6 +737,9 @@ export default class GleapCaptureManager {
       },
     };
 
+    // The shutter flash: the page "becomes" the screenshot in the editor.
+    flashCapture();
+
     // The Messenger's editor takes it from here (capture-editor, capture-done).
     session.phase = 'editor';
     writeStorage(STORAGE_KEY, null);
@@ -730,14 +809,21 @@ export default class GleapCaptureManager {
     const active = () => this.session === session;
     const maxDurationSec = session.options.maxDurationSec;
     const onTick = (seconds) => {
-      if (!active() || seconds === session.lastTick) {
+      if (!active()) {
+        return;
+      }
+      if (seconds === session.lastTick) {
+        // Paused: the same time once a second, so the card's timer stands still.
+        if (session.paused && Date.now() - session.lastStateAt >= 1000) {
+          this.sendRecordingState(session);
+        }
         return;
       }
       session.lastTick = seconds;
       if (this.ui) {
         this.ui.updateTimer(seconds);
       }
-      this.sendState(session.requestId, 'recording', { elapsedSec: seconds });
+      this.sendRecordingState(session);
     };
     const onStop = (result) => {
       if (active()) {
@@ -830,9 +916,49 @@ export default class GleapCaptureManager {
     this.sendState(session.requestId, 'bar');
   }
 
+  sendRecordingState(session) {
+    session.lastStateAt = Date.now();
+    const extra = { elapsedSec: Math.max(0, session.lastTick) };
+    if (session.paused) {
+      extra.paused = true;
+    }
+    this.sendState(session.requestId, 'recording', extra);
+  }
+
+  // Pause / resume (screen recordings): the recorder, the timer and the timeline stop together.
+  togglePause(session) {
+    const recording = session.recording;
+    if (session.phase !== 'recording' || !recording || typeof recording.pause !== 'function') {
+      return;
+    }
+    const now = Date.now();
+    if (session.paused) {
+      if (!recording.resume()) {
+        return;
+      }
+      session.paused = false;
+      if (session.timeline) {
+        session.timeline.resume(now);
+      }
+    } else {
+      if (!recording.pause()) {
+        return;
+      }
+      session.paused = true;
+      if (session.timeline) {
+        session.timeline.pause(now);
+      }
+    }
+    if (this.ui) {
+      this.ui.setPaused(session.paused);
+    }
+    this.sendRecordingState(session);
+  }
+
   onRecordingStarted(session, startedAt, hasMicrophone) {
     session.phase = 'recording';
     session.interrupted = false;
+    session.paused = false;
     session.hasMicrophone = !!hasMicrophone;
     session.lastTick = 0;
     session.timeline = new CaptureTimeline({
@@ -844,9 +970,10 @@ export default class GleapCaptureManager {
     this.ui.showRecordingBar({
       mic: session.hasMicrophone ? { available: true, on: session.micOn } : null,
       maxSec: session.options.maxDurationSec,
+      canPause: this.usesScreenRecording(session) && canPauseRecording() && !!session.recording && !!session.recording.pause,
     });
     this.persist(session);
-    this.sendState(session.requestId, 'recording', { elapsedSec: 0 });
+    this.sendRecordingState(session);
   }
 
   // Before the start it decides whether the microphone is asked for; while recording it mutes.
@@ -869,10 +996,13 @@ export default class GleapCaptureManager {
     const interactions = session.timeline ? session.timeline.interactions : 0;
     session.timeline = null;
     session.phase = 'preview';
+    session.paused = false;
+    const isVideo = result.type.indexOf('video/') === 0;
     this.ui.showPreview({
-      video: result.type.indexOf('video/') === 0 ? result.blob : null,
+      video: isVideo ? result.blob : null,
       durationMs: result.durationMs,
       interactions,
+      audio: isVideo ? !!session.hasMicrophone : undefined,
     });
     this.persist(session);
     this.sendState(session.requestId, 'preview');
@@ -973,8 +1103,20 @@ export default class GleapCaptureManager {
             return;
           }
           if (isOk(response.status)) {
+            // What the card shows (and where its flight starts), read before the review closes.
+            const poster = this.ui ? this.ui.getPosterDataUrl() : null;
+            const from = this.ui ? this.ui.getPreviewRect() : null;
+            this.flight = poster && from ? { requestId: session.requestId, src: poster, from, at: Date.now() } : null;
+            const isVideo = result.type.indexOf('video/') === 0;
             this.endSession(session, { restore: true });
-            this.sendState(session.requestId, 'done');
+            const done = { durationSec: Math.floor((result.durationMs || 0) / 1000) };
+            if (poster) {
+              done.thumbnail = poster;
+            }
+            if (isVideo) {
+              done.audio = !!session.hasMicrophone;
+            }
+            this.sendState(session.requestId, 'done', done);
           } else if (response.status === 409 || response.status === 410) {
             // Answered on another device, or withdrawn / expired meanwhile.
             this.endSession(session, { restore: true });
