@@ -1336,7 +1336,8 @@ export default class GleapFrameManager {
         (data.name === 'capture-start' ||
           data.name === 'capture-cancel' ||
           data.name === 'capture-editor' ||
-          data.name === 'capture-done')
+          data.name === 'capture-done' ||
+          data.name === 'capture-fly')
       ) {
         GleapCaptureManager.getInstance().handleMessengerMessage(data);
       }
