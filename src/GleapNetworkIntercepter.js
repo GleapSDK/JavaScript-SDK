@@ -58,6 +58,10 @@ const now = () => {
   return Date.now();
 };
 
+// Internal urls remembered for Resource Timing filtering, and the clock slack for their entries.
+const MAX_INTERNAL_URLS = 300;
+const INTERNAL_URL_TOLERANCE_MS = 5;
+
 const elapsedSince = (start) => Math.max(0, Math.round(now() - start));
 
 const truncationMarker = (totalBytes) =>
@@ -506,6 +510,10 @@ class GleapNetworkIntercepter {
   initialized = false;
   stopped = false;
   loadAllResources = false;
+  // The SDK's own downloads (screenshot assets): XHRs that are never recorded, and urls whose
+  // Resource Timing entries from that moment on are left out.
+  internalXhrs = typeof WeakSet !== 'undefined' ? new WeakSet() : null;
+  internalUrls = new Map();
 
   // GleapNetworkIntercepter singleton
   static instance;
@@ -514,6 +522,38 @@ class GleapNetworkIntercepter {
       this.instance = new GleapNetworkIntercepter();
     }
     return this.instance;
+  }
+
+  /**
+   * Keeps one of the SDK's own requests out of the network logs (e.g. the images a screenshot
+   * downloads), so a failing asset download never reads as the app's failed request.
+   * @param {string} url
+   * @param {XMLHttpRequest} [xhr] call before xhr.open(); that request is not recorded
+   * @param {number} [since] performance.now() of the first download; defaults to now
+   */
+  ignoreInternalRequest(url, xhr, since) {
+    try {
+      if (xhr && this.internalXhrs) {
+        this.internalXhrs.add(xhr);
+      }
+      if (!url) {
+        return;
+      }
+      const key = resolveUrl(url);
+      const start = typeof since === 'number' && isFinite(since) ? since : now();
+      const previous = this.internalUrls.get(key);
+      this.internalUrls.delete(key);
+      this.internalUrls.set(key, typeof previous === 'number' ? Math.min(previous, start) : start);
+      // Bounded: drop the oldest marks.
+      while (this.internalUrls.size > MAX_INTERNAL_URLS) {
+        this.internalUrls.delete(this.internalUrls.keys().next().value);
+      }
+    } catch (exp) {}
+  }
+
+  isInternalResource(resource) {
+    const since = this.internalUrls.get(resource.name);
+    return typeof since === 'number' && resource.startTime >= since - INTERNAL_URL_TOLERANCE_MS;
   }
 
   setLoadAllResources(loadAllResources) {
@@ -603,7 +643,11 @@ class GleapNetworkIntercepter {
         if (!this.loadAllResources && ['xmlhttprequest', 'fetch'].indexOf(resource.initiatorType) === -1) {
           continue;
         }
-        if (capturedUrls['url:' + resource.name] || isBlacklistedUrl(resource.name, blacklist)) {
+        if (
+          capturedUrls['url:' + resource.name] ||
+          isBlacklistedUrl(resource.name, blacklist) ||
+          this.isInternalResource(resource)
+        ) {
           continue;
         }
         const start = timeOrigin + resource.startTime;
@@ -941,7 +985,10 @@ class GleapNetworkIntercepter {
     state.method = String(method || 'GET').toUpperCase();
     state.url = resolveUrl(url);
     state.headers = {};
-    state.capture = this.isCapturing() && !isBlacklistedUrl(state.url, this.getBlacklist());
+    state.capture =
+      this.isCapturing() &&
+      !(this.internalXhrs && this.internalXhrs.has(xhr)) &&
+      !isBlacklistedUrl(state.url, this.getBlacklist());
 
     if (state.capture && !state.listening) {
       state.listening = true;
