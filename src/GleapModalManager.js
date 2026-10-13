@@ -1,6 +1,7 @@
 import Gleap, { GleapConfigManager, GleapFrameManager } from './Gleap';
 import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
+import { originMatchesUrl } from './GleapMessageSecurity';
 
 // How long the card renderer gets to announce itself (`modal-loaded`) before we assume the
 // bootstrapped frame is dead and load it directly — and, after a second period, give up.
@@ -57,7 +58,7 @@ export default class GleapModalManager {
         ? this.modalContainer.querySelector('.gleap-modal-frame')
         : null;
       const sourceMatches = modalFrame && event.source === modalFrame.contentWindow;
-      const originMatches = this.modalUrl?.includes(event.origin);
+      const originMatches = originMatchesUrl(event.origin, this.modalUrl);
       if (!sourceMatches && !originMatches) {
         return;
       }

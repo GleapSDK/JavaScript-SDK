@@ -1,6 +1,7 @@
 import Gleap, { GleapFrameManager } from './Gleap';
 import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
+import { originMatchesUrl } from './GleapMessageSecurity';
 
 const clipsOverflow = (style) => {
   if (!style) {
@@ -51,7 +52,7 @@ export default class GleapBannerManager {
         ? this.bannerContainer.querySelector('.gleap-b-frame')
         : null;
       const sourceMatches = bannerFrame && event.source === bannerFrame.contentWindow;
-      const originMatches = this.bannerUrl?.includes(event.origin);
+      const originMatches = originMatchesUrl(event.origin, this.bannerUrl);
       if (!sourceMatches && !originMatches) {
         return;
       }
