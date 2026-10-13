@@ -22,6 +22,7 @@ import GleapAgentToolManager from './GleapAgentToolManager';
 import { getCaptureCapabilities } from './GleapCaptureSettings';
 import { forwardSurveyAnalyticsEvent } from './GleapSurveyAnalyticsForwarder';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
+import { frameTargetOrigin, isSafeNavigationUrl, isScriptUrl } from './GleapMessageSecurity';
 import { widgetExpandMinWidth, widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
 export default class GleapFrameManager {
@@ -61,16 +62,16 @@ export default class GleapFrameManager {
   // ...and the survey's surface colour + light/dark (survey-theme), null = the widget's colours.
   surveySurface = null;
   surveyDark = null;
+  // Default link handler: http(s), mailto, tel and relative links only — never
+  // `javascript:` (it would run in the host page). New tabs get no opener.
   urlHandler = function (url, newTab) {
-    if (url && url.length > 0) {
-      if (newTab) {
-        const newWindow = window.open(url, '_blank');
-        if (newWindow) {
-          newWindow.focus();
-        }
-      } else {
-        window.location.href = url;
-      }
+    if (!isSafeNavigationUrl(url)) {
+      return;
+    }
+    if (newTab) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = url;
     }
   };
 
@@ -120,7 +121,16 @@ export default class GleapFrameManager {
   }
 
   setUrlHandler(handler) {
-    this.urlHandler = handler;
+    if (typeof handler !== 'function') {
+      return;
+    }
+    // A custom handler may open app deep links, but never script URLs.
+    this.urlHandler = (url, newTab) => {
+      if (isScriptUrl(url)) {
+        return;
+      }
+      return handler(url, newTab);
+    };
   }
 
   isSurvey() {
@@ -1023,7 +1033,10 @@ export default class GleapFrameManager {
     try {
       this.gleapFrame = document.querySelector('.gleap-frame');
       if (this.comReady && this.gleapFrame && this.gleapFrame.contentWindow) {
-        this.gleapFrame.contentWindow.postMessage(JSON.stringify(data), '*');
+        this.gleapFrame.contentWindow.postMessage(
+          JSON.stringify(data),
+          frameTargetOrigin(this.gleapFrame, this.frameUrl)
+        );
       } else {
         if (queue) {
           this.queue.push(data);
@@ -1420,7 +1433,7 @@ export default class GleapFrameManager {
             name: 'collect-ticket-data',
             data: ticketData,
           }),
-          '*'
+          frameTargetOrigin(targetFrame, this.frameUrl)
         );
       }
     } catch (e) {}
