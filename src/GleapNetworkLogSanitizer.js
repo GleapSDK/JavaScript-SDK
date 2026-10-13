@@ -6,8 +6,9 @@ export const DEFAULT_NETWORK_LOG_BLACKLIST = ['gleap.io', 'gleap.ai'];
 export const REDACTED_VALUE = '[REDACTED]';
 export const BODY_NOT_CAPTURED = '[body not captured]';
 
-// Credentials are masked (key kept, value replaced) whatever the project settings say.
-const ALWAYS_MASKED_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'set-cookie'];
+// Credentials are masked (key kept, value replaced) whatever the project settings say. Gleap-Hash is
+// the widget session's credential (on the SDK's own calls through a custom api url).
+const ALWAYS_MASKED_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'set-cookie', 'gleap-hash'];
 
 // Guards the recursive walks against pathological nesting. A body nested deeper than this is
 // dropped instead of being sent unredacted.
@@ -40,6 +41,19 @@ export const normalizeStringList = (list) => {
     }
   }
   return result;
+};
+
+/**
+ * The blacklist entry for a custom api url (Gleap.setApiUrl): the SDK's own calls through a proxy
+ * stay out of the logs like api.gleap.io. The whole url (origin and path) so the app's other
+ * requests to the same host stay in. Null for anything that isn't an http(s) url.
+ */
+export const apiUrlBlacklistEntry = (apiUrl) => {
+  if (typeof apiUrl !== 'string') {
+    return null;
+  }
+  const trimmed = apiUrl.trim().replace(/\/+$/, '');
+  return /^https?:\/\/[^/\s]+/i.test(trimmed) ? trimmed : null;
 };
 
 /**

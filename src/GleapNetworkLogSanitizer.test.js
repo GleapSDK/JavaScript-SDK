@@ -246,3 +246,32 @@ describe('GleapNetworkIntercepter redaction settings', () => {
     expect(intercepter.requests[1].request.payload).toBe('{"token":"a","id":1}');
   });
 });
+
+describe('custom api url (Gleap.setApiUrl)', () => {
+  test("leaves the SDK's own calls through the proxy out, keeps the app's other requests to that host", () => {
+    const intercepter = new GleapNetworkIntercepter();
+    intercepter.setSdkApiUrl('https://app.example.com/gleap-api/');
+    intercepter.requests = {
+      1: entry({ url: 'https://app.example.com/gleap-api/sessions/partialupdate' }),
+      2: entry({ url: 'https://app.example.com/gleap-api/uploads/attachments' }),
+      3: entry({ url: 'https://app.example.com/api/login' }),
+    };
+
+    expect(intercepter.getRequests().map((log) => log.url)).toEqual(['https://app.example.com/api/login']);
+    expect(intercepter.createRequest('POST', 'https://app.example.com/gleap-api/v3/shared/capture-requests/1/logs')).toBeNull();
+  });
+
+  test('anything but an http(s) url adds no blacklist entry', () => {
+    const intercepter = new GleapNetworkIntercepter();
+    intercepter.setSdkApiUrl('');
+    intercepter.setSdkApiUrl(undefined);
+    expect(intercepter.getBlacklist()).toEqual(['gleap.io', 'gleap.ai']);
+  });
+
+  test('masks the widget session credential (Gleap-Hash) on any request', () => {
+    const log = entry({
+      request: { headers: { 'Gleap-Hash': 'h-123', 'Gleap-Id': 'g-1', Accept: '*/*' }, payload: '' },
+    });
+    expect(sanitizeOne(log).request.headers).toEqual({ 'Gleap-Hash': REDACTED_VALUE, 'Gleap-Id': 'g-1', Accept: '*/*' });
+  });
+});
