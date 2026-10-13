@@ -243,17 +243,23 @@ const entryTime = (entry) => {
   return typeof value === 'string' || typeof value === 'number' ? new Date(value).getTime() : NaN;
 };
 
-const withinWindow = (entries, from, to) => {
+// [from, to] wall times a recording was paused (to = 0: paused until the end).
+const inPause = (time, pauses) =>
+  pauses.some((pause) => Array.isArray(pause) && time >= pause[0] && (!pause[1] || time < pause[1]));
+
+const withinWindow = (entries, from, to, pauses) => {
   if (!Array.isArray(entries)) {
     return [];
   }
   if (!from) {
     return entries.slice();
   }
+  const paused = Array.isArray(pauses) ? pauses : [];
   return entries.filter((entry) => {
     const time = entryTime(entry);
     // Entries without a usable date stay in.
-    return isNaN(time) || (time >= from && time <= to);
+    // Paused stretches stay private: Pause is for logging in or paying.
+    return isNaN(time) || (time >= from && time <= to && !inPause(time, paused));
   });
 };
 
@@ -269,8 +275,8 @@ const webReplaysEnabled = () => {
 /**
  * The log bundle for /logs (contract §9): the data a bug report carries, from the same collectors,
  * limited to what `include` asks for. Never takes a screenshot. With a recording window only the
- * entries of that window (and a short lead-in) are included.
- * @param {{include?: object, windowStart?: number, windowEnd?: number, deviceId?: string}} options
+ * entries of that window (and a short lead-in) are included, without the stretches it was paused.
+ * @param {{include?: object, windowStart?: number, windowEnd?: number, pauses?: Array<[number, number]>, deviceId?: string}} options
  */
 export const buildLogsBundle = (options = {}) => {
   const include = normalizeInclude(options.include);
@@ -286,10 +292,10 @@ export const buildLogsBundle = (options = {}) => {
   };
 
   if (include.consoleLog) {
-    collect('consoleLog', () => withinWindow(GleapConsoleLogManager.getInstance().getLogs(), filterFrom, windowEnd));
+    collect('consoleLog', () => withinWindow(GleapConsoleLogManager.getInstance().getLogs(), filterFrom, windowEnd, options.pauses));
   }
   if (include.networkLogs) {
-    collect('networkLogs', () => withinWindow(GleapNetworkIntercepter.getInstance().getRequests(), filterFrom, windowEnd));
+    collect('networkLogs', () => withinWindow(GleapNetworkIntercepter.getInstance().getRequests(), filterFrom, windowEnd, options.pauses));
   }
   if (include.customData) {
     collect('customData', () => GleapCustomDataManager.getInstance().getCustomData());
@@ -298,7 +304,7 @@ export const buildLogsBundle = (options = {}) => {
     collect('metaData', () => GleapMetaDataManager.getInstance().getMetaData());
   }
   if (include.customEventLog) {
-    collect('customEventLog', () => withinWindow(GleapStreamedEvent.getInstance().getEventArray(), filterFrom, windowEnd));
+    collect('customEventLog', () => withinWindow(GleapStreamedEvent.getInstance().getEventArray(), filterFrom, windowEnd, options.pauses));
   }
   if (include.replays && webReplaysEnabled()) {
     try {

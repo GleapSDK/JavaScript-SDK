@@ -362,6 +362,12 @@ export default class GleapCaptureManager {
   onCaptureDone(data) {
     const session = this.session;
     if (session && (!data.requestId || data.requestId === session.requestId)) {
+      // The screenshot's logs go only once the Messenger saved it (`sent: false`: skipped, failed or
+      // answered elsewhere; older Messengers don't say and still get them).
+      if (session.pendingLogs && data.sent !== false) {
+        this.postLogs(session.requestId, session.pendingLogs);
+      }
+      session.pendingLogs = null;
       this.endSession(session, { restore: true });
     }
     this.setEditorOpen(false);
@@ -760,9 +766,9 @@ export default class GleapCaptureManager {
       frameManager.setCaptureHidden(false, true);
     }
 
-    if (logsBundle) {
-      this.postLogs(session.requestId, logsBundle);
-    }
+    // Held until the customer sends it (capture-done): a cancelled screenshot sends no logs, and a
+    // retake replaces them.
+    session.pendingLogs = logsBundle || null;
   }
 
   postLogs(requestId, bundle) {
@@ -992,6 +998,10 @@ export default class GleapCaptureManager {
     this.liftVeil(session);
     session.recording = null;
     session.result = result;
+    // When it was paused: the logs leave those stretches out (Pause is for logging in or paying).
+    session.pauses = session.timeline
+      ? session.timeline.pauses.map((pause) => [pause[0], pause[1] || result.endedAt])
+      : [];
     session.timelineEntries = session.timeline ? session.timeline.stop(result.endedAt) : [];
     const interactions = session.timeline ? session.timeline.interactions : 0;
     session.timeline = null;
@@ -1015,6 +1025,7 @@ export default class GleapCaptureManager {
     session.result = null;
     session.uploadedUrl = null;
     session.timelineEntries = null;
+    session.pauses = null;
     session.phase = 'bar';
     session.interrupted = false;
     this.renderBar(session);
@@ -1032,18 +1043,17 @@ export default class GleapCaptureManager {
     this.ui.setUploading(0);
     this.sendState(session.requestId, 'uploading', { progress: 0 });
 
-    // Logs for the recording window go along (in parallel with the upload).
+    // Logs for the recording window (without its paused stretches), sent once the recording is saved.
+    let logsBundle = null;
     if (this.attachesLogs(session)) {
       try {
-        this.postLogs(
-          session.requestId,
-          buildLogsBundle({
-            include: session.options.include,
-            windowStart: result.startedAt,
-            windowEnd: result.endedAt,
-            deviceId: this.getDeviceId(),
-          })
-        );
+        logsBundle = buildLogsBundle({
+          include: session.options.include,
+          windowStart: result.startedAt,
+          windowEnd: result.endedAt,
+          pauses: session.pauses || [],
+          deviceId: this.getDeviceId(),
+        });
       } catch (exp) {}
     }
 
@@ -1103,6 +1113,9 @@ export default class GleapCaptureManager {
             return;
           }
           if (isOk(response.status)) {
+            if (logsBundle) {
+              this.postLogs(session.requestId, logsBundle);
+            }
             // What the card shows (and where its flight starts), read before the review closes.
             const poster = this.ui ? this.ui.getPosterDataUrl() : null;
             const from = this.ui ? this.ui.getPreviewRect() : null;

@@ -84,6 +84,13 @@ describe('log bundle', () => {
     expect(bundle.windowEnd).toBe(iso(60000));
   });
 
+  test('a paused stretch of the recording sends none of its entries', () => {
+    const bundle = buildLogsBundle({ windowStart: 50000, windowEnd: 60000, pauses: [[51500, 53000]] });
+    expect(bundle.consoleLog.map((entry) => entry.log)).toEqual(['during']);
+    expect(bundle.networkLogs).toEqual([]);
+    expect(bundle.customEventLog.map((entry) => entry.name)).toEqual(['pageView']);
+  });
+
   test('encoded in slices to valid JSON: the replay packed, data that cannot be serialized left out', async () => {
     const bundle = buildLogsBundle({ include: { replays: true } });
     const cyclic = { plan: 'pro' };
@@ -203,6 +210,31 @@ describe('log requests from the websocket', () => {
     expect(manager.attachesLogs(session)).toBe(true);
     expect(manager.attachesLogs({ options: { attachLogs: false } })).toBe(false);
     manager.postLogs('cr-8', { consoleLog: [] });
+    await flush();
+    expect(api.postCaptureLogs).toHaveBeenCalledTimes(1);
+  });
+
+  test("a screenshot's logs go only once the Messenger saved it: never for a cancel or a skip", async () => {
+    const image = { dataUrl: 'data:image/jpeg;base64,AA==', width: 1, height: 1, method: 'dom' };
+    const screenshot = (requestId) => {
+      const session = { requestId, kind: 'screenshot', options: { attachLogs: true }, phase: 'capturing', resumed: false };
+      manager.session = session;
+      manager.onScreenshotReady(session, image, { consoleLog: [{ log: requestId }] });
+    };
+
+    screenshot('cr-9');
+    await flush();
+    expect(api.postCaptureLogs).not.toHaveBeenCalled();
+    manager.onCaptureDone({ requestId: 'cr-9', sent: true });
+    await flush();
+    expect(api.postCaptureLogs).toHaveBeenCalledTimes(1);
+    expect(api.postCaptureLogs.mock.calls[0][0]).toBe('cr-9');
+
+    screenshot('cr-10');
+    manager.onCaptureCancel({ requestId: 'cr-10' });
+    manager.onCaptureDone({ requestId: 'cr-10', sent: true });
+    screenshot('cr-11');
+    manager.onCaptureDone({ requestId: 'cr-11', sent: false });
     await flush();
     expect(api.postCaptureLogs).toHaveBeenCalledTimes(1);
   });
