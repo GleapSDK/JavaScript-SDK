@@ -3,10 +3,11 @@
  */
 import GleapBannerManager, { bodyClipsInlineBanner } from './GleapBannerManager';
 
+const mockUrlHandler = jest.fn();
 jest.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
-  GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: jest.fn() })) },
+  GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: mockUrlHandler })) },
 }));
 
 jest.mock('./GleapHelper', () => ({
@@ -88,5 +89,29 @@ describe('GleapBannerManager inline clip layout', () => {
     show('floating');
     expect(document.body.classList.contains('gleap-b-f')).toBe(true);
     expect(document.body.classList.contains('gleap-b-clip')).toBe(false);
+  });
+});
+
+describe('GleapBannerManager message origin', () => {
+  const manager = GleapBannerManager.getInstance();
+  const post = (origin) =>
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: JSON.stringify({ type: 'BANNER', name: 'open-url', data: 'https://example.com' }),
+        origin,
+      })
+    );
+
+  beforeEach(() => mockUrlHandler.mockClear());
+
+  test('accepts the exact banner origin', () => {
+    post(new URL(manager.bannerUrl).origin);
+    expect(mockUrlHandler).toHaveBeenCalledWith('https://example.com', false);
+  });
+
+  test('ignores a look-alike origin that is a prefix of the banner URL', () => {
+    post('https://outboundmedia.gl');
+    post('https://outboundmedia.gleap');
+    expect(mockUrlHandler).not.toHaveBeenCalled();
   });
 });
