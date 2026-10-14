@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.3.1
+Security: the default URL handler opens only http(s), mailto, tel and relative links (never `javascript:` or `data:`), new tabs open with `noopener`, banner and modal messages need an exact origin match, and messages to the widget, chatbar and agent conversation frames are pinned to their own origin. A custom `Gleap.setUrlHandler` still receives app deep links, never script URLs.
+Fixed: screenshot and recording logs are sent only once the capture is saved (none after a cancel, a retake replaces them), and recording logs leave out paused stretches. With a custom API URL (`Gleap.setApiUrl`) the SDK's own calls stay out of the network logs, and the `Gleap-Hash` session header is always masked. Screenshot downloads stay out of the network logs, images that can't be downloaded are tinted instead of breaking the screenshot, and switching users no longer races.
+
 ## 19.3.0
 New capture experience: when Kai or a teammate asks for a screenshot or recording, the page shows a small frosted capture bar (Enter to capture, Esc to cancel) instead of the dark panel, with a shutter flash and the result flying into the chat card. Recordings can be paused and resumed, show a progress ring toward the time limit, and the default limit is now 2 minutes. The editor keeps all its tools with a cleaner toolbar. Works with older Messenger versions (no fly-in or pause there).
 
