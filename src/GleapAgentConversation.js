@@ -1,5 +1,6 @@
 import { GleapSession } from './Gleap';
 import { bootstrapGleapFrame } from './GleapHelper';
+import { frameTargetOrigin } from './GleapMessageSecurity';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS } from './GleapRegions';
 
 let agentConversationUrl = 'https://outboundmedia.gleap.io/agent-conversation';
@@ -141,7 +142,7 @@ export const registerGleapAgentComponents = () => {
 
         this._iframe.contentWindow.postMessage(
           JSON.stringify({ type: 'agent-conversation', name: 'agent-conv-data', data: config }),
-          '*'
+          frameTargetOrigin(this._iframe, this._agentConvUrl)
         );
       }
 
@@ -149,7 +150,7 @@ export const registerGleapAgentComponents = () => {
         if (!this._iframe?.contentWindow || !content?.trim()) return;
         this._iframe.contentWindow.postMessage(
           JSON.stringify({ type: 'agent-conversation', name: 'agent-conv-send-message', data: { content } }),
-          '*'
+          frameTargetOrigin(this._iframe, this._agentConvUrl)
         );
       }
 
@@ -157,7 +158,7 @@ export const registerGleapAgentComponents = () => {
         if (!this._iframe?.contentWindow) return;
         this._iframe.contentWindow.postMessage(
           JSON.stringify({ type: 'agent-conversation', name: 'agent-conv-clear', data: {} }),
-          '*'
+          frameTargetOrigin(this._iframe, this._agentConvUrl)
         );
       }
     }

@@ -717,6 +717,8 @@ class Gleap {
    */
   static setApiUrl(apiUrl) {
     GleapSession.getInstance().apiUrl = apiUrl;
+    // The SDK's own calls (with the session credential) stay out of the network logs.
+    GleapNetworkIntercepter.getInstance().setSdkApiUrl(apiUrl);
   }
 
   /**

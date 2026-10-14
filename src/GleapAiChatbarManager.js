@@ -9,6 +9,7 @@ import {
 import GleapAgentToolManager from './GleapAgentToolManager';
 import GleapThemeManager from './GleapThemeManager';
 import { applyGleapCSPNonce, bootstrapGleapFrame, runFunctionWhenDomIsReady } from './GleapHelper';
+import { frameTargetOrigin } from './GleapMessageSecurity';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS } from './GleapRegions';
 
 export default class GleapAiChatbarManager {
@@ -160,7 +161,10 @@ export default class GleapAiChatbarManager {
         this.pendingMessages.push(message);
         return;
       }
-      this.chatbarFrame.contentWindow.postMessage(JSON.stringify(message), '*');
+      this.chatbarFrame.contentWindow.postMessage(
+        JSON.stringify(message),
+        frameTargetOrigin(this.chatbarFrame, this.chatbarUrl)
+      );
     } catch (e) {}
   }
 

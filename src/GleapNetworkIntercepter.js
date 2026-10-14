@@ -1,5 +1,6 @@
 import { serializeBounded } from './GleapLogFormatter';
 import {
+  apiUrlBlacklistEntry,
   BODY_NOT_CAPTURED,
   DEFAULT_NETWORK_LOG_BLACKLIST,
   isBlacklistedUrl,
@@ -506,6 +507,7 @@ class GleapNetworkIntercepter {
   localFilters = [];
   remoteFilters = [];
   localBlacklist = [];
+  sdkApiUrlEntry = null;
   remoteBlacklist = [];
   initialized = false;
   stopped = false;
@@ -709,8 +711,17 @@ class GleapNetworkIntercepter {
     return normalizeStringList(this.remoteFilters.concat(this.localFilters));
   }
 
+  /**
+   * A custom api url (Gleap.setApiUrl): the SDK's own calls through it are left out like api.gleap.io.
+   */
+  setSdkApiUrl(apiUrl) {
+    this.sdkApiUrlEntry = apiUrlBlacklistEntry(apiUrl);
+  }
+
   getBlacklist() {
-    return normalizeStringList(DEFAULT_NETWORK_LOG_BLACKLIST.concat(this.remoteBlacklist, this.localBlacklist));
+    return normalizeStringList(
+      DEFAULT_NETWORK_LOG_BLACKLIST.concat(this.sdkApiUrlEntry ? [this.sdkApiUrlEntry] : [], this.remoteBlacklist, this.localBlacklist)
+    );
   }
 
   isCapturing() {

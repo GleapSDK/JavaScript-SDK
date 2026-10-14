@@ -272,3 +272,48 @@ describe('GleapFrameManager expand/collapse window', () => {
     expect(sentSizeUpdates().pop().data).toEqual({ expandable: false, expanded: false });
   });
 });
+
+describe('GleapFrameManager url handler', () => {
+  let open;
+  beforeEach(() => {
+    open = jest.spyOn(window, 'open').mockImplementation(() => null);
+  });
+  afterEach(() => open.mockRestore());
+
+  it('never opens script URLs', () => {
+    const fm = setup();
+    const before = window.location.href;
+    fm.urlHandler('javascript:alert(document.cookie)', false);
+    fm.urlHandler('java\tscript:alert(1)', false);
+    fm.urlHandler('javascript:alert(1)', true);
+    fm.urlHandler('data:text/html,<script>alert(1)</script>', true);
+    expect(open).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(before);
+  });
+
+  it('opens web links in a new tab without an opener', () => {
+    const fm = setup();
+    fm.urlHandler('https://example.com/docs', true);
+    expect(open).toHaveBeenCalledWith('https://example.com/docs', '_blank', 'noopener,noreferrer');
+  });
+
+  it('runs a custom handler for deep links but never for script URLs', () => {
+    const fm = setup();
+    const custom = jest.fn();
+    fm.setUrlHandler(custom);
+    fm.urlHandler('myapp://settings', false);
+    fm.urlHandler('javascript:alert(1)', false);
+    fm.urlHandler('data:text/html,x', true);
+    expect(custom).toHaveBeenCalledTimes(1);
+    expect(custom).toHaveBeenCalledWith('myapp://settings', false);
+  });
+
+  it("relays the messenger's open-url through the safe handler", () => {
+    const fm = setup();
+    const before = window.location.href;
+    dispatch(fm, { name: 'open-url', data: 'javascript:alert(1)' });
+    dispatch(fm, { name: 'open-url', data: 'javascript:alert(1)', newTab: true });
+    expect(open).not.toHaveBeenCalled();
+    expect(window.location.href).toBe(before);
+  });
+});
