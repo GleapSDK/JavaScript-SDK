@@ -20,9 +20,9 @@ export const startScreenCapture = (isLiveSite, privacyOptions) => {
   return prepareScreenshotData(isLiveSite, privacyOptions || {});
 };
 
-const documentToHTML = (clone) => {
+const documentToHTML = (clone, doc) => {
   var html = '';
-  var node = window.document.doctype;
+  var node = doc.doctype;
   if (node) {
     html =
       '<!DOCTYPE ' +
@@ -266,10 +266,10 @@ const getTextContentFromStyleSheet = (styleSheet) => {
   return sanitizeCSSBraces(cssTextContent);
 };
 
-const downloadAllCSSUrlResources = (clone, remote) => {
+const downloadAllCSSUrlResources = (clone, remote, doc) => {
   var promises = [];
-  for (var i = 0; i < document.styleSheets.length; i++) {
-    const styleSheet = document.styleSheets[i];
+  for (var i = 0; i < doc.styleSheets.length; i++) {
+    const styleSheet = doc.styleSheets[i];
 
     // Skip if the stylesheet is meant for print
     if (styleSheet.media && styleSheet.media.mediaText === 'print') {
@@ -280,10 +280,10 @@ const downloadAllCSSUrlResources = (clone, remote) => {
     if (styleSheet && styleSheet.ownerNode) {
       if (cssTextContent != '') {
         // Resolve resources.
-        const baseTags = document.getElementsByTagName('base');
+        const baseTags = doc.getElementsByTagName('base');
         var basePathURL = baseTags.length
-          ? baseTags[0].href.substr(location.origin.length, 999)
-          : window.location.href.split(/[?#]/)[0];
+          ? baseTags[0].href.substr(doc.location.origin.length, 999)
+          : doc.location.href.split(/[?#]/)[0];
 
         if (styleSheet.href) {
           basePathURL = styleSheet.href;
@@ -322,11 +322,11 @@ const downloadAllCSSUrlResources = (clone, remote) => {
   });
 };
 
-const prepareRemoteData = (clone, remote) => {
+const prepareRemoteData = (clone, remote, doc) => {
   return new Promise((resolve, reject) => {
     if (remote) {
       // Always download CSS.
-      return downloadAllCSSUrlResources(clone, remote)
+      return downloadAllCSSUrlResources(clone, remote, doc)
         .then(() => {
           resolve();
         })
@@ -336,7 +336,7 @@ const prepareRemoteData = (clone, remote) => {
     } else {
       return downloadAllImages(clone)
         .then(() => {
-          return downloadAllCSSUrlResources(clone, remote).then(() => {
+          return downloadAllCSSUrlResources(clone, remote, doc).then(() => {
             resolve();
           });
         })
@@ -1074,9 +1074,31 @@ const createBlockedPlaceholder = (node, placeholderDocument, isInnerBox, isInTab
   return placeholder;
 };
 
-const deepClone = async (host, privacyOptions) => {
+// A same-origin frame's page is captured the way the top page is, and goes into the frame's
+// srcdoc, which the renderer shows instead of loading src: loaded there, src has none of the
+// user's session (a login page, or nothing), and a frame written by script has no src at all.
+// A cross-origin page cannot be read, and its frame keeps loading src.
+const captureFrame = async (frame, remote, privacyOptions, insideMaskMarker) => {
+  try {
+    const frameDocument = frame.contentDocument;
+    if (!frameDocument || !frameDocument.documentElement) {
+      return null;
+    }
+
+    // Still on the initial about:blank on its way to src, which may be cross-origin.
+    if (frameDocument.location.href === 'about:blank' && frame.src && frame.src !== 'about:blank') {
+      return null;
+    }
+
+    return (await captureDocument(frameDocument, remote, privacyOptions, insideMaskMarker)).html;
+  } catch (exp) {
+    return null;
+  }
+};
+
+const deepClone = async (host, remote, privacyOptions, insideHostMaskMarker) => {
   let shadowNodeId = 1;
-  const animationsByTarget = collectAnimationsInto(new Map(), window.document);
+  const animationsByTarget = collectAnimationsInto(new Map(), host.ownerDocument);
   const maskText = getTextMask(privacyOptions);
   let placeholderDocument = null;
 
@@ -1139,7 +1161,8 @@ const deepClone = async (host, privacyOptions) => {
         clone.setAttribute('bb-shadow-child', shadowRoot);
       }
 
-      if (node instanceof HTMLCanvasElement) {
+      // By tag name: a frame's canvas is an instance of the frame's HTMLCanvasElement.
+      if (tagName == 'CANVAS') {
         try {
           const boundingRect = node.getBoundingClientRect();
           const resizedImage = await resizeImage(node.toDataURL(), 1400, 1400);
@@ -1159,6 +1182,16 @@ const deepClone = async (host, privacyOptions) => {
         clone.setAttribute('bb-element', true);
         clone.setAttribute('bb-height', boundingRect.height);
         clone.setAttribute('bb-width', boundingRect.width);
+      }
+
+      if (tagName == 'IFRAME') {
+        const frameHTML = await captureFrame(node, remote, privacyOptions, masksText);
+        // Under Trusted Types srcdoc takes no plain string, and the frame keeps loading src.
+        try {
+          if (frameHTML !== null) {
+            clone.setAttribute('srcdoc', frameHTML);
+          }
+        } catch (exp) {}
       }
 
       if (node.scrollTop > 0 || node.scrollLeft > 0) {
@@ -1215,14 +1248,14 @@ const deepClone = async (host, privacyOptions) => {
   };
 
   const fragment = document.createDocumentFragment();
-  await cloneNode(host, fragment);
+  await cloneNode(host, fragment, undefined, insideHostMaskMarker);
 
   // Work on adopted stylesheets.
   var clonedHead = fragment.querySelector('head');
   if (!clonedHead) {
     clonedHead = fragment;
   }
-  handleAdoptedStyleSheets(window.document, clonedHead);
+  handleAdoptedStyleSheets(host.ownerDocument, clonedHead);
 
   return fragment;
 };
@@ -1267,95 +1300,107 @@ const fixParserUnsafeNesting = (clone) => {
   }
 };
 
-const prepareScreenshotData = (remote, privacyOptions) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-    const styleTags = window.document.querySelectorAll('style, link');
-    for (var i = 0; i < styleTags.length; ++i) {
-      styleTags[i].setAttribute('bb-styleid', i);
+// Captures one document as HTML: the page, or the page of a same-origin frame in it.
+const captureDocument = async (doc, remote, privacyOptions, insideMaskMarker) => {
+  const styleTags = doc.querySelectorAll('style, link');
+  for (var i = 0; i < styleTags.length; ++i) {
+    styleTags[i].setAttribute('bb-styleid', i);
+  }
+
+  const clone = await deepClone(doc.documentElement, remote, privacyOptions, insideMaskMarker);
+
+  try {
+    fixParserUnsafeNesting(clone);
+  } catch (exp) {}
+
+  // Fix for web imports (depracted).
+  const linkImportElems = clone.querySelectorAll('link[rel=import]');
+  for (var i = 0; i < linkImportElems.length; ++i) {
+    const referenceNode = linkImportElems[i];
+    if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
+      const childNodes = referenceNode.childNodes;
+      while (childNodes.length > 0) {
+        referenceNode.parentNode.insertBefore(childNodes[0], referenceNode);
+      }
+      referenceNode.remove();
     }
+  }
 
-    const clone = await deepClone(window.document.documentElement, privacyOptions);
+  // Remove all scripts & style
+  const scriptElems = clone.querySelectorAll('script, noscript');
+  for (var i = 0; i < scriptElems.length; ++i) {
+    scriptElems[i].remove();
+  }
 
-    try {
-      fixParserUnsafeNesting(clone);
-    } catch (exp) {}
+  // Cleanup base path
+  var existingBasePath = '';
+  const baseElems = clone.querySelectorAll('base');
+  for (var i = 0; i < baseElems.length; ++i) {
+    if (baseElems[i].href) {
+      existingBasePath = baseElems[i].href;
+    }
+    baseElems[i].remove();
+  }
 
-    // Fix for web imports (depracted).
-    const linkImportElems = clone.querySelectorAll('link[rel=import]');
-    for (var i = 0; i < linkImportElems.length; ++i) {
-      const referenceNode = linkImportElems[i];
-      if (referenceNode && referenceNode.childNodes && referenceNode.childNodes.length > 0) {
-        const childNodes = referenceNode.childNodes;
-        while (childNodes.length > 0) {
-          referenceNode.parentNode.insertBefore(childNodes[0], referenceNode);
-        }
-        referenceNode.remove();
+  // Adjust the base node
+  const pageUrl = doc.location.href;
+  const baseUrl = pageUrl.substring(0, pageUrl.lastIndexOf('/'));
+  var newBaseUrl = baseUrl + '/';
+  if (existingBasePath) {
+    if (existingBasePath.startsWith('http')) {
+      // Absolute path.
+      newBaseUrl = existingBasePath;
+    } else {
+      // Relative path.
+      newBaseUrl = baseUrl + existingBasePath;
+      if (!newBaseUrl.endsWith('/')) {
+        newBaseUrl += '/';
       }
     }
+  }
 
-    // Remove all scripts & style
-    const scriptElems = clone.querySelectorAll('script, noscript');
-    for (var i = 0; i < scriptElems.length; ++i) {
-      scriptElems[i].remove();
-    }
-
-    // Cleanup base path
-    var existingBasePath = '';
-    const baseElems = clone.querySelectorAll('base');
-    for (var i = 0; i < baseElems.length; ++i) {
-      if (baseElems[i].href) {
-        existingBasePath = baseElems[i].href;
-      }
-      baseElems[i].remove();
-    }
-
-    // Adjust the base node
-    const baseUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/'));
-    var newBaseUrl = baseUrl + '/';
-    if (existingBasePath) {
-      if (existingBasePath.startsWith('http')) {
-        // Absolute path.
-        newBaseUrl = existingBasePath;
-      } else {
-        // Relative path.
-        newBaseUrl = baseUrl + existingBasePath;
-        if (!newBaseUrl.endsWith('/')) {
-          newBaseUrl += '/';
-        }
-      }
-    }
-
-    const baseNode = window.document.createElement('base');
+  // A frame on about:blank resolves URLs against its parent's base, and so does its srcdoc copy.
+  if (doc.location.protocol !== 'about:') {
+    const baseNode = doc.createElement('base');
     baseNode.href = newBaseUrl;
     const head = clone.querySelector('head');
     head.insertBefore(baseNode, head.firstChild);
+  }
 
-    // Do further cleanup.
-    const dialogElems = clone.querySelectorAll('.bb-feedback-dialog-container, .bb-capture-editor-borderlayer');
-    for (var i = 0; i < dialogElems.length; ++i) {
-      dialogElems[i].remove();
+  // Do further cleanup.
+  const dialogElems = clone.querySelectorAll('.bb-feedback-dialog-container, .bb-capture-editor-borderlayer');
+  for (var i = 0; i < dialogElems.length; ++i) {
+    dialogElems[i].remove();
+  }
+
+  // Calculate heights
+  const bbElems = clone.querySelectorAll('[bb-element=true]');
+  for (var i = 0; i < bbElems.length; ++i) {
+    if (bbElems[i]) {
+      bbElems[i].style.height = bbElems[i].getAttribute('bb-height') + 'px';
     }
+  }
 
-    // Calculate heights
-    const bbElems = clone.querySelectorAll('[bb-element=true]');
-    for (var i = 0; i < bbElems.length; ++i) {
-      if (bbElems[i]) {
-        bbElems[i].style.height = bbElems[i].getAttribute('bb-height') + 'px';
-      }
-    }
+  await prepareRemoteData(clone, remote, doc);
 
-    prepareRemoteData(clone, remote).then(() => {
-      const html = documentToHTML(clone);
+  return {
+    html: documentToHTML(clone, doc),
+    baseUrl: baseUrl,
+  };
+};
+
+const prepareScreenshotData = (remote, privacyOptions) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const capture = await captureDocument(window.document, remote, privacyOptions);
 
       resolve({
-        html: html,
-        baseUrl: baseUrl,
+        html: capture.html,
+        baseUrl: capture.baseUrl,
         width: window.innerWidth,
         height: window.innerHeight,
         isMobile: isMobile(),
       });
-    });
     } catch (exp) {
       console.warn('Gleap: Failed to capture screenshot', exp);
       resolve(null);

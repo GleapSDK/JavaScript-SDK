@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.2
+Fixed: screenshots showed dialogs and other content inside iframes as an empty box. The capture now includes the page of every same-origin iframe (frames in frames too, with the same masking and blocking rules) and stores it in the frame's `srcdoc`, so the screenshot shows what the user saw instead of loading the frame's URL without their session. Cross-origin iframes, and frames still loading their `src`, render as before. Canvases inside iframes are captured too. Typed values, scroll positions and canvases inside iframes need the matching screenshot renderer update.
+
 ## 19.3.1
 Security: the default URL handler opens only http(s), mailto, tel and relative links (never `javascript:` or `data:`), new tabs open with `noopener`, banner and modal messages need an exact origin match, and messages to the widget, chatbar and agent conversation frames are pinned to their own origin. A custom `Gleap.setUrlHandler` still receives app deep links, never script URLs.
 Fixed: screenshot and recording logs are sent only once the capture is saved (none after a cancel, a retake replaces them), and recording logs leave out paused stretches. With a custom API URL (`Gleap.setApiUrl`) the SDK's own calls stay out of the network logs, and the `Gleap-Hash` session header is always masked. Screenshot downloads stay out of the network logs, images that can't be downloaded are tinted instead of breaking the screenshot, and switching users no longer races.

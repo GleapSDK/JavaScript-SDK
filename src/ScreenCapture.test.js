@@ -876,3 +876,109 @@ describe('startScreenCapture — masked text', () => {
     expect(doc.getElementById('notes').getAttribute('bb-data-value')).toBe('*************');
   });
 });
+
+// A same-origin frame's page goes into the frame's srcdoc, which the renderer shows instead of
+// loading src without the user's session (a blank dialog, or a login page).
+describe('startScreenCapture — frames', () => {
+  const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
+  const frameDocumentOf = (doc, selector) => parse(doc.querySelector(selector).getAttribute('srcdoc'));
+
+  const addFrame = (parent, id, bodyHTML) => {
+    const frame = parent.ownerDocument.createElement('iframe');
+    frame.id = id;
+    parent.appendChild(frame);
+    frame.contentDocument.head.innerHTML = '<style>.title { color: blue; }</style>';
+    frame.contentDocument.body.innerHTML = bodyHTML;
+    return frame;
+  };
+
+  beforeEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  test("a same-origin frame's page goes into srcdoc, with its styles and without its scripts", async () => {
+    addFrame(
+      document.body,
+      'dialog',
+      '<h1 class="title">Fortschritt</h1><p id="info">Bei diesem Vorgang sind Fehler aufgetreten.</p><script>steal()</script>'
+    );
+
+    const frameDoc = frameDocumentOf(parse((await startScreenCapture(true)).html), '#dialog');
+
+    expect(frameDoc.querySelector('.title').textContent).toBe('Fortschritt');
+    expect(frameDoc.getElementById('info').textContent).toBe('Bei diesem Vorgang sind Fehler aufgetreten.');
+    expect(frameDoc.querySelector('style').textContent).toContain('color: blue');
+    expect(frameDoc.querySelector('script')).toBeNull();
+    // An about:blank frame resolves URLs against its parent's base, as its srcdoc copy does.
+    expect(frameDoc.querySelector('base')).toBeNull();
+  });
+
+  test('frames in frames are captured too', async () => {
+    const outer = addFrame(document.body, 'outer', '<div id="slot"></div>');
+    addFrame(outer.contentDocument.getElementById('slot'), 'inner', '<p id="deep">Pos 1</p>');
+
+    const outerDoc = frameDocumentOf(parse((await startScreenCapture(true)).html), '#outer');
+
+    expect(frameDocumentOf(outerDoc, '#inner').getElementById('deep').textContent).toBe('Pos 1');
+  });
+
+  test("masking applies inside frames, and a frame in a masked area has its page's text masked", async () => {
+    addFrame(document.body, 'form', '<input id="pw" type="password"><div class="gl-block"><p>IBAN DE89</p></div>');
+    document.getElementById('form').contentDocument.getElementById('pw').value = 'hunter2';
+    const masked = document.createElement('div');
+    masked.className = 'rr-mask';
+    document.body.appendChild(masked);
+    addFrame(masked, 'note', '<p id="name">Jane Doe</p>');
+
+    const html = (await startScreenCapture(true)).html;
+
+    expect(html).not.toContain('hunter2');
+    expect(html).not.toContain('IBAN DE89');
+    expect(html).not.toContain('Jane Doe');
+    expect(frameDocumentOf(parse(html), '#form').getElementById('pw').getAttribute('bb-data-value')).toBe('*******');
+    expect(frameDocumentOf(parse(html), '#note').getElementById('name').textContent).toBe('**** ***');
+  });
+
+  test('a frame on src="about:blank" whose page was written by script is captured', async () => {
+    document.body.innerHTML = '<iframe id="grid" src="about:blank"></iframe>';
+    document.getElementById('grid').contentDocument.body.innerHTML = '<p id="row">Zahnscheibe</p>';
+
+    const frameDoc = frameDocumentOf(parse((await startScreenCapture(true)).html), '#grid');
+
+    expect(frameDoc.getElementById('row').textContent).toBe('Zahnscheibe');
+  });
+
+  test('where Trusted Types refuse a plain srcdoc, the frame is still captured, with its src', async () => {
+    document.body.innerHTML = '<iframe id="dialog" src="about:blank"></iframe>';
+    document.getElementById('dialog').contentDocument.body.innerHTML = '<p>Fortschritt</p>';
+    const setAttribute = Element.prototype.setAttribute;
+    const spy = jest.spyOn(HTMLIFrameElement.prototype, 'setAttribute').mockImplementation(function (name, value) {
+      if (name === 'srcdoc') {
+        throw new TypeError("This document requires 'TrustedHTML' assignment.");
+      }
+      return setAttribute.call(this, name, value);
+    });
+    try {
+      const frame = parse((await startScreenCapture(true)).html).getElementById('dialog');
+
+      expect(spy).toHaveBeenCalledWith('srcdoc', expect.stringContaining('Fortschritt'));
+      expect(frame.getAttribute('src')).toBe('about:blank');
+      expect(frame.hasAttribute('srcdoc')).toBe(false);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  test('a frame whose page cannot be read, or that has not loaded its src yet, keeps its src', async () => {
+    document.body.innerHTML =
+      '<iframe id="video" src="https://video.example.com/embed/1"></iframe><iframe id="loading" src="https://example.com/"></iframe>';
+    Object.defineProperty(document.getElementById('video'), 'contentDocument', { get: () => null });
+
+    const doc = parse((await startScreenCapture(true)).html);
+
+    for (const id of ['video', 'loading']) {
+      expect(doc.getElementById(id).hasAttribute('srcdoc')).toBe(false);
+      expect(doc.getElementById(id).getAttribute('src')).toBeTruthy();
+    }
+  });
+});
