@@ -1,0 +1,26 @@
+# Gleap dev preview config for the JavaScript SDK.
+# `npm start` runs webpack-dev-server (webpack.config.js, port 4444) and serves
+# the demo pages from ./demo with the SDK bundle rebuilt on change.
+# demo/main.js hard-codes the local backends the widget talks to:
+#   API + WebSocket -> http://0.0.0.0:9000 (GleapSDK/Server)
+#   widget iframe   -> http://0.0.0.0:3001 (GleapSDK/Messenger-App)
+# so the Server companion must listen on 9000 for the demo to work.
+services:
+  sdk:
+    run: "npm start -- --port $PORT --no-open"
+    cwd: "."
+    port: 4444
+    health: "/"
+    kind: web
+    reload: hot
+    readyTimeoutMs: 300000
+companions:
+  - repo: github.com/gleapsdk/server
+    optional: false
+  # The widget iframe is loaded from Messenger-App on port 3001; without it the
+  # host page still renders but the Gleap widget itself stays empty.
+  - repo: github.com/gleapsdk/messenger-app
+    optional: true
+preview: sdk
+verify:
+  readOnly: true
