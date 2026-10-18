@@ -1053,6 +1053,8 @@ export default class GleapFrameManager {
         apiUrl: GleapSession.getInstance().apiUrl,
         realtimeHost: GleapSession.getInstance().realtimeHost,
         sdkKey: GleapSession.getInstance().sdkKey,
+        // The widget may ask this SDK to switch sessions ("adopt-session").
+        capabilities: { adoptSession: true },
       },
     });
   }
@@ -1210,6 +1212,12 @@ export default class GleapFrameManager {
 
       if (data.name === 'close-widget') {
         this.hideWidget();
+      }
+
+      // A verified email moved the conversation to another contact: continue
+      // as that contact (the widget's "Verify email" workflow step).
+      if (data.name === 'adopt-session') {
+        GleapSession.getInstance().adoptSession(data.data);
       }
 
       if (data.name === 'set-widget-expanded') {
@@ -1389,6 +1397,11 @@ export default class GleapFrameManager {
           data?.type === 'CHATBAR' ||
           data?.type === 'AGENT_CONVERSATION'
         ) {
+          return;
+        }
+
+        // Only the Messenger frame may switch the session, never a banner.
+        if (data?.name === 'adopt-session' && !sourceMatchesGleapFrame && !originMatchesGleapFrame) {
           return;
         }
 

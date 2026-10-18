@@ -483,6 +483,50 @@ export default class GleapSession {
     );
   };
 
+  /**
+   * Switches to another contact's session, handed over by the widget after a
+   * verified email (the "Verify email" workflow step). The server checks the
+   * gleapId/gleapHash pair; anything it refuses leaves the current session as
+   * it is. An app that identifies its users keeps its own identity.
+   */
+  adoptSession = (data) => {
+    if (!data || typeof data.gleapId !== 'string' || typeof data.gleapHash !== 'string') {
+      return;
+    }
+    if (this.lastIdentify && this.lastIdentify.userId) {
+      return;
+    }
+    if (this.session && this.session.gleapId === data.gleapId) {
+      return;
+    }
+
+    const self = this;
+    const http = new XMLHttpRequest();
+    http.open('POST', self.apiUrl + '/sessions');
+    http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    http.setRequestHeader('Api-Token', self.sdkKey);
+    http.setRequestHeader('Gleap-Id', data.gleapId);
+    http.setRequestHeader('Gleap-Hash', data.gleapHash);
+    http.onreadystatechange = function () {
+      if (http.readyState === 4 && (http.status === 200 || http.status === 201)) {
+        try {
+          const sessionData = JSON.parse(http.responseText);
+          if (sessionData && sessionData.gleapId === data.gleapId) {
+            self.contactVersion++;
+            self.validateSession(sessionData);
+          }
+        } catch (exp) {}
+      }
+    };
+    http.send(
+      JSON.stringify({
+        lang: GleapTranslationManager.getInstance().getActiveLanguage(),
+        deviceType: getDeviceType(),
+        platform: 'web',
+      })
+    );
+  };
+
   notifySessionReady() {
     if (this.onSessionReadyListener.length > 0) {
       for (var i = 0; i < this.onSessionReadyListener.length; i++) {
