@@ -118,7 +118,13 @@ export namespace Gleap {
     ) => string | object | Promise<string | object>
   ): void;
   function registerCustomAction(
-    customAction: (action: { name: string }) => void
+    customAction: (action: {
+      name: string;
+      /** The action's data (a message button's actionData), when it has some. */
+      data?: any;
+      /** The share token of the conversation the action was clicked in. */
+      shareToken?: string;
+    }) => void
   ): void;
   function log(message: string, logLevel?: "INFO" | "WARNING" | "ERROR"): void;
   /**
