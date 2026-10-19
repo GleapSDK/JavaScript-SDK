@@ -194,7 +194,8 @@ const replaceStyleNodes = (clone, styleSheet, cssTextContent, styleId) => {
     try {
       if (cloneTargetNode) {
         var replacementNode = null;
-        if (cssTextContent != '') {
+        // An inline sheet (no href) stays a <style>: a <link> inside an <svg> swallows the rest of the svg when re-parsed.
+        if (cssTextContent != '' || !styleSheet.href) {
           // Create node.
           const head = clone.querySelector('head');
           var styleNode = window.document.createElement('style');
