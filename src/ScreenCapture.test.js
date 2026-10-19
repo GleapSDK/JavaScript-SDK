@@ -982,3 +982,25 @@ describe('startScreenCapture — frames', () => {
     }
   });
 });
+
+describe('startScreenCapture — style sheets', () => {
+  const parse = (html) => new DOMParser().parseFromString(html, 'text/html');
+
+  // jsdom's sheets have no ownerNode, so the capture would skip them; report them as a browser does.
+  const reportStyleSheets = (sheets) =>
+    Object.defineProperty(document, 'styleSheets', { configurable: true, get: () => sheets });
+
+  afterEach(() => {
+    delete document.styleSheets;
+  });
+
+  test('a style element without rules stays a style element, so the svg content after it still shows', async () => {
+    document.body.innerHTML = '<svg id="chart"><style></style><rect id="bar"></rect></svg>';
+    const style = document.querySelector('#chart > style');
+    reportStyleSheets([{ ownerNode: style, href: null, type: 'text/css', media: { mediaText: '' }, cssRules: [] }]);
+
+    const html = (await startScreenCapture(true)).html;
+
+    expect(parse(html).querySelector('#chart > #bar')).not.toBeNull();
+  });
+});

@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.3
+Fixed: charts and other SVG graphics could be missing from screenshots. An empty `<style>` inside an `<svg>` was captured as a stylesheet link to `null`, and the screenshot then dropped everything in the svg after it. Inline style sheets now always stay `<style>` elements; linked style sheets whose rules can't be read are still linked.
+
 ## 19.3.2
 Fixed: screenshots showed dialogs and other content inside iframes as an empty box. The capture now includes the page of every same-origin iframe (frames in frames too, with the same masking and blocking rules) and stores it in the frame's `srcdoc`, so the screenshot shows what the user saw instead of loading the frame's URL without their session. Cross-origin iframes, and frames still loading their `src`, render as before. Canvases inside iframes are captured too. Typed values, scroll positions and canvases inside iframes need the matching screenshot renderer update.
 
