@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+New: custom actions from chat messages and message cards now pass their data to your `Gleap.registerCustomAction` callback as `data` (next to `name` and `shareToken`), with a Messenger that sends it. Callbacks that only read `name` keep working.
+
 ## 19.3.3
 Fixed: charts and other SVG graphics could be missing from screenshots. An empty `<style>` inside an `<svg>` was captured as a stylesheet link to `null`, and the screenshot then dropped everything in the svg after it. Inline style sheets now always stay `<style>` elements; linked style sheets whose rules can't be read are still linked.
 
