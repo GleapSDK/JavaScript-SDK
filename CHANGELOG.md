@@ -1,6 +1,7 @@
 # Changelog
 
-## Unreleased
+## 19.3.4
+New: the widget can switch the visitor to a contact after the "Verify email" workflow step confirmed their email (`adopt-session`). The SDK checks the handed-over session with the server first and never replaces a user your app identified.
 New: custom actions from chat messages and message cards now pass their data to your `Gleap.registerCustomAction` callback as `data` (next to `name` and `shareToken`), with a Messenger that sends it. Callbacks that only read `name` keep working.
 
 ## 19.3.3
