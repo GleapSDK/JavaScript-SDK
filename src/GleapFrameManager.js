@@ -1207,6 +1207,11 @@ export default class GleapFrameManager {
       if (data.name === 'run-custom-action') {
         GleapCustomActionManager.triggerCustomAction(data.data, {
           shareToken: data.shareToken,
+          // The action's payload (data-action-data / a card button's
+          // actionData), sent by Messenger versions that have it.
+          ...(data.actionData !== undefined && data.actionData !== null
+            ? { data: data.actionData }
+            : {}),
         });
       }
 
