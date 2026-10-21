@@ -1,4 +1,4 @@
-import { querySelectorSafe } from './GleapSafeSelector';
+import { querySelectorAllSafe } from './GleapSafeSelector';
 
 const GleapTours = (function () {
   'use strict';
@@ -73,6 +73,19 @@ const GleapTours = (function () {
   }
   function isElementVisible(el) {
     return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  }
+  // A selector recorded on one layout can match a display:none node on another
+  // (a collapsed menu's label, the hidden copy of a responsive menu). Anchoring a
+  // step to it pins the popover to the viewport corner while the overlay blocks
+  // the page, so only rendered matches count.
+  function findRenderedElement(selector) {
+    const matches = querySelectorAllSafe(selector);
+    for (let i = 0; i < matches.length; i++) {
+      if (isElementVisible(matches[i])) {
+        return matches[i];
+      }
+    }
+    return null;
   }
   let currentState = {};
   function setState(key, value) {
@@ -238,7 +251,7 @@ const GleapTours = (function () {
     if (typeof elemObj === 'string') {
       // Stored selectors can be hand typed and invalid; that has to end in
       // onElementNotFound below instead of an exception inside the retry timer.
-      elemObj = querySelectorSafe(element);
+      elemObj = findRenderedElement(element);
     }
     if (element && !elemObj && attemptTime >= 0) {
       setTimeout(() => {
@@ -273,7 +286,7 @@ const GleapTours = (function () {
     // Re-query the element if the cached reference is no longer in the DOM.
     if (!document.body.contains(activeHighlight) && activeStep.element && typeof activeStep.element === 'string') {
       try {
-        var freshEl = querySelectorSafe(activeStep.element);
+        var freshEl = findRenderedElement(activeStep.element);
         if (freshEl) {
           activeHighlight = freshEl;
           setState('__activeElement', freshEl);
