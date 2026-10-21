@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.5
+Fixed: a product tour step whose selector only matched a hidden element (`display: none`, such as the label of a collapsed menu or the hidden copy of a responsive menu) froze the page. The step pointed at the top-left corner, the overlay blocked every click, a click step had no way forward and reloading brought the step back. Steps now use the first visible match; with none, the tour waits up to 5 s for the element to appear and then ends, like a selector that matches nothing.
+
 ## 19.3.4
 New: the widget can switch the visitor to a contact after the "Verify email" workflow step confirmed their email (`adopt-session`). The SDK checks the handed-over session with the server first and never replaces a user your app identified.
 New: custom actions from chat messages and message cards now pass their data to your `Gleap.registerCustomAction` callback as `data` (next to `name` and `shareToken`), with a Messenger that sends it. Callbacks that only read `name` keep working.
