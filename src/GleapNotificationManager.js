@@ -91,8 +91,12 @@ export default class GleapNotificationManager {
     try {
       const notificationsFromCache = loadFromGleapCache(this.unreadNotificationsKey);
       if (notificationsFromCache && notificationsFromCache.length > 0) {
+        const gleapId = GleapSession.getInstance().session?.gleapId;
         let nots = notificationsFromCache.filter(
           (notification) =>
+            // Only the contact that received it (unstamped pre-fix entries are dropped).
+            gleapId &&
+            notification?.cachedForGleapId === gleapId &&
             // Never resurface chatbar-routed notifications in the widget bubble.
             // (Pre-fix builds may have cached them before the routing guard existed.)
             notification?.data?.lastSource !== 'chatbar' &&
@@ -187,6 +191,9 @@ export default class GleapNotificationManager {
 
     const notificationsForOutbound = this.notifications.find((e) => notification.outbound === e.outbound);
     if (!notificationsForOutbound) {
+      // The cache key is shared by every contact on this browser; remember who
+      // received it so a reload never shows it to another contact.
+      notification.cachedForGleapId = GleapSession.getInstance().session?.gleapId;
       this.notifications.push(notification);
 
       // Play sound only if it's a new one and its page rules allow the
@@ -645,15 +652,18 @@ export default class GleapNotificationManager {
    * @param {boolean} fromOtherTab - True when applying a clear broadcast from a sibling tab (prevents re-broadcast loops).
    */
   clearAllNotifications(uiOnly = false, fromOtherTab = false) {
-    if (!this.notificationContainer) {
-      return;
-    }
-
+    // Clear the state and cache even before the UI is mounted: a clearIdentity()
+    // queued in the snippet runs before injectNotificationUI(), which would
+    // otherwise replay the previous contact's notifications from the cache.
     if (!uiOnly) {
       this.notifications = [];
       // Reset currentNewsIndex whenever we clear them out
       this.currentNewsIndex = 0;
       saveToGleapCache(this.unreadNotificationsKey, this.notifications);
+    }
+
+    if (!this.notificationContainer) {
+      return;
     }
 
     while (this.notificationContainer.firstChild) {

@@ -253,7 +253,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
   test('cached page-ruled notifications survive a reload on an excluded page but stay hidden', () => {
     setUrl(EXCLUDED_URL);
     const nm = withContainer(GleapNotificationManager.getInstance());
-    const cached = pageRuledNotification();
+    const cached = { ...pageRuledNotification(), cachedForGleapId: 'user-1' };
     loadFromGleapCache.mockReturnValue([cached]);
 
     nm.reloadNotificationsFromCache();
@@ -319,7 +319,9 @@ describe('notification stack', () => {
   test('reloadNotificationsFromCache keeps the NEWEST 4 (the same end shift() trims from)', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
     jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
-    loadFromGleapCache.mockReturnValue([1, 2, 3, 4, 5, 6].map((i) => plainNotification(`n${i}`)));
+    loadFromGleapCache.mockReturnValue(
+      [1, 2, 3, 4, 5, 6].map((i) => ({ ...plainNotification(`n${i}`), cachedForGleapId: 'user-1' }))
+    );
 
     nm.reloadNotificationsFromCache();
 
@@ -365,9 +367,71 @@ describe('clearAllNotifications — cross-tab broadcast gate', () => {
     expect(sendMessageMock).not.toHaveBeenCalled();
   });
 
-  test('no notification container => early return, no broadcast', () => {
+  test('no notification container => no broadcast (the tab channel only starts with the UI)', () => {
     const nm = GleapNotificationManager.getInstance();
     nm.clearAllNotifications();
     expect(sendMessageMock).not.toHaveBeenCalled();
+  });
+});
+
+describe('notification cache vs identity (#225880)', () => {
+  const plainNotification = (text, gleapId) => ({
+    outbound: `outbound-${text}`,
+    createdAt: new Date().toISOString(),
+    data: { text },
+    ...(gleapId ? { cachedForGleapId: gleapId } : {}),
+  });
+
+  beforeEach(() => {
+    loadFromGleapCache.mockReset();
+    saveToGleapCache.mockReset();
+  });
+
+  test('clearAllNotifications(false) clears the persisted cache before the UI is mounted', () => {
+    // A clearIdentity() queued in the snippet runs before injectNotificationUI().
+    const nm = GleapNotificationManager.getInstance();
+    nm.notifications = [plainNotification('previous user')];
+
+    nm.clearAllNotifications(false);
+
+    expect(nm.notifications).toEqual([]);
+    expect(saveToGleapCache).toHaveBeenCalledWith(nm.unreadNotificationsKey, []);
+  });
+
+  test('a UI-only clear before mount leaves the cache alone', () => {
+    const nm = GleapNotificationManager.getInstance();
+    const notification = plainNotification('keep');
+    nm.notifications = [notification];
+
+    nm.clearAllNotifications(true);
+
+    expect(nm.notifications).toEqual([notification]);
+    expect(saveToGleapCache).not.toHaveBeenCalled();
+  });
+
+  test('showNotification stamps the receiving gleapId on the cached notification', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+
+    nm.showNotification(plainNotification('hello'));
+
+    expect(saveToGleapCache).toHaveBeenCalledWith(nm.unreadNotificationsKey, [
+      expect.objectContaining({ cachedForGleapId: 'user-1' }),
+    ]);
+  });
+
+  test('reloadNotificationsFromCache drops notifications cached for another (or no) gleapId', () => {
+    const nm = withContainer(GleapNotificationManager.getInstance());
+    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const own = plainNotification('own', 'user-1');
+    loadFromGleapCache.mockReturnValue([
+      plainNotification('previous user', 'user-0'),
+      plainNotification('unstamped'),
+      own,
+    ]);
+
+    nm.reloadNotificationsFromCache();
+
+    expect(nm.notifications).toEqual([own]);
   });
 });
