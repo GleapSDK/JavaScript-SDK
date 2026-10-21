@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.6
+Fixed: `Gleap.clearIdentity()` called before the SDK had finished loading (for example inline on a login page, queued by the snippet) left the previous contact's unread notifications in the browser cache, and the next visitor saw their message previews. It now always clears them, and cached notifications are only shown again to the contact that received them. Notifications cached by older versions are dropped once after the update.
+
 ## 19.3.5
 Fixed: a product tour step whose selector only matched a hidden element (`display: none`, such as the label of a collapsed menu or the hidden copy of a responsive menu) froze the page. The step pointed at the top-left corner, the overlay blocked every click, a click step had no way forward and reloading brought the step back. Steps now use the first visible match; with none, the tour waits up to 5 s for the element to appear and then ends, like a selector that matches nothing.
 
