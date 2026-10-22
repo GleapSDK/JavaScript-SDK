@@ -178,7 +178,12 @@ class Gleap {
    */
   static setDisableInAppNotifications(disableInAppNotifications) {
     const instance = this.getInstance();
+    if (instance.disableInAppNotifications === disableInAppNotifications) {
+      return;
+    }
     instance.disableInAppNotifications = disableInAppNotifications;
+    // Apply route changes to cards already on screen, without marking them read.
+    GleapNotificationManager.getInstance().renderNotifications();
   }
 
   /**
