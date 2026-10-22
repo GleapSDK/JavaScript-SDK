@@ -1,4 +1,4 @@
-import { GleapTabCommunication, GleapSession, GleapAudioManager } from './Gleap';
+import Gleap, { GleapTabCommunication, GleapSession, GleapAudioManager } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import GleapNotificationManager from './GleapNotificationManager';
 
@@ -7,7 +7,7 @@ import GleapNotificationManager from './GleapNotificationManager';
 // GleapTabCommunication, GleapSession and saveToGleapCache.
 jest.mock('./Gleap', () => ({
   __esModule: true,
-  default: {},
+  default: { getInstance: jest.fn() },
   GleapFeedbackButtonManager: { getInstance: jest.fn(() => ({ updateNotificationBadge: jest.fn() })) },
   GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })) },
   GleapSession: { getInstance: jest.fn() },
@@ -44,6 +44,7 @@ const withContainer = (nm) => {
 };
 
 beforeEach(() => {
+  Gleap.getInstance.mockReturnValue({ disableInAppNotifications: false });
   sendMessageMock = jest.fn();
   GleapTabCommunication.getInstance.mockReturnValue({ sendMessage: sendMessageMock });
   GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' } });

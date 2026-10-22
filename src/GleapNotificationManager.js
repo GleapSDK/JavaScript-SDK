@@ -135,6 +135,10 @@ export default class GleapNotificationManager {
    * rendered on an allowed page followed users onto excluded ones.
    */
   getVisibleNotifications() {
+    // Cached cards and direct deliveries bypass performActions' arrival guard.
+    if (Gleap.getInstance().disableInAppNotifications) {
+      return [];
+    }
     return this.notifications.filter((notification) => this.notificationPassesPageRules(notification));
   }
 
@@ -199,7 +203,11 @@ export default class GleapNotificationManager {
       // Play sound only if it's a new one and its page rules allow the
       // current page (it may have arrived on an excluded page and only
       // become visible later).
-      if (notification.sound && this.notificationPassesPageRules(notification)) {
+      if (
+        notification.sound &&
+        !Gleap.getInstance().disableInAppNotifications &&
+        this.notificationPassesPageRules(notification)
+      ) {
         GleapAudioManager.ping();
       }
     }

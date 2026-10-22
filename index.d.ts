@@ -170,6 +170,10 @@ export namespace Gleap {
   function attachNetworkLogs(networkLogs: string): void;
   function clearIdentity(): void;
   function setTags(tags: string[]): void;
+  /**
+   * Hide notification cards, including cached or already-visible cards, without
+   * hiding the support button or messenger. Reenable to show eligible cards again.
+   */
   function setDisableInAppNotifications(
     disableInAppNotifications: boolean
   ): void;
