@@ -1,4 +1,5 @@
 import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import { SIDEKICK_PHONE_MAX_WIDTH, SIDEKICK_WIDTH } from './GleapSidekickRules';
 import { applyGleapCSPNonce } from './GleapHelper';
 
 const calculateShadeColor = function (col, amt) {
@@ -1595,6 +1596,130 @@ export const injectStyledCSS = (
       width: 100% !important;
       height: 100% !important;
       max-height: none !important;
+    }
+
+    /* The sidekick (decision 13): the messenger frame as a full-height panel on the right edge (left
+       in RTL), over a dim layer that blocks the page (.gleap-sidekick-backdrop). Push mode moves the
+       page with a margin on <html> (GleapSidekickManager), never a transform. */
+    .gleap-frame-container.gleap-frame-container--sidekick,
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      top: 0 !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      left: auto !important;
+      width: ${SIDEKICK_WIDTH}px !important;
+      max-width: 100vw !important;
+      height: 100vh;
+      height: 100dvh !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      box-shadow: -1px 0 0 rgba(6, 13, 37, 0.06), -18px 0 40px rgba(6, 13, 37, 0.12) !important;
+      transform-origin: right center;
+      animation: gleapSidekickIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+      transition: none !important;
+    }
+
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      right: auto !important;
+      left: 0 !important;
+      box-shadow: 1px 0 0 rgba(6, 13, 37, 0.06), 18px 0 40px rgba(6, 13, 37, 0.12) !important;
+      transform-origin: left center;
+      animation-name: gleapSidekickInRtl !important;
+    }
+
+    .gleap-frame-container--sidekick .gleap-frame-container-inner {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: none !important;
+    }
+
+    .gleap-frame-container--sidekick .gleap-frame-container-inner:before {
+      top: 0;
+      height: 100%;
+    }
+
+    .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+      animation: gleapSidekickOut 0.24s cubic-bezier(0.4, 0, 1, 1) both !important;
+    }
+
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+      animation-name: gleapSidekickOutRtl !important;
+    }
+
+    .gleap-sidekick-backdrop {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: ${zIndexBase + 30};
+      background-color: rgba(20, 24, 33, 0.26);
+      animation: gleapWidgetFade 0.24s ease-out both;
+      overscroll-behavior: contain;
+      touch-action: none;
+    }
+
+    .gleap-sidekick-backdrop--closing {
+      animation: gleapWidgetFadeOut 0.24s ease-in both;
+      pointer-events: none;
+    }
+
+    /* While the sidekick is open the launcher steps aside (the panel has its own close). */
+    html.gleap-sidekick-open .bb-feedback-button {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    @keyframes gleapSidekickIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes gleapSidekickInRtl {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes gleapSidekickOut {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+    }
+
+    @keyframes gleapSidekickOutRtl {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    /* Phones: a full-screen sheet that slides up (nothing to push, nothing to see behind it). */
+    @media only screen and (max-width: ${SIDEKICK_PHONE_MAX_WIDTH}px) {
+      .gleap-frame-container.gleap-frame-container--sidekick,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        box-shadow: none !important;
+        transform-origin: center bottom;
+        animation: gleapWidgetSlideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+      }
+
+      .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+        animation: gleapWidgetSlideDown 0.26s cubic-bezier(0.4, 0, 1, 1) both !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-frame-container.gleap-frame-container--sidekick,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+        animation: gleapWidgetFade 0.15s ease-out both !important;
+      }
+
+      .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+        animation: gleapWidgetFadeOut 0.15s ease-in both !important;
+      }
     }
     
     .bb-feedback-button {

@@ -36,6 +36,7 @@ import GleapProductTours from './GleapProductTours';
 import GleapReplayRecorder from './GleapReplayRecorder';
 import GleapSession from './GleapSession';
 import GleapShortcutListener from './GleapShortcutListener';
+import GleapSidekickManager from './GleapSidekickManager';
 import { dispatchSSEEvent, parseSSEStream } from './GleapSSEParser';
 import GleapStreamedEvent from './GleapStreamedEvent';
 import GleapTabCommunication from './GleapTabCommunication';
@@ -377,6 +378,7 @@ class Gleap {
     GleapNotificationManager.getInstance().clearAllNotifications(true);
     GleapTabCommunication.getInstance().stop();
     GleapAiChatbarManager.getInstance().destroy();
+    GleapSidekickManager.getInstance().destroy();
     GleapSession.getInstance().clearSession(0, false);
     GleapBannerManager.getInstance().removeBannerUI();
 
@@ -429,6 +431,66 @@ class Gleap {
   static startAgent(agentId, options) {
     try {
       GleapAiChatbarManager.getInstance().showWithAgent(agentId, options);
+    } catch (e) {}
+  }
+
+  /**
+   * Opens the sidekick: an agent in a full-height side panel next to the page, which it dims
+   * (overlay, the default) or pushes aside (push). The agent gets the page's context: its URL
+   * (without query and hash), its title, the onboarding step and what the app passes in.
+   * @param {object} [options]
+   *   - agentId: a customer agent of the workspace; omitted = Kai Support (the project's AI workflow).
+   *   - context: { title?, step?, data? } (replaces the one from setSidekickContext).
+   *   - initialMessage: shown first, from the agent (not answered).
+   *   - initialQuestion: the customer's first message, answered by the agent.
+   *   - mode: 'overlay' (default) or 'push'.
+   *   - newConversation: start fresh even when a sidekick conversation with this agent is open.
+   */
+  static openSidekick(options) {
+    try {
+      GleapSidekickManager.getInstance().open(options || {});
+    } catch (e) {}
+  }
+
+  /**
+   * What the app knows about where the customer is, for the sidekick: { title?, step?, data? }
+   * (a plain object counts as data). Sent with the next message; null clears it.
+   * @param {object|null} context
+   */
+  static setSidekickContext(context) {
+    try {
+      GleapSidekickManager.getInstance().setContext(context);
+    } catch (e) {}
+  }
+
+  /**
+   * Closes the sidekick and gives the page back as it was.
+   */
+  static closeSidekick() {
+    try {
+      GleapSidekickManager.getInstance().close('api');
+    } catch (e) {}
+  }
+
+  /**
+   * Whether the sidekick is open.
+   * @returns {boolean}
+   */
+  static isSidekickOpen() {
+    try {
+      return GleapSidekickManager.getInstance().isOpen;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Allow (default) or stop proactive sidekick opens on this page (e.g. during checkout).
+   * @param {boolean} enabled
+   */
+  static setSidekickProactive(enabled) {
+    try {
+      GleapSidekickManager.getInstance().setProactiveEnabled(enabled);
     } catch (e) {}
   }
 
@@ -1798,6 +1860,7 @@ export {
   GleapReplayRecorder,
   GleapSession,
   GleapShortcutListener,
+  GleapSidekickManager,
   GleapStreamedEvent,
   GleapTabCommunication,
   GleapTagManager,

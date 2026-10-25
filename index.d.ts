@@ -56,6 +56,44 @@ export namespace Gleap {
     agentId: string,
     options?: { context?: any; initialQuestion?: string; initialMessage?: string }
   ): void;
+  /**
+   * What the app tells the sidekick's agent about where the customer is. A plain object without
+   * `title`, `step` or `data` is taken as `data`.
+   */
+  interface SidekickContext {
+    /** The page as the customer sees it (default: document.title). */
+    title?: string;
+    /** The onboarding step: its title, or { id, title, index (1-based), total }. */
+    step?: string | { id?: string; title?: string; index?: number; total?: number };
+    /** What the app knows: plan, seats, a record id, … (plain values or JSON). */
+    data?: Record<string, string | number | boolean | object | null>;
+  }
+  interface SidekickOptions {
+    /** A customer agent of the workspace; omitted = Kai Support (the project's AI workflow). */
+    agentId?: string;
+    /** Replaces the context set with setSidekickContext. */
+    context?: SidekickContext | Record<string, any>;
+    /** Shown first, from the agent (not answered). */
+    initialMessage?: string;
+    /** The customer's first message, answered by the agent. */
+    initialQuestion?: string;
+    /** 'overlay' (default): the page is dimmed and blocked. 'push': it also moves aside (when there is room). */
+    mode?: "overlay" | "push";
+    /** Start a new conversation even when a sidekick conversation with this agent is still open. */
+    newConversation?: boolean;
+  }
+  /**
+   * Opens the sidekick: an agent in a full-height side panel next to the page (a full-screen
+   * sheet on phones). The agent gets the page's URL (without query and hash), its title and the
+   * context. Closes with its × button, Escape, a click on the dimmed page or closeSidekick().
+   */
+  function openSidekick(options?: SidekickOptions): void;
+  /** Sets (null: clears) the sidekick's context; the next message carries it. */
+  function setSidekickContext(context: SidekickContext | Record<string, any> | null): void;
+  function closeSidekick(): void;
+  function isSidekickOpen(): boolean;
+  /** Allow (default) or stop proactive sidekick opens on this page. */
+  function setSidekickProactive(enabled: boolean): void;
   function isOpened(): boolean;
   /**
    * Sets the data region your Gleap project lives in. Call before initialize.
@@ -358,6 +396,26 @@ export namespace Gleap {
   function on(event: "survey-completed", callback: (data: SurveyCompletedEvent) => void): void;
   /** The survey was closed (by the user or after its ending). */
   function on(event: "survey-closed", callback: (data: SurveyClosedEvent) => void): void;
+  /** The sidekick opened (by openSidekick or a proactive open). */
+  function on(
+    event: "sidekick-opened",
+    callback: (data: { agentId: string | null; mode: "overlay" | "push" | "sheet"; proactive: boolean }) => void
+  ): void;
+  /** The sidekick closed and the page is back. */
+  function on(
+    event: "sidekick-closed",
+    callback: (data: { reason: "close" | "escape" | "backdrop" | "api" | "replaced" }) => void
+  ): void;
+  /** A proactive open arrived: shown, or why not. */
+  function on(
+    event: "sidekick-proactive",
+    callback: (data: {
+      id: string;
+      triggerId: string;
+      shown: boolean;
+      reason?: "disabled" | "page_view" | "busy" | "dismissed" | "typing" | "hidden";
+    }) => void
+  ): void;
   function on(
     event:
       | "initialized"
