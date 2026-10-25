@@ -7,6 +7,7 @@ import Gleap, {
   GleapAdminManager,
   GleapEventManager,
   GleapCaptureManager,
+  GleapSidekickManager,
 } from './Gleap';
 import { getWebSocketCaps } from './GleapCaptureSettings';
 import { gleapDataParser } from './GleapHelper';
@@ -148,10 +149,11 @@ export default class GleapStreamedEvent {
       return;
     }
 
-    // What this page can capture for capture requests (contract §4, "SDK realtime").
+    // What this page can capture for capture requests (contract §4, "SDK realtime"), and that it
+    // can open the sidekick (the server sends proactive opens only to SDKs that say so).
     let caps = '';
     try {
-      const capabilities = getWebSocketCaps();
+      const capabilities = getWebSocketCaps().concat(['sidekick']);
       if (capabilities.length > 0) {
         caps = '&caps=' + capabilities.join(',');
       }
@@ -309,6 +311,11 @@ export default class GleapStreamedEvent {
         }
       }
 
+      // A proactive sidekick open (a trigger of the workspace): shown at most once per page view.
+      if (message.name === 'sidekick' && GleapSidekickManager) {
+        GleapSidekickManager.getInstance().handleProactive(message.data);
+      }
+
       // A log request from a teammate, AI agent or workflow (capture requests, kind 'logs').
       if (message.name === 'capture-request' && GleapCaptureManager) {
         GleapCaptureManager.getInstance().handleServerRequest(message.data);
@@ -421,6 +428,11 @@ export default class GleapStreamedEvent {
       // not page rules.
       try {
         GleapNotificationManager.getInstance().checkPageRulesForUrl(window.location.href);
+      } catch (exp) {}
+
+      // The sidekick follows the page: a new page view, and the open panel's URL and title.
+      try {
+        GleapSidekickManager.getInstance().checkUrl(window.location.href);
       } catch (exp) {}
     }, 1000);
   }
