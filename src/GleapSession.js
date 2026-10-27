@@ -554,6 +554,13 @@ export default class GleapSession {
   };
 
   checkIfSessionDataNeedsUpdate = (userData) => {
+    // Every identify / update sends the active language, so a language switch
+    // in the app (an <html lang> change in an SPA, setLanguage) must not be
+    // skipped as "nothing changed".
+    if (this.session && this.session.lang && this.session.lang !== GleapTranslationManager.getInstance().getActiveLanguage()) {
+      return true;
+    }
+
     if (userData) {
       var userDataKeys = Object.keys(userData);
       for (var i = 0; i < userDataKeys.length; i++) {
