@@ -1628,6 +1628,15 @@ export const injectStyledCSS = (
       animation-name: gleapSidekickInRtl !important;
     }
 
+    /* Pushed: the panel sits next to the page like a column of it, a hairline instead of a throw. */
+    html.gleap-sidekick-push .gleap-frame-container.gleap-frame-container--sidekick {
+      box-shadow: -1px 0 0 ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(6, 13, 37, 0.1)'} !important;
+    }
+
+    html.gleap-sidekick-push [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      box-shadow: 1px 0 0 ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(6, 13, 37, 0.1)'} !important;
+    }
+
     .gleap-frame-container--sidekick .gleap-frame-container-inner {
       width: 100% !important;
       height: 100% !important;
@@ -1764,6 +1773,12 @@ export const injectStyledCSS = (
       .gleap-sidekick-card-dismiss {
         opacity: 1;
       }
+    }
+
+    /* In a collapsed stack the stack's own × (clear all) is the one control; the card's × shows
+       once the stack is spread out (hover, or the first tap on touch screens). */
+    .gleap-notification-container--stack:not(:hover):not(:focus-within):not(.gleap-notification-container--expanded) .gleap-sidekick-card-dismiss {
+      display: none;
     }
 
     /* Screen readers hear a new card once; nobody sees this. */

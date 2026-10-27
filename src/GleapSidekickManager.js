@@ -13,12 +13,11 @@ import Gleap, {
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import {
   SIDEKICK_HIDDEN_MAX_WAIT_MS,
-  SIDEKICK_PHONE_MAX_WIDTH,
-  SIDEKICK_PUSH_MIN_PAGE_WIDTH,
   SIDEKICK_TYPING_IDLE_MS,
   SIDEKICK_TYPING_MAX_WAIT_MS,
   SIDEKICK_WIDTH,
   buildSidekickEnvelope,
+  fixedBarAdjustmentOf,
   normalizeSidekickContext,
   proactiveRefusalOf,
   proactiveSidekickOf,
@@ -39,6 +38,10 @@ const PUSH_TRANSITION = 'margin 0.32s cubic-bezier(0.16, 1, 0.3, 1)';
 // Gleap's own elements never count as page content under the panel.
 const isGleapElement = (element) => {
   for (let node = element, depth = 0; node && node.nodeType === 1 && depth < 12; node = node.parentElement, depth += 1) {
+    // <html> and <body> carry Gleap's state classes (gleap-sidekick-open): never Gleap's own element.
+    if (node === document.body || node === document.documentElement) {
+      return false;
+    }
     const className = typeof node.className === 'string' ? node.className : '';
     if (/(^|\s)(gleap-|bb-feedback|bb-capture)/.test(className)) {
       return true;
@@ -47,22 +50,11 @@ const isGleapElement = (element) => {
   return false;
 };
 
-// The element's (or an ancestor's) fixed box, if it is positioned fixed.
-const fixedAncestorOf = (element) => {
-  for (let node = element, depth = 0; node && node.nodeType === 1 && depth < 12; node = node.parentElement, depth += 1) {
-    if (node === document.body || node === document.documentElement) {
-      return null;
-    }
-    try {
-      if (window.getComputedStyle(node).position === 'fixed') {
-        return node;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
+// The inline properties a fixed bar's push adjustment touches (saved and put back exactly).
+const FIXED_BAR_PROPS = ['left', 'right', 'width', 'max-width', 'box-sizing', 'transition'];
+const FIXED_BAR_TRANSITION = 'left 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.32s cubic-bezier(0.16, 1, 0.3, 1)';
+// At most this many elements are looked at per scan (a page's fixed bars sit near the top of the tree).
+const FIXED_SCAN_LIMIT = 15000;
 
 const pagePathOf = (href) => {
   try {
@@ -117,6 +109,13 @@ export default class GleapSidekickManager {
   pendingProactiveTimer = null;
   // Why the last open did not push (pushRiskOf), for the sidekick-opened event.
   pushFallback = null;
+  // Fixed bars narrowed for the push: element → { saved inline values }.
+  fixedBars = new Map();
+  fixedBarsRestoreTimer = null;
+  pendingFixedBarsRestore = null;
+  fixedObserver = null;
+  fixedObserverTimer = null;
+  fixedObserverTargets = [];
   relayoutFrame = null;
   // The message card above the launcher (showCard): { key, agentId, message, sender, proactive, pagePath }.
   card = null;
@@ -181,8 +180,8 @@ export default class GleapSidekickManager {
     // Opened from a card the customer clicked: chosen, so closing it is not a dismissal.
     this.activeProactive =
       meta && meta.proactive ? { ...meta.proactive, engaged: meta.proactive.engaged === true } : null;
-    // Push is the default; overlay only when asked for (or when the page has no room / could break).
-    this.requestedMode = opts.mode === 'overlay' ? 'overlay' : 'push';
+    // Push is the default; 'push' asked for explicitly pushes wherever there is room, 'overlay' never pushes.
+    this.requestedMode = opts.mode === 'overlay' ? 'overlay' : opts.mode === 'push' ? 'push' : 'auto';
     this.mode = this.modeForViewport();
     // The panel takes over from any message card.
     this.removeCard('opened');
@@ -670,105 +669,259 @@ export default class GleapSidekickManager {
     }
   }
 
-  /** The mode for the viewport now: a push only where it has room and cannot break the page. */
+  /** The mode for the viewport now: a push where it has room (720 px for the page), never on phones. */
   modeForViewport() {
-    const viewportWidth = window.innerWidth;
-    this.pushFallback = null;
-    const wantsPush =
-      this.requestedMode === 'push' &&
-      viewportWidth > SIDEKICK_PHONE_MAX_WIDTH &&
-      viewportWidth - SIDEKICK_WIDTH >= SIDEKICK_PUSH_MIN_PAGE_WIDTH;
-    const pushRisk = wantsPush ? this.probePush() : null;
-    if (pushRisk) {
-      this.pushFallback = pushRisk;
+    let inIframe = false;
+    try {
+      inIframe = window.self !== window.top;
+    } catch (e) {
+      inIframe = true;
     }
-    return sidekickModeOf({ requested: this.requestedMode, viewportWidth, pushRisk });
+    const pushRisk = pushRiskOf({ inIframe });
+    const mode = sidekickModeOf({ requested: this.requestedMode, viewportWidth: window.innerWidth, pushRisk });
+    this.pushFallback = mode === 'overlay' && this.requestedMode === 'auto' && pushRisk ? pushRisk : null;
+    return mode;
   }
 
-  /**
-   * Whether pushing this page aside could break it (pushRiskOf). Applies the push margin for one
-   * synchronous layout (no transition, never painted), looks at what still sits where the panel
-   * goes, and puts the page's own values back.
-   */
-  probePush() {
-    try {
-      let inIframe = false;
-      try {
-        inIframe = window.self !== window.top;
-      } catch (e) {
-        inIframe = true;
-      }
-      const html = document.documentElement;
-      let rtl = this.isRtl();
-      try {
-        rtl = rtl || window.getComputedStyle(html).direction === 'rtl' || (document.body && window.getComputedStyle(document.body).direction === 'rtl');
-      } catch (e) {}
-      if (inIframe || rtl) {
-        return pushRiskOf({ inIframe, rtl });
-      }
+  // The panel's side: right, or left when the widget is right-to-left (its frame docks left).
+  panelSide() {
+    return this.isRtl() ? 'left' : 'right';
+  }
 
-      const state = this.restoreState;
-      const pushed = !!(state && state.pushed);
-      // The page's own horizontal margin on <html> (ours would replace it).
-      const ownMarginLeft = pushed ? state.marginLeft : html.style.marginLeft;
-      const ownMarginRight = pushed ? state.marginRight : html.style.marginRight;
-      let htmlMargin = !!(ownMarginLeft && parseFloat(ownMarginLeft)) || !!(ownMarginRight && parseFloat(ownMarginRight));
-      if (!pushed && !htmlMargin) {
-        try {
-          const computed = window.getComputedStyle(html);
-          htmlMargin = (parseFloat(computed.marginLeft) || 0) !== 0 || (parseFloat(computed.marginRight) || 0) !== 0;
-        } catch (e) {}
-      }
-      if (htmlMargin) {
-        return pushRiskOf({ htmlMargin });
-      }
+  // ── Fixed bars follow the push ──────────────────────────────────────────
+  // A margin on <html> moves the page, but position: fixed elements are placed against the
+  // viewport: a full-width header or footer would keep running under the panel. Each one that spans
+  // the viewport gets narrower on the panel's side (inline left / width, !important), and gets its
+  // own inline values back exactly when the panel closes. Sticky elements are in the flow and move
+  // with the margin by themselves.
 
-      const saved = { marginRight: html.style.marginRight, overflowX: html.style.overflowX, transition: html.style.transition };
-      if (!pushed) {
-        html.style.transition = 'none';
-        html.style.marginRight = `${SIDEKICK_WIDTH}px`;
-        html.style.overflowX = 'clip';
-      }
-      const stripHits = [];
-      try {
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const xs = [viewportWidth - SIDEKICK_WIDTH + 24, viewportWidth - SIDEKICK_WIDTH / 2, viewportWidth - 40];
-        const ys = [2, 32, 72, Math.round(viewportHeight / 2), viewportHeight - 72, viewportHeight - 32, viewportHeight - 2];
-        const seen = [];
-        xs.forEach((x) => {
-          ys.forEach((y) => {
-            const elements = typeof document.elementsFromPoint === 'function' ? document.elementsFromPoint(x, y) : [];
-            elements.forEach((element) => {
-              if (!element || element === html || element === document.body || seen.indexOf(element) !== -1 || isGleapElement(element)) {
-                return;
-              }
-              seen.push(element);
-              const fixed = fixedAncestorOf(element);
-              const width = fixed ? fixed.getBoundingClientRect().width : 0;
-              stripHits.push({ fixed: !!fixed, wide: !!fixed && width >= viewportWidth / 2 });
-            });
-          });
-        });
-        // A body with its own width (or 100vw) did not move with the margin.
-        if (document.body) {
-          const bodyRect = document.body.getBoundingClientRect();
-          if (bodyRect.right > viewportWidth - SIDEKICK_WIDTH + 1 && bodyRect.height > 0) {
-            stripHits.push({ fixed: false, wide: true });
-          }
-        }
-      } finally {
-        if (!pushed) {
-          html.style.marginRight = saved.marginRight;
-          html.style.overflowX = saved.overflowX;
-          html.style.transition = saved.transition;
-        }
-      }
-      return pushRiskOf({ stripHits });
-    } catch (e) {
-      // Measuring failed: the overlay never moves the page.
-      return 'unknown';
+  /** Narrows the fixed bars under `root` (default: the whole body), skipping Gleap's own elements. */
+  adjustFixedBars(root) {
+    if (this.mode !== 'push' || typeof document === 'undefined' || !document.body) {
+      return;
     }
+    this.flushFixedBarsRestore();
+    const start = root && root.nodeType === 1 ? root : document.body;
+    const viewportWidth = window.innerWidth;
+    const side = this.panelSide();
+    let seen = 0;
+    const visit = (element) => {
+      if (!element || element.nodeType !== 1 || seen > FIXED_SCAN_LIMIT) {
+        return;
+      }
+      seen += 1;
+      if (isGleapElement(element)) {
+        return;
+      }
+      let style = null;
+      try {
+        style = window.getComputedStyle(element);
+      } catch (e) {
+        return;
+      }
+      if (style.position === 'fixed') {
+        if (!this.fixedBars.has(element)) {
+          this.adjustFixedBar(element, style, viewportWidth, side);
+        }
+        // Whatever is inside it moves with it.
+        return;
+      }
+      if (style.display === 'none') {
+        return;
+      }
+      for (let child = element.firstElementChild; child; child = child.nextElementSibling) {
+        visit(child);
+      }
+    };
+    if (start === document.body) {
+      for (let child = start.firstElementChild; child; child = child.nextElementSibling) {
+        visit(child);
+      }
+    } else {
+      visit(start);
+    }
+  }
+
+  adjustFixedBar(element, style, viewportWidth, side) {
+    try {
+      // Centered with a transform (left: 50%; translateX(-50%)): moving its left edge would shift it.
+      if (style.transform && style.transform !== 'none') {
+        return;
+      }
+      const rect = element.getBoundingClientRect();
+      const adjustment = fixedBarAdjustmentOf({ rect, viewportWidth, side });
+      if (!adjustment) {
+        return;
+      }
+      const saved = { hadStyleAttribute: element.hasAttribute('style') };
+      FIXED_BAR_PROPS.forEach((prop) => {
+        saved[prop] = [element.style.getPropertyValue(prop), element.style.getPropertyPriority(prop)];
+      });
+      this.fixedBars.set(element, saved);
+      // It slides along with the page unless it animates its own box already.
+      const ownTransition = (style.transitionDuration || '').split(',').some((duration) => parseFloat(duration) > 0);
+      if (!ownTransition) {
+        element.style.setProperty('transition', FIXED_BAR_TRANSITION, 'important');
+      }
+      element.style.setProperty('box-sizing', 'border-box', 'important');
+      element.style.setProperty('max-width', 'none', 'important');
+      element.style.setProperty('right', 'auto', 'important');
+      element.style.setProperty('left', `${adjustment.left}px`, 'important');
+      element.style.setProperty('width', `${adjustment.width}px`, 'important');
+    } catch (e) {}
+  }
+
+  /** Puts one bar's own inline values back (the transition after the slide back, unless `now`). */
+  restoreFixedBar(element, saved, now) {
+    try {
+      FIXED_BAR_PROPS.forEach((prop) => {
+        if (prop === 'transition' && !now) {
+          return;
+        }
+        const [value, priority] = saved[prop] || ['', ''];
+        if (value) {
+          element.style.setProperty(prop, value, priority);
+        } else {
+          element.style.removeProperty(prop);
+        }
+      });
+      if (now) {
+        this.dropEmptyStyleAttribute(element, saved);
+      }
+    } catch (e) {}
+  }
+
+  // An element that had no style attribute gets none back (not an empty one).
+  dropEmptyStyleAttribute(element, saved) {
+    try {
+      if (!saved.hadStyleAttribute && element.getAttribute('style') === '') {
+        element.removeAttribute('style');
+      }
+    } catch (e) {}
+  }
+
+  restoreFixedBars({ now = false } = {}) {
+    this.stopFixedObserver();
+    const bars = Array.from(this.fixedBars.entries());
+    this.fixedBars = new Map();
+    bars.forEach(([element, saved]) => this.restoreFixedBar(element, saved, now));
+    if (now) {
+      return;
+    }
+    // The transitions stay for the slide back, then the bars' own values.
+    this.flushFixedBarsRestore();
+    this.pendingFixedBarsRestore = () => {
+      bars.forEach(([element, saved]) => {
+        if (this.fixedBars.has(element)) {
+          return;
+        }
+        const [value, priority] = saved.transition || ['', ''];
+        try {
+          if (value) {
+            element.style.setProperty('transition', value, priority);
+          } else {
+            element.style.removeProperty('transition');
+          }
+          this.dropEmptyStyleAttribute(element, saved);
+        } catch (e) {}
+      });
+    };
+    this.fixedBarsRestoreTimer = setTimeout(() => this.flushFixedBarsRestore(), CLOSE_ANIMATION_MS + 60);
+  }
+
+  // Runs a waiting transition restore now (before bars are measured and saved again).
+  flushFixedBarsRestore() {
+    clearTimeout(this.fixedBarsRestoreTimer);
+    this.fixedBarsRestoreTimer = null;
+    const pending = this.pendingFixedBarsRestore;
+    this.pendingFixedBarsRestore = null;
+    if (pending) {
+      pending();
+    }
+  }
+
+  // New fixed elements while the panel is pushed (a toast, a header that turns fixed on scroll): a
+  // throttled look at what changed. Bars that are no longer fixed get their values back.
+  startFixedObserver() {
+    if (this.fixedObserver || typeof MutationObserver === 'undefined' || !document.body) {
+      return;
+    }
+    this.fixedObserver = new MutationObserver((mutations) => {
+      for (let index = 0; index < mutations.length; index += 1) {
+        const mutation = mutations[index];
+        if (mutation.type === 'childList') {
+          mutation.addedNodes.forEach((node) => {
+            if (node && node.nodeType === 1) this.fixedObserverTargets.push(node);
+          });
+        } else if (mutation.target && mutation.target.nodeType === 1) {
+          this.fixedObserverTargets.push(mutation.target);
+        }
+      }
+      if (this.fixedObserverTargets.length > 500) {
+        this.fixedObserverTargets = [document.body];
+      }
+      if (!this.fixedObserverTimer) {
+        this.fixedObserverTimer = setTimeout(() => this.flushFixedObserver(), 250);
+      }
+    });
+    this.fixedObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+  }
+
+  flushFixedObserver() {
+    this.fixedObserverTimer = null;
+    const targets = this.fixedObserverTargets;
+    this.fixedObserverTargets = [];
+    if (!this.isOpen || this.mode !== 'push') {
+      return;
+    }
+    const viewportWidth = window.innerWidth;
+    const side = this.panelSide();
+    targets.forEach((target) => {
+      if (!target || !target.isConnected) {
+        return;
+      }
+      const saved = this.fixedBars.get(target);
+      if (saved) {
+        // Our own writes land here too: only a bar that stopped being fixed goes back.
+        try {
+          if (window.getComputedStyle(target).position !== 'fixed') {
+            this.fixedBars.delete(target);
+            this.restoreFixedBar(target, saved, true);
+          }
+        } catch (e) {}
+        return;
+      }
+      if (target === document.body) {
+        this.adjustFixedBars();
+        return;
+      }
+      // An element inside an adjusted bar moves with it.
+      for (let node = target.parentElement; node && node !== document.body; node = node.parentElement) {
+        if (this.fixedBars.has(node)) {
+          return;
+        }
+      }
+      try {
+        const style = window.getComputedStyle(target);
+        if (style.position === 'fixed') {
+          if (!isGleapElement(target)) this.adjustFixedBar(target, style, viewportWidth, side);
+          return;
+        }
+      } catch (e) {
+        return;
+      }
+      this.adjustFixedBars(target);
+    });
+  }
+
+  stopFixedObserver() {
+    if (this.fixedObserver) {
+      this.fixedObserver.disconnect();
+      this.fixedObserver = null;
+    }
+    clearTimeout(this.fixedObserverTimer);
+    this.fixedObserverTimer = null;
+    this.fixedObserverTargets = [];
   }
 
   applyLayout() {
@@ -788,13 +941,26 @@ export default class GleapSidekickManager {
 
     const state = this.restoreState;
     if (this.mode === 'push' && state) {
-      // A margin on <html>, never a transform (fixed headers, 100vw and media queries keep working).
-      // RTL pages never push (probePush), so the panel is always on the right here.
+      // A margin on <html> on the panel's side, never a transform (media queries, 100vw and the
+      // page's own layout keep working), plus the page's own margin there. Fixed bars follow.
+      const side = this.panelSide();
+      const property = side === 'left' ? 'marginLeft' : 'marginRight';
+      if (!state.pushed) {
+        let ownMargin = 0;
+        try {
+          ownMargin = parseFloat(window.getComputedStyle(html)[property]) || 0;
+        } catch (e) {}
+        state.pushSide = side;
+        state.ownMargin = ownMargin;
+      }
       html.classList.add(PUSH_CLASS);
       html.style.transition = PUSH_TRANSITION;
       html.style.overflowX = 'clip';
-      html.style.marginRight = `${SIDEKICK_WIDTH}px`;
+      html.style[property] = `${(state.ownMargin || 0) + SIDEKICK_WIDTH}px`;
       state.pushed = true;
+      this.restoreFixedBars({ now: true });
+      this.adjustFixedBars();
+      this.startFixedObserver();
     } else if (state && state.pushed) {
       this.restorePageStyles(false);
     }
@@ -827,6 +993,11 @@ export default class GleapSidekickManager {
     if (next !== this.mode) {
       this.mode = next;
       this.applyLayout();
+    } else if (next === 'push') {
+      // The bars' widths depend on the viewport: measure them again.
+      this.restoreFixedBars({ now: true });
+      this.adjustFixedBars();
+      this.startFixedObserver();
     }
   }
 
@@ -871,6 +1042,7 @@ export default class GleapSidekickManager {
     }
     const html = document.documentElement;
     html.classList.remove(PUSH_CLASS);
+    this.restoreFixedBars();
     if (state.pushed) {
       html.style.marginLeft = state.marginLeft;
       html.style.marginRight = state.marginRight;
@@ -961,6 +1133,7 @@ export default class GleapSidekickManager {
     } catch (e) {}
     clearTimeout(this.closeTimer);
     clearTimeout(this.pendingProactiveTimer);
+    this.restoreFixedBars({ now: true });
     this.removeCard('destroy');
     GleapSidekickManager.instance = null;
   }

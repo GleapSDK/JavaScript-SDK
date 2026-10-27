@@ -78,10 +78,10 @@ export namespace Gleap {
     /** The customer's first message, answered by the agent. */
     initialQuestion?: string;
     /**
-     * 'push' (default): the page moves aside and stays usable, no dim. It overlays instead when the
-     * page would get narrower than 720 px or a push could break it (a page in a frame, RTL, a margin
-     * on <html>, a 100vw layout, a full-width fixed header/footer). 'overlay': over a dimmed page.
-     * Phones always get a full-screen sheet.
+     * Default: the page moves aside and stays usable, no dim; full-width fixed headers/footers get
+     * narrower with it and come back exactly. It overlays instead when the page would get narrower
+     * than 720 px, and by default on a page inside an iframe. 'push': push wherever there is room
+     * (also inside an iframe). 'overlay': over a dimmed page. Phones always get a full-screen sheet.
      */
     mode?: "push" | "overlay";
     /** Start a new conversation even when a sidekick conversation with this agent is still open. */
@@ -426,7 +426,7 @@ export namespace Gleap {
       mode: "overlay" | "push" | "sheet";
       proactive: boolean;
       /** Why a push became an overlay. */
-      pushFallback?: "iframe" | "rtl" | "html_margin" | "page_width" | "fixed_bar" | "unknown";
+      pushFallback?: "iframe";
     }) => void
   ): void;
   /** The sidekick closed and the page is back. */

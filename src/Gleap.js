@@ -436,18 +436,18 @@ class Gleap {
 
   /**
    * Opens the sidekick: an agent in a full-height side panel next to the page. By default it
-   * pushes the page aside (the page stays visible and usable, no dim); it overlays a dimmed page
-   * instead when asked for (mode 'overlay'), when the page would get narrower than 720 px, or when
-   * a push could break the page (a page in a frame, RTL, a margin on <html>, a 100vw layout or a
-   * full-width fixed header/footer). Phones get a full-screen sheet. Closing puts the page back
-   * exactly as it was. The agent gets the page's context: its URL (without query and hash), its
-   * title, the onboarding step and what the app passes in.
+   * pushes the page aside (the page stays visible and usable, no dim; full-width fixed headers and
+   * footers get narrower with it). It overlays a dimmed page instead when asked for (mode
+   * 'overlay'), when the page would get narrower than 720 px, and by default inside an iframe
+   * (mode 'push' forces the push there). Phones get a full-screen sheet. Closing puts the page and
+   * its fixed bars back exactly as they were. The agent gets the page's context: its URL (without
+   * query and hash), its title, the onboarding step and what the app passes in.
    * @param {object} [options]
    *   - agentId: a customer agent of the workspace; omitted = Kai Support (the project's AI workflow).
    *   - context: { title?, step?, data? } (replaces the one from setSidekickContext).
    *   - initialMessage: the agent's first message in the conversation (shown, not answered).
    *   - initialQuestion: the customer's first message, answered by the agent.
-   *   - mode: 'push' (default) or 'overlay'.
+   *   - mode: 'push' (forces the push where there is room) or 'overlay'; default: push unless in an iframe.
    *   - newConversation: start fresh even when a sidekick conversation with this agent is open.
    */
   static openSidekick(options) {

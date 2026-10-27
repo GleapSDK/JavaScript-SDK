@@ -153,40 +153,55 @@ export const buildSidekickEnvelope = ({ href, documentTitle, context }) => {
 
 /**
  * push (default): the page moves aside and stays usable, no dim · overlay: the panel over a dimmed
- * page (asked for, no room for the page next to the panel, or a page push could break) · sheet
- * (phones: full screen, never a push).
+ * page · sheet (phones: full screen, never a push).
+ * requested: 'push' (the app asked for it: pushes wherever there is room), 'overlay', or anything
+ * else (the default: pushes unless pushRisk says the page should not be pushed).
  */
 export const sidekickModeOf = ({ requested, viewportWidth, pushRisk }) => {
   if (!(viewportWidth > SIDEKICK_PHONE_MAX_WIDTH)) {
     return 'sheet';
   }
-  if (requested !== 'overlay' && !pushRisk && viewportWidth - SIDEKICK_WIDTH >= SIDEKICK_PUSH_MIN_PAGE_WIDTH) {
-    return 'push';
+  if (requested === 'overlay') {
+    return 'overlay';
   }
-  return 'overlay';
+  if (viewportWidth - SIDEKICK_WIDTH < SIDEKICK_PUSH_MIN_PAGE_WIDTH) {
+    return 'overlay';
+  }
+  if (requested !== 'push' && pushRisk) {
+    return 'overlay';
+  }
+  return 'push';
 };
 
 /**
- * Why pushing this page aside could break it (the sidekick then overlays instead), or null.
- * The probe (GleapSidekickManager.probePush) measures the page with the push margin applied for one
- * synchronous layout, never painted:
- * - inIframe: the page is itself inside a frame (its "viewport" is someone else's box);
- * - rtl: right-to-left pages (their scroll origin and fixed edges flip);
- * - htmlMargin: <html> has a horizontal margin of its own (ours would replace it);
- * - stripHits: what still sits under the panel with the margin applied. Page content there means a
- *   100vw layout or a body with its own width (it did not move); a fixed bar at least half as wide
- *   as the viewport (header, footer, cookie bar) would lose its right end under the panel.
+ * Why the default should not push this page, or null. Only a page inside a frame: its "viewport" is
+ * a box of someone else's page, which does not get narrower. (An explicit mode 'push' still pushes.)
  */
-export const pushRiskOf = ({ inIframe, rtl, htmlMargin, stripHits }) => {
-  if (inIframe) return 'iframe';
-  if (rtl) return 'rtl';
-  if (htmlMargin) return 'html_margin';
-  const hits = Array.isArray(stripHits) ? stripHits : [];
-  if (hits.some((hit) => hit && !hit.fixed)) return 'page_width';
-  if (hits.some((hit) => hit && hit.fixed && hit.wide)) return 'fixed_bar';
-  return null;
-};
+export const pushRiskOf = ({ inIframe }) => (inIframe ? 'iframe' : null);
 
+/**
+ * How a fixed element that spans the viewport (a header, footer, cookie bar, a full-screen layer)
+ * follows the push, or null to leave it: it keeps its left edge and gets narrower by the panel, on
+ * the panel's side. `computedWidth` is getComputedStyle(element).width (border-box after the
+ * adjustment sets box-sizing: border-box, so the rect width is used).
+ *   rect: its box before the push · side: where the panel is ('right' | 'left').
+ */
+export const fixedBarAdjustmentOf = ({ rect, viewportWidth, side, panelWidth = SIDEKICK_WIDTH }) => {
+  if (!rect || !(viewportWidth > 0) || !(rect.width > 0)) {
+    return null;
+  }
+  const spans = (rect.left <= 2 && rect.right >= viewportWidth - 2) || rect.width >= viewportWidth * 0.9;
+  if (!spans) {
+    return null;
+  }
+  const width = Math.round(rect.width - panelWidth);
+  if (width <= 0) {
+    return null;
+  }
+  return side === 'left'
+    ? { left: Math.round(rect.left + panelWidth), width }
+    : { left: Math.round(rect.left), width };
+};
 
 /** A sender to show on a sidekick card: { name, profileImageUrl? } (https images only), or null. */
 export const sidekickSenderOf = (sender) => {

@@ -5,6 +5,7 @@ import {
   normalizeSidekickContext,
   proactiveRefusalOf,
   proactiveSidekickOf,
+  fixedBarAdjustmentOf,
   pushRiskOf,
   sidekickCardKeyOf,
   sidekickCardOf,
@@ -70,24 +71,31 @@ describe('layout', () => {
     expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440 })).toBe('push');
     expect(sidekickModeOf({ requested: 'push', viewportWidth: 1440 })).toBe('push');
     expect(sidekickModeOf({ requested: 'overlay', viewportWidth: 1440 })).toBe('overlay');
-    // 1000 - 400 leaves the page 600 px: under 720, so the panel overlays it.
+    // 1000 - 400 leaves the page 600 px: under 720, so the panel overlays it (even when push was asked for).
     expect(sidekickModeOf({ requested: undefined, viewportWidth: 1000 })).toBe('overlay');
+    expect(sidekickModeOf({ requested: 'push', viewportWidth: 1000 })).toBe('overlay');
     expect(sidekickModeOf({ requested: undefined, viewportWidth: 1120 })).toBe('push');
     expect(sidekickModeOf({ requested: 'push', viewportWidth: 390 })).toBe('sheet');
     expect(sidekickModeOf({ requested: undefined, viewportWidth: 360 })).toBe('sheet');
   });
 
-  test('a page a push could break gets the overlay', () => {
-    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440, pushRisk: 'fixed_bar' })).toBe('overlay');
-    expect(pushRiskOf({ stripHits: [] })).toBeNull();
+  test('a page in a frame overlays by default; an explicit push still pushes', () => {
     expect(pushRiskOf({ inIframe: true })).toBe('iframe');
-    expect(pushRiskOf({ rtl: true })).toBe('rtl');
-    expect(pushRiskOf({ htmlMargin: true })).toBe('html_margin');
-    // Content still under the panel after the push: a 100vw layout or a body with its own width.
-    expect(pushRiskOf({ stripHits: [{ fixed: false }] })).toBe('page_width');
-    // A full-width fixed header would lose its right end; a small fixed corner widget would not.
-    expect(pushRiskOf({ stripHits: [{ fixed: true, wide: true }] })).toBe('fixed_bar');
-    expect(pushRiskOf({ stripHits: [{ fixed: true, wide: false }] })).toBeNull();
+    expect(pushRiskOf({ inIframe: false })).toBeNull();
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440, pushRisk: 'iframe' })).toBe('overlay');
+    expect(sidekickModeOf({ requested: 'push', viewportWidth: 1440, pushRisk: 'iframe' })).toBe('push');
+  });
+
+  test('fixed bars that span the viewport get narrower on the panel side; others stay', () => {
+    const header = { left: 0, right: 1440, width: 1440 };
+    expect(fixedBarAdjustmentOf({ rect: header, viewportWidth: 1440, side: 'right' })).toEqual({ left: 0, width: 1040 });
+    expect(fixedBarAdjustmentOf({ rect: header, viewportWidth: 1440, side: 'left' })).toEqual({ left: 400, width: 1040 });
+    // 90 % of the viewport counts too (a bar with a small inset).
+    expect(fixedBarAdjustmentOf({ rect: { left: 40, right: 1400, width: 1360 }, viewportWidth: 1440, side: 'right' })).toEqual({ left: 40, width: 960 });
+    // A corner widget, a sidebar: untouched.
+    expect(fixedBarAdjustmentOf({ rect: { left: 1100, right: 1420, width: 320 }, viewportWidth: 1440, side: 'right' })).toBeNull();
+    expect(fixedBarAdjustmentOf({ rect: { left: 0, right: 260, width: 260 }, viewportWidth: 1440, side: 'right' })).toBeNull();
+    expect(fixedBarAdjustmentOf({ rect: { left: 0, right: 0, width: 0 }, viewportWidth: 1440, side: 'right' })).toBeNull();
   });
 });
 
