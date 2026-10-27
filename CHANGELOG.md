@@ -1,5 +1,10 @@
 # Changelog
 
+## 19.3.6
+Fixed: a language switch in the app never reached the contact. `Gleap.identify` and `Gleap.updateContact` skipped the request when the user data was unchanged, without looking at the language, so apps that change language without a full reload (Turbo, SPAs updating `<html lang>`) kept the old language on the contact and language-targeted outreach used it. The SDK now sends the update when the active language differs from the contact's.
+Fixed: `Gleap.clearIdentity()` called before the widget UI mounted (a queued call in the async snippet) left the previous contact's cached notifications in place, and a reload showed them to the next visitor. Cached notifications are now cleared regardless and are only shown to the contact that received them.
+Fixed: cached notification cards ignored disabled notifications and were still shown.
+
 ## 19.3.5
 Fixed: a product tour step whose selector only matched a hidden element (`display: none`, such as the label of a collapsed menu or the hidden copy of a responsive menu) froze the page. The step pointed at the top-left corner, the overlay blocked every click, a click step had no way forward and reloading brought the step back. Steps now use the first visible match; with none, the tour waits up to 5 s for the element to appear and then ends, like a selector that matches nothing.
 
