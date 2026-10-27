@@ -435,20 +435,52 @@ class Gleap {
   }
 
   /**
-   * Opens the sidekick: an agent in a full-height side panel next to the page, which it dims
-   * (overlay, the default) or pushes aside (push). The agent gets the page's context: its URL
-   * (without query and hash), its title, the onboarding step and what the app passes in.
+   * Opens the sidekick: an agent in a full-height side panel next to the page. By default it
+   * pushes the page aside (the page stays visible and usable, no dim); it overlays a dimmed page
+   * instead when asked for (mode 'overlay'), when the page would get narrower than 720 px, or when
+   * a push could break the page (a page in a frame, RTL, a margin on <html>, a 100vw layout or a
+   * full-width fixed header/footer). Phones get a full-screen sheet. Closing puts the page back
+   * exactly as it was. The agent gets the page's context: its URL (without query and hash), its
+   * title, the onboarding step and what the app passes in.
    * @param {object} [options]
    *   - agentId: a customer agent of the workspace; omitted = Kai Support (the project's AI workflow).
    *   - context: { title?, step?, data? } (replaces the one from setSidekickContext).
-   *   - initialMessage: shown first, from the agent (not answered).
+   *   - initialMessage: the agent's first message in the conversation (shown, not answered).
    *   - initialQuestion: the customer's first message, answered by the agent.
-   *   - mode: 'overlay' (default) or 'push'.
+   *   - mode: 'push' (default) or 'overlay'.
    *   - newConversation: start fresh even when a sidekick conversation with this agent is open.
    */
   static openSidekick(options) {
     try {
       GleapSidekickManager.getInstance().open(options || {});
+    } catch (e) {}
+  }
+
+  /**
+   * Shows an agent's message as a card above the launcher (avatar, the message, "<agent> · now").
+   * Clicking it opens the sidekick with the message as the agent's first message; its × hides it,
+   * and the same card stays away for a day in every tab. Not shown while the widget or the sidekick
+   * is open.
+   * @param {object} options
+   *   - agentId: a customer agent of the workspace; omitted = Kai Support.
+   *   - message: the agent's message (plain text, up to 500 characters).
+   *   - sender: { name, profileImageUrl? } shown on the card (default: the project's bot name and avatar).
+   * @returns {boolean} whether the card shows.
+   */
+  static showSidekickMessage(options) {
+    try {
+      return GleapSidekickManager.getInstance().showMessage(options || {});
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Hides the sidekick message card (no dismissal is remembered).
+   */
+  static hideSidekickMessage() {
+    try {
+      GleapSidekickManager.getInstance().removeCard('api');
     } catch (e) {}
   }
 
@@ -485,7 +517,7 @@ class Gleap {
   }
 
   /**
-   * Allow (default) or stop proactive sidekick opens on this page (e.g. during checkout).
+   * Allow (default) or stop proactive sidekick messages on this page, cards and opens (e.g. during checkout).
    * @param {boolean} enabled
    */
   static setSidekickProactive(enabled) {

@@ -153,7 +153,8 @@ export default class GleapStreamedEvent {
     // can open the sidekick (the server sends proactive opens only to SDKs that say so).
     let caps = '';
     try {
-      const capabilities = getWebSocketCaps().concat(['sidekick']);
+      // `sidekick-card`: it can show a proactive message as a card above the launcher.
+      const capabilities = getWebSocketCaps().concat(['sidekick', 'sidekick-card']);
       if (capabilities.length > 0) {
         caps = '&caps=' + capabilities.join(',');
       }
@@ -311,7 +312,8 @@ export default class GleapStreamedEvent {
         }
       }
 
-      // A proactive sidekick open (a trigger of the workspace): shown at most once per page view.
+      // A proactive sidekick message (a trigger of the workspace): a card above the launcher or the
+      // panel itself, at most once per page view.
       if (message.name === 'sidekick' && GleapSidekickManager) {
         GleapSidekickManager.getInstance().handleProactive(message.data);
       }

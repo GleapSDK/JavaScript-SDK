@@ -535,7 +535,10 @@ export default class GleapFrameManager {
           return;
         }
         if (this.appMode === 'sidekick') {
-          GleapSidekickManager.getInstance().close('escape');
+          // A push panel leaves the page usable: Escape in the page stays the page's.
+          if (GleapSidekickManager.getInstance().shouldCloseOnPageEscape(evt)) {
+            GleapSidekickManager.getInstance().close('escape');
+          }
           return;
         }
         this.hideWidget();
@@ -944,6 +947,14 @@ export default class GleapFrameManager {
   }
 
   updateUI() {
+    // The sidekick shows one agent conversation: the other unread messages and their badge stay
+    // (hidden while the panel is open, see UI.js), as they are for a survey.
+    if (this.appMode === 'sidekick') {
+      GleapNotificationManager.getInstance().clearAllNotifications(true);
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+      return;
+    }
+
     // Clear notifications only when not opening a survey.
     GleapNotificationManager.getInstance().clearAllNotifications(this.isSurvey());
 

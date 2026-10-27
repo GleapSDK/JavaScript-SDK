@@ -1,14 +1,20 @@
-import {
+import Gleap, {
   GleapAiChatbarManager,
+  GleapConfigManager,
   GleapEventManager,
   GleapFrameManager,
   GleapModalManager,
+  GleapNotificationManager,
   GleapProductTours,
+  GleapSession,
+  GleapTabCommunication,
   GleapTranslationManager,
 } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import {
   SIDEKICK_HIDDEN_MAX_WAIT_MS,
+  SIDEKICK_PHONE_MAX_WIDTH,
+  SIDEKICK_PUSH_MIN_PAGE_WIDTH,
   SIDEKICK_TYPING_IDLE_MS,
   SIDEKICK_TYPING_MAX_WAIT_MS,
   SIDEKICK_WIDTH,
@@ -16,6 +22,9 @@ import {
   normalizeSidekickContext,
   proactiveRefusalOf,
   proactiveSidekickOf,
+  pushRiskOf,
+  sidekickCardKeyOf,
+  sidekickCardOf,
   sidekickModeOf,
 } from './GleapSidekickRules';
 
@@ -26,6 +35,43 @@ const PUSH_CLASS = 'gleap-sidekick-push';
 // The panel slides out in 0.24 s; the page and its margin come back with it.
 const CLOSE_ANIMATION_MS = 280;
 const PUSH_TRANSITION = 'margin 0.32s cubic-bezier(0.16, 1, 0.3, 1)';
+
+// Gleap's own elements never count as page content under the panel.
+const isGleapElement = (element) => {
+  for (let node = element, depth = 0; node && node.nodeType === 1 && depth < 12; node = node.parentElement, depth += 1) {
+    const className = typeof node.className === 'string' ? node.className : '';
+    if (/(^|\s)(gleap-|bb-feedback|bb-capture)/.test(className)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+// The element's (or an ancestor's) fixed box, if it is positioned fixed.
+const fixedAncestorOf = (element) => {
+  for (let node = element, depth = 0; node && node.nodeType === 1 && depth < 12; node = node.parentElement, depth += 1) {
+    if (node === document.body || node === document.documentElement) {
+      return null;
+    }
+    try {
+      if (window.getComputedStyle(node).position === 'fixed') {
+        return node;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+const pagePathOf = (href) => {
+  try {
+    const url = new URL(href);
+    return url.origin + url.pathname;
+  } catch (e) {
+    return href || '';
+  }
+};
 
 const isEditable = (element) => {
   if (!element || element.nodeType !== 1) {
@@ -69,6 +115,11 @@ export default class GleapSidekickManager {
   backdrop = null;
   closeTimer = null;
   pendingProactiveTimer = null;
+  // Why the last open did not push (pushRiskOf), for the sidekick-opened event.
+  pushFallback = null;
+  relayoutFrame = null;
+  // The message card above the launcher (showCard): { key, agentId, message, sender, proactive, pagePath }.
+  card = null;
 
   static instance;
   static getInstance() {
@@ -94,7 +145,7 @@ export default class GleapSidekickManager {
         },
         true
       );
-      window.addEventListener('resize', () => this.relayout());
+      window.addEventListener('resize', () => this.scheduleRelayout());
     } catch (e) {}
   }
 
@@ -127,9 +178,14 @@ export default class GleapSidekickManager {
     this.closeTimer = null;
     this.isOpen = true;
     this.closeReason = null;
-    this.activeProactive = meta && meta.proactive ? { ...meta.proactive, engaged: false } : null;
-    this.requestedMode = opts.mode === 'push' ? 'push' : 'overlay';
-    this.mode = sidekickModeOf({ requested: this.requestedMode, viewportWidth: window.innerWidth });
+    // Opened from a card the customer clicked: chosen, so closing it is not a dismissal.
+    this.activeProactive =
+      meta && meta.proactive ? { ...meta.proactive, engaged: meta.proactive.engaged === true } : null;
+    // Push is the default; overlay only when asked for (or when the page has no room / could break).
+    this.requestedMode = opts.mode === 'overlay' ? 'overlay' : 'push';
+    this.mode = this.modeForViewport();
+    // The panel takes over from any message card.
+    this.removeCard('opened');
     this.openOptions = {
       agentId,
       botId: agentId ? null : this.defaultWorkflowId(),
@@ -152,6 +208,7 @@ export default class GleapSidekickManager {
         agentId,
         mode: this.mode,
         proactive: !!this.activeProactive,
+        ...(this.pushFallback ? { pushFallback: this.pushFallback } : {}),
       });
     }
   }
@@ -239,7 +296,31 @@ export default class GleapSidekickManager {
     if (href && href !== this.pageView) {
       this.pageView = href;
     }
+    // A card belongs to the page it showed on: another route takes it away (not a dismissal).
+    if (this.card && href && pagePathOf(href) !== this.card.pagePath) {
+      this.removeCard('navigation');
+    }
     this.sendContextIfChanged();
+  }
+
+  /** Escape on the host page: closes an overlay/sheet; a push panel leaves the usable page its own Escape. */
+  shouldCloseOnPageEscape(event) {
+    if (!this.isOpen) {
+      return false;
+    }
+    if (this.mode !== 'push') {
+      return true;
+    }
+    if (event && event.defaultPrevented) {
+      return false;
+    }
+    try {
+      const active = document.activeElement;
+      const frame = GleapFrameManager.getInstance().gleapFrame;
+      return !active || active === document.body || active === document.documentElement || active === frame;
+    } catch (e) {
+      return false;
+    }
   }
 
   // ── Proactive opens (socket `sidekick`) ─────────────────────────────────
@@ -250,15 +331,37 @@ export default class GleapSidekickManager {
       return;
     }
     const startedAt = Date.now();
-    const attempt = () => {
-      this.pendingProactiveTimer = null;
-      const refusal = proactiveRefusalOf({
-        enabled: this.proactiveEnabled,
+    const refusalNow = () =>
+      proactiveRefusalOf({
+        // A page that turned off in-app notifications gets no cards either (an open was never one).
+        enabled: this.proactiveEnabled && !(proactive.display === 'card' && this.inAppNotificationsDisabled()),
         shownThisPageView: this.proactivePageView !== null && this.proactivePageView === this.pageView,
         busy: this.isBusy(),
         dismissedAt: this.dismissedAt(proactive.triggerKey),
         now: Date.now(),
       });
+
+    // A card waits for nothing: it sits above the launcher until it is clicked or dismissed.
+    if (proactive.display === 'card') {
+      clearTimeout(this.pendingProactiveTimer);
+      this.pendingProactiveTimer = null;
+      const refusal = refusalNow();
+      if (refusal) {
+        this.reportProactive(proactive, false, refusal);
+        return;
+      }
+      this.proactivePageView = this.pageView;
+      this.showCard(
+        { agentId: proactive.agentId, message: proactive.message, sender: proactive.sender },
+        { proactive: { id: proactive.id, triggerKey: proactive.triggerKey } }
+      );
+      this.reportProactive(proactive, true);
+      return;
+    }
+
+    const attempt = () => {
+      this.pendingProactiveTimer = null;
+      const refusal = refusalNow();
       if (refusal) {
         this.reportProactive(proactive, false, refusal);
         return;
@@ -296,6 +399,7 @@ export default class GleapSidekickManager {
     GleapEventManager.notifyEvent('sidekick-proactive', {
       id: proactive.id,
       triggerId: proactive.triggerKey,
+      display: proactive.display,
       shown,
       ...(reason ? { reason } : {}),
     });
@@ -349,6 +453,137 @@ export default class GleapSidekickManager {
         });
       kept[triggerKey] = now;
       saveToGleapCache(DISMISSED_CACHE_KEY, kept);
+    } catch (e) {}
+  }
+
+  // ── Message cards (a proactive message above the launcher) ─────────────
+
+  inAppNotificationsDisabled() {
+    try {
+      return !!Gleap.getInstance().disableInAppNotifications;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /** The bot persona the widget shows for AI messages (flowConfig operatorName / operatorAvatarImage). */
+  defaultSender() {
+    try {
+      const flowConfig = GleapConfigManager.getInstance().getFlowConfig() || {};
+      const name = typeof flowConfig.operatorName === 'string' && flowConfig.operatorName.trim() ? flowConfig.operatorName.trim() : 'Kai';
+      const image = typeof flowConfig.operatorAvatarImage === 'string' ? flowConfig.operatorAvatarImage : '';
+      return image && /^https:\/\//i.test(image) ? { name, profileImageUrl: image } : { name };
+    } catch (e) {
+      return { name: 'Kai' };
+    }
+  }
+
+  /**
+   * Gleap.showSidekickMessage: shows the card unless the panel or the widget is open, or this card
+   * was dismissed in the last day (any tab). Returns whether it shows.
+   */
+  showMessage(options) {
+    const card = sidekickCardOf(options);
+    if (!card) {
+      return false;
+    }
+    const key = sidekickCardKeyOf(card);
+    if (this.isOpen || this.isWidgetOpen()) {
+      return false;
+    }
+    const dismissedAt = this.dismissedAt(key);
+    if (proactiveRefusalOf({ enabled: true, shownThisPageView: false, busy: false, dismissedAt, now: Date.now() })) {
+      return false;
+    }
+    this.showCard(card, {});
+    return true;
+  }
+
+  isWidgetOpen() {
+    try {
+      return GleapFrameManager.getInstance().isOpened();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  showCard(card, meta = {}) {
+    let href = '';
+    try {
+      href = window.location.href;
+    } catch (e) {}
+    const proactive = meta.proactive || null;
+    this.card = {
+      key: sidekickCardKeyOf({ triggerKey: proactive && proactive.triggerKey, agentId: card.agentId, message: card.message }),
+      agentId: card.agentId || null,
+      message: card.message,
+      sender: card.sender || this.defaultSender(),
+      proactive,
+      pagePath: pagePathOf(href),
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      GleapNotificationManager.getInstance().setSidekickCard(this.card);
+    } catch (e) {}
+  }
+
+  /** The card was clicked: the panel opens with its message as the agent's first message. */
+  onCardClicked() {
+    const card = this.card;
+    if (!card) {
+      return;
+    }
+    this.broadcastCardCleared(card.key);
+    this.open(
+      { agentId: card.agentId || undefined, initialMessage: card.message, newConversation: true },
+      card.proactive ? { proactive: { ...card.proactive, engaged: true } } : {}
+    );
+  }
+
+  /** The card's × (or Escape on it): gone for this page view, and quiet for a day in every tab. */
+  onCardDismissed() {
+    const card = this.card;
+    if (!card) {
+      return;
+    }
+    this.recordDismissal(card.key);
+    this.broadcastCardCleared(card.key);
+    this.removeCard('dismissed');
+    GleapEventManager.notifyEvent('sidekick-message-dismissed', {
+      agentId: card.agentId,
+      ...(card.proactive ? { id: card.proactive.id, triggerId: card.proactive.triggerKey } : {}),
+    });
+  }
+
+  /** Another tab clicked or dismissed the same card. */
+  onCardClearedElsewhere(key) {
+    if (this.card && key && this.card.key === key) {
+      this.removeCard('other_tab');
+    }
+  }
+
+  /** The notifications were cleared (the widget opened, the identity changed, …): the card goes with them. */
+  onNotificationsCleared() {
+    this.card = null;
+  }
+
+  removeCard() {
+    if (!this.card) {
+      return;
+    }
+    this.card = null;
+    try {
+      GleapNotificationManager.getInstance().setSidekickCard(null);
+    } catch (e) {}
+  }
+
+  broadcastCardCleared(key) {
+    try {
+      GleapTabCommunication.getInstance().sendMessage({
+        type: 'sidekick-card-cleared',
+        key,
+        gleapId: GleapSession.getInstance().session?.gleapId,
+      });
     } catch (e) {}
   }
 
@@ -435,6 +670,107 @@ export default class GleapSidekickManager {
     }
   }
 
+  /** The mode for the viewport now: a push only where it has room and cannot break the page. */
+  modeForViewport() {
+    const viewportWidth = window.innerWidth;
+    this.pushFallback = null;
+    const wantsPush =
+      this.requestedMode === 'push' &&
+      viewportWidth > SIDEKICK_PHONE_MAX_WIDTH &&
+      viewportWidth - SIDEKICK_WIDTH >= SIDEKICK_PUSH_MIN_PAGE_WIDTH;
+    const pushRisk = wantsPush ? this.probePush() : null;
+    if (pushRisk) {
+      this.pushFallback = pushRisk;
+    }
+    return sidekickModeOf({ requested: this.requestedMode, viewportWidth, pushRisk });
+  }
+
+  /**
+   * Whether pushing this page aside could break it (pushRiskOf). Applies the push margin for one
+   * synchronous layout (no transition, never painted), looks at what still sits where the panel
+   * goes, and puts the page's own values back.
+   */
+  probePush() {
+    try {
+      let inIframe = false;
+      try {
+        inIframe = window.self !== window.top;
+      } catch (e) {
+        inIframe = true;
+      }
+      const html = document.documentElement;
+      let rtl = this.isRtl();
+      try {
+        rtl = rtl || window.getComputedStyle(html).direction === 'rtl' || (document.body && window.getComputedStyle(document.body).direction === 'rtl');
+      } catch (e) {}
+      if (inIframe || rtl) {
+        return pushRiskOf({ inIframe, rtl });
+      }
+
+      const state = this.restoreState;
+      const pushed = !!(state && state.pushed);
+      // The page's own horizontal margin on <html> (ours would replace it).
+      const ownMarginLeft = pushed ? state.marginLeft : html.style.marginLeft;
+      const ownMarginRight = pushed ? state.marginRight : html.style.marginRight;
+      let htmlMargin = !!(ownMarginLeft && parseFloat(ownMarginLeft)) || !!(ownMarginRight && parseFloat(ownMarginRight));
+      if (!pushed && !htmlMargin) {
+        try {
+          const computed = window.getComputedStyle(html);
+          htmlMargin = (parseFloat(computed.marginLeft) || 0) !== 0 || (parseFloat(computed.marginRight) || 0) !== 0;
+        } catch (e) {}
+      }
+      if (htmlMargin) {
+        return pushRiskOf({ htmlMargin });
+      }
+
+      const saved = { marginRight: html.style.marginRight, overflowX: html.style.overflowX, transition: html.style.transition };
+      if (!pushed) {
+        html.style.transition = 'none';
+        html.style.marginRight = `${SIDEKICK_WIDTH}px`;
+        html.style.overflowX = 'clip';
+      }
+      const stripHits = [];
+      try {
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const xs = [viewportWidth - SIDEKICK_WIDTH + 24, viewportWidth - SIDEKICK_WIDTH / 2, viewportWidth - 40];
+        const ys = [2, 32, 72, Math.round(viewportHeight / 2), viewportHeight - 72, viewportHeight - 32, viewportHeight - 2];
+        const seen = [];
+        xs.forEach((x) => {
+          ys.forEach((y) => {
+            const elements = typeof document.elementsFromPoint === 'function' ? document.elementsFromPoint(x, y) : [];
+            elements.forEach((element) => {
+              if (!element || element === html || element === document.body || seen.indexOf(element) !== -1 || isGleapElement(element)) {
+                return;
+              }
+              seen.push(element);
+              const fixed = fixedAncestorOf(element);
+              const width = fixed ? fixed.getBoundingClientRect().width : 0;
+              stripHits.push({ fixed: !!fixed, wide: !!fixed && width >= viewportWidth / 2 });
+            });
+          });
+        });
+        // A body with its own width (or 100vw) did not move with the margin.
+        if (document.body) {
+          const bodyRect = document.body.getBoundingClientRect();
+          if (bodyRect.right > viewportWidth - SIDEKICK_WIDTH + 1 && bodyRect.height > 0) {
+            stripHits.push({ fixed: false, wide: true });
+          }
+        }
+      } finally {
+        if (!pushed) {
+          html.style.marginRight = saved.marginRight;
+          html.style.overflowX = saved.overflowX;
+          html.style.transition = saved.transition;
+        }
+      }
+      return pushRiskOf({ stripHits });
+    } catch (e) {
+      // Measuring failed: the overlay never moves the page.
+      return 'unknown';
+    }
+  }
+
   applyLayout() {
     if (typeof document === 'undefined' || !document.body) {
       return;
@@ -442,8 +778,9 @@ export default class GleapSidekickManager {
     const html = document.documentElement;
     html.classList.add(OPEN_CLASS);
 
-    // The dim layer: blocks the page (clicks close the panel, wheel/touch never scroll the page).
-    if (this.mode !== 'sheet') {
+    // The dim layer only over an overlay (blocks the page; a click closes the panel). A push keeps
+    // the page visible and usable; the phone sheet covers the screen.
+    if (this.mode === 'overlay') {
       this.showBackdrop();
     } else {
       this.removeBackdrop(true);
@@ -451,14 +788,12 @@ export default class GleapSidekickManager {
 
     const state = this.restoreState;
     if (this.mode === 'push' && state) {
+      // A margin on <html>, never a transform (fixed headers, 100vw and media queries keep working).
+      // RTL pages never push (probePush), so the panel is always on the right here.
       html.classList.add(PUSH_CLASS);
       html.style.transition = PUSH_TRANSITION;
       html.style.overflowX = 'clip';
-      if (this.isRtl()) {
-        html.style.marginLeft = `${SIDEKICK_WIDTH}px`;
-      } else {
-        html.style.marginRight = `${SIDEKICK_WIDTH}px`;
-      }
+      html.style.marginRight = `${SIDEKICK_WIDTH}px`;
       state.pushed = true;
     } else if (state && state.pushed) {
       this.restorePageStyles(false);
@@ -467,12 +802,28 @@ export default class GleapSidekickManager {
     this.updateFrameAccessibility(true);
   }
 
+  scheduleRelayout() {
+    if (!this.isOpen || this.relayoutFrame !== null) {
+      return;
+    }
+    const run = () => {
+      this.relayoutFrame = null;
+      this.relayout();
+    };
+    try {
+      this.relayoutFrame = window.requestAnimationFrame(run);
+    } catch (e) {
+      this.relayoutFrame = null;
+      run();
+    }
+  }
+
   // The viewport changed while open: phone ↔ desktop, room for the push or not.
   relayout() {
     if (!this.isOpen) {
       return;
     }
-    const next = sidekickModeOf({ requested: this.requestedMode, viewportWidth: window.innerWidth });
+    const next = this.modeForViewport();
     if (next !== this.mode) {
       this.mode = next;
       this.applyLayout();
@@ -547,7 +898,8 @@ export default class GleapSidekickManager {
       }
       if (open) {
         container.setAttribute('role', 'dialog');
-        container.setAttribute('aria-modal', this.mode === 'sheet' || this.mode === 'overlay' || this.mode === 'push' ? 'true' : 'false');
+        // Overlay and sheet block the page (modal); a push leaves it usable next to the panel.
+        container.setAttribute('aria-modal', this.mode === 'push' ? 'false' : 'true');
         container.setAttribute('aria-label', 'Sidekick');
       } else {
         container.removeAttribute('role');
@@ -609,6 +961,7 @@ export default class GleapSidekickManager {
     } catch (e) {}
     clearTimeout(this.closeTimer);
     clearTimeout(this.pendingProactiveTimer);
+    this.removeCard('destroy');
     GleapSidekickManager.instance = null;
   }
 }

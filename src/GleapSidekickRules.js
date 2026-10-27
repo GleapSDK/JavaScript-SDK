@@ -26,6 +26,8 @@ export const SIDEKICK_TYPING_MAX_WAIT_MS = 30000;
 export const SIDEKICK_HIDDEN_MAX_WAIT_MS = 60000;
 
 const STEP_ID = /^[A-Za-z0-9_-]{1,64}$/;
+const SENDER_NAME_MAX = 80;
+const MESSAGE_MAX = 500;
 
 const plain = (value, max) => {
   if (typeof value !== 'string') {
@@ -149,32 +151,116 @@ export const buildSidekickEnvelope = ({ href, documentTitle, context }) => {
   return envelope;
 };
 
-/** overlay (default) · push (only with room for the page) · sheet (phones). */
-export const sidekickModeOf = ({ requested, viewportWidth }) => {
+/**
+ * push (default): the page moves aside and stays usable, no dim · overlay: the panel over a dimmed
+ * page (asked for, no room for the page next to the panel, or a page push could break) · sheet
+ * (phones: full screen, never a push).
+ */
+export const sidekickModeOf = ({ requested, viewportWidth, pushRisk }) => {
   if (!(viewportWidth > SIDEKICK_PHONE_MAX_WIDTH)) {
     return 'sheet';
   }
-  if (requested === 'push' && viewportWidth - SIDEKICK_WIDTH >= SIDEKICK_PUSH_MIN_PAGE_WIDTH) {
+  if (requested !== 'overlay' && !pushRisk && viewportWidth - SIDEKICK_WIDTH >= SIDEKICK_PUSH_MIN_PAGE_WIDTH) {
     return 'push';
   }
   return 'overlay';
 };
 
-/** A socket `sidekick` message as the SDK uses it, or null. */
+/**
+ * Why pushing this page aside could break it (the sidekick then overlays instead), or null.
+ * The probe (GleapSidekickManager.probePush) measures the page with the push margin applied for one
+ * synchronous layout, never painted:
+ * - inIframe: the page is itself inside a frame (its "viewport" is someone else's box);
+ * - rtl: right-to-left pages (their scroll origin and fixed edges flip);
+ * - htmlMargin: <html> has a horizontal margin of its own (ours would replace it);
+ * - stripHits: what still sits under the panel with the margin applied. Page content there means a
+ *   100vw layout or a body with its own width (it did not move); a fixed bar at least half as wide
+ *   as the viewport (header, footer, cookie bar) would lose its right end under the panel.
+ */
+export const pushRiskOf = ({ inIframe, rtl, htmlMargin, stripHits }) => {
+  if (inIframe) return 'iframe';
+  if (rtl) return 'rtl';
+  if (htmlMargin) return 'html_margin';
+  const hits = Array.isArray(stripHits) ? stripHits : [];
+  if (hits.some((hit) => hit && !hit.fixed)) return 'page_width';
+  if (hits.some((hit) => hit && hit.fixed && hit.wide)) return 'fixed_bar';
+  return null;
+};
+
+
+/** A sender to show on a sidekick card: { name, profileImageUrl? } (https images only), or null. */
+export const sidekickSenderOf = (sender) => {
+  if (!sender || typeof sender !== 'object') {
+    return null;
+  }
+  const name = plain(sender.name, SENDER_NAME_MAX);
+  if (!name) {
+    return null;
+  }
+  const image = typeof sender.profileImageUrl === 'string' ? sender.profileImageUrl.trim() : '';
+  let profileImageUrl;
+  try {
+    if (image && new URL(image).protocol === 'https:') {
+      profileImageUrl = image;
+    }
+  } catch (e) {}
+  return profileImageUrl ? { name, profileImageUrl } : { name };
+};
+
+const AGENT_ID = /^[a-f0-9]{24}$/i;
+
+/**
+ * Gleap.showSidekickMessage's options as the card uses them, or null when there is no message:
+ * { agentId (24-hex or null = Kai Support), message (plain, ≤500), sender (or null: the bot persona) }.
+ */
+export const sidekickCardOf = (options) => {
+  if (!options || typeof options !== 'object') {
+    return null;
+  }
+  const message = plain(options.message, MESSAGE_MAX);
+  if (!message) {
+    return null;
+  }
+  const agentId = typeof options.agentId === 'string' && AGENT_ID.test(options.agentId.trim()) ? options.agentId.trim() : null;
+  return { agentId, message, sender: sidekickSenderOf(options.sender) };
+};
+
+/**
+ * The key a dismissed card is remembered by (24 h, every tab of this browser): the trigger for a
+ * server card, the agent and the text for one the app showed by code.
+ */
+export const sidekickCardKeyOf = ({ triggerKey, agentId, message }) => {
+  if (typeof triggerKey === 'string' && triggerKey) {
+    return triggerKey;
+  }
+  let hash = 0;
+  const text = `${agentId || 'kai'}|${message || ''}`;
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash * 31 + text.charCodeAt(index)) | 0;
+  }
+  return `code:${agentId || 'kai'}:${(hash >>> 0).toString(36)}`;
+};
+
+/**
+ * A socket `sidekick` message as the SDK uses it, or null. `display` is 'card' (a message card
+ * above the launcher that opens the panel when clicked) or 'open' (the panel opens at once);
+ * a message without it is an open (what the server sent before cards existed).
+ */
 export const proactiveSidekickOf = (data) => {
   if (!data || typeof data !== 'object') {
     return null;
   }
   const id = typeof data.id === 'string' && data.id ? data.id.slice(0, 64) : null;
-  const message = plain(data.message, 500);
+  const message = plain(data.message, MESSAGE_MAX);
   const trigger = data.trigger && typeof data.trigger === 'object' ? data.trigger : null;
   const triggerKey =
     trigger && typeof trigger.type === 'string' && typeof trigger.id === 'string' ? `${trigger.type}:${trigger.id}`.slice(0, 160) : null;
   if (!id || !message || !triggerKey) {
     return null;
   }
-  const agentId = typeof data.agentId === 'string' && /^[a-f0-9]{24}$/i.test(data.agentId) ? data.agentId : null;
-  return { id, agentId, message, triggerKey };
+  const agentId = typeof data.agentId === 'string' && AGENT_ID.test(data.agentId) ? data.agentId : null;
+  const display = data.display === 'card' ? 'card' : 'open';
+  return { id, agentId, message, triggerKey, display, sender: sidekickSenderOf(data.sender) };
 };
 
 /**

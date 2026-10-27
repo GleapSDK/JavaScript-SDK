@@ -1665,11 +1665,128 @@ export const injectStyledCSS = (
       pointer-events: none;
     }
 
-    /* While the sidekick is open the launcher steps aside (the panel has its own close). */
-    html.gleap-sidekick-open .bb-feedback-button {
+    /* While the sidekick is open the launcher and the notification cards step aside (the panel has
+       its own close; the cards come back when it closes). */
+    html.gleap-sidekick-open .bb-feedback-button,
+    html.gleap-sidekick-open .gleap-notification-container {
       opacity: 0 !important;
       visibility: hidden !important;
       pointer-events: none !important;
+    }
+
+    /* The sidekick message card: a notification card (same chrome) whose whole body is a button,
+       three lines of the agent's message, "<agent> · now", and its own dismiss button. */
+    .gleap-sidekick-card {
+      position: relative;
+    }
+
+    .gleap-notification-container .gleap-sidekick-card-open {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      margin: 0 0 12px 0;
+      font: inherit;
+      font-size: 15px;
+      line-height: 21px;
+      text-align: start;
+      letter-spacing: normal;
+      text-transform: none;
+      outline: none;
+    }
+
+    .gleap-notification-container .gleap-sidekick-card-open:focus-visible {
+      box-shadow: 0 0 0 2px ${backgroundColor}, 0 0 0 4px ${primaryColor}, 0px 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .gleap-sidekick-card-text {
+      -webkit-line-clamp: 3 !important;
+    }
+
+    .gleap-sidekick-card-glyph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: ${primaryColor};
+      color: ${contrastColor};
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .gleap-sidekick-card-dismiss {
+      -webkit-appearance: none;
+      appearance: none;
+      position: absolute;
+      top: -9px;
+      right: -9px;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 100%;
+      background-color: ${backgroundColor};
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.18);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      opacity: 0;
+      z-index: 2;
+      transition: opacity 0.15s ease-out;
+    }
+
+    [dir=rtl].gleap-notification-container .gleap-sidekick-card-dismiss {
+      right: auto;
+      left: -9px;
+    }
+
+    .gleap-sidekick-card-dismiss svg {
+      width: 40%;
+      height: 40%;
+      object-fit: contain;
+      fill: ${contrastBackgroundColor};
+    }
+
+    .gleap-sidekick-card:hover .gleap-sidekick-card-dismiss,
+    .gleap-sidekick-card:focus-within .gleap-sidekick-card-dismiss {
+      opacity: 1;
+    }
+
+    .gleap-sidekick-card-dismiss:focus-visible {
+      opacity: 1;
+      outline: 2px solid ${primaryColor};
+      outline-offset: 2px;
+    }
+
+    /* Touch screens have no hover: the dismiss button is always there. */
+    @media (hover: none), only screen and (max-width: 450px) {
+      .gleap-sidekick-card-dismiss {
+        opacity: 1;
+      }
+    }
+
+    /* Screen readers hear a new card once; nobody sees this. */
+    .gleap-sidekick-live {
+      position: fixed !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      clip: rect(0 0 0 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-sidekick-card {
+        animation: none !important;
+      }
+
+      .gleap-sidekick-card-dismiss {
+        transition: none;
+      }
     }
 
     @keyframes gleapSidekickIn {
@@ -1692,7 +1809,9 @@ export const injectStyledCSS = (
       to { transform: translateX(-100%); }
     }
 
-    /* Phones: a full-screen sheet that slides up (nothing to push, nothing to see behind it). */
+    /* Phones: a full-screen sheet that slides up (nothing to push, nothing to see behind it). The
+       notch and the home indicator stay clear (env() is 0 inside the frame, so the host pads it),
+       and the sheet is as tall as the visible viewport, like the widget on phones. */
     @media only screen and (max-width: ${SIDEKICK_PHONE_MAX_WIDTH}px) {
       .gleap-frame-container.gleap-frame-container--sidekick,
       [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
@@ -1700,8 +1819,16 @@ export const injectStyledCSS = (
         right: 0 !important;
         width: 100vw !important;
         box-shadow: none !important;
+        box-sizing: border-box !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+        background-color: ${backgroundColor} !important;
         transform-origin: center bottom;
         animation: gleapWidgetSlideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+      }
+
+      .gleap-frame-container--sidekick .gleap-frame-container-inner {
+        max-height: calc(var(--glvh, 1vh) * 100 - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
       }
 
       .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing,

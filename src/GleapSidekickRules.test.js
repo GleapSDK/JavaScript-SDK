@@ -5,6 +5,9 @@ import {
   normalizeSidekickContext,
   proactiveRefusalOf,
   proactiveSidekickOf,
+  pushRiskOf,
+  sidekickCardKeyOf,
+  sidekickCardOf,
   sidekickModeOf,
   sidekickRouteOf,
 } from './GleapSidekickRules';
@@ -63,12 +66,54 @@ describe('the app context', () => {
 });
 
 describe('layout', () => {
-  test('overlay by default, push only with room for the page, a sheet on phones', () => {
-    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440 })).toBe('overlay');
+  test('push by default, overlay when asked or without room for the page, a sheet on phones', () => {
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440 })).toBe('push');
     expect(sidekickModeOf({ requested: 'push', viewportWidth: 1440 })).toBe('push');
-    expect(sidekickModeOf({ requested: 'push', viewportWidth: 1000 })).toBe('overlay');
+    expect(sidekickModeOf({ requested: 'overlay', viewportWidth: 1440 })).toBe('overlay');
+    // 1000 - 400 leaves the page 600 px: under 720, so the panel overlays it.
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1000 })).toBe('overlay');
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1120 })).toBe('push');
     expect(sidekickModeOf({ requested: 'push', viewportWidth: 390 })).toBe('sheet');
-    expect(sidekickModeOf({ requested: undefined, viewportWidth: 600 })).toBe('sheet');
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 360 })).toBe('sheet');
+  });
+
+  test('a page a push could break gets the overlay', () => {
+    expect(sidekickModeOf({ requested: undefined, viewportWidth: 1440, pushRisk: 'fixed_bar' })).toBe('overlay');
+    expect(pushRiskOf({ stripHits: [] })).toBeNull();
+    expect(pushRiskOf({ inIframe: true })).toBe('iframe');
+    expect(pushRiskOf({ rtl: true })).toBe('rtl');
+    expect(pushRiskOf({ htmlMargin: true })).toBe('html_margin');
+    // Content still under the panel after the push: a 100vw layout or a body with its own width.
+    expect(pushRiskOf({ stripHits: [{ fixed: false }] })).toBe('page_width');
+    // A full-width fixed header would lose its right end; a small fixed corner widget would not.
+    expect(pushRiskOf({ stripHits: [{ fixed: true, wide: true }] })).toBe('fixed_bar');
+    expect(pushRiskOf({ stripHits: [{ fixed: true, wide: false }] })).toBeNull();
+  });
+});
+
+describe('message cards', () => {
+  test('plain text, an agent id or Kai Support, https avatars only', () => {
+    expect(sidekickCardOf({ agentId: '6adca6ce3d7fdf51b1584f08', message: '  Want me\n to do it? ' })).toEqual({
+      agentId: '6adca6ce3d7fdf51b1584f08',
+      message: 'Want me to do it?',
+      sender: null,
+    });
+    expect(sidekickCardOf({ agentId: '../x', message: 'Hi' }).agentId).toBeNull();
+    expect(sidekickCardOf({ message: '   ' })).toBeNull();
+    expect(sidekickCardOf({ message: 'x'.repeat(900) }).message.length).toBe(500);
+    expect(sidekickCardOf({ message: 'Hi', sender: { name: 'Ada', profileImageUrl: 'javascript:alert(1)' } }).sender).toEqual({ name: 'Ada' });
+    expect(sidekickCardOf({ message: 'Hi', sender: { name: 'Ada', profileImageUrl: 'https://cdn.example.com/a.png' } }).sender).toEqual({
+      name: 'Ada',
+      profileImageUrl: 'https://cdn.example.com/a.png',
+    });
+  });
+
+  test('a dismissed card is remembered by its trigger, or by agent + text', () => {
+    expect(sidekickCardKeyOf({ triggerKey: 'agent_event:a:t1' })).toBe('agent_event:a:t1');
+    const key = sidekickCardKeyOf({ agentId: null, message: 'Hi' });
+    expect(key).toMatch(/^code:kai:/);
+    expect(sidekickCardKeyOf({ agentId: null, message: 'Hi' })).toBe(key);
+    expect(sidekickCardKeyOf({ agentId: null, message: 'Hello' })).not.toBe(key);
   });
 });
 
@@ -79,7 +124,16 @@ describe('proactive opens', () => {
   test('a well-formed socket message only', () => {
     expect(
       proactiveSidekickOf({ id: 'a1', agentId: '6adca6ce3d7fdf51b1584f08', message: ' Want me to do it? ', trigger: { type: 'agent_event', id: 'x:y' } })
-    ).toEqual({ id: 'a1', agentId: '6adca6ce3d7fdf51b1584f08', message: 'Want me to do it?', triggerKey: 'agent_event:x:y' });
+    ).toEqual({
+      id: 'a1',
+      agentId: '6adca6ce3d7fdf51b1584f08',
+      message: 'Want me to do it?',
+      triggerKey: 'agent_event:x:y',
+      // Without a display it is an open (the protocol before cards).
+      display: 'open',
+      sender: null,
+    });
+    expect(proactiveSidekickOf({ id: 'a1', message: 'Hi', display: 'card', trigger: { type: 'skill', id: 's1' } }).display).toBe('card');
     expect(proactiveSidekickOf({ id: 'a1', agentId: null, message: 'Hi', trigger: { type: 'skill', id: 's1' } }).agentId).toBeNull();
     expect(proactiveSidekickOf({ id: 'a1', agentId: '../../x', message: 'Hi', trigger: { type: 'skill', id: 's1' } }).agentId).toBeNull();
     expect(proactiveSidekickOf({ id: 'a1', message: '', trigger: { type: 'skill', id: 's1' } })).toBeNull();

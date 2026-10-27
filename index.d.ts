@@ -73,26 +73,48 @@ export namespace Gleap {
     agentId?: string;
     /** Replaces the context set with setSidekickContext. */
     context?: SidekickContext | Record<string, any>;
-    /** Shown first, from the agent (not answered). */
+    /** The agent's first message in the conversation (shown, not answered). */
     initialMessage?: string;
     /** The customer's first message, answered by the agent. */
     initialQuestion?: string;
-    /** 'overlay' (default): the page is dimmed and blocked. 'push': it also moves aside (when there is room). */
-    mode?: "overlay" | "push";
+    /**
+     * 'push' (default): the page moves aside and stays usable, no dim. It overlays instead when the
+     * page would get narrower than 720 px or a push could break it (a page in a frame, RTL, a margin
+     * on <html>, a 100vw layout, a full-width fixed header/footer). 'overlay': over a dimmed page.
+     * Phones always get a full-screen sheet.
+     */
+    mode?: "push" | "overlay";
     /** Start a new conversation even when a sidekick conversation with this agent is still open. */
     newConversation?: boolean;
   }
   /**
    * Opens the sidekick: an agent in a full-height side panel next to the page (a full-screen
    * sheet on phones). The agent gets the page's URL (without query and hash), its title and the
-   * context. Closes with its × button, Escape, a click on the dimmed page or closeSidekick().
+   * context. Closes with its × button, Escape, a click on the dimmed page (overlay) or
+   * closeSidekick(); the page comes back exactly as it was.
    */
   function openSidekick(options?: SidekickOptions): void;
+  interface SidekickMessageOptions {
+    /** A customer agent of the workspace; omitted = Kai Support. */
+    agentId?: string;
+    /** The agent's message (plain text, up to 500 characters). */
+    message: string;
+    /** Shown on the card; default: the project's bot name and avatar. */
+    sender?: { name: string; profileImageUrl?: string };
+  }
+  /**
+   * Shows an agent's message as a card above the launcher. Clicking it opens the sidekick with the
+   * message as the agent's first message; its × hides it (the same card stays away for a day, in
+   * every tab). Not shown while the widget or the sidekick is open. Returns whether it shows.
+   */
+  function showSidekickMessage(options: SidekickMessageOptions): boolean;
+  /** Hides the sidekick message card. */
+  function hideSidekickMessage(): void;
   /** Sets (null: clears) the sidekick's context; the next message carries it. */
   function setSidekickContext(context: SidekickContext | Record<string, any> | null): void;
   function closeSidekick(): void;
   function isSidekickOpen(): boolean;
-  /** Allow (default) or stop proactive sidekick opens on this page. */
+  /** Allow (default) or stop proactive sidekick messages (cards and opens) on this page. */
   function setSidekickProactive(enabled: boolean): void;
   function isOpened(): boolean;
   /**
@@ -399,22 +421,34 @@ export namespace Gleap {
   /** The sidekick opened (by openSidekick or a proactive open). */
   function on(
     event: "sidekick-opened",
-    callback: (data: { agentId: string | null; mode: "overlay" | "push" | "sheet"; proactive: boolean }) => void
+    callback: (data: {
+      agentId: string | null;
+      mode: "overlay" | "push" | "sheet";
+      proactive: boolean;
+      /** Why a push became an overlay. */
+      pushFallback?: "iframe" | "rtl" | "html_margin" | "page_width" | "fixed_bar" | "unknown";
+    }) => void
   ): void;
   /** The sidekick closed and the page is back. */
   function on(
     event: "sidekick-closed",
     callback: (data: { reason: "close" | "escape" | "backdrop" | "api" | "replaced" }) => void
   ): void;
-  /** A proactive open arrived: shown, or why not. */
+  /** A proactive message arrived (a card, or the panel opening): shown, or why not. */
   function on(
     event: "sidekick-proactive",
     callback: (data: {
       id: string;
       triggerId: string;
+      display: "card" | "open";
       shown: boolean;
       reason?: "disabled" | "page_view" | "busy" | "dismissed" | "typing" | "hidden";
     }) => void
+  ): void;
+  /** The customer dismissed a sidekick message card. */
+  function on(
+    event: "sidekick-message-dismissed",
+    callback: (data: { agentId: string | null; id?: string; triggerId?: string }) => void
   ): void;
   function on(
     event:
