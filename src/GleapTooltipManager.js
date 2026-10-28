@@ -10,6 +10,8 @@ export default class GleapTooltipManager {
   lastUrl = null;
   elementToFloatingUIMap = new WeakMap();
   elementToTooltipMap = new WeakMap();
+  anchorToElementMap = new WeakMap();
+  livePopups = new WeakSet();
   nextId = 0;
 
   // GleapTooltipManager singleton
@@ -25,6 +27,19 @@ export default class GleapTooltipManager {
   // Recursive function to process each node and its children
   processNodeInsertion(node) {
     if (node.nodeType === Node.ELEMENT_NODE) {
+      // Our own hotspot anchors never carry a tooltip.
+      if (node.hasAttribute('data-gleap-tooltip-anchor')) {
+        return;
+      }
+
+      // Copy of a tooltip popup brought back with a cached page snapshot: not ours anymore.
+      if (node.classList.contains('gleap-tooltip')) {
+        if (!this.livePopups.has(node)) {
+          node.remove();
+        }
+        return;
+      }
+
       // Check the node itself
       this.checkNodeTooltip(node);
 
@@ -51,9 +66,10 @@ export default class GleapTooltipManager {
   start() {
     const self = this;
 
-    if (!window) {
+    if (typeof window === 'undefined' || this.started) {
       return;
     }
+    this.started = true;
 
     const throttle = (fn, time) => {
       let timeout = null;
@@ -69,15 +85,18 @@ export default class GleapTooltipManager {
       };
     };
 
-    const handleResizeThrottled = throttle(self.updateHotspotPositions.bind(self), 250);
-    window.addEventListener('resize', handleResizeThrottled);
+    this.resizeListener = throttle(self.updateHotspotPositions.bind(self), 250);
+    window.addEventListener('resize', this.resizeListener);
 
-    window.requestAnimationFrame(() => {
+    // Client-side navigation does not always touch the DOM after the URL flips
+    // (or the new page rendered before it), so watch the URL on its own as well.
+    this.urlCheckInterval = setInterval(() => {
+      self.checkUrlChange();
+    }, 1000);
+
+    if (!this.observer && typeof MutationObserver !== 'undefined' && document.documentElement) {
       this.observer = new MutationObserver((mutations) => {
-        if (self.lastUrl !== window.location.href) {
-          self.lastUrl = window.location.href;
-          self.filteredTooltips = self.getFilteredTooltips();
-        }
+        self.checkUrlChange();
 
         mutations.forEach((mutation) => {
           // Check for attribute changes that might affect hotspot positioning
@@ -101,35 +120,122 @@ export default class GleapTooltipManager {
             }
           });
 
-          // Check for removed nodes
+          // Check for removed nodes (a node that was only moved is still connected).
           mutation.removedNodes.forEach((node) => {
-            if (node.nodeType === Node.ELEMENT_NODE && this.elementToFloatingUIMap.has(node)) {
-              const floatingUI = this.elementToFloatingUIMap.get(node);
-              if (floatingUI) {
-                if (floatingUI.tooltip) {
-                  floatingUI.tooltip.remove();
-                }
-                floatingUI.cleanup();
-
-                this.elementToFloatingUIMap.delete(node);
-              }
-            }
-
-            if (this.elementToTooltipMap.has(node)) {
-              this.elementToTooltipMap.delete(node);
+            if (node.nodeType === Node.ELEMENT_NODE && !node.isConnected) {
+              self.processNodeRemoval(node);
             }
           });
         });
       });
 
-      // Start observing the document for changes.
-      this.observer.observe(document.body, {
+      // Observe the whole document, not just the current <body>: Turbo Drive and
+      // similar routers swap in a brand-new <body> on every visit.
+      this.observer.observe(document.documentElement, {
         childList: true,
         subtree: true,
         attributes: true,
         attributeFilter: ['style', 'class'],
       });
+    }
+  }
+
+  // Re-evaluates the page rules when the URL changed (client-side navigation).
+  checkUrlChange() {
+    if (this.lastUrl === window.location.href) {
+      return;
+    }
+    this.lastUrl = window.location.href;
+    this.filteredTooltips = this.getFilteredTooltips();
+
+    // Remove tooltips whose page rules no longer match the new page.
+    const linkedElements = document.querySelectorAll('[data-gleap-tooltip]');
+    linkedElements.forEach((element) => {
+      const link = this.elementToFloatingUIMap.get(element);
+      if (link && this.filteredTooltips.indexOf(link.data) === -1) {
+        this.unlinkElement(element);
+      }
     });
+
+    // The target may have rendered before the URL changed, so scan the whole page.
+    this.checkForTooltips();
+  }
+
+  processNodeRemoval(node) {
+    // Linked elements that left the page.
+    const removedElements = Array.from(node.querySelectorAll('[data-gleap-tooltip]'));
+    if (node.hasAttribute('data-gleap-tooltip')) {
+      removedElements.push(node);
+    }
+    removedElements.forEach((element) => {
+      if (this.elementToFloatingUIMap.has(element)) {
+        this.unlinkElement(element);
+      }
+    });
+
+    // A hotspot wiped by a re-render (e.g. the framework replaced the element's text)
+    // while the element itself stayed on the page: put it back.
+    const removedAnchors = Array.from(node.querySelectorAll('[data-gleap-tooltip-anchor]'));
+    if (node.hasAttribute('data-gleap-tooltip-anchor')) {
+      removedAnchors.push(node);
+    }
+    removedAnchors.forEach((anchor) => {
+      const element = this.anchorToElementMap.get(anchor);
+      const link = element ? this.elementToFloatingUIMap.get(element) : null;
+      if (element && element.isConnected && link && link.anchor === anchor) {
+        const tooltip = link.data;
+        this.unlinkElement(element);
+        if (this.filteredTooltips.indexOf(tooltip) !== -1) {
+          this.linkTooltip(element, tooltip);
+        }
+      }
+    });
+  }
+
+  // Whether the element has a working tooltip (not just our marker attribute).
+  isLinked(element) {
+    const link = this.elementToFloatingUIMap.get(element);
+    if (!link) {
+      return false;
+    }
+    if (link.anchor && !link.anchor.isConnected) {
+      return false;
+    }
+    return !!(link.tooltip && link.tooltip.isConnected);
+  }
+
+  unlinkElement(element) {
+    const link = this.elementToFloatingUIMap.get(element);
+    if (link) {
+      try {
+        link.cleanup();
+      } catch (exp) {}
+      if (link.tooltip) {
+        link.tooltip.remove();
+      }
+      if (link.anchor) {
+        link.anchor.remove();
+      }
+      this.elementToFloatingUIMap.delete(element);
+    }
+
+    // Hotspot anchors copied along with the element (e.g. from a cached page snapshot).
+    const tooltipId = element.getAttribute('data-gleap-tooltip');
+    if (tooltipId !== null) {
+      Array.from(element.children).forEach((child) => {
+        if (child.getAttribute('data-gleap-tooltip-anchor') === tooltipId) {
+          child.remove();
+        }
+      });
+      const sibling = element.nextElementSibling;
+      if (sibling && sibling.getAttribute('data-gleap-tooltip-anchor') === tooltipId) {
+        sibling.remove();
+      }
+    }
+
+    element.removeAttribute('data-gleap-tooltip');
+    element.removeAttribute('data-gleap-tooltip-mode');
+    this.elementToTooltipMap.delete(element);
   }
 
   updateHotspotPositions() {
@@ -155,6 +261,7 @@ export default class GleapTooltipManager {
             </div>
         </div>`;
     document.body.appendChild(tooltip);
+    this.livePopups.add(tooltip);
 
     // Create a Popper instance with arrow and offset
 
@@ -231,7 +338,13 @@ export default class GleapTooltipManager {
     tooltip.addEventListener('click', hide);
 
     return {
-      cleanup,
+      cleanup: () => {
+        cleanup();
+        clearTimeout(hideTimeout);
+        element.removeEventListener('mouseenter', show);
+        element.removeEventListener('mouseleave', hide);
+        element.removeEventListener('click', hide);
+      },
       tooltip,
     };
   }
@@ -243,56 +356,85 @@ export default class GleapTooltipManager {
   }
 
   linkTooltip = (element, tooltip) => {
-    if (element.hasAttribute('data-gleap-tooltip')) {
+    if (!element) {
       return;
+    }
+
+    if (element.hasAttribute('data-gleap-tooltip')) {
+      if (this.isLinked(element)) {
+        return;
+      }
+
+      // Only our marker is left (page snapshot restored by the router, or the
+      // hotspot was wiped by a re-render): set the tooltip up again.
+      this.unlinkElement(element);
     }
 
     const nextId = this.nextId++;
     element.setAttribute('data-gleap-tooltip', nextId);
-    if (element) {
-      var tooltipElem = null;
 
-      if (tooltip.mode === 'hotspot') {
-        // Create hotspot container.
-        const hotspotContainer = document.createElement('div');
-        hotspotContainer.setAttribute('data-gleap-tooltip-anchor', nextId);
-        hotspotContainer.classList.add('gleap-tooltip-anchor');
-        element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
+    var tooltipElem = null;
+    var hotspotContainer = null;
 
-        if (this.canEmbed(element)) {
-          if (element.firstChild) {
-            element.insertBefore(hotspotContainer, element.firstChild);
-          } else {
-            element.appendChild(hotspotContainer);
-          }
-        } else {
-          element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
-        }
+    if (tooltip.mode === 'hotspot') {
+      // Create hotspot container. It is absolutely positioned and added as the last
+      // child, so the element's own layout (flex/grid gaps, sibling margins,
+      // :first-child styles, text flow) stays exactly as it was.
+      hotspotContainer = document.createElement('div');
+      hotspotContainer.setAttribute('data-gleap-tooltip-anchor', nextId);
+      hotspotContainer.classList.add('gleap-tooltip-anchor');
+      const anchorStyles = {
+        position: 'absolute',
+        display: 'block',
+        float: 'none',
+        width: '0px',
+        height: '0px',
+        margin: '0px',
+        padding: '0px',
+        border: 'none',
+        overflow: 'visible',
+      };
+      Object.keys(anchorStyles).forEach((key) => {
+        hotspotContainer.style.setProperty(key, anchorStyles[key], 'important');
+      });
+      element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
 
-        // Create hotspot.
-        const hotspot = document.createElement('div');
-        hotspot.classList.add('gleap-tooltip-hotspot');
-        hotspot.setAttribute('data-gleap-tooltip-hotspot', nextId);
-
-        hotspot.innerHTML = `${loadIcon(tooltip.icon, tooltip.color)}${
-          tooltip.animated
-            ? `<div style="background-color: ${tooltip.color}" class="gleap-tooltip-hotspot-animation"></div>`
-            : ''
-        }`;
-        hotspotContainer.appendChild(hotspot);
-
-        // Update hotspot position.
-        this.repositionHotspot(element, tooltip);
-
-        tooltipElem = hotspot;
-        this.elementToTooltipMap.set(element, tooltip);
-      } else {
-        tooltipElem = element;
+      if (this.canEmbed(element)) {
+        element.appendChild(hotspotContainer);
+      } else if (element.parentNode) {
+        element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
       }
 
-      const floatingUIInstance = this.createTooltip(tooltipElem, tooltip.html, tooltip);
+      // Create hotspot.
+      const hotspot = document.createElement('div');
+      hotspot.classList.add('gleap-tooltip-hotspot');
+      hotspot.setAttribute('data-gleap-tooltip-hotspot', nextId);
 
-      this.elementToFloatingUIMap.set(element, floatingUIInstance);
+      hotspot.innerHTML = `${loadIcon(tooltip.icon, tooltip.color)}${
+        tooltip.animated
+          ? `<div style="background-color: ${tooltip.color}" class="gleap-tooltip-hotspot-animation"></div>`
+          : ''
+      }`;
+      hotspotContainer.appendChild(hotspot);
+
+      tooltipElem = hotspot;
+      this.elementToTooltipMap.set(element, tooltip);
+      this.anchorToElementMap.set(hotspotContainer, element);
+    } else {
+      tooltipElem = element;
+    }
+
+    const floatingUIInstance = this.createTooltip(tooltipElem, tooltip.html, tooltip);
+
+    this.elementToFloatingUIMap.set(element, {
+      ...floatingUIInstance,
+      anchor: hotspotContainer,
+      data: tooltip,
+    });
+
+    if (hotspotContainer) {
+      // Update hotspot position.
+      this.repositionHotspot(element, tooltip);
     }
   };
 
@@ -304,11 +446,25 @@ export default class GleapTooltipManager {
     }
 
     // Remove the window resize event listener if it was stored.
-    // (In start() you can assign the listener to a class property, e.g., this.resizeListener.)
     if (this.resizeListener) {
       window.removeEventListener('resize', this.resizeListener);
       this.resizeListener = null;
     }
+
+    if (this.urlCheckInterval) {
+      clearInterval(this.urlCheckInterval);
+      this.urlCheckInterval = null;
+    }
+
+    // Stop floating UI updates and hover listeners of linked elements.
+    document.querySelectorAll('[data-gleap-tooltip]').forEach((element) => {
+      const link = this.elementToFloatingUIMap.get(element);
+      if (link) {
+        try {
+          link.cleanup();
+        } catch (exp) {}
+      }
+    });
 
     // Remove all tooltip elements created by Gleap.
     const tooltipElements = document.querySelectorAll('.gleap-tooltip');
@@ -331,8 +487,14 @@ export default class GleapTooltipManager {
     // Clear internal references.
     this.elementToFloatingUIMap = new WeakMap();
     this.elementToTooltipMap = new WeakMap();
+    this.anchorToElementMap = new WeakMap();
+    this.livePopups = new WeakSet();
     this.tooltips = [];
     this.filteredTooltips = [];
+    this.lastUrl = null;
+
+    // load() starts watching the page again.
+    this.started = false;
   }
 
   repositionHotspot(element, tooltip) {
@@ -340,12 +502,13 @@ export default class GleapTooltipManager {
       return;
     }
 
-    const tooltipId = element.getAttribute('data-gleap-tooltip');
-    if (!tooltipId) {
+    const link = this.elementToFloatingUIMap.get(element);
+    const anchorElement = link ? link.anchor : null;
+    if (!anchorElement) {
       return;
     }
 
-    const hotspot = document.querySelector(`[data-gleap-tooltip-hotspot="${tooltipId}"]`);
+    const hotspot = anchorElement.querySelector('[data-gleap-tooltip-hotspot]');
     if (!hotspot) {
       return;
     }
@@ -356,27 +519,35 @@ export default class GleapTooltipManager {
     if (!tooltip.posY) {
       tooltip.posY = 'center';
     }
-    if (!tooltip.offsetX) {
-      tooltip.offsetX = 4;
-    }
-    if (!tooltip.offsetY) {
-      tooltip.offsetY = 0;
-    }
+    // An explicit 0 is a valid offset; only fall back when none is set.
+    tooltip.offsetX = this.toOffset(tooltip.offsetX, 4);
+    tooltip.offsetY = this.toOffset(tooltip.offsetY, 0);
 
-    var elementRect = element.getBoundingClientRect();
+    const rect = element.getBoundingClientRect();
+    const elementRect = {
+      left: rect.left,
+      top: rect.top,
+      width: rect.width,
+      height: rect.height,
+    };
 
     try {
-      // Improve width calculation for text elements.
-      var range = document.createRange();
-      range.selectNodeContents(element);
-      const style = window.getComputedStyle(element);
-      const fixedWidth = range.getBoundingClientRect().width + parseFloat(style.paddingLeft);
-      if (fixedWidth < elementRect.width) {
-        elementRect.width = fixedWidth;
+      // Text elements are often wider than their text: place the hotspot next to
+      // the content's right edge instead (our own anchor excluded).
+      if (anchorElement.parentNode === element) {
+        const range = document.createRange();
+        range.setStart(element, 0);
+        range.setEndBefore(anchorElement);
+        const contentRect = range.getBoundingClientRect();
+        if (contentRect && contentRect.width > 0) {
+          const contentWidth = contentRect.right - elementRect.left;
+          if (contentWidth > 0 && contentWidth < elementRect.width) {
+            elementRect.width = contentWidth;
+          }
+        }
       }
     } catch (exp) {}
 
-    const anchorElement = document.querySelector(`[data-gleap-tooltip-anchor="${tooltipId}"]`);
     const anchorRect = anchorElement.getBoundingClientRect();
 
     // Offset calculation for hotspot position.
@@ -415,7 +586,16 @@ export default class GleapTooltipManager {
     }
   }
 
+  toOffset(value, fallback) {
+    if (value === null || value === undefined || value === '') {
+      return fallback;
+    }
+    const number = Number(value);
+    return isFinite(number) ? number : fallback;
+  }
+
   updateFilteredTooltips = () => {
+    this.lastUrl = window.location.href;
     this.filteredTooltips = this.getFilteredTooltips();
     this.checkForTooltips();
   };
@@ -465,6 +645,10 @@ export default class GleapTooltipManager {
 
   load = () => {
     const self = this;
+
+    // destroy() stops watching the page; make sure we watch it again.
+    this.start();
+
     const sessionInstance = GleapSession.getInstance();
 
     const http = new XMLHttpRequest();
