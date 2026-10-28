@@ -278,11 +278,13 @@ export const injectStyledCSS = (
     }
 
     .gleap-tooltip-anchor {
-      position: relative;
-      display: inline-block;
-      float: left;
-      max-width: 0px;
-      width: 17px;
+      position: absolute;
+      display: block;
+      width: 0px;
+      height: 0px;
+      margin: 0px;
+      padding: 0px;
+      overflow: visible;
     }
 
     .gleap-tooltip-hotspot {
