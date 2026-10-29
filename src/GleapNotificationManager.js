@@ -7,6 +7,7 @@ import Gleap, {
   GleapEventManager,
   GleapAiChatbarManager,
   GleapTabCommunication,
+  GleapSidekickManager,
 } from './Gleap';
 import { formatRelativeTime, loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import { checkPageRules } from './GleapPageFilter';
@@ -26,6 +27,10 @@ export default class GleapNotificationManager {
   showNotificationBadge = true;
   lastPageRulesUrl = undefined;
   stackResizeObserver = null;
+  // A sidekick message card (GleapSidekickManager.showCard): rendered in front of the stack, never
+  // cached (it belongs to one page view), and not one of `notifications`.
+  sidekickCard = null;
+  sidekickLiveRegion = null;
 
   // Keep track of the current index of news being shown
   currentNewsIndex = 0;
@@ -80,6 +85,9 @@ export default class GleapNotificationManager {
 
     this.updateContainerStyle();
     this.reloadNotificationsFromCache();
+    if (this.sidekickCard) {
+      this.renderNotifications();
+    }
 
     // Start listening for cross-tab notification events (e.g. another tab
     // clearing already-read notifications). Safe/idempotent; no-ops when
@@ -106,8 +114,135 @@ export default class GleapNotificationManager {
         // Keep the newest MAX_NOTIFICATIONS — the same end shift() trims from.
         this.notifications = nots.slice(-MAX_NOTIFICATIONS);
         this.renderNotifications();
+      } else if (this.sidekickCard) {
+        this.renderNotifications();
       }
     } catch (exp) {}
+  }
+
+  /**
+   * Shows (or, with null, removes) the sidekick message card: the agent's avatar, its message
+   * (three lines at most), "<agent> · now", a dismiss button. Clicking it opens the sidekick with
+   * the message as the agent's first message (GleapSidekickManager.onCardClicked).
+   */
+  setSidekickCard(card) {
+    const hadCard = !!this.sidekickCard;
+    this.sidekickCard = card || null;
+    if (!this.notificationContainer) {
+      return;
+    }
+    this.renderNotifications();
+    if (card && !hadCard) {
+      this.announceSidekickCard(card);
+    }
+  }
+
+  // Screen readers hear the new message once (a polite live region that outlives the re-renders).
+  announceSidekickCard(card) {
+    try {
+      if (!this.sidekickLiveRegion || !document.body.contains(this.sidekickLiveRegion)) {
+        const region = document.createElement('div');
+        region.className = 'gleap-sidekick-live';
+        region.setAttribute('aria-live', 'polite');
+        region.setAttribute('role', 'status');
+        document.body.appendChild(region);
+        this.sidekickLiveRegion = region;
+      }
+      const region = this.sidekickLiveRegion;
+      region.textContent = '';
+      setTimeout(() => {
+        region.textContent = `${card.sender && card.sender.name ? card.sender.name + ': ' : ''}${card.message}`;
+      }, 100);
+    } catch (exp) {}
+  }
+
+  renderSidekickCard(card) {
+    const sender = card.sender || {};
+    const elem = document.createElement('div');
+    elem.className = 'gleap-notification-item gleap-notification-card gleap-sidekick-card';
+    elem.setAttribute('role', 'group');
+    elem.setAttribute('aria-label', sender.name || 'Message');
+
+    const open = document.createElement('button');
+    open.type = 'button';
+    open.className = 'gleap-notification-item-container gleap-sidekick-card-open';
+    open.onclick = (event) => {
+      event.stopPropagation();
+      try {
+        GleapSidekickManager.getInstance().onCardClicked();
+      } catch (exp) {}
+    };
+
+    if (sender.profileImageUrl) {
+      const avatar = document.createElement('img');
+      avatar.className = 'gleap-notification-item-avatar gleap-notification-item-avatar--bot';
+      avatar.src = sender.profileImageUrl;
+      avatar.alt = '';
+      open.appendChild(avatar);
+    } else {
+      const avatar = document.createElement('span');
+      avatar.className = 'gleap-notification-item-avatar gleap-notification-item-avatar--bot gleap-sidekick-card-glyph';
+      avatar.setAttribute('aria-hidden', 'true');
+      avatar.textContent = (sender.name || 'K').trim().charAt(0).toUpperCase();
+      open.appendChild(avatar);
+    }
+
+    const body = document.createElement('span');
+    body.className = 'gleap-notification-item-body';
+    const text = document.createElement('span');
+    text.className = 'gleap-notification-item-content gleap-sidekick-card-text';
+    text.textContent = card.message;
+    body.appendChild(text);
+
+    const meta = document.createElement('span');
+    meta.className = 'gleap-notification-item-meta';
+    if (sender.name) {
+      const name = document.createElement('span');
+      name.className = 'gleap-notification-item-sender';
+      name.textContent = sender.name;
+      meta.appendChild(name);
+    }
+    const time = formatRelativeTime(card.createdAt, GleapTranslationManager.getInstance().getActiveLanguage());
+    if (time) {
+      if (sender.name) {
+        const dot = document.createElement('span');
+        dot.className = 'gleap-notification-item-meta-dot';
+        dot.setAttribute('aria-hidden', 'true');
+        dot.textContent = '·';
+        meta.appendChild(dot);
+      }
+      const timeElem = document.createElement('span');
+      timeElem.className = 'gleap-notification-item-time';
+      timeElem.textContent = time;
+      meta.appendChild(timeElem);
+    }
+    body.appendChild(meta);
+    open.appendChild(body);
+    elem.appendChild(open);
+
+    const dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.className = 'gleap-sidekick-card-dismiss';
+    const closeLabel = GleapTranslationManager.translateText('close');
+    dismiss.setAttribute('aria-label', closeLabel && closeLabel !== 'close' ? closeLabel : 'Close');
+    dismiss.innerHTML = loadIcon('dismiss');
+    dismiss.onclick = (event) => {
+      event.stopPropagation();
+      try {
+        GleapSidekickManager.getInstance().onCardDismissed();
+      } catch (exp) {}
+    };
+    elem.appendChild(dismiss);
+
+    elem.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        try {
+          GleapSidekickManager.getInstance().onCardDismissed();
+        } catch (exp) {}
+      }
+    });
+    return elem;
   }
 
   /**
@@ -237,21 +372,31 @@ export default class GleapNotificationManager {
     // Clear the existing notifications in the container (UI only).
     this.clearAllNotifications(true);
 
-    // Append a close button (which clears everything).
-    const clearElem = document.createElement('div');
-    clearElem.onclick = () => {
-      this.clearAllNotifications();
-      // Reset the news index when everything is closed
-      this.currentNewsIndex = 0;
-    };
-    clearElem.className = 'gleap-notification-close';
-    clearElem.innerHTML = loadIcon('dismiss');
-    this.notificationContainer.appendChild(clearElem);
-
     // Only render notifications whose page rules allow the current page.
     // The full list stays in memory + cache, so they re-appear when the
     // user navigates back to an allowed page (see checkPageRulesForUrl).
     const visibleNotifications = this.getVisibleNotifications();
+    const sidekickCard = this.sidekickCard;
+
+    // Append a close button (which clears everything). A sidekick card on its own has its own
+    // dismiss button instead.
+    if (visibleNotifications.length > 0) {
+      const clearElem = document.createElement('div');
+      clearElem.onclick = () => {
+        // Clearing everything dismisses the sidekick card too.
+        if (this.sidekickCard) {
+          try {
+            GleapSidekickManager.getInstance().onCardDismissed();
+          } catch (exp) {}
+        }
+        this.clearAllNotifications();
+        // Reset the news index when everything is closed
+        this.currentNewsIndex = 0;
+      };
+      clearElem.className = 'gleap-notification-close';
+      clearElem.innerHTML = loadIcon('dismiss');
+      this.notificationContainer.appendChild(clearElem);
+    }
 
     // Separate out news notifications vs. others, then sort news by date ascending
     const newsNotifications = visibleNotifications
@@ -427,7 +572,15 @@ export default class GleapNotificationManager {
       this.notificationContainer.appendChild(elem);
     }
 
-    const hasNotifications = newsNotifications.length > 0 || otherNotifications.length > 0;
+    // The sidekick card goes in front (the newest).
+    if (sidekickCard) {
+      this.notificationContainer.appendChild(this.renderSidekickCard(sidekickCard));
+    }
+    if (this.notificationContainer.classList) {
+      this.notificationContainer.classList.toggle('gleap-notification-container--sidekick', !!sidekickCard);
+    }
+
+    const hasNotifications = newsNotifications.length > 0 || otherNotifications.length > 0 || !!sidekickCard;
     if (!hasNotifications) {
       // Clear the notification container
       this.clearAllNotifications(true);
@@ -438,7 +591,7 @@ export default class GleapNotificationManager {
     // container's tap handler, tapping) expands it; any re-render collapses it
     // again. News pagination already folds all news into one card, so it
     // counts once.
-    const cardCount = (newsNotifications.length > 0 ? 1 : 0) + otherNotifications.length;
+    const cardCount = (newsNotifications.length > 0 ? 1 : 0) + otherNotifications.length + (sidekickCard ? 1 : 0);
     if (this.notificationContainer.classList) {
       this.notificationContainer.classList.toggle('gleap-notification-container--stack', cardCount > 1);
       this.notificationContainer.classList.remove('gleap-notification-container--expanded');
@@ -668,6 +821,13 @@ export default class GleapNotificationManager {
       // Reset currentNewsIndex whenever we clear them out
       this.currentNewsIndex = 0;
       saveToGleapCache(this.unreadNotificationsKey, this.notifications);
+      // The sidekick card goes with them (the widget opened, another identity…): not a dismissal.
+      if (this.sidekickCard) {
+        this.sidekickCard = null;
+        try {
+          GleapSidekickManager.getInstance().onNotificationsCleared();
+        } catch (exp) {}
+      }
     }
 
     if (!this.notificationContainer) {

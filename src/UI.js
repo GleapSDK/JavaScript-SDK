@@ -1,4 +1,5 @@
 import GleapFeedbackButtonManager from './GleapFeedbackButtonManager';
+import { SIDEKICK_PHONE_MAX_WIDTH, SIDEKICK_WIDTH } from './GleapSidekickRules';
 import { applyGleapCSPNonce } from './GleapHelper';
 
 const calculateShadeColor = function (col, amt) {
@@ -1597,6 +1598,272 @@ export const injectStyledCSS = (
       width: 100% !important;
       height: 100% !important;
       max-height: none !important;
+    }
+
+    /* The sidekick (decision 13): the messenger frame as a full-height panel on the right edge (left
+       in RTL), over a dim layer that blocks the page (.gleap-sidekick-backdrop). Push mode moves the
+       page with a margin on <html> (GleapSidekickManager), never a transform. */
+    .gleap-frame-container.gleap-frame-container--sidekick,
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      top: 0 !important;
+      bottom: 0 !important;
+      right: 0 !important;
+      left: auto !important;
+      width: ${SIDEKICK_WIDTH}px !important;
+      max-width: 100vw !important;
+      height: 100vh;
+      height: 100dvh !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      box-shadow: -1px 0 0 rgba(6, 13, 37, 0.06), -18px 0 40px rgba(6, 13, 37, 0.12) !important;
+      transform-origin: right center;
+      animation: gleapSidekickIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+      transition: none !important;
+    }
+
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      right: auto !important;
+      left: 0 !important;
+      box-shadow: 1px 0 0 rgba(6, 13, 37, 0.06), 18px 0 40px rgba(6, 13, 37, 0.12) !important;
+      transform-origin: left center;
+      animation-name: gleapSidekickInRtl !important;
+    }
+
+    /* Pushed: the panel sits next to the page like a column of it, a hairline instead of a throw. */
+    html.gleap-sidekick-push .gleap-frame-container.gleap-frame-container--sidekick {
+      box-shadow: -1px 0 0 ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(6, 13, 37, 0.1)'} !important;
+    }
+
+    html.gleap-sidekick-push [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+      box-shadow: 1px 0 0 ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(6, 13, 37, 0.1)'} !important;
+    }
+
+    .gleap-frame-container--sidekick .gleap-frame-container-inner {
+      width: 100% !important;
+      height: 100% !important;
+      max-height: none !important;
+    }
+
+    .gleap-frame-container--sidekick .gleap-frame-container-inner:before {
+      top: 0;
+      height: 100%;
+    }
+
+    .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+      animation: gleapSidekickOut 0.24s cubic-bezier(0.4, 0, 1, 1) both !important;
+    }
+
+    [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+      animation-name: gleapSidekickOutRtl !important;
+    }
+
+    .gleap-sidekick-backdrop {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: ${zIndexBase + 30};
+      background-color: rgba(20, 24, 33, 0.26);
+      animation: gleapWidgetFade 0.24s ease-out both;
+      overscroll-behavior: contain;
+      touch-action: none;
+    }
+
+    .gleap-sidekick-backdrop--closing {
+      animation: gleapWidgetFadeOut 0.24s ease-in both;
+      pointer-events: none;
+    }
+
+    /* While the sidekick is open the launcher and the notification cards step aside (the panel has
+       its own close; the cards come back when it closes). */
+    html.gleap-sidekick-open .bb-feedback-button,
+    html.gleap-sidekick-open .gleap-notification-container {
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* The sidekick message card: a notification card (same chrome) whose whole body is a button,
+       three lines of the agent's message, "<agent> · now", and its own dismiss button. */
+    .gleap-sidekick-card {
+      position: relative;
+    }
+
+    .gleap-notification-container .gleap-sidekick-card-open {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      margin: 0 0 12px 0;
+      font: inherit;
+      font-size: 15px;
+      line-height: 21px;
+      text-align: start;
+      letter-spacing: normal;
+      text-transform: none;
+      outline: none;
+    }
+
+    .gleap-notification-container .gleap-sidekick-card-open:focus-visible {
+      box-shadow: 0 0 0 2px ${backgroundColor}, 0 0 0 4px ${primaryColor}, 0px 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .gleap-sidekick-card-text {
+      -webkit-line-clamp: 3 !important;
+    }
+
+    .gleap-sidekick-card-glyph {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: ${primaryColor};
+      color: ${contrastColor};
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .gleap-sidekick-card-dismiss {
+      -webkit-appearance: none;
+      appearance: none;
+      position: absolute;
+      top: -9px;
+      right: -9px;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 100%;
+      background-color: ${backgroundColor};
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.18);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      opacity: 0;
+      z-index: 2;
+      transition: opacity 0.15s ease-out;
+    }
+
+    [dir=rtl].gleap-notification-container .gleap-sidekick-card-dismiss {
+      right: auto;
+      left: -9px;
+    }
+
+    .gleap-sidekick-card-dismiss svg {
+      width: 40%;
+      height: 40%;
+      object-fit: contain;
+      fill: ${contrastBackgroundColor};
+    }
+
+    .gleap-sidekick-card:hover .gleap-sidekick-card-dismiss,
+    .gleap-sidekick-card:focus-within .gleap-sidekick-card-dismiss {
+      opacity: 1;
+    }
+
+    .gleap-sidekick-card-dismiss:focus-visible {
+      opacity: 1;
+      outline: 2px solid ${primaryColor};
+      outline-offset: 2px;
+    }
+
+    /* Touch screens have no hover: the dismiss button is always there. */
+    @media (hover: none), only screen and (max-width: 450px) {
+      .gleap-sidekick-card-dismiss {
+        opacity: 1;
+      }
+    }
+
+    /* In a collapsed stack the stack's own × (clear all) is the one control; the card's × shows
+       once the stack is spread out (hover, or the first tap on touch screens). */
+    .gleap-notification-container--stack:not(:hover):not(:focus-within):not(.gleap-notification-container--expanded) .gleap-sidekick-card-dismiss {
+      display: none;
+    }
+
+    /* Screen readers hear a new card once; nobody sees this. */
+    .gleap-sidekick-live {
+      position: fixed !important;
+      width: 1px !important;
+      height: 1px !important;
+      margin: -1px !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      clip: rect(0 0 0 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-sidekick-card {
+        animation: none !important;
+      }
+
+      .gleap-sidekick-card-dismiss {
+        transition: none;
+      }
+    }
+
+    @keyframes gleapSidekickIn {
+      from { transform: translateX(100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes gleapSidekickInRtl {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    @keyframes gleapSidekickOut {
+      from { transform: translateX(0); }
+      to { transform: translateX(100%); }
+    }
+
+    @keyframes gleapSidekickOutRtl {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    /* Phones: a full-screen sheet that slides up (nothing to push, nothing to see behind it). The
+       notch and the home indicator stay clear (env() is 0 inside the frame, so the host pads it),
+       and the sheet is as tall as the visible viewport, like the widget on phones. */
+    @media only screen and (max-width: ${SIDEKICK_PHONE_MAX_WIDTH}px) {
+      .gleap-frame-container.gleap-frame-container--sidekick,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        padding-top: env(safe-area-inset-top, 0px) !important;
+        padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+        background-color: ${backgroundColor} !important;
+        transform-origin: center bottom;
+        animation: gleapWidgetSlideUp 0.34s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+      }
+
+      .gleap-frame-container--sidekick .gleap-frame-container-inner {
+        max-height: calc(var(--glvh, 1vh) * 100 - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+        animation: gleapWidgetSlideDown 0.26s cubic-bezier(0.4, 0, 1, 1) both !important;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .gleap-frame-container.gleap-frame-container--sidekick,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick {
+        animation: gleapWidgetFade 0.15s ease-out both !important;
+      }
+
+      .gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing,
+      [dir=rtl].gleap-frame-container.gleap-frame-container--sidekick.gleap-frame-container--closing {
+        animation: gleapWidgetFadeOut 0.15s ease-in both !important;
+      }
     }
     
     .bb-feedback-button {

@@ -19,6 +19,7 @@ import Gleap, {
   GleapTranslationManager,
 } from './Gleap';
 import GleapAgentToolManager from './GleapAgentToolManager';
+import GleapSidekickManager from './GleapSidekickManager';
 import { getCaptureCapabilities } from './GleapCaptureSettings';
 import { forwardSurveyAnalyticsEvent } from './GleapSurveyAnalyticsForwarder';
 import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, saveToGleapCache } from './GleapHelper';
@@ -157,6 +158,10 @@ export default class GleapFrameManager {
   }
 
   setAppMode(appMode) {
+    // Leaving the sidekick for another mode (Gleap.open, a survey, …): close it and give the page back first.
+    if (this.appMode === 'sidekick' && appMode !== 'sidekick') {
+      GleapSidekickManager.getInstance().onLeaveSidekickMode();
+    }
     this.appMode = appMode;
     // A new survey starts as Surveys 2.0 until the messenger says otherwise (survey-legacy).
     this.surveyLegacy = false;
@@ -245,8 +250,8 @@ export default class GleapFrameManager {
     innerContainer.style.height = '';
     if (this.appMode === 'survey' || this.isLegacyFullSurvey()) {
       innerContainer.style.maxHeight = this.frameHeight > 0 ? `${this.frameHeight}px` : '';
-    } else if (this.isFullSurvey()) {
-      // Full screen: the messenger fills the viewport and draws the background itself.
+    } else if (this.isFullSurvey() || this.appMode === 'sidekick') {
+      // Full screen / the sidekick's full height: the messenger fills it.
       innerContainer.style.maxHeight = 'none';
     } else {
       innerContainer.style.maxHeight = `${widgetMaxHeight}px`;
@@ -456,7 +461,7 @@ export default class GleapFrameManager {
     if (flowConfig && flowConfig.hideExpandButton) {
       return false;
     }
-    return !this.isSurvey() && this.hasRoomToExpand();
+    return !this.isSurvey() && this.appMode !== 'sidekick' && this.hasRoomToExpand();
   }
 
   getWidgetExpandedPreference() {
@@ -527,6 +532,13 @@ export default class GleapFrameManager {
         const imageViews = document.querySelectorAll('.gleap-image-view');
         if (imageViews.length > 0) {
           imageViews[imageViews.length - 1].remove();
+          return;
+        }
+        if (this.appMode === 'sidekick') {
+          // A push panel leaves the page usable: Escape in the page stays the page's.
+          if (GleapSidekickManager.getInstance().shouldCloseOnPageEscape(evt)) {
+            GleapSidekickManager.getInstance().close('escape');
+          }
           return;
         }
         this.hideWidget();
@@ -777,7 +789,9 @@ export default class GleapFrameManager {
     const modernStyleLeft = 'gleap-frame-container--modern-left';
     const noButtonStyleLeft = 'gleap-frame-container--no-button';
     const expandedStyle = 'gleap-frame-container--expanded';
+    const sidekickStyle = 'gleap-frame-container--sidekick';
     const allStyles = [
+      sidekickStyle,
       classicStyle,
       classicStyleLeft,
       expandedStyle,
@@ -848,6 +862,9 @@ export default class GleapFrameManager {
     this.gleapFrameContainer.classList.toggle(surveyLightStyle, surveyTheme && this.surveyDark === false);
     if (this.appMode === 'extended') {
       this.gleapFrameContainer.classList.add(extendedStyle);
+    }
+    if (this.appMode === 'sidekick') {
+      this.gleapFrameContainer.classList.add(sidekickStyle);
     }
 
     // The end user's choice, independent of the page-driven extended mode.
@@ -920,7 +937,8 @@ export default class GleapFrameManager {
     // Full-screen surveys take the keyboard (digits, letters, Enter) right away. The
     // messenger can't pull focus into its cross-origin frame without a user gesture
     // (a survey shown by a trigger has none), so the host page focuses the frame.
-    if (this.isFullSurvey() && !this.isLegacyFullSurvey()) {
+    // The sidekick is a dialog over the page: focus moves into it too (and comes back on close).
+    if ((this.isFullSurvey() && !this.isLegacyFullSurvey()) || this.appMode === 'sidekick') {
       try {
         const frame = this.gleapFrameContainer.querySelector('.gleap-frame');
         if (frame) frame.focus({ preventScroll: true });
@@ -929,6 +947,14 @@ export default class GleapFrameManager {
   }
 
   updateUI() {
+    // The sidekick shows one agent conversation: the other unread messages and their badge stay
+    // (hidden while the panel is open, see UI.js), as they are for a survey.
+    if (this.appMode === 'sidekick') {
+      GleapNotificationManager.getInstance().clearAllNotifications(true);
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+      return;
+    }
+
     // Clear notifications only when not opening a survey.
     GleapNotificationManager.getInstance().clearAllNotifications(this.isSurvey());
 
@@ -1016,6 +1042,10 @@ export default class GleapFrameManager {
     }
     this.widgetOpened = false;
     this.updateWidgetStatus();
+    // The sidekick gives the page back (dim, push margin, focus) as its panel slides out.
+    if (this.appMode === 'sidekick') {
+      GleapSidekickManager.getInstance().onWidgetHidden();
+    }
     GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
     if (wasVisible) {
       GleapEventManager.notifyEvent('close');
@@ -1104,11 +1134,16 @@ export default class GleapFrameManager {
     this.addMessageListener((data) => {
       if (data.name === 'ping') {
         this.comReady = true;
+        // The frame says what it can (`caps`); a sidekick it can't show falls back to the AI bar.
+        const sidekickFellBack = GleapSidekickManager.getInstance().onFramePing(data.data);
         this.sendConfigUpdate();
         this.sendSessionUpdate();
         this.sendCaptureCapabilities();
         this.workThroughQueue();
         clearTimeout(this.openAfterPingTimeout);
+        if (sidekickFellBack) {
+          return;
+        }
         this.openAfterPingTimeout = setTimeout(() => {
           this.openAfterPingTimeout = null;
           this.runWidgetShouldOpenCallback();
@@ -1217,6 +1252,10 @@ export default class GleapFrameManager {
 
       if (data.name === 'close-widget') {
         this.hideWidget();
+      }
+
+      if (data.name === 'sidekick-close' || data.name === 'sidekick-engaged') {
+        GleapSidekickManager.getInstance().onFrameMessage(data);
       }
 
       // A verified email moved the conversation to another contact: continue
