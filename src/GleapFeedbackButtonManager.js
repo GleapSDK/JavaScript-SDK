@@ -84,7 +84,7 @@ export default class GleapFeedbackButtonManager {
     }
   }
 
-  feedbackButtonPressed() {
+  feedbackButtonPressed(fromKeyboard = false) {
     var frameManager = GleapFrameManager.getInstance();
     if (frameManager.isOpened()) {
       frameManager.hideWidget();
@@ -93,7 +93,24 @@ export default class GleapFeedbackButtonManager {
       frameManager.setAppMode('widget');
       frameManager.showWidget();
       this.updateRedDot(false);
+      // Opened from the keyboard: the keyboard moves into the messenger with it.
+      if (fromKeyboard) {
+        frameManager.focusFrame();
+      }
     }
+  }
+
+  /**
+   * The messenger closed while the keyboard was in it (Escape, its close button): the keyboard
+   * comes back to the launcher instead of the top of the page.
+   */
+  restoreFocus() {
+    if (!this.feedbackButton || !this.feedbackButton.isConnected) {
+      return;
+    }
+    try {
+      this.feedbackButton.focus({ preventScroll: true });
+    } catch (e) {}
   }
 
   /**
@@ -105,9 +122,19 @@ export default class GleapFeedbackButtonManager {
     }
     this.injectedFeedbackButton = true;
 
+    // A div (a <button> would take the host page's button styles), made a real button for the
+    // keyboard and screen readers: Tab reaches it, Enter and Space open it.
     var elem = document.createElement('div');
+    elem.setAttribute('role', 'button');
+    elem.setAttribute('tabindex', '0');
     elem.addEventListener('click', () => {
       this.feedbackButtonPressed();
+    });
+    elem.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ' || event.key === 'Spacebar') {
+        event.preventDefault();
+        this.feedbackButtonPressed(true);
+      }
     });
     this.attachPressAnimation(elem);
     document.body.appendChild(elem);
@@ -244,6 +271,12 @@ export default class GleapFeedbackButtonManager {
     this.feedbackButton.className = 'bb-feedback-button gleap-font rr-block';
     pressAnimationClasses.forEach((className) => this.feedbackButton.classList.add(className));
     this.feedbackButton.setAttribute('dir', GleapTranslationManager.getInstance().isRTLLayout ? 'rtl' : 'ltr');
+    const isWidgetOpen = GleapFrameManager.getInstance().isOpened();
+    this.feedbackButton.setAttribute('aria-expanded', isWidgetOpen ? 'true' : 'false');
+    this.feedbackButton.setAttribute(
+      'aria-label',
+      (flowConfig.widgetButtonText && `${flowConfig.widgetButtonText}`.trim()) || 'Open support chat'
+    );
 
     if (
       flowConfig.feedbackButtonPosition === GleapFeedbackButtonManager.FEEDBACK_BUTTON_CLASSIC ||
