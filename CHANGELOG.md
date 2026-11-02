@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.3.7
+Fixed: the launcher could not be reached with the keyboard. It is now a focusable button with a name ("Open support chat" or your button text) and an expanded state; Enter and Space open the messenger and move focus into it, a focus ring shows on keyboard focus, and closing the messenger from inside returns focus to the launcher.
+Fixed: hotspot tooltips only appeared after a full reload in apps that navigate without one (Turbo Drive, SPAs). Tooltips now follow URL changes, re-attach to re-rendered elements and are removed when their page rules no longer match. A hotspot no longer shifts the element it points at.
+
 ## 19.3.6
 Fixed: a language switch in the app never reached the contact. `Gleap.identify` and `Gleap.updateContact` skipped the request when the user data was unchanged, without looking at the language, so apps that change language without a full reload (Turbo, SPAs updating `<html lang>`) kept the old language on the contact and language-targeted outreach used it. The SDK now sends the update when the active language differs from the contact's.
 Fixed: `Gleap.clearIdentity()` called before the widget UI mounted (a queued call in the async snippet) left the previous contact's cached notifications in place, and a reload showed them to the next visitor. Cached notifications are now cleared regardless and are only shown to the contact that received them.
