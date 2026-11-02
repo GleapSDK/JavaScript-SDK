@@ -1659,6 +1659,16 @@ export const injectStyledCSS = (
       left: auto;
     }
     
+    .bb-feedback-button:focus {
+      outline: none;
+    }
+
+    .bb-feedback-button:focus-visible .bb-feedback-button-icon,
+    .bb-feedback-button:focus-visible .bb-feedback-button-classic {
+      outline: 2px solid ${buttonColor};
+      outline-offset: 3px;
+    }
+
     .bb-feedback-button--disabled {
       display: none !important;
     }

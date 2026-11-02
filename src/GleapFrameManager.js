@@ -963,11 +963,27 @@ export default class GleapFrameManager {
     }
   }
 
+  /** Moves the keyboard into the messenger (the launcher opened it from the keyboard). */
+  focusFrame() {
+    setTimeout(() => {
+      try {
+        const frame = this.gleapFrameContainer && this.gleapFrameContainer.querySelector('.gleap-frame');
+        if (frame) frame.focus({ preventScroll: true });
+      } catch (e) {}
+    }, 0);
+  }
+
   hideWidget(resetRoutes = false) {
     // The standalone survey page (legacy) and inline survey pages can't be closed.
     if (this.appMode === 'survey_web' || this.appMode === 'survey_page') {
       return;
     }
+
+    // The keyboard was in the messenger: it goes back to the launcher once it closes.
+    let hadFocus = false;
+    try {
+      hadFocus = !!this.gleapFrameContainer && this.gleapFrameContainer.contains(document.activeElement);
+    } catch (e) {}
 
     // A survey the messenger closes before it was shown (nothing to ask): it must not open after
     // all, and there is nothing to animate and no close event without an open.
@@ -1026,6 +1042,9 @@ export default class GleapFrameManager {
 
     if (typeof window !== 'undefined' && typeof window.focus !== 'undefined') {
       window.focus();
+    }
+    if (hadFocus) {
+      GleapFeedbackButtonManager.getInstance().restoreFocus();
     }
   }
 
