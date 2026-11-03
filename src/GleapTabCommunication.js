@@ -3,6 +3,7 @@ import {
   GleapSession,
   GleapFeedbackButtonManager,
   GleapAiChatbarManager,
+  GleapSidekickManager,
 } from './Gleap';
 
 /**
@@ -105,6 +106,11 @@ export default class GleapTabCommunication {
         // tabs whose socket is dead/reconnecting and thus missed the `rc`
         // frame. fromOtherTab = true prevents a re-broadcast loop.
         GleapNotificationManager.getInstance().clearNotificationsForConversation(data.shareToken, true);
+      }
+
+      if (data.type === 'sidekick-card-cleared' && typeof data.key === 'string') {
+        // A sibling tab opened or dismissed the same sidekick message card: drop ours too.
+        GleapSidekickManager.getInstance().onCardClearedElsewhere(data.key);
       }
 
       if (data.type === 'chatbar-notification-cleared') {
