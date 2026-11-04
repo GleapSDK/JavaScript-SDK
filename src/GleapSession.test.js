@@ -236,6 +236,65 @@ describe('identify replay', () => {
   });
 });
 
+describe('identify with a userHash on a session identified without one', () => {
+  const USER_DATA = { email: 'bec@example.com', name: 'Bec' };
+  const respondIdentified = (xhr) => xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+
+  it('sends the hashed identify once, although the cached session already has this user and data', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+
+    session.identifySession('user-1', USER_DATA, 'verified-hmac');
+
+    expect(identifyRequests()).toHaveLength(1);
+    expect(JSON.parse(identifyRequests()[0].body).userHash).toBe('verified-hmac');
+    respondIdentified(identifyRequests()[0]);
+
+    // The next page load: same cached session, same identify, nothing to prove again.
+    const nextBoot = buildSession();
+    nextBoot.startSession();
+    nextBoot.identifySession('user-1', USER_DATA, 'verified-hmac');
+    expect(identifyRequests()).toHaveLength(1);
+  });
+
+  it('sends it again when the hashed identify failed', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-1', USER_DATA, 'verified-hmac')?.catch?.(() => {});
+    identifyRequests()[0].respond(503);
+
+    const nextBoot = buildSession();
+    nextBoot.startSession();
+    nextBoot.identifySession('user-1', USER_DATA, 'verified-hmac');
+    expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('still skips an unchanged identify without a hash', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-1', USER_DATA);
+    expect(identifyRequests()).toHaveLength(0);
+  });
+
+  it('forgets the proof on logout', () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    session.identifySession('user-1', USER_DATA, 'verified-hmac');
+    respondIdentified(identifyRequests()[0]);
+
+    session.clearSession(0, false);
+    seedCachedSession();
+    const nextBoot = buildSession();
+    nextBoot.startSession();
+    nextBoot.identifySession('user-1', USER_DATA, 'verified-hmac');
+    expect(identifyRequests()).toHaveLength(2);
+  });
+});
+
 describe('user switch in the same browser', () => {
   const OTHER_USER_SESSION = {
     gleapId: 'gleap-id-b',
