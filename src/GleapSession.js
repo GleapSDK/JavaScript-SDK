@@ -50,6 +50,14 @@ export default class GleapSession {
   // never re-identified from stale state.
   lastIdentify = null;
   identifyInFlight = false;
+  // `<gleapId>:<userId>` once an identify with a userHash for that user landed on
+  // that session (memory, plus the cache unless localStorage is disabled).
+  // An unchanged identify is skipped, but a session identified without a hash
+  // before (an older app version, identity verification switched on later, a
+  // sign-up identified before it could get one) still has to send the hash
+  // once: only that request lets the server mark the contact as proved.
+  // Keyed by user, never by the hash itself, so no credential is stored.
+  signedIdentity = null;
   // identify / updateContact requests still waiting for the server. A survey
   // started meanwhile would get the previous contact (Surveys 2.0 skips the
   // contact questions an identified contact already answered), so showSurvey
@@ -248,6 +256,7 @@ export default class GleapSession {
     // replay state so the next session can't inherit a stale identity.
     this.lastIdentify = null;
     this.identifyInFlight = false;
+    this.forgetSignedIdentity();
     this.contactVersion++;
 
     GleapFrameManager.getInstance().sendMessage(
@@ -643,6 +652,42 @@ export default class GleapSession {
     }));
   };
 
+  signedIdentityKey = () => `signed-identify-${this.sdkKey}`;
+
+  signedIdentityOf = (gleapId, userId) => `${gleapId}:${userId}`;
+
+  rememberSignedIdentity = (sessionData, userId) => {
+    if (!sessionData || !sessionData.gleapId || userId === undefined || userId === null) {
+      return;
+    }
+    this.signedIdentity = this.signedIdentityOf(sessionData.gleapId, userId);
+    if (!this.localStorageDisabled) {
+      try {
+        saveToGleapCache(this.signedIdentityKey(), this.signedIdentity);
+      } catch (exp) {}
+    }
+  };
+
+  forgetSignedIdentity = () => {
+    this.signedIdentity = null;
+    try {
+      saveToGleapCache(this.signedIdentityKey(), null);
+    } catch (exp) {}
+  };
+
+  /** A userHash this session has not been identified with yet for this user. */
+  needsSignedIdentify = (userId, userHash) => {
+    if (!userHash || userId === undefined || userId === null || !this.session || !this.session.gleapId) {
+      return false;
+    }
+    if (!this.signedIdentity && !this.localStorageDisabled) {
+      try {
+        this.signedIdentity = loadFromGleapCache(this.signedIdentityKey());
+      } catch (exp) {}
+    }
+    return this.signedIdentity !== this.signedIdentityOf(this.session.gleapId, userId);
+  };
+
   identifySession = (userId, userData, userHash, refreshFileSession = false) => {
     // Remember the args before any early-out: a no-op identify against a
     // session that later gets recreated must still be replayable.
@@ -650,7 +695,7 @@ export default class GleapSession {
 
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
     const needsFileIdentity = !!userHash && this.session?.authenticatedFilesRequired && (!this.session?.fileAccessToken || Date.parse(this.session.fileAccessExpiresAt) <= Date.now());
-    if (!sessionNeedsUpdate && !refreshFileSession && !needsFileIdentity) {
+    if (!sessionNeedsUpdate && !refreshFileSession && !needsFileIdentity && !this.needsSignedIdentify(userId, userHash)) {
       return;
     }
 
@@ -684,6 +729,9 @@ export default class GleapSession {
               try {
                 const sessionData = JSON.parse(http.responseText);
                 self.contactVersion++;
+                if (userHash) {
+                  self.rememberSignedIdentity(sessionData, userId);
+                }
                 self.validateSession(sessionData);
                 resolve(sessionData);
               } catch (exp) {
