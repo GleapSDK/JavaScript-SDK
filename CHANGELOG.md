@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.8
+Fixed: `Gleap.identify` with a `userHash` sent nothing when the browser already held a contact identified with the same user id and data without a hash (identified before identity verification was switched on, or before the app passed a hash). The server never received the hash, so the contact was never marked as verified. The SDK now sends the hashed identify once per contact and browser and skips unchanged identifies again afterwards. Only the user id is remembered, never the hash; logging out with `Gleap.clearIdentity()` clears it.
+
 ## 19.3.7
 Fixed: the launcher could not be reached with the keyboard. It is now a focusable button with a name ("Open support chat" or your button text) and an expanded state; Enter and Space open the messenger and move focus into it, a focus ring shows on keyboard focus, and closing the messenger from inside returns focus to the launcher.
 Fixed: hotspot tooltips only appeared after a full reload in apps that navigate without one (Turbo Drive, SPAs). Tooltips now follow URL changes, re-attach to re-rendered elements and are removed when their page rules no longer match. A hotspot no longer shifts the element it points at.
