@@ -216,6 +216,7 @@ export default class GleapTooltipManager {
       if (link.anchor) {
         link.anchor.remove();
       }
+      this.restoreHost(link.positionedHost);
       this.elementToFloatingUIMap.delete(element);
     }
 
@@ -375,6 +376,7 @@ export default class GleapTooltipManager {
 
     var tooltipElem = null;
     var hotspotContainer = null;
+    var positionedHost = null;
 
     if (tooltip.mode === 'hotspot') {
       // Create hotspot container. It is absolutely positioned and added as the last
@@ -399,11 +401,20 @@ export default class GleapTooltipManager {
       });
       element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
 
+      let host = null;
       if (this.canEmbed(element)) {
         element.appendChild(hotspotContainer);
+        host = element;
       } else if (element.parentNode) {
         element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
+        host = element.parentNode;
       }
+
+      // The anchor is absolutely positioned, so it sits in the nearest positioned
+      // ancestor. When that ancestor lies outside a scrolling panel the hotspot
+      // stays put while the element scrolls away (#227901): make the element
+      // itself (or, next to a void element, its parent) that ancestor.
+      positionedHost = this.positionHost(host);
 
       // Create hotspot.
       const hotspot = document.createElement('div');
@@ -429,6 +440,7 @@ export default class GleapTooltipManager {
     this.elementToFloatingUIMap.set(element, {
       ...floatingUIInstance,
       anchor: hotspotContainer,
+      positionedHost,
       data: tooltip,
     });
 
@@ -513,6 +525,17 @@ export default class GleapTooltipManager {
       return;
     }
 
+    // A re-render may have reset the host's inline style: position it again.
+    if (link.positionedHost && link.positionedHost.host) {
+      const host = link.positionedHost.host;
+      try {
+        const position = window.getComputedStyle(host).position;
+        if (!position || position === 'static') {
+          host.style.position = 'relative';
+        }
+      } catch (exp) {}
+    }
+
     if (!tooltip.posX) {
       tooltip.posX = 'right';
     }
@@ -583,6 +606,36 @@ export default class GleapTooltipManager {
       hotspot.style.position = 'absolute';
       hotspot.style.top = top - offsetY + 'px';
       hotspot.style.left = left - offsetX + 'px';
+    }
+  }
+
+  // Makes the host the containing block of our absolutely positioned anchor.
+  // Returns what to restore on unlink, or null when the host is positioned already.
+  positionHost(host) {
+    if (!host || host.nodeType !== Node.ELEMENT_NODE) {
+      return null;
+    }
+    let position = '';
+    try {
+      position = window.getComputedStyle(host).position;
+    } catch (exp) {}
+    if (position && position !== 'static') {
+      return null;
+    }
+    const previous = host.style.getPropertyValue('position');
+    host.style.position = 'relative';
+    return { host, previous };
+  }
+
+  restoreHost(positionedHost) {
+    if (!positionedHost || !positionedHost.host) {
+      return;
+    }
+    const { host, previous } = positionedHost;
+    if (previous) {
+      host.style.setProperty('position', previous);
+    } else {
+      host.style.removeProperty('position');
     }
   }
 
