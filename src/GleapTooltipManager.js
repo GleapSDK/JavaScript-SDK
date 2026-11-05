@@ -411,9 +411,8 @@ export default class GleapTooltipManager {
       }
 
       // The anchor is absolutely positioned, so it sits in the nearest positioned
-      // ancestor. When that ancestor lies outside a scrolling panel the hotspot
-      // stays put while the element scrolls away (#227901): make the element
-      // itself (or, next to a void element, its parent) that ancestor.
+      // ancestor. When a scrolling panel lies between the element and that
+      // ancestor, the hotspot stays put while the panel scrolls (#227901).
       positionedHost = this.positionHost(host);
 
       // Create hotspot.
@@ -475,6 +474,7 @@ export default class GleapTooltipManager {
         try {
           link.cleanup();
         } catch (exp) {}
+        this.restoreHost(link.positionedHost);
       }
     });
 
@@ -525,7 +525,7 @@ export default class GleapTooltipManager {
       return;
     }
 
-    // A re-render may have reset the host's inline style: position it again.
+    // A re-render may have reset the scroll container's inline style: position it again.
     if (link.positionedHost && link.positionedHost.host) {
       const host = link.positionedHost.host;
       try {
@@ -609,22 +609,36 @@ export default class GleapTooltipManager {
     }
   }
 
-  // Makes the host the containing block of our absolutely positioned anchor.
-  // Returns what to restore on unlink, or null when the host is positioned already.
+  // Makes the first scroll container above the host (before any positioned
+  // ancestor) the containing block of our absolutely positioned anchor, so the
+  // anchor scrolls with the panel. Returns what to restore on unlink, or null
+  // when nothing had to change.
   positionHost(host) {
-    if (!host || host.nodeType !== Node.ELEMENT_NODE) {
-      return null;
+    let node = host;
+    while (node && node.nodeType === Node.ELEMENT_NODE && node !== document.documentElement) {
+      let style = null;
+      try {
+        style = window.getComputedStyle(node);
+      } catch (exp) {
+        return null;
+      }
+      if (style.position && style.position !== 'static') {
+        return null;
+      }
+      if (this.isScrollContainer(style)) {
+        const previous = node.style.getPropertyValue('position');
+        node.style.position = 'relative';
+        return { host: node, previous };
+      }
+      node = node.parentElement;
     }
-    let position = '';
-    try {
-      position = window.getComputedStyle(host).position;
-    } catch (exp) {}
-    if (position && position !== 'static') {
-      return null;
-    }
-    const previous = host.style.getPropertyValue('position');
-    host.style.position = 'relative';
-    return { host, previous };
+    return null;
+  }
+
+  isScrollContainer(style) {
+    // The shorthand too: not every engine expands it into overflow-x/y.
+    const values = `${style.overflow || ''} ${style.overflowX || ''} ${style.overflowY || ''}`.split(/\s+/);
+    return values.some((value) => value === 'auto' || value === 'scroll' || value === 'overlay');
   }
 
   restoreHost(positionedHost) {
@@ -632,6 +646,10 @@ export default class GleapTooltipManager {
       return;
     }
     const { host, previous } = positionedHost;
+    // Leave a position the page set itself in the meantime alone.
+    if (host.style.position !== 'relative') {
+      return;
+    }
     if (previous) {
       host.style.setProperty('position', previous);
     } else {
