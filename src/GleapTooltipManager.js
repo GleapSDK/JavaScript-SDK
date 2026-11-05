@@ -216,6 +216,7 @@ export default class GleapTooltipManager {
       if (link.anchor) {
         link.anchor.remove();
       }
+      this.restoreHost(link.positionedHost);
       this.elementToFloatingUIMap.delete(element);
     }
 
@@ -375,6 +376,7 @@ export default class GleapTooltipManager {
 
     var tooltipElem = null;
     var hotspotContainer = null;
+    var positionedHost = null;
 
     if (tooltip.mode === 'hotspot') {
       // Create hotspot container. It is absolutely positioned and added as the last
@@ -399,11 +401,19 @@ export default class GleapTooltipManager {
       });
       element.setAttribute('data-gleap-tooltip-mode', 'hotspot');
 
+      let host = null;
       if (this.canEmbed(element)) {
         element.appendChild(hotspotContainer);
+        host = element;
       } else if (element.parentNode) {
         element.parentNode.insertBefore(hotspotContainer, element.nextSibling);
+        host = element.parentNode;
       }
+
+      // The anchor is absolutely positioned, so it sits in the nearest positioned
+      // ancestor. When a scrolling panel lies between the element and that
+      // ancestor, the hotspot stays put while the panel scrolls (#227901).
+      positionedHost = this.positionHost(host);
 
       // Create hotspot.
       const hotspot = document.createElement('div');
@@ -429,6 +439,7 @@ export default class GleapTooltipManager {
     this.elementToFloatingUIMap.set(element, {
       ...floatingUIInstance,
       anchor: hotspotContainer,
+      positionedHost,
       data: tooltip,
     });
 
@@ -463,6 +474,7 @@ export default class GleapTooltipManager {
         try {
           link.cleanup();
         } catch (exp) {}
+        this.restoreHost(link.positionedHost);
       }
     });
 
@@ -511,6 +523,17 @@ export default class GleapTooltipManager {
     const hotspot = anchorElement.querySelector('[data-gleap-tooltip-hotspot]');
     if (!hotspot) {
       return;
+    }
+
+    // A re-render may have reset the scroll container's inline style: position it again.
+    if (link.positionedHost && link.positionedHost.host) {
+      const host = link.positionedHost.host;
+      try {
+        const position = window.getComputedStyle(host).position;
+        if (!position || position === 'static') {
+          host.style.position = 'relative';
+        }
+      } catch (exp) {}
     }
 
     if (!tooltip.posX) {
@@ -583,6 +606,54 @@ export default class GleapTooltipManager {
       hotspot.style.position = 'absolute';
       hotspot.style.top = top - offsetY + 'px';
       hotspot.style.left = left - offsetX + 'px';
+    }
+  }
+
+  // Makes the first scroll container above the host (before any positioned
+  // ancestor) the containing block of our absolutely positioned anchor, so the
+  // anchor scrolls with the panel. Returns what to restore on unlink, or null
+  // when nothing had to change.
+  positionHost(host) {
+    let node = host;
+    while (node && node.nodeType === Node.ELEMENT_NODE && node !== document.documentElement) {
+      let style = null;
+      try {
+        style = window.getComputedStyle(node);
+      } catch (exp) {
+        return null;
+      }
+      if (style.position && style.position !== 'static') {
+        return null;
+      }
+      if (this.isScrollContainer(style)) {
+        const previous = node.style.getPropertyValue('position');
+        node.style.position = 'relative';
+        return { host: node, previous };
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  isScrollContainer(style) {
+    // The shorthand too: not every engine expands it into overflow-x/y.
+    const values = `${style.overflow || ''} ${style.overflowX || ''} ${style.overflowY || ''}`.split(/\s+/);
+    return values.some((value) => value === 'auto' || value === 'scroll' || value === 'overlay');
+  }
+
+  restoreHost(positionedHost) {
+    if (!positionedHost || !positionedHost.host) {
+      return;
+    }
+    const { host, previous } = positionedHost;
+    // Leave a position the page set itself in the meantime alone.
+    if (host.style.position !== 'relative') {
+      return;
+    }
+    if (previous) {
+      host.style.setProperty('position', previous);
+    } else {
+      host.style.removeProperty('position');
     }
   }
 

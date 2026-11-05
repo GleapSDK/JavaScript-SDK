@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.3.9
+Fixed: a hotspot tooltip floated over the page while the panel around it scrolled, instead of staying next to its element. Since 19.3.7 the hotspot is absolutely positioned so it does not shift the element's layout; inside a scrolling panel without a positioned ancestor it was anchored outside the panel. The hotspot now uses its element as the anchor and scrolls with it.
+
 ## 19.3.8
 Fixed: `Gleap.identify` with a `userHash` sent nothing when the browser already held a contact identified with the same user id and data without a hash (identified before identity verification was switched on, or before the app passed a hash). The server never received the hash, so the contact was never marked as verified. The SDK now sends the hashed identify once per contact and browser and skips unchanged identifies again afterwards. Only the user id is remembered, never the hash; logging out with `Gleap.clearIdentity()` clears it.
 
