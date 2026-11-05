@@ -406,3 +406,241 @@ describe('authenticated file sessions', () => {
     expect(session.lastIdentify).toBeNull();
   });
 });
+
+describe('identity tokens (setUserJwt)', () => {
+  const b64url = (value) => Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const jwtOf = (payload) => `${b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))}.${b64url(JSON.stringify(payload))}.c2ln`;
+  const inSeconds = (seconds) => Math.floor(Date.now() / 1000) + seconds;
+  const flush = async () => {
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+  };
+  const respondIdentified = (xhr) => xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+  const refusal = (code) => JSON.stringify({ status: 401, title: 'Unauthorized', detail: { value: code, message: code } });
+
+  let warn;
+  beforeEach(() => {
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    warn.mockRestore();
+  });
+
+  const readySession = () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    return session;
+  };
+
+  it('sends the decoded userId with the token as userHash and no contact fields', () => {
+    const session = readySession();
+    const token = jwtOf({ userId: 'user-1', email: 'ignored@example.com', exp: inSeconds(3600) });
+    session.setUserJwt(token);
+
+    expect(identifyRequests()).toHaveLength(1);
+    const body = JSON.parse(identifyRequests()[0].body);
+    expect(body.userId).toBe('user-1');
+    expect(body.userHash).toBe(token);
+    expect(body.email).toBeUndefined();
+    expect(body.name).toBeUndefined();
+  });
+
+  it('refuses a bad token with a warning and no request', async () => {
+    const session = readySession();
+    await session.setUserJwt('not-a-jwt');
+    await session.setUserJwt(jwtOf({ email: 'no-user@example.com' }));
+    expect(identifyRequests()).toHaveLength(0);
+    expect(warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends an unchanged token once, and a new token for the same user once more', () => {
+    const session = readySession();
+    const first = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    session.setUserJwt(first);
+    respondIdentified(identifyRequests()[0]);
+    session.setUserJwt(first);
+    expect(identifyRequests()).toHaveLength(1);
+
+    const second = jwtOf({ userId: 'user-1', exp: inSeconds(7200) });
+    session.setUserJwt(second);
+    expect(identifyRequests()).toHaveLength(2);
+    expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(second);
+    respondIdentified(identifyRequests()[1]);
+    session.setUserJwt(second);
+    expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('keeps the legacy hash identify keyed by user only', () => {
+    const session = readySession();
+    session.identifySession('user-1', { email: 'bec@example.com' }, 'verified-hmac');
+    respondIdentified(identifyRequests()[0]);
+    expect(cacheStore['signed-identify-sdk-key']).toBe('gleap-id-1:user-1');
+  });
+
+  it('on token_expired asks the provider once and retries with the new token', async () => {
+    const session = readySession();
+    const fresh = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    const provider = jest.fn(() => Promise.resolve(fresh));
+    session.setUserJwtProvider(provider);
+
+    const done = session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(-10) }));
+    identifyRequests()[0].respond(401, refusal('token_expired'));
+    await flush();
+
+    expect(provider).toHaveBeenCalledTimes(1);
+    expect(identifyRequests()).toHaveLength(2);
+    expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(fresh);
+    respondIdentified(identifyRequests()[1]);
+    await expect(done).resolves.toBeUndefined();
+    expect(session.lastIdentify.userHash).toBe(fresh);
+  });
+
+  it('retries only once and shares one provider call', async () => {
+    const session = readySession();
+    const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(-5) })));
+    session.setUserJwtProvider(provider);
+
+    const done = session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(-10) }));
+    const parallel = [session.requestUserJwt(), session.requestUserJwt()];
+    identifyRequests()[0].respond(401, refusal('token_expired'));
+    await flush();
+    await Promise.all(parallel);
+    expect(provider).toHaveBeenCalledTimes(1);
+
+    identifyRequests()[1].respond(401, refusal('token_expired'));
+    await expect(done).rejects.toBeUndefined();
+    expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('pauses 30 s after a provider failure', async () => {
+    const session = buildSession();
+    const provider = jest.fn(() => Promise.reject(new Error('offline')));
+    session.setUserJwtProvider(provider);
+
+    expect(await session.requestUserJwt()).toBeNull();
+    expect(await session.requestUserJwt()).toBeNull();
+    expect(provider).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(30 * 1000);
+    await session.requestUserJwt();
+    expect(provider).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives up on a provider after 10 s', async () => {
+    const session = buildSession();
+    session.setUserJwtProvider(() => new Promise(() => {}));
+    const pending = session.requestUserJwt();
+    jest.advanceTimersByTime(10 * 1000);
+    expect(await pending).toBeNull();
+  });
+
+  it.each(['token_expired', 'token_invalid'])('keeps the local session on %s', async (code) => {
+    const session = readySession();
+    const done = session.setUserJwt(jwtOf({ userId: 'user-1' }));
+    identifyRequests()[0].respond(401, refusal(code));
+    await expect(done).rejects.toBeUndefined();
+
+    expect(session.session.gleapId).toBe('gleap-id-1');
+    expect(session.ready).toBe(true);
+    expect(saveToGleapCache).not.toHaveBeenCalledWith('session-sdk-key', null);
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('asks the provider before a file-access renewal when the token expires within 5 minutes', async () => {
+    const session = buildSession();
+    const fresh = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    const provider = jest.fn(() => fresh);
+    session.setUserJwtProvider(provider);
+    session.lastIdentify = { userId: 'user-1', userData: {}, userHash: jwtOf({ userId: 'user-1', exp: inSeconds(60) }) };
+    session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
+
+    jest.advanceTimersByTime(600000);
+    await flush();
+    expect(provider).toHaveBeenCalledTimes(1);
+    expect(identifyRequests()).toHaveLength(1);
+    expect(JSON.parse(identifyRequests()[0].body).userHash).toBe(fresh);
+  });
+
+  it('clearIdentity drops the token and auth tokens but keeps the provider', () => {
+    const session = readySession();
+    const provider = jest.fn();
+    session.setUserJwtProvider(provider);
+    session.setUserJwt(jwtOf({ userId: 'user-1' }));
+    session.authTokens = { backend: 'secret' };
+    session.clearSession(0, false);
+    expect(session.lastIdentify).toBeNull();
+    expect(session.authTokens).toEqual({});
+    expect(session.jwtProvider).toBe(provider);
+  });
+});
+
+describe('auth tokens (setAuthTokens)', () => {
+  const authTokenRequests = () => MockXhr.instances.filter((xhr) => xhr.url && xhr.url.endsWith('/sessions/auth-tokens'));
+  let warn;
+  beforeEach(() => {
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    warn.mockRestore();
+  });
+
+  const readySession = () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    return session;
+  };
+
+  it('skips invalid names with a warning and sends the rest with the session headers', () => {
+    const session = readySession();
+    session.setAuthTokens({ backend: 'a', '1bad': 'b', 'has space': 'c', ['x'.repeat(41)]: 'd', crm_v2: 'e', number: 5 });
+
+    expect(warn).toHaveBeenCalledTimes(4);
+    expect(authTokenRequests()).toHaveLength(1);
+    const request = authTokenRequests()[0];
+    expect(JSON.parse(request.body)).toEqual({ tokens: { backend: 'a', crm_v2: 'e' } });
+    expect(request.headers['Gleap-Id']).toBe('gleap-id-1');
+    expect(request.headers['Gleap-Hash']).toBe('gleap-hash-1');
+    expect(request.headers['Api-Token']).toBe('sdk-key');
+  });
+
+  it('sends nothing when every name is invalid', () => {
+    const session = readySession();
+    session.setAuthTokens({ '-x': 'a' });
+    expect(authTokenRequests()).toHaveLength(0);
+  });
+
+  it('a null value deletes the token from memory and is sent as null', () => {
+    const session = readySession();
+    session.setAuthTokens({ backend: 'a', crm: 'b' });
+    session.setAuthTokens({ crm: null });
+    expect(session.authTokens).toEqual({ backend: 'a' });
+    expect(JSON.parse(authTokenRequests()[1].body)).toEqual({ tokens: { crm: null } });
+  });
+
+  it('warns on 401 and keeps the session', async () => {
+    const session = readySession();
+    const done = session.setAuthTokens({ backend: 'a' });
+    authTokenRequests()[0].respond(401, '{"detail":{"value":"signature_required"}}');
+    await done;
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(session.session.gleapId).toBe('gleap-id-1');
+  });
+
+  it('resends the tokens after a signed identify on a session they were not sent to', async () => {
+    const session = readySession();
+    session.setAuthTokens({ backend: 'a' });
+    authTokenRequests()[0].respond(401, '{}');
+    await Promise.resolve();
+
+    session.identifySession('user-9', {}, 'verified-hmac');
+    identifyRequests()[0].respond(200, JSON.stringify({ gleapId: 'gleap-id-9', gleapHash: 'gleap-hash-9', userId: 'user-9' }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(authTokenRequests()).toHaveLength(2);
+    expect(authTokenRequests()[1].headers['Gleap-Id']).toBe('gleap-id-9');
+    expect(JSON.parse(authTokenRequests()[1].body)).toEqual({ tokens: { backend: 'a' } });
+  });
+});

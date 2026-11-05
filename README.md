@@ -47,6 +47,40 @@ Gleap.setRegion("us");
 Gleap.initialize("SDK-TOKEN");
 ```
 
+### Identify your users
+
+Sign one identity token (an HS256 JWT) on your backend and pass it to the SDK. The token is the whole identify: `userId` names the user, and every other claim (email, name, `stripeCustomerId`, ...) lands on the contact as signed data that the browser cannot change.
+
+```
+// Your backend (Node, jsonwebtoken). Use an identity key from Settings > Security > Identity keys.
+const token = jwt.sign(
+  { userId, email, stripeCustomerId, exp: Math.floor(Date.now() / 1000) + 60 * 60 },
+  SECRET,
+  { algorithm: 'HS256', keyid: KEY_ID }
+);
+```
+
+```
+// Your app
+Gleap.setUserJwt(token);
+```
+
+The token is kept in memory only. To renew it when it expires, give the SDK a function that fetches a fresh one from your backend:
+
+```
+Gleap.setUserJwtProvider(() => fetch('/api/gleap-token').then((res) => res.text()));
+```
+
+Per-user tokens for your API tools (used as `{{session.authTokens.<name>}}`) are stored on the signed contact; `null` removes one:
+
+```
+Gleap.setAuthTokens({ backend: userAccessToken });
+```
+
+`Gleap.clearIdentity()` on logout clears the contact, the token and the auth tokens.
+
+The legacy call `Gleap.identify(userId, data, userHash)` keeps working, with `userHash` the HMAC-SHA256 of the user id, while "Accept legacy user hash" is on for the project.
+
 ### Dark mode (optional)
 
 The widget can match your app's dark/light mode. Enable "Adapt to dark / light mode" in the dashboard (Widget → Look & feel) and set the dark colors there: header colors, UI color and background. In dark mode the widget uses these dark colors, plus the dark logo, header image and composer glow set in the dashboard; without dark colors it keeps its normal colors. Override the scheme at runtime, e.g. from your own theme toggle (only takes effect while "Adapt to dark / light mode" is enabled in the dashboard; until you call it, the dashboard setting applies):

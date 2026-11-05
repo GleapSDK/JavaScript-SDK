@@ -19,6 +19,12 @@ import {
 } from './GleapHelper';
 import GleapTooltipManager from './GleapTooltipManager';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
+import { decodeUserJwt, fingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
+
+const AUTH_TOKEN_NAME = /^[a-zA-Z][a-zA-Z0-9_-]{0,39}$/;
+const JWT_PROVIDER_TIMEOUT_MS = 10 * 1000;
+const JWT_PROVIDER_BACKOFF_MS = 30 * 1000;
+const JWT_REFRESH_WINDOW_MS = 5 * 60 * 1000;
 
 export default class GleapSession {
   region = GLEAP_DEFAULT_REGION;
@@ -56,8 +62,19 @@ export default class GleapSession {
   // before (an older app version, identity verification switched on later, a
   // sign-up identified before it could get one) still has to send the hash
   // once: only that request lets the server mark the contact as proved.
-  // Keyed by user, never by the hash itself, so no credential is stored.
+  // Keyed by user, never by the hash itself, so no credential is stored. An
+  // identity token (JWT) adds a fingerprint of the token, so a new token is
+  // sent once even when the user and the data are unchanged.
   signedIdentity = null;
+  // Gleap.setUserJwtProvider: asked for a fresh identity token when the stored
+  // one expired or is about to. One call at a time, then a pause after a failure.
+  jwtProvider = null;
+  jwtProviderRequest = null;
+  jwtProviderFailedAt = 0;
+  // Gleap.setAuthTokens: memory only; resent when a signed identify lands on
+  // a session they were not sent to yet.
+  authTokens = {};
+  authTokensSentFor = null;
   // identify / updateContact requests still waiting for the server. A survey
   // started meanwhile would get the previous contact (Surveys 2.0 skips the
   // contact questions an identified contact already answered), so showSurvey
@@ -257,6 +274,8 @@ export default class GleapSession {
     this.lastIdentify = null;
     this.identifyInFlight = false;
     this.forgetSignedIdentity();
+    this.authTokens = {};
+    this.authTokensSentFor = null;
     this.contactVersion++;
 
     GleapFrameManager.getInstance().sendMessage(
@@ -344,10 +363,9 @@ export default class GleapSession {
     clearTimeout(this.fileRefreshTimeout);
     if (session.fileAccessToken && this.lastIdentify?.userHash) {
       this.fileRefreshTimeout = setTimeout(() => {
-        if (this.lastIdentify) {
-          const { userId, userData, userHash } = this.lastIdentify;
+        this.withFreshIdentify(({ userId, userData, userHash }) => {
           this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
-        }
+        });
       }, Math.max(0, Date.parse(session.fileAccessExpiresAt) - Date.now() - 5 * 60 * 1000));
     }
 
@@ -387,8 +405,9 @@ export default class GleapSession {
       this.replayIdentifyIfNeeded();
     }
     if (session.authenticatedFilesRequired && !session.fileAccessToken && this.lastIdentify?.userHash && !this.identifyInFlight) {
-      const { userId, userData, userHash } = this.lastIdentify;
-      this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
+      this.withFreshIdentify(({ userId, userData, userHash }) => {
+        this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
+      });
     }
   };
 
@@ -411,12 +430,89 @@ export default class GleapSession {
         return;
       }
 
-      const { userId, userData, userHash } = this.lastIdentify;
-      const result = this.identifySession(userId, userData, userHash);
-      if (result && typeof result.catch === 'function') {
-        result.catch(() => {});
-      }
+      this.withFreshIdentify(({ userId, userData, userHash }) => {
+        if (this.identifyInFlight || (this.session && this.session.userId)) {
+          return;
+        }
+        this.identifySession(userId, userData, userHash)?.catch?.(() => {});
+      });
     } catch (exp) {}
+  };
+
+  /**
+   * Runs `send` with the last identify. When it carries an identity token
+   * that expires within 5 minutes and a JWT provider is set, asks the
+   * provider first and sends the fresh token instead. Synchronous otherwise.
+   */
+  withFreshIdentify = (send) => {
+    const identify = this.lastIdentify;
+    if (!identify) {
+      return;
+    }
+    const token = decodeUserJwt(identify.userHash);
+    const expiresSoon = token && token.exp !== null && token.exp * 1000 - Date.now() < JWT_REFRESH_WINDOW_MS;
+    if (!expiresSoon || !this.jwtProvider) {
+      send(identify);
+      return;
+    }
+    this.requestUserJwt().then((fresh) => {
+      // A logout or another identify meanwhile wins.
+      if (this.lastIdentify !== identify) {
+        return;
+      }
+      send(fresh ? { ...identify, userId: decodeUserJwt(fresh).userId, userHash: fresh } : identify);
+    });
+  };
+
+  setUserJwtProvider = (provider) => {
+    if (provider !== null && typeof provider !== 'function') {
+      console.warn('Gleap: setUserJwtProvider expects a function returning a token (or a Promise of one).');
+      return;
+    }
+    this.jwtProvider = provider;
+    this.jwtProviderFailedAt = 0;
+  };
+
+  /**
+   * Asks the JWT provider for a fresh identity token. Resolves with the token,
+   * or null (no provider, failure, timeout, or still pausing after a failure).
+   * Never rejects.
+   */
+  requestUserJwt = () => {
+    if (!this.jwtProvider) {
+      return Promise.resolve(null);
+    }
+    if (this.jwtProviderRequest) {
+      return this.jwtProviderRequest;
+    }
+    if (this.jwtProviderFailedAt && Date.now() - this.jwtProviderFailedAt < JWT_PROVIDER_BACKOFF_MS) {
+      return Promise.resolve(null);
+    }
+
+    const provider = this.jwtProvider;
+    let timer = null;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error('timed out after 10 s')), JWT_PROVIDER_TIMEOUT_MS);
+    });
+    const request = Promise.race([Promise.resolve().then(() => provider()), timeout])
+      .then((token) => {
+        if (!decodeUserJwt(token)) {
+          throw new Error('it did not return a JWT with a userId');
+        }
+        this.jwtProviderFailedAt = 0;
+        return token;
+      })
+      .catch((error) => {
+        this.jwtProviderFailedAt = Date.now();
+        console.warn(`Gleap: the JWT provider failed (${error && error.message ? error.message : error}). Asking again in 30 s at the earliest.`);
+        return null;
+      })
+      .finally(() => {
+        clearTimeout(timer);
+        this.jwtProviderRequest = null;
+      });
+    this.jwtProviderRequest = request;
+    return request;
   };
 
   startSession = (attemp = 0) => {
@@ -654,13 +750,14 @@ export default class GleapSession {
 
   signedIdentityKey = () => `signed-identify-${this.sdkKey}`;
 
-  signedIdentityOf = (gleapId, userId) => `${gleapId}:${userId}`;
+  signedIdentityOf = (gleapId, userId, userHash) =>
+    isUserJwt(userHash) ? `${gleapId}:${userId}:${fingerprintOf(userHash)}` : `${gleapId}:${userId}`;
 
-  rememberSignedIdentity = (sessionData, userId) => {
+  rememberSignedIdentity = (sessionData, userId, userHash) => {
     if (!sessionData || !sessionData.gleapId || userId === undefined || userId === null) {
       return;
     }
-    this.signedIdentity = this.signedIdentityOf(sessionData.gleapId, userId);
+    this.signedIdentity = this.signedIdentityOf(sessionData.gleapId, userId, userHash);
     if (!this.localStorageDisabled) {
       try {
         saveToGleapCache(this.signedIdentityKey(), this.signedIdentity);
@@ -685,7 +782,7 @@ export default class GleapSession {
         this.signedIdentity = loadFromGleapCache(this.signedIdentityKey());
       } catch (exp) {}
     }
-    return this.signedIdentity !== this.signedIdentityOf(this.session.gleapId, userId);
+    return this.signedIdentity !== this.signedIdentityOf(this.session.gleapId, userId, userHash);
   };
 
   identifySession = (userId, userData, userHash, refreshFileSession = false) => {
@@ -699,8 +796,16 @@ export default class GleapSession {
       return;
     }
 
+    return this.trackContactUpdate(this.sendIdentify(userId, userData, userHash, true));
+  };
+
+  /**
+   * POST /sessions/identify. An expired identity token is renewed through the
+   * JWT provider and the request retried once (`renewExpiredJwt`).
+   */
+  sendIdentify = (userId, userData, userHash, renewExpiredJwt) => {
     const self = this;
-    return this.trackContactUpdate(new Promise((resolve, reject) => {
+    return new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
@@ -730,14 +835,38 @@ export default class GleapSession {
                 const sessionData = JSON.parse(http.responseText);
                 self.contactVersion++;
                 if (userHash) {
-                  self.rememberSignedIdentity(sessionData, userId);
+                  self.rememberSignedIdentity(sessionData, userId, userHash);
                 }
                 self.validateSession(sessionData);
+                if (userHash) {
+                  self.resendAuthTokensIfNeeded();
+                }
                 resolve(sessionData);
               } catch (exp) {
                 reject(exp);
               }
             } else {
+              // An identity token refusal never clears the session (contract §3).
+              const refusal = identifyRefusalOf(http.status, http.responseText);
+              if (refusal === 'token_expired' && renewExpiredJwt && self.jwtProvider) {
+                resolve(
+                  self.requestUserJwt().then((token) => {
+                    // No token, or a logout / another identify meanwhile: nothing to retry.
+                    if (!token || !self.lastIdentify || self.lastIdentify.userHash !== userHash) {
+                      return Promise.reject();
+                    }
+                    const renewedUserId = decodeUserJwt(token).userId;
+                    self.lastIdentify = { userId: renewedUserId, userData, userHash: token };
+                    return self.sendIdentify(renewedUserId, userData, token, false);
+                  })
+                );
+                return;
+              }
+              if (refusal === 'token_expired') {
+                console.warn('Gleap: the identity token has expired. Pass a fresh one to Gleap.setUserJwt, or set Gleap.setUserJwtProvider.');
+              } else if (refusal === 'token_invalid') {
+                console.warn('Gleap: the identity token was refused (token_invalid): check the signing key and the userId claim.');
+              }
               reject();
             }
           }
@@ -766,7 +895,89 @@ export default class GleapSession {
           })
         );
       });
-    }));
+    });
+  };
+
+  setUserJwt = (token) => {
+    const decoded = decodeUserJwt(token);
+    if (!decoded) {
+      console.warn(
+        'Gleap: setUserJwt expects a JWT (three base64url parts, at most 4096 characters) whose payload has a userId (or user_id). Nothing was sent.'
+      );
+      return Promise.resolve();
+    }
+    return Promise.resolve(this.identifySession(decoded.userId, {}, token)).then(() => {});
+  };
+
+  /**
+   * Gleap.setAuthTokens: stores per-user tokens for the project's API tools on
+   * the signed contact. `null` removes a token.
+   */
+  setAuthTokens = (tokens) => {
+    if (!tokens || typeof tokens !== 'object' || Array.isArray(tokens)) {
+      console.warn('Gleap: setAuthTokens expects an object of { name: token }.');
+      return Promise.resolve();
+    }
+    const change = {};
+    Object.keys(tokens).forEach((name) => {
+      const value = tokens[name];
+      if (!AUTH_TOKEN_NAME.test(name)) {
+        console.warn(`Gleap: auth token name "${name}" skipped: use a letter followed by up to 39 letters, digits, _ or -.`);
+        return;
+      }
+      if (value !== null && typeof value !== 'string') {
+        console.warn(`Gleap: auth token "${name}" skipped: the value must be a string, or null to remove it.`);
+        return;
+      }
+      change[name] = value;
+      if (value === null) {
+        delete this.authTokens[name];
+      } else {
+        this.authTokens[name] = value;
+      }
+    });
+    if (Object.keys(change).length === 0) {
+      return Promise.resolve();
+    }
+    return this.postAuthTokens(change);
+  };
+
+  resendAuthTokensIfNeeded = () => {
+    if (Object.keys(this.authTokens).length > 0 && this.authTokensSentFor !== this.session.gleapId) {
+      this.postAuthTokens({ ...this.authTokens });
+    }
+  };
+
+  /** POST /sessions/auth-tokens once the session is ready and no identify is in flight. Never rejects. */
+  postAuthTokens = (tokens) => {
+    const self = this;
+    return new Promise((resolve) => {
+      this.setOnSessionReady(() => {
+        this.onContactSettled(() => {
+          if (!self.session.gleapId || !self.session.gleapHash) {
+            return resolve();
+          }
+          const gleapId = self.session.gleapId;
+          const http = new XMLHttpRequest();
+          http.open('POST', self.apiUrl + '/sessions/auth-tokens');
+          http.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+          self.injectSession(http);
+          http.onerror = () => resolve();
+          http.onreadystatechange = function () {
+            if (http.readyState !== 4) {
+              return;
+            }
+            if (http.status === 200 || http.status === 201) {
+              self.authTokensSentFor = gleapId;
+            } else if (http.status === 401) {
+              console.warn('Gleap: auth tokens need a signed identity: call Gleap.setUserJwt first. They are kept and sent after the next signed identify.');
+            }
+            resolve();
+          };
+          http.send(JSON.stringify({ tokens }));
+        });
+      });
+    });
   };
 
   startProductTourConfig = (tourId) => {

@@ -168,7 +168,29 @@ export namespace Gleap {
   }[]): void;
   function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
+  /** Clears the current contact, its identity token and auth tokens. The JWT provider stays set. */
   function clearIdentity(): void;
+  /**
+   * Identifies the user with an identity token: an HS256 JWT signed by your backend.
+   * The `userId` (or `user_id`) claim names the user; every other claim lands on the
+   * contact as signed data. Nothing else is sent. Kept in memory only.
+   * A token that is not a JWT, has no userId or is over 4096 characters is refused
+   * with a console warning and no request.
+   */
+  function setUserJwt(token: string): Promise<void>;
+  /**
+   * Returns a fresh identity token. Called when the current token expired, or before
+   * a renewal when it expires within 5 minutes. One call at a time, 10 s timeout,
+   * 30 s pause after a failure.
+   */
+  function setUserJwtProvider(provider: () => string | Promise<string>): void;
+  /**
+   * Stores per-user tokens for your API tools on the signed contact
+   * (`{{session.authTokens.<name>}}`). Names: a letter followed by up to 39 letters,
+   * digits, `_` or `-`. A `null` value removes a token. Kept in memory only and
+   * sent again after the next signed identify on a new session. Needs `setUserJwt`.
+   */
+  function setAuthTokens(tokens: Record<string, string | null>): Promise<void>;
   function setTags(tags: string[]): void;
   /**
    * Hide notification cards, including cached or already-visible cards, without
@@ -198,6 +220,7 @@ export namespace Gleap {
       avatar?: string | null;
       createdAt?: Date | null;
     },
+    /** The HMAC-SHA256 of the user id (legacy), or an identity token (see `setUserJwt`). */
     userHash?: string
   ): void;
   function updateContact(

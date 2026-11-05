@@ -470,6 +470,36 @@ class Gleap {
   }
 
   /**
+   * Identifies the user with an identity token (HS256 JWT signed by your backend).
+   * The token is the whole identify: its `userId` (or `user_id`) claim names the user,
+   * every other claim lands on the contact as signed data. Kept in memory only.
+   * @param {string} token
+   * @returns {Promise<void>}
+   */
+  static setUserJwt(token) {
+    return GleapSession.getInstance().setUserJwt(token);
+  }
+
+  /**
+   * Sets a function that returns a fresh identity token (or a Promise of one).
+   * Gleap calls it when the current token expired or is about to.
+   * @param {() => (string | Promise<string>)} provider
+   */
+  static setUserJwtProvider(provider) {
+    GleapSession.getInstance().setUserJwtProvider(provider);
+  }
+
+  /**
+   * Stores per-user tokens for your API tools on the signed contact
+   * (`{{session.authTokens.<name>}}`). A `null` value removes a token. Kept in memory only.
+   * @param {Object<string, string | null>} tokens
+   * @returns {Promise<void>}
+   */
+  static setAuthTokens(tokens) {
+    return GleapSession.getInstance().setAuthTokens(tokens);
+  }
+
+  /**
    * Updates the contact data.
    * @param {*} userData
    */
@@ -478,7 +508,7 @@ class Gleap {
   }
 
   /**
-   * Clears the current contact.
+   * Clears the current contact, its identity token and auth tokens. The JWT provider stays set.
    */
   static clearIdentity() {
     GleapSession.getInstance().clearSession();
