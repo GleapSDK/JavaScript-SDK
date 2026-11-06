@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.4.0
+New: **Show me** chat cards highlight their target. When Kai's Show me card opens a page of your app, the SDK finds the button or field the card names, scrolls to it and outlines it for a few seconds (waiting for content that renders late). The label is matched by its visible text, so a near-miss such as "Post as draft" for a "Save as draft" toggle still lands on it. The `gleap_highlight` parameter is removed from the address bar afterwards; `Gleap.disableQueryParams()` turns it off. The Messenger only offers the Show me button to SDKs from this version on; older SDKs and the mobile apps show Open only.
+
 ## 19.3.9
 Fixed: a hotspot tooltip floated over the page while the panel around it scrolled, instead of staying next to its element. Since 19.3.7 the hotspot is absolutely positioned so it does not shift the element's layout; inside a scrolling panel without a positioned ancestor it was anchored outside the panel. The hotspot now uses its element as the anchor and scrolls with it.
 
