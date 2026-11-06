@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+Added: signed customer identity. `Gleap.setUserJwt(token)` identifies the user with an identity token (HS256 JWT signed by your backend); its `userId` claim names the user and every other claim lands on the contact as signed data. The token is kept in memory only, and the call never rejects: refusals are logged.
+Added: `Gleap.setUserJwtProvider(provider)` hands Gleap a function that returns a fresh identity token; it is called when the current token expired or is about to.
+Added: `Gleap.setAuthTokens(tokens)` stores per-user tokens for your API tools on the signed contact (`{{session.authTokens.<name>}}`); `null` removes one. Kept in memory only.
+Added: `Gleap.setSessionDuration(ms)` and `Gleap.initialize(sdkKey, { sessionDuration })` ask the server for a shorter signed session (never beyond the project's maximum). Only sent with an identify when you set it. A boolean second argument to `initialize` (the legacy `disablePing`) is still accepted and typed.
+Added: a signed identify returns a grant, the server-signed session credential. The SDK sends it as the `Gleap-Grant` header on every request, keeps it in the `gleap-grant-<apiKey>` cookie (when cookies are on) so a reload stays signed, refreshes it a minute before it runs out, hands it to the messenger, the AI chat bar and agent conversations, and returns it from `Gleap.getIdentity()`. `Gleap.clearIdentity()` drops it everywhere.
+Added: when the project runs in signed identity mode (`identity.mode === 'signed'`) and a returning user's session has no live grant, the SDK sends the held identify once to get one, without looping.
+Added: identify refusals are recognised by code (`token_expired`, `token_invalid`, `signature_required`, `identity_mismatch`); an expired token asks the JWT provider for a new one.
+
 ## 19.3.9
 Fixed: a hotspot tooltip floated over the page while the panel around it scrolled, instead of staying next to its element. Since 19.3.7 the hotspot is absolutely positioned so it does not shift the element's layout; inside a scrolling panel without a positioned ancestor it was anchored outside the panel. The hotspot now uses its element as the anchor and scrolls with it.
 

@@ -5,8 +5,13 @@ export namespace Gleap {
   /**
    * `options.sessionDuration`: how long (ms) a signed session stays signed before a new
    * identify is needed. The server never goes beyond the project's session max age.
+   * A boolean second argument is the legacy `disablePing` flag and is still accepted
+   * (the ping it controlled no longer exists, so it has no effect).
    */
-  function initialize(sdkKey: string, options?: { sessionDuration?: number }): void;
+  function initialize(
+    sdkKey: string,
+    options?: boolean | { disablePing?: boolean; sessionDuration?: number }
+  ): void;
   function sendSilentCrashReport(
     description: string,
     priority?: "LOW" | "MEDIUM" | "HIGH",

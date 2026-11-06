@@ -236,8 +236,10 @@ class Gleap {
   /**
    * Initializes the SDK
    * @param {*} sdkKey
-   * @param {{ sessionDuration?: number }} [options] sessionDuration: how long (ms) a signed
-   *   session stays signed; the server never goes beyond the project's maximum.
+   * @param {boolean | { disablePing?: boolean, sessionDuration?: number }} [options]
+   *   sessionDuration: how long (ms) a signed session stays signed; the server never goes
+   *   beyond the project's maximum. A boolean (the legacy `disablePing` argument) and
+   *   `disablePing` are accepted and have no effect: the ping no longer exists.
    */
   static initialize(sdkKey, options) {
     const instance = this.getInstance();
