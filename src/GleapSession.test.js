@@ -929,6 +929,36 @@ describe('grant (signed session credential)', () => {
       expect(identifyRequests()).toHaveLength(1);
     });
 
+    it('drops a grant the server rejected and re-identifies once', () => {
+      const session = readySession();
+      const jwt = token();
+      session.setUserJwt(jwt);
+      const grant = grantFor('gleap-id-1');
+      respondWithGrant(identifyRequests()[0], grant);
+      expect(session.hasLiveGrant()).toBe(true);
+      eraseGleapCookie.mockClear();
+      MockXhr.instances = [];
+      jest.advanceTimersByTime(60 * 1000);
+
+      // The grant still looks live locally, but the server no longer accepts it.
+      session.startSession();
+      expect(sessionsRequests()[0].headers['Gleap-Grant']).toBe(grant);
+      // Not signed, with the grant left out of the answer.
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: false, mode: 'signed' } }));
+      expect(session.grant).toBe(null);
+      expect(eraseGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key');
+      expect(identifyRequests()).toHaveLength(1);
+      expect(identifyRequests()[0].headers['Gleap-Grant']).toBeUndefined();
+      expect(JSON.parse(identifyRequests()[0].body).userHash).toBe(jwt);
+
+      // Still not signed: no second identify this page load.
+      identifyRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: false, mode: 'signed' } }));
+      session.startSession();
+      sessionsRequests()[1].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: false, mode: 'signed' } }));
+      jest.advanceTimersByTime(10 * 60 * 1000);
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
     it('sends nothing for a Classic answer or with a live grant', () => {
       const session = identifiedUnderClassic();
       session.setUserJwt(token());

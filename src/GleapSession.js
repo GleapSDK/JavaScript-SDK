@@ -597,6 +597,21 @@ export default class GleapSession {
     if (extracted.grant !== undefined) {
       this.setGrant(extracted.grant, false);
     }
+    // Signed mode answering "not signed" while a grant was sent: the server
+    // rejected it (secret rotation, region move, revoked key) although its own
+    // exp still looks live. Drop it (memory + cookie) so the answer's caller
+    // re-identifies with the held token instead of sending a dead grant until
+    // it expires locally.
+    const answeredIdentity = session.identity;
+    if (
+      this.grant &&
+      answeredIdentity &&
+      typeof answeredIdentity === 'object' &&
+      answeredIdentity.mode === 'signed' &&
+      answeredIdentity.signed === false
+    ) {
+      this.setGrant(null, false);
+    }
     // A grant names its session (`sid`): another session never inherits it.
     if (this.grant) {
       const decodedGrant = decodeGrant(this.grant);
@@ -745,7 +760,8 @@ export default class GleapSession {
   };
 
   /**
-   * Signed mode on an identified session without a live grant, with a token
+   * Signed mode on an identified session without a live grant (none, expired,
+   * or dropped because the server answered "not signed"), with a token
    * or hash at hand and no identify for it this session load yet (at most one
    * a minute).
    */
