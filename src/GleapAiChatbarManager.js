@@ -174,11 +174,20 @@ export default class GleapAiChatbarManager {
     queued.forEach((m) => this._postMessageRaw(m));
   }
 
+  /** Re-sends the session (and the grant) once the frame is talking to us; before that the ping sends it. */
+  sendSessionUpdateIfReady() {
+    if (this.comReady) {
+      this._sendSessionUpdate();
+    }
+  }
+
   _sendSessionUpdate() {
     this._postMessageRaw({
       name: 'session-update',
       data: {
         sessionData: GleapSession.getInstance().getSession(),
+        // Top level, never inside sessionData (the messenger persists that).
+        grant: GleapSession.getInstance().grant,
         apiUrl: GleapSession.getInstance().apiUrl,
         realtimeHost: GleapSession.getInstance().realtimeHost,
         sdkKey: GleapSession.getInstance().sdkKey,
@@ -390,6 +399,7 @@ export default class GleapAiChatbarManager {
       if (session.sdkKey) headers['Api-Token'] = session.sdkKey;
       if (session.session?.gleapId) headers['Gleap-Id'] = session.session.gleapId;
       if (session.session?.gleapHash) headers['Gleap-Hash'] = session.session.gleapHash;
+      session.addGrantHeader(headers);
 
       const res = await fetch(`${apiUrl}/v3/shared/agents/${encodeURIComponent(agentId)}`, { headers });
       if (!res.ok) return null;

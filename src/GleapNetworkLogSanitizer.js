@@ -6,9 +6,9 @@ export const DEFAULT_NETWORK_LOG_BLACKLIST = ['gleap.io', 'gleap.ai'];
 export const REDACTED_VALUE = '[REDACTED]';
 export const BODY_NOT_CAPTURED = '[body not captured]';
 
-// Credentials are masked (key kept, value replaced) whatever the project settings say. Gleap-Hash is
-// the widget session's credential (on the SDK's own calls through a custom api url).
-const ALWAYS_MASKED_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'set-cookie', 'gleap-hash'];
+// Credentials are masked (key kept, value replaced) whatever the project settings say. Gleap-Hash and
+// Gleap-Grant are the widget session's credentials (on the SDK's own calls through a custom api url).
+const ALWAYS_MASKED_HEADERS = ['authorization', 'proxy-authorization', 'cookie', 'set-cookie', 'gleap-hash', 'gleap-grant'];
 
 // Guards the recursive walks against pathological nesting. A body nested deeper than this is
 // dropped instead of being sent unredacted.

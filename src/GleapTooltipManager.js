@@ -729,6 +729,7 @@ export default class GleapTooltipManager {
     try {
       http.setRequestHeader('Gleap-Id', sessionInstance.session.gleapId);
       http.setRequestHeader('Gleap-Hash', sessionInstance.session.gleapHash);
+      sessionInstance.injectGrant(http);
     } catch (exp) {}
 
     http.onerror = () => {

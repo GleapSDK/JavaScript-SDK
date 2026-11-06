@@ -51,6 +51,7 @@ class AgentNetworkManager {
     if (s?.sdkKey) headers['Api-Token'] = s.sdkKey;
     if (s?.session?.gleapId) headers['Gleap-Id'] = s.session.gleapId;
     if (s?.session?.gleapHash) headers['Gleap-Hash'] = s.session.gleapHash;
+    s?.addGrantHeader?.(headers);
     return headers;
   }
 

@@ -18,13 +18,16 @@ import {
   setGleapCookie,
 } from './GleapHelper';
 import GleapTooltipManager from './GleapTooltipManager';
+import GleapAiChatbarManager from './GleapAiChatbarManager';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
-import { decodeUserJwt, fingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
+import { decodeGrant, decodeUserJwt, fingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
 
 const AUTH_TOKEN_NAME = /^[a-zA-Z][a-zA-Z0-9_-]{0,39}$/;
 const JWT_PROVIDER_TIMEOUT_MS = 10 * 1000;
 const JWT_PROVIDER_BACKOFF_MS = 30 * 1000;
 const JWT_REFRESH_WINDOW_MS = 5 * 60 * 1000;
+// Cookie lifetime for a grant without an exp claim (the server's default session max age).
+const GRANT_FALLBACK_LIFETIME_DAYS = 7;
 
 export default class GleapSession {
   region = GLEAP_DEFAULT_REGION;
@@ -84,6 +87,17 @@ export default class GleapSession {
   // Bumped whenever an identify / updateContact result (or a logout) replaces the session. A
   // /sessions response for a request sent before that describes the previous contact and is dropped.
   contactVersion = 0;
+  // The grant: the server-signed session credential a signed identify returns
+  // (`identity.grant`). Sent as `Gleap-Grant` on every request and handed to
+  // the messenger next to (never inside) the session. Kept out of `session`,
+  // which is persisted to localStorage; stored only in the
+  // `gleap-grant-<apiKey>` cookie (when cookies are on) so a reload and a
+  // help center on the same domain stay signed.
+  grant = null;
+  grantRefreshTimeout = null;
+  // Gleap.initialize(sdkKey, { sessionDuration }): asks the server for a
+  // shorter grant (ms). Sent with every identify.
+  sessionDuration = null;
 
   // GleapSession singleton
   static instance;
@@ -231,7 +245,145 @@ export default class GleapSession {
       http.setRequestHeader('Api-Token', this.sdkKey);
       http.setRequestHeader('Gleap-Id', this.session.gleapId);
       http.setRequestHeader('Gleap-Hash', this.session.gleapHash);
+      this.injectGrant(http);
     }
+  };
+
+  /** Adds the `Gleap-Grant` header to an XHR, when there is a grant. */
+  injectGrant = (http) => {
+    if (http && this.grant) {
+      try {
+        http.setRequestHeader('Gleap-Grant', this.grant);
+      } catch (exp) {}
+    }
+  };
+
+  /** Adds the `Gleap-Grant` entry to a fetch headers object, when there is a grant. */
+  addGrantHeader = (headers) => {
+    if (headers && this.grant) {
+      headers['Gleap-Grant'] = this.grant;
+    }
+    return headers;
+  };
+
+  grantCookieName = () => `gleap-grant-${this.sdkKey}`;
+
+  /**
+   * Replaces the grant (null drops it), writes or erases its cookie and, when
+   * it changed and `push` is set, hands it to the messenger frames.
+   */
+  setGrant = (grant, push = true) => {
+    const next = typeof grant === 'string' && grant.length > 0 ? grant : null;
+    if (next === this.grant) {
+      return;
+    }
+    this.grant = next;
+    if (this.useCookies) {
+      try {
+        if (next) {
+          const decoded = decodeGrant(next);
+          const days =
+            decoded && decoded.exp !== null
+              ? (decoded.exp * 1000 - Date.now()) / (24 * 60 * 60 * 1000)
+              : GRANT_FALLBACK_LIFETIME_DAYS;
+          if (days > 0) {
+            setGleapCookie(this.grantCookieName(), encodeURIComponent(next), days);
+          } else {
+            eraseGleapCookie(this.grantCookieName());
+          }
+        } else {
+          eraseGleapCookie(this.grantCookieName());
+        }
+      } catch (exp) {}
+    }
+    this.scheduleGrantRefresh();
+    if (push) {
+      this.pushSessionUpdate();
+    }
+  };
+
+  /** True while the grant's exp lies in the future (or it has none). */
+  hasLiveGrant = () => {
+    if (!this.grant) {
+      return false;
+    }
+    const decoded = decodeGrant(this.grant);
+    return !!decoded && (decoded.exp === null || decoded.exp * 1000 > Date.now());
+  };
+
+  /**
+   * A minute before the grant expires, the last signed identify is sent again
+   * (through the JWT provider when its token expired) for a new grant.
+   */
+  scheduleGrantRefresh = () => {
+    clearTimeout(this.grantRefreshTimeout);
+    this.grantRefreshTimeout = null;
+    const decoded = this.grant ? decodeGrant(this.grant) : null;
+    if (!decoded || decoded.exp === null) {
+      return;
+    }
+    const grant = this.grant;
+    // setTimeout overflows above ~24.8 days; a later check reschedules.
+    const delay = Math.min(Math.max(0, decoded.exp * 1000 - Date.now() - 60 * 1000), 2147483647);
+    this.grantRefreshTimeout = setTimeout(() => {
+      this.grantRefreshTimeout = null;
+      if (this.grant !== grant) {
+        return;
+      }
+      if (decoded.exp * 1000 - Date.now() > 2 * 60 * 1000) {
+        this.scheduleGrantRefresh();
+        return;
+      }
+      if (!this.lastIdentify || !this.lastIdentify.userHash || this.identifyInFlight) {
+        return;
+      }
+      this.withFreshIdentify(({ userId, userData, userHash }) => {
+        this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
+      });
+    }, delay);
+  };
+
+  /** Sends the session (and the grant) to the widget and the AI chatbar frames. */
+  pushSessionUpdate = () => {
+    try {
+      GleapFrameManager.getInstance().sendSessionUpdate();
+    } catch (exp) {}
+    try {
+      // Only a chatbar that exists: getInstance() would create one.
+      GleapAiChatbarManager.instance?.sendSessionUpdateIfReady();
+    } catch (exp) {}
+  };
+
+  /** A page reload: picks the grant up from its cookie when it belongs to the current session. */
+  restoreGrant = () => {
+    if (this.grant || !this.useCookies || !this.session || !this.session.gleapId) {
+      return;
+    }
+    try {
+      const cookie = getGleapCookie(this.grantCookieName());
+      if (!cookie) {
+        return;
+      }
+      const grant = decodeURIComponent(cookie);
+      const decoded = decodeGrant(grant);
+      if (decoded && decoded.sid === this.session.gleapId) {
+        this.grant = grant;
+        this.scheduleGrantRefresh();
+      }
+    } catch (exp) {}
+  };
+
+  /**
+   * Takes `identity.grant` out of a session response so it never lands in the
+   * persisted session. Returns `{ session, grant }`; `grant` is undefined when
+   * the response says nothing about it.
+   */
+  extractGrant = (session) => {
+    if (!session || !session.identity || typeof session.identity !== 'object' || !('grant' in session.identity)) {
+      return { session, grant: undefined };
+    }
+    const { grant, ...identity } = session.identity;
+    return { session: { ...session, identity }, grant: grant || null };
   };
 
   clearSession = (attemp = 0, retry = true) => {
@@ -276,6 +428,7 @@ export default class GleapSession {
     this.forgetSignedIdentity();
     this.authTokens = {};
     this.authTokensSentFor = null;
+    this.setGrant(null, false);
     this.contactVersion++;
 
     GleapFrameManager.getInstance().sendMessage(
@@ -332,6 +485,19 @@ export default class GleapSession {
   validateSession = (session) => {
     if (!session || !session.gleapId) {
       return;
+    }
+
+    const extracted = this.extractGrant(session);
+    session = extracted.session;
+    if (extracted.grant !== undefined) {
+      this.setGrant(extracted.grant, false);
+    }
+    // A grant names its session (`sid`): another session never inherits it.
+    if (this.grant) {
+      const decodedGrant = decodeGrant(this.grant);
+      if (!decodedGrant || decodedGrant.sid !== session.gleapId) {
+        this.setGrant(null, false);
+      }
     }
 
     // Ordinary session refreshes must not discard the independently verified,
@@ -534,6 +700,7 @@ export default class GleapSession {
         this.validateSession(cachedSession);
       }
     }
+    this.restoreGrant();
 
     const self = this;
     const contactVersionAtSend = this.contactVersion;
@@ -545,6 +712,7 @@ export default class GleapSession {
       if (this.session && this.session.gleapId && this.session.gleapHash) {
         http.setRequestHeader('Gleap-Id', this.session.gleapId);
         http.setRequestHeader('Gleap-Hash', this.session.gleapHash);
+        this.injectGrant(http);
       }
     } catch (exp) {}
     http.onreadystatechange = function (e) {
@@ -640,8 +808,8 @@ export default class GleapSession {
     }
     this.onSessionReadyListener = [];
 
-    // Send session update to frame.
-    GleapFrameManager.getInstance().sendSessionUpdate();
+    // Send session update (and the grant) to the frames.
+    this.pushSessionUpdate();
   }
 
   checkIfSessionNeedsUpdate = (userId, userData) => {
@@ -709,6 +877,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader('Gleap-Id', self.session.gleapId);
           http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
+          self.injectGrant(http);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -753,11 +922,13 @@ export default class GleapSession {
   signedIdentityOf = (gleapId, userId, userHash) =>
     isUserJwt(userHash) ? `${gleapId}:${userId}:${fingerprintOf(userHash)}` : `${gleapId}:${userId}`;
 
-  rememberSignedIdentity = (sessionData, userId, userHash) => {
+  // `granted`: the identify returned a grant, so a later identify without one
+  // (cookie gone, grant expired) has to be sent again to get a new one.
+  rememberSignedIdentity = (sessionData, userId, userHash, granted = false) => {
     if (!sessionData || !sessionData.gleapId || userId === undefined || userId === null) {
       return;
     }
-    this.signedIdentity = this.signedIdentityOf(sessionData.gleapId, userId, userHash);
+    this.signedIdentity = this.signedIdentityOf(sessionData.gleapId, userId, userHash) + (granted ? '#grant' : '');
     if (!this.localStorageDisabled) {
       try {
         saveToGleapCache(this.signedIdentityKey(), this.signedIdentity);
@@ -782,7 +953,11 @@ export default class GleapSession {
         this.signedIdentity = loadFromGleapCache(this.signedIdentityKey());
       } catch (exp) {}
     }
-    return this.signedIdentity !== this.signedIdentityOf(this.session.gleapId, userId, userHash);
+    const expected = this.signedIdentityOf(this.session.gleapId, userId, userHash);
+    if (this.signedIdentity === expected + '#grant') {
+      return !this.hasLiveGrant();
+    }
+    return this.signedIdentity !== expected;
   };
 
   identifySession = (userId, userData, userHash, refreshFileSession = false) => {
@@ -801,9 +976,12 @@ export default class GleapSession {
 
   /**
    * POST /sessions/identify. An expired identity token is renewed through the
-   * JWT provider and the request retried once (`renewExpiredJwt`).
+   * JWT provider and the request retried once (`renewExpiredJwt`). A token for
+   * another user than the session's (400 identity_mismatch) drops the local
+   * session and retries once as a fresh visitor (`restartOnMismatch`), which
+   * the server merges into the token's contact.
    */
-  sendIdentify = (userId, userData, userHash, renewExpiredJwt) => {
+  sendIdentify = (userId, userData, userHash, renewExpiredJwt, restartOnMismatch = true) => {
     const self = this;
     return new Promise((resolve, reject) => {
       // Wait for gleap session to be ready.
@@ -819,6 +997,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader('Gleap-Id', self.session.gleapId);
           http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
+          self.injectGrant(http);
         } catch (exp) {}
 
         self.identifyInFlight = true;
@@ -835,7 +1014,7 @@ export default class GleapSession {
                 const sessionData = JSON.parse(http.responseText);
                 self.contactVersion++;
                 if (userHash) {
-                  self.rememberSignedIdentity(sessionData, userId, userHash);
+                  self.rememberSignedIdentity(sessionData, userId, userHash, !!(sessionData && sessionData.identity && sessionData.identity.grant));
                 }
                 self.validateSession(sessionData);
                 if (userHash) {
@@ -857,10 +1036,17 @@ export default class GleapSession {
                     }
                     const renewedUserId = decodeUserJwt(token).userId;
                     self.lastIdentify = { userId: renewedUserId, userData, userHash: token };
-                    return self.sendIdentify(renewedUserId, userData, token, false);
+                    return self.sendIdentify(renewedUserId, userData, token, false, restartOnMismatch);
                   })
                 );
                 return;
+              }
+              if (refusal === 'identity_mismatch' && restartOnMismatch && self.lastIdentify && self.lastIdentify.userHash === userHash) {
+                resolve(self.restartAsVisitorAndIdentify(userId, userData, userHash, renewExpiredJwt));
+                return;
+              }
+              if (refusal === 'identity_mismatch') {
+                console.warn('Gleap: the identity token names another user than this session, and a fresh session was refused too (identity_mismatch).');
               }
               if (refusal === 'token_expired') {
                 console.warn('Gleap: the identity token has expired. Pass a fresh one to Gleap.setUserJwt, or set Gleap.setUserJwtProvider.');
@@ -889,6 +1075,7 @@ export default class GleapSession {
             ...dataToSend,
             userId,
             userHash,
+            ...(self.sessionDuration ? { sessionDuration: self.sessionDuration } : {}),
             lang: GleapTranslationManager.getInstance().getActiveLanguage(),
             deviceType: getDeviceType(),
             platform: 'web',
@@ -896,6 +1083,37 @@ export default class GleapSession {
         );
       });
     });
+  };
+
+  /**
+   * identity_mismatch: like clearIdentity (session, grant, cookies gone; the
+   * provider stays), but the pending identify and the auth tokens are kept,
+   * then a fresh visitor session is started and the identify sent once more.
+   */
+  restartAsVisitorAndIdentify = (userId, userData, userHash, renewExpiredJwt) => {
+    const pendingIdentify = this.lastIdentify;
+    const pendingAuthTokens = { ...this.authTokens };
+    this.clearSession(0, false);
+    this.lastIdentify = pendingIdentify;
+    this.authTokens = pendingAuthTokens;
+    // Queued before the new session exists, so it runs as soon as it is ready
+    // (and replayIdentifyIfNeeded then sees the identify in flight).
+    const retry = this.sendIdentify(userId, userData, userHash, renewExpiredJwt, false);
+    this.startSession();
+    return retry;
+  };
+
+  /** Gleap.initialize(sdkKey, { sessionDuration }): a positive number of milliseconds, or nothing. */
+  setSessionDuration = (sessionDuration) => {
+    if (sessionDuration === undefined || sessionDuration === null) {
+      this.sessionDuration = null;
+      return;
+    }
+    if (typeof sessionDuration !== 'number' || !isFinite(sessionDuration) || sessionDuration <= 0) {
+      console.warn('Gleap: sessionDuration expects a positive number of milliseconds. Ignored.');
+      return;
+    }
+    this.sessionDuration = Math.round(sessionDuration);
   };
 
   setUserJwt = (token) => {
@@ -995,6 +1213,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader('Gleap-Id', self.session.gleapId);
           http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
+          self.injectGrant(http);
         } catch (exp) {}
 
         http.onerror = () => {
@@ -1040,6 +1259,7 @@ export default class GleapSession {
         try {
           http.setRequestHeader('Gleap-Id', self.session.gleapId);
           http.setRequestHeader('Gleap-Hash', self.session.gleapHash);
+          self.injectGrant(http);
         } catch (exp) {}
 
         http.onerror = () => {

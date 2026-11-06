@@ -1,5 +1,5 @@
 import GleapSession from './GleapSession';
-import { saveToGleapCache, loadFromGleapCache } from './GleapHelper';
+import { saveToGleapCache, loadFromGleapCache, setGleapCookie, eraseGleapCookie, getGleapCookie } from './GleapHelper';
 
 // The session manager only needs the sibling managers to exist; none of the
 // paths under test depend on their behavior beyond being callable.
@@ -30,6 +30,11 @@ jest.mock('./AgentNetworkManager', () => ({
 jest.mock('./GleapTooltipManager', () => ({
   __esModule: true,
   default: { getInstance: jest.fn(() => ({ destroy: jest.fn(), load: jest.fn() })) },
+}));
+
+jest.mock('./GleapAiChatbarManager', () => ({
+  __esModule: true,
+  default: { instance: null },
 }));
 
 jest.mock('./GleapHelper', () => ({
@@ -642,5 +647,134 @@ describe('auth tokens (setAuthTokens)', () => {
     expect(authTokenRequests()).toHaveLength(2);
     expect(authTokenRequests()[1].headers['Gleap-Id']).toBe('gleap-id-9');
     expect(JSON.parse(authTokenRequests()[1].body)).toEqual({ tokens: { backend: 'a' } });
+  });
+});
+
+describe('grant (signed session credential)', () => {
+  const b64url = (value) => Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const jwtOf = (payload) => `${b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }))}.${b64url(JSON.stringify(payload))}.c2ln`;
+  const inSeconds = (seconds) => Math.floor(Date.now() / 1000) + seconds;
+  const flush = async () => {
+    for (let i = 0; i < 10; i++) {
+      await Promise.resolve();
+    }
+  };
+  const grantFor = (sid, exp = inSeconds(3600)) => jwtOf({ sid, uid: 'user-1', kid: 'k1', kind: 'jwt', iat: inSeconds(0), exp });
+  const respondWithGrant = (xhr, grant, extra = {}) =>
+    xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...extra, identity: { signed: true, kid: 'k1', kind: 'jwt', grant } }));
+
+  let warn;
+  beforeEach(() => {
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    setGleapCookie.mockClear();
+    eraseGleapCookie.mockClear();
+    getGleapCookie.mockReset().mockImplementation(() => null);
+  });
+  afterEach(() => {
+    warn.mockRestore();
+  });
+
+  const readySession = () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    return session;
+  };
+
+  it('keeps the grant out of the persisted session and sends it on later requests', () => {
+    const session = readySession();
+    const grant = grantFor('gleap-id-1');
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    respondWithGrant(identifyRequests()[0], grant);
+
+    expect(session.grant).toBe(grant);
+    expect(JSON.stringify(session.session)).not.toContain(grant);
+    expect(JSON.stringify(cacheStore['session-sdk-key'])).not.toContain(grant);
+    const sessionCookieWrites = setGleapCookie.mock.calls.filter(([name]) => name === 'session-sdk-key');
+    expect(sessionCookieWrites.every(([, value]) => !decodeURIComponent(value).includes(grant))).toBe(true);
+    expect(setGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key', encodeURIComponent(grant), expect.any(Number));
+
+    session.updateSession({ name: 'Other' });
+    const update = MockXhr.instances.find((xhr) => xhr.url.endsWith('/sessions/partialupdate'));
+    expect(update.headers['Gleap-Grant']).toBe(grant);
+    const xhr = new MockXhr();
+    session.injectSession(xhr);
+    expect(xhr.headers['Gleap-Grant']).toBe(grant);
+  });
+
+  it('restores the grant from its cookie only for the same session', () => {
+    getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(grantFor('gleap-id-1')) : null));
+    const session = readySession();
+    expect(session.grant).toBe(grantFor('gleap-id-1'));
+    expect(MockXhr.instances[0].headers['Gleap-Grant']).toBe(grantFor('gleap-id-1'));
+
+    getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(grantFor('someone-else')) : null));
+    const other = readySession();
+    expect(other.grant).toBe(null);
+  });
+
+  it('drops the grant when the session changes to another gleapId', () => {
+    const session = readySession();
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+    session.validateSession({ gleapId: 'gleap-id-2', gleapHash: 'gleap-hash-2' });
+    expect(session.grant).toBe(null);
+  });
+
+  it('clearSession drops the grant and erases its cookie', () => {
+    const session = readySession();
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+    const provider = jest.fn();
+    session.setUserJwtProvider(provider);
+    session.clearSession(0, false);
+    expect(session.grant).toBe(null);
+    expect(eraseGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key');
+    expect(session.jwtProvider).toBe(provider);
+  });
+
+  it('identifies again when the stored grant is gone, not when it is live', () => {
+    const session = readySession();
+    const token = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    session.setUserJwt(token);
+    respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+    session.setUserJwt(token);
+    expect(identifyRequests()).toHaveLength(1);
+
+    session.setGrant(null, false);
+    session.setUserJwt(token);
+    expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('identity_mismatch: drops the session and retries once as a fresh visitor', async () => {
+    const session = readySession();
+    session.setAuthTokens({ backend: 'abc' });
+    const token = jwtOf({ userId: 'user-2', exp: inSeconds(3600) });
+    session.setUserJwt(token).catch(() => {});
+    identifyRequests()[0].respond(400, JSON.stringify({ error: { details: { value: 'identity_mismatch' } } }));
+    await flush();
+
+    expect(session.session.gleapId).toBe(null);
+    const sessionsRequests = MockXhr.instances.filter((xhr) => xhr.url.endsWith('/sessions'));
+    const fresh = sessionsRequests[sessionsRequests.length - 1];
+    expect(fresh.headers['Gleap-Id']).toBeUndefined();
+    fresh.respond(200, JSON.stringify({ gleapId: 'gleap-id-new', gleapHash: 'gleap-hash-new' }));
+
+    expect(identifyRequests()).toHaveLength(2);
+    expect(identifyRequests()[1].headers['Gleap-Id']).toBe('gleap-id-new');
+    expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(token);
+    expect(session.authTokens).toEqual({ backend: 'abc' });
+
+    identifyRequests()[1].respond(400, JSON.stringify({ error: { details: { value: 'identity_mismatch' } } }));
+    await flush();
+    expect(identifyRequests()).toHaveLength(2);
+    expect(session.session.gleapId).toBe('gleap-id-new');
+  });
+
+  it('sends sessionDuration with identify', () => {
+    const session = readySession();
+    session.setSessionDuration(60 * 60 * 1000);
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    expect(JSON.parse(identifyRequests()[0].body).sessionDuration).toBe(3600000);
   });
 });

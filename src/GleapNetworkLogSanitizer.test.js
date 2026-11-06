@@ -268,10 +268,15 @@ describe('custom api url (Gleap.setApiUrl)', () => {
     expect(intercepter.getBlacklist()).toEqual(['gleap.io', 'gleap.ai']);
   });
 
-  test('masks the widget session credential (Gleap-Hash) on any request', () => {
+  test('masks the widget session credentials (Gleap-Hash, Gleap-Grant) on any request', () => {
     const log = entry({
-      request: { headers: { 'Gleap-Hash': 'h-123', 'Gleap-Id': 'g-1', Accept: '*/*' }, payload: '' },
+      request: { headers: { 'Gleap-Hash': 'h-123', 'Gleap-Grant': 'g.r.t', 'Gleap-Id': 'g-1', Accept: '*/*' }, payload: '' },
     });
-    expect(sanitizeOne(log).request.headers).toEqual({ 'Gleap-Hash': REDACTED_VALUE, 'Gleap-Id': 'g-1', Accept: '*/*' });
+    expect(sanitizeOne(log).request.headers).toEqual({
+      'Gleap-Hash': REDACTED_VALUE,
+      'Gleap-Grant': REDACTED_VALUE,
+      'Gleap-Id': 'g-1',
+      Accept: '*/*',
+    });
   });
 });

@@ -236,12 +236,18 @@ class Gleap {
   /**
    * Initializes the SDK
    * @param {*} sdkKey
+   * @param {{ sessionDuration?: number }} [options] sessionDuration: how long (ms) a signed
+   *   session stays signed; the server never goes beyond the project's maximum.
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, options) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn('Gleap already initialized.');
       return;
+    }
+
+    if (options && typeof options === 'object' && 'sessionDuration' in options) {
+      GleapSession.getInstance().setSessionDuration(options.sessionDuration);
     }
 
     instance.initialized = true;
@@ -515,10 +521,12 @@ class Gleap {
   }
 
   /**
-   * Returns the current user session
+   * Returns the current user session, plus `grant`: the signed-session credential
+   * (null when the session is not signed). Hand `{ gleapId, gleapHash, grant }` to a
+   * help center or portal to keep the user signed in there.
    */
   static getIdentity() {
-    return GleapSession.getInstance().getSession();
+    return { ...GleapSession.getInstance().getSession(), grant: GleapSession.getInstance().grant || null };
   }
 
   /**

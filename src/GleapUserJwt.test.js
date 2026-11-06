@@ -45,5 +45,7 @@ describe('identifyRefusalOf', () => {
     expect(identifyRefusalOf(401, '{"details":{"value":"token_invalid"}}')).toBe('token_invalid');
     expect(identifyRefusalOf(401, '{"details":{"value":"signature_required"}}')).toBeNull();
     expect(identifyRefusalOf(403, body)).toBeNull();
+    expect(identifyRefusalOf(400, '{"error":{"details":{"value":"identity_mismatch"}}}')).toBe('identity_mismatch');
+    expect(identifyRefusalOf(400, '{"error":"bad request"}')).toBeNull();
   });
 });

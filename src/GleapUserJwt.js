@@ -51,6 +51,28 @@ export const decodeUserJwt = (token) => {
   }
 };
 
+/**
+ * Reads `{ sid, exp }` from a grant (the server-signed session credential an
+ * identify returns) without verifying it. Null for anything that is not a JWT.
+ */
+export const decodeGrant = (grant) => {
+  if (!isUserJwt(grant)) {
+    return null;
+  }
+  try {
+    const payload = JSON.parse(decodeSegment(grant.split('.')[1]));
+    if (!payload || typeof payload !== 'object') {
+      return null;
+    }
+    return {
+      sid: typeof payload.sid === 'string' ? payload.sid : null,
+      exp: typeof payload.exp === 'number' ? payload.exp : null,
+    };
+  } catch (exp) {
+    return null;
+  }
+};
+
 /** A short non-reversible fingerprint (djb2), so "this token was sent" can be remembered without storing it. */
 export const fingerprintOf = (value) => {
   let hash = 5381;
@@ -60,9 +82,15 @@ export const fingerprintOf = (value) => {
   return (hash >>> 0).toString(36);
 };
 
-/** The identify refusal code in a 401 body (contract §3), or null. */
+/** The identify refusal code in a 401 body (contract §3) or a 400 `identity_mismatch`, or null. */
 export const identifyRefusalOf = (status, responseText) => {
-  if (status !== 401 || typeof responseText !== 'string') {
+  if (typeof responseText !== 'string') {
+    return null;
+  }
+  if (status === 400) {
+    return responseText.indexOf('identity_mismatch') !== -1 ? 'identity_mismatch' : null;
+  }
+  if (status !== 401) {
     return null;
   }
   if (responseText.indexOf('token_expired') !== -1) {

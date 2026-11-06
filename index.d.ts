@@ -2,7 +2,11 @@
 export type GleapRegion = "eu" | "us";
 
 export namespace Gleap {
-  function initialize(sdkKey: string, disablePing?: boolean): void;
+  /**
+   * `options.sessionDuration`: how long (ms) a signed session stays signed before a new
+   * identify is needed. The server never goes beyond the project's session max age.
+   */
+  function initialize(sdkKey: string, options?: { sessionDuration?: number }): void;
   function sendSilentCrashReport(
     description: string,
     priority?: "LOW" | "MEDIUM" | "HIGH",
@@ -474,7 +478,11 @@ export namespace Gleap {
    */
   function createAgentChat(options: AgentChatOptions): AgentChatInstance;
 
-  function getIdentity(): any;
+  /**
+   * The current session, including `gleapId`, `gleapHash` and `grant` (the signed-session
+   * credential a signed identify returns; null when the session is not signed).
+   */
+  function getIdentity(): { gleapId: string | null; gleapHash: string | null; grant: string | null; [key: string]: any };
   function isUserIdentified(): boolean;
   function setReplayOptions(options: {
     blockClass?: string | RegExp;
