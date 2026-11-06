@@ -163,6 +163,9 @@ export const getCaptureCapabilities = () => {
     screenshot: false,
     recording: false,
     annotate: false,
+    // "Show me" chat cards: this SDK outlines the `gleap_highlight` label on the page they open
+    // (GleapHighlight.js), so the Messenger offers the button. Independent of capture.
+    highlight: true,
   };
   if (!isCaptureSupported()) {
     return capabilities;
