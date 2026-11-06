@@ -1,13 +1,18 @@
 /**
  * @jest-environment jsdom
  */
-import GleapBannerManager, { bodyClipsInlineBanner } from './GleapBannerManager';
+import GleapBannerManager, { bodyClipsInlineBanner, closedBannerEventName } from './GleapBannerManager';
 
 const mockUrlHandler = jest.fn();
+const mockLogEvent = jest.fn();
+const mockStreamEvents = jest.fn();
+const mockSession = { session: { gleapId: 'gleap-1' } };
 jest.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
   GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: mockUrlHandler })) },
+  GleapSession: { getInstance: jest.fn(() => mockSession) },
+  GleapStreamedEvent: { getInstance: jest.fn(() => ({ logEvent: mockLogEvent, streamEvents: mockStreamEvents })) },
 }));
 
 jest.mock('./GleapHelper', () => ({
@@ -113,5 +118,109 @@ describe('GleapBannerManager message origin', () => {
     post('https://outboundmedia.gl');
     post('https://outboundmedia.gleap');
     expect(mockUrlHandler).not.toHaveBeenCalled();
+  });
+});
+
+describe('GleapBannerManager until dismissed', () => {
+  const manager = GleapBannerManager.getInstance();
+  const OUTBOUND = '6aeb2bad84e85e151afe22c1';
+  const banner = (extra = {}) => ({ format: 'floating', outbound: OUTBOUND, untilDismissed: true, ...extra });
+
+  const close = () => {
+    const frame = document.querySelector('.gleap-b-frame');
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: JSON.stringify({ type: 'BANNER', name: 'banner-close' }),
+        source: frame.contentWindow,
+      })
+    );
+  };
+
+  const frames = () => document.querySelectorAll('.gleap-b-frame').length;
+
+  beforeEach(() => {
+    localStorage.clear();
+    manager.closedReportedThisPage = new Set();
+    mockSession.session = { gleapId: 'gleap-1' };
+    mockLogEvent.mockClear();
+    mockStreamEvents.mockClear();
+  });
+
+  afterEach(() => {
+    manager.removeBannerUI();
+    manager.bannerData = null;
+  });
+
+  test('closing reports the close right away and remembers it', () => {
+    manager.showBanner(banner());
+    expect(frames()).toBe(1);
+
+    close();
+
+    expect(frames()).toBe(0);
+    expect(mockLogEvent).toHaveBeenCalledWith(closedBannerEventName(OUTBOUND));
+    expect(mockStreamEvents).toHaveBeenCalled();
+    expect(JSON.parse(localStorage.getItem('gleap-closed-banners-gleap-1'))).toEqual([OUTBOUND]);
+  });
+
+  test('a closed banner is not shown again, and the close is re-sent once per page load', () => {
+    manager.showBanner(banner());
+    close();
+    mockLogEvent.mockClear();
+    manager.closedReportedThisPage = new Set(); // next page load
+
+    manager.showBanner(banner());
+    manager.showBanner(banner());
+
+    expect(frames()).toBe(0);
+    expect(mockLogEvent).toHaveBeenCalledTimes(1);
+    expect(mockLogEvent).toHaveBeenCalledWith(closedBannerEventName(OUTBOUND));
+  });
+
+  test('the closed list belongs to the contact', () => {
+    manager.showBanner(banner());
+    close();
+
+    mockSession.session = { gleapId: 'gleap-2' };
+    manager.showBanner(banner());
+
+    expect(frames()).toBe(1);
+  });
+
+  test('a banner already on screen is not injected again', () => {
+    manager.showBanner(banner());
+    const frame = document.querySelector('.gleap-b-frame');
+
+    manager.showBanner(banner());
+
+    expect(frames()).toBe(1);
+    expect(document.querySelector('.gleap-b-frame')).toBe(frame);
+  });
+
+  test('other banners keep today\'s behaviour', () => {
+    manager.showBanner(banner({ untilDismissed: undefined }));
+    const frame = document.querySelector('.gleap-b-frame');
+    manager.showBanner(banner({ untilDismissed: undefined }));
+    expect(document.querySelector('.gleap-b-frame')).not.toBe(frame);
+
+    close();
+    expect(mockLogEvent).not.toHaveBeenCalled();
+    expect(localStorage.getItem('gleap-closed-banners-gleap-1')).toBeNull();
+  });
+
+  test('keeps at most 50 closed banners', () => {
+    const ids = Array.from({ length: 55 }, (_, i) => `id-${i}`);
+    ids.forEach((id) => manager.rememberClosedBanner(id));
+    const stored = JSON.parse(localStorage.getItem('gleap-closed-banners-gleap-1'));
+    expect(stored).toHaveLength(50);
+    expect(stored[49]).toBe('id-54');
+  });
+
+  test('no session yet: nothing stored, the banner still shows', () => {
+    mockSession.session = null;
+    manager.showBanner(banner());
+    close();
+    expect(localStorage.length).toBe(0);
+    expect(mockLogEvent).toHaveBeenCalledWith(closedBannerEventName(OUTBOUND));
   });
 });
