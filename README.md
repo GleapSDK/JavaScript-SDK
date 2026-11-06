@@ -49,7 +49,9 @@ Gleap.initialize("SDK-TOKEN");
 
 ### Identify your users
 
-Sign one identity token (an HS256 JWT) on your backend and pass it to the SDK. The token is the whole identify: `userId` names the user, and every other claim (email, name, `stripeCustomerId`, ...) lands on the contact as signed data that the browser cannot change.
+#### Signed identity (recommended)
+
+Your backend signs an HS256 JWT with an identity key from Settings > Security > Identity keys (put the key id in the `kid` header; the secret stays on your server). `userId` is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. The token is the whole identify: every claim lands on the contact as signed data that the browser cannot change. Call `Gleap.setUserJwt(token)` after login and on every page load of a logged-in user. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
 
 ```
 // Your backend (Node, jsonwebtoken). Use an identity key from Settings > Security > Identity keys.
@@ -79,7 +81,9 @@ Gleap.setAuthTokens({ backend: userAccessToken });
 
 `Gleap.clearIdentity()` on logout clears the contact, the token and the auth tokens.
 
-The legacy call `Gleap.identify(userId, data, userHash)` keeps working, with `userHash` the HMAC-SHA256 of the user id, while "Accept legacy user hash" is on for the project.
+#### Legacy user hash
+
+Instead of a token you can still call `Gleap.identify(userId, data, userHash)`, with `userHash` the HMAC-SHA256 of the user id created on your server with the project's identity verification secret. It is accepted while "Accept legacy user hash" is on for the project.
 
 ### Dark mode (optional)
 
