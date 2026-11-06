@@ -533,7 +533,7 @@ describe('identity tokens (setUserJwt)', () => {
 
   it('retries only once and shares one provider call', async () => {
     const session = readySession();
-    const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(-5) })));
+    const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
     session.setUserJwtProvider(provider);
 
     const done = session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(-10) }));
@@ -867,6 +867,170 @@ describe('grant (signed session credential)', () => {
       await flush();
       expect(session.grantRefreshInFlight).toBe(false);
     });
+
+    it('a failed refresh is tried again a minute later', async () => {
+      const session = readySession();
+      signIn(session, shortGrant(65));
+      jest.advanceTimersByTime(30 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+      identifyRequests()[1].error();
+      await flush();
+      jest.advanceTimersByTime(59 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+      jest.advanceTimersByTime(1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(3);
+    });
+  });
+
+  describe('signed mode without a grant (returning users)', () => {
+    const SIGNED_MODE = { identity: { signed: false, grant: null, mode: 'signed' } };
+    const sessionsRequests = () => MockXhr.instances.filter((xhr) => xhr.url.endsWith('/sessions'));
+    const token = () => jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+
+    // A user identified while the project was Classic: the identify fingerprint is stored, no grant.
+    const identifiedUnderClassic = () => {
+      const first = readySession();
+      first.setUserJwt(token());
+      identifyRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+      expect(cacheStore['signed-identify-sdk-key']).toBeTruthy();
+      MockXhr.instances = [];
+      const next = buildSession();
+      next.startSession();
+      return next;
+    };
+
+    it('sends one identify when /sessions says signed mode after the identify was skipped', () => {
+      const session = identifiedUnderClassic();
+      session.setUserJwt(token());
+      expect(identifyRequests()).toHaveLength(0);
+
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE }));
+      expect(identifyRequests()).toHaveLength(1);
+      expect(JSON.parse(identifyRequests()[0].body).userHash).toBe(token());
+
+      // Still no grant: no loop, neither from the answer nor from later renders or /sessions answers.
+      identifyRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE }));
+      session.setUserJwt(token());
+      session.startSession();
+      sessionsRequests()[1].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE }));
+      jest.advanceTimersByTime(10 * 60 * 1000);
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
+    it('sends one identify when the app identifies after the signed-mode /sessions answer', () => {
+      const session = identifiedUnderClassic();
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE }));
+      expect(identifyRequests()).toHaveLength(0);
+      session.setUserJwt(token());
+      session.setUserJwt(token());
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
+    it('sends nothing for a Classic answer or with a live grant', () => {
+      const session = identifiedUnderClassic();
+      session.setUserJwt(token());
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+      expect(identifyRequests()).toHaveLength(0);
+
+      session.grant = grantFor('gleap-id-1');
+      session.startSession();
+      sessionsRequests()[1].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: true, mode: 'signed' } }));
+      expect(identifyRequests()).toHaveLength(0);
+    });
+  });
+
+  it('drops an identify answer that lands after a logout', async () => {
+    const session = readySession();
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    session.clearSession(0, false);
+    respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+    await flush();
+
+    expect(session.session.gleapId).toBe(null);
+    expect(session.session.userId).toBe('');
+    expect(session.grant).toBe(null);
+    expect(cacheStore['session-sdk-key']).toBe(null);
+  });
+
+  it('signature_required for another user clears the previous user\'s session', () => {
+    const session = readySession();
+    session.identifySession('user-1', { name: 'Changed' }, 'hash-1')?.catch(() => {});
+    identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'signature_required' } }));
+    expect(session.session.gleapId).toBe('gleap-id-1');
+
+    session.identifySession('user-2', {}, 'hash-2')?.catch(() => {});
+    identifyRequests()[1].respond(401, JSON.stringify({ detail: { value: 'signature_required' } }));
+    expect(session.session.gleapId).toBe(null);
+    expect(session.session.userId).toBe('');
+    expect(cacheStore['session-sdk-key']).toBe(null);
+  });
+
+  it('does not resend a refused token on every render, but a new one', () => {
+    const session = readySession();
+    const refused = jwtOf({ userId: 'user-1', plan: 'x', exp: inSeconds(3600) });
+    session.setUserJwt(refused);
+    identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_invalid' } }));
+    session.setUserJwt(refused);
+    session.setUserJwt(refused);
+    expect(identifyRequests()).toHaveLength(1);
+
+    session.setUserJwt(jwtOf({ userId: 'user-1', plan: 'x', exp: inSeconds(3601) }));
+    expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('a provider token that already expired counts as a failure (30 s pause)', async () => {
+    const session = readySession();
+    const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(0) }));
+    session.setUserJwtProvider(provider);
+    await expect(session.requestUserJwt()).resolves.toBe(null);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('expired token'));
+    await expect(session.requestUserJwt()).resolves.toBe(null);
+    expect(provider).toHaveBeenCalledTimes(1);
+    jest.advanceTimersByTime(30 * 1000);
+    await session.requestUserJwt();
+    expect(provider).toHaveBeenCalledTimes(2);
+  });
+
+  it('replays an identify that failed on the network once the browser is back online', async () => {
+    const session = readySession();
+    expect(window.addEventListener).toHaveBeenCalledWith('online', session.handleOnline);
+    session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+    identifyRequests()[0].error();
+    await flush();
+
+    session.handleOnline();
+    expect(identifyRequests()).toHaveLength(2);
+    respondWithGrant(identifyRequests()[1], grantFor('gleap-id-1'));
+    session.handleOnline();
+    expect(identifyRequests()).toHaveLength(2);
+    expect(session.grant).toBe(grantFor('gleap-id-1'));
+  });
+
+  it('setUserJwt before initialize: no identify when the cached grant is live', () => {
+    const first = readySession();
+    const token = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    first.setUserJwt(token);
+    respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+    MockXhr.instances = [];
+
+    getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(grantFor('gleap-id-1')) : null));
+    const next = new GleapSession();
+    next.setUserJwt(token);
+    next.sdkKey = 'sdk-key';
+    next.startSession();
+    expect(identifyRequests()).toHaveLength(0);
+    expect(next.grant).toBe(grantFor('gleap-id-1'));
+  });
+
+  it('turning cookies off erases the grant cookie', () => {
+    const session = readySession();
+    eraseGleapCookie.mockClear();
+    session.setUseCookies(false);
+    expect(eraseGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key');
+    expect(session.useCookies).toBe(false);
   });
 
   it('sends sessionDuration with identify', () => {

@@ -20,7 +20,7 @@ import {
 import GleapTooltipManager from './GleapTooltipManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
-import { decodeGrant, decodeUserJwt, identityFingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
+import { decodeGrant, decodeUserJwt, fingerprintOf, identityFingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
 
 const AUTH_TOKEN_NAME = /^[a-zA-Z][a-zA-Z0-9_-]{0,39}$/;
 const JWT_PROVIDER_TIMEOUT_MS = 10 * 1000;
@@ -33,6 +33,8 @@ const GRANT_FALLBACK_LIFETIME_DAYS = 7;
 const GRANT_REFRESH_MARGIN_MS = 60 * 1000;
 const GRANT_REFRESH_MIN_DELAY_MS = 30 * 1000;
 const GRANT_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
+// A refresh that failed or could not run yet is tried again after this pause.
+const GRANT_REFRESH_RETRY_MS = 60 * 1000;
 const SIGNATURE_REQUIRED_WARNING =
   'Gleap: this project enforces identity verification and the identify had no valid signature (signature_required). Pass a token from your backend to setUserJwt.';
 
@@ -113,6 +115,24 @@ export default class GleapSession {
   // Gleap.initialize(sdkKey, { sessionDuration }): asks the server for a
   // shorter grant (ms). Sent with every identify.
   sessionDuration = null;
+  // Bumped only by clearSession (logout, destroy, rejected session). An
+  // identify answer sent under an older generation is dropped, so a late
+  // answer cannot bring back the user who just logged out.
+  logoutGeneration = 0;
+  // Signed mode (`identity.mode === 'signed'`) on an identified session
+  // without a live grant: one identify per session load fetches the grant,
+  // even when this exact identify was sent before (a returning user whose
+  // project switched to Signed after they were identified).
+  signedModeIdentifySent = false;
+  lastSignedModeIdentifyAt = 0;
+  // An identify that failed on the network or with a server error: replayed
+  // once the browser comes back online.
+  identifyFailedTransiently = false;
+  onlineListenerAdded = false;
+  // Fingerprint of the last userId + token/hash the server refused (memory
+  // only, never the token itself): an app that identifies on every render
+  // does not send the same refused token again and again.
+  refusedIdentity = null;
 
   // GleapSession singleton
   static instance;
@@ -373,14 +393,17 @@ export default class GleapSession {
         this.armGrantRefresh(grant, at);
         return;
       }
-      // One refresh at a time; the identify already on its way brings the next grant.
+      // One refresh at a time; the identify already on its way brings the next
+      // grant. Should it fail, the grant is looked at again in a minute.
       if (this.grantRefreshInFlight || this.identifyInFlight) {
+        this.armGrantRefresh(grant, now + GRANT_REFRESH_RETRY_MS);
         return;
       }
       if (now - this.lastGrantRefreshAt < GRANT_REFRESH_MIN_INTERVAL_MS) {
         this.armGrantRefresh(grant, this.lastGrantRefreshAt + GRANT_REFRESH_MIN_INTERVAL_MS);
         return;
       }
+      // Nothing to send (logged out, or identified without a token or hash).
       if (!this.lastIdentify || !this.lastIdentify.userHash) {
         return;
       }
@@ -388,6 +411,11 @@ export default class GleapSession {
       this.grantRefreshInFlight = true;
       const done = () => {
         this.grantRefreshInFlight = false;
+        // Failed, or answered without a new grant: try again in a minute.
+        // A new grant has armed its own refresh (setGrant), a dropped one needs none.
+        if (this.grant === grant && !this.grantRefreshTimeout) {
+          this.armGrantRefresh(grant, Date.now() + GRANT_REFRESH_RETRY_MS);
+        }
       };
       Promise.resolve(
         this.withFreshIdentify(({ userId, userData, userHash }) => this.identifySession(userId, userData, userHash, true))
@@ -406,9 +434,31 @@ export default class GleapSession {
     } catch (exp) {}
   };
 
+  /** Gleap.setUseCookies: turning cookies off also erases a grant cookie written before. */
+  setUseCookies = (useCookies) => {
+    this.useCookies = useCookies;
+    if (!useCookies) {
+      this.eraseGrantCookie();
+    }
+  };
+
+  eraseGrantCookie = () => {
+    if (!this.sdkKey) {
+      return;
+    }
+    try {
+      eraseGleapCookie(this.grantCookieName());
+    } catch (exp) {}
+  };
+
   /** A page reload: picks the grant up from its cookie when it belongs to the current session. */
   restoreGrant = () => {
-    if (this.grant || !this.useCookies || !this.session || !this.session.gleapId) {
+    if (!this.useCookies) {
+      // setUseCookies(false) before initialize: a cookie from an earlier visit must not linger.
+      this.eraseGrantCookie();
+      return;
+    }
+    if (this.grant || !this.session || !this.session.gleapId) {
       return;
     }
     try {
@@ -482,6 +532,9 @@ export default class GleapSession {
     this.authTokensSentFor = null;
     this.setGrant(null, false);
     this.contactVersion++;
+    this.logoutGeneration++;
+    this.signedModeIdentifySent = false;
+    this.identifyFailedTransiently = false;
 
     GleapFrameManager.getInstance().sendMessage(
       {
@@ -577,6 +630,9 @@ export default class GleapSession {
 
     this.session = session;
     this.ready = true;
+    // A cached session: its grant cookie is read before the session-ready
+    // listeners run, so an identify queued before initialize sees it.
+    this.restoreGrant();
     if (session.fileAccessToken) this.openRequestedProtectedFile();
     clearTimeout(this.fileRefreshTimeout);
     if (session.fileAccessToken && this.lastIdentify?.userHash) {
@@ -657,6 +713,79 @@ export default class GleapSession {
     } catch (exp) {}
   };
 
+  /** Listens for the browser coming back online (once per instance). */
+  listenForOnline = () => {
+    if (this.onlineListenerAdded) {
+      return;
+    }
+    try {
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('online', this.handleOnline);
+        this.onlineListenerAdded = true;
+      }
+    } catch (exp) {}
+  };
+
+  /** Back online: sends an identify again that failed on the network or with a server error. */
+  handleOnline = () => {
+    if (!this.identifyFailedTransiently || this.identifyInFlight || !this.lastIdentify) {
+      return;
+    }
+    this.identifyFailedTransiently = false;
+    try {
+      Promise.resolve(
+        this.withFreshIdentify(({ userId, userData, userHash }) => {
+          if (this.identifyInFlight) {
+            return;
+          }
+          return this.trackContactUpdate(this.sendIdentify(userId, userData, userHash, true));
+        })
+      ).catch(() => {});
+    } catch (exp) {}
+  };
+
+  /**
+   * Signed mode on an identified session without a live grant, with a token
+   * or hash at hand and no identify for it this session load yet (at most one
+   * a minute).
+   */
+  needsSignedModeIdentify = () => {
+    if (this.signedModeIdentifySent || this.identifyInFlight) {
+      return false;
+    }
+    const identity = this.session && this.session.identity;
+    if (!this.session || !this.session.userId || !identity || identity.mode !== 'signed') {
+      return false;
+    }
+    if (!this.lastIdentify || !this.lastIdentify.userHash || this.hasLiveGrant()) {
+      return false;
+    }
+    return Date.now() - this.lastSignedModeIdentifyAt >= GRANT_REFRESH_MIN_INTERVAL_MS;
+  };
+
+  markSignedModeIdentify = () => {
+    this.signedModeIdentifySent = true;
+    this.lastSignedModeIdentifyAt = Date.now();
+  };
+
+  /** A /sessions answer in signed mode without a grant: sends the held identify once for one. */
+  identifyForSignedModeIfNeeded = () => {
+    if (!this.needsSignedModeIdentify()) {
+      return;
+    }
+    this.markSignedModeIdentify();
+    try {
+      Promise.resolve(
+        this.withFreshIdentify(({ userId, userData, userHash }) =>
+          this.trackContactUpdate(this.sendIdentify(userId, userData, userHash, true))
+        )
+      ).catch(() => {});
+    } catch (exp) {}
+  };
+
+  /** Memory-only fingerprint of a refused identify (never the token itself). */
+  refusedIdentityOf = (userId, userHash) => `${userId}:${userHash ? fingerprintOf(userHash) : ''}`;
+
   /**
    * Runs `send` with the last identify. When it carries an identity token
    * that expires within 5 minutes and a JWT provider is set, asks the
@@ -719,8 +848,12 @@ export default class GleapSession {
           this.jwtProviderFailedAt = Date.now();
           return null;
         }
-        if (!decodeUserJwt(token)) {
+        const decoded = decodeUserJwt(token);
+        if (!decoded) {
           throw new Error('it did not return a JWT with a userId');
+        }
+        if (decoded.exp !== null && decoded.exp * 1000 <= Date.now()) {
+          throw new Error('it returned an expired token');
         }
         this.jwtProviderFailedAt = 0;
         return token;
@@ -739,6 +872,7 @@ export default class GleapSession {
   };
 
   startSession = (attemp = 0) => {
+    this.listenForOnline();
     // Check if we already have a session cookie.
     try {
       if (this.useCookies) {
@@ -784,6 +918,7 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
+            self.identifyForSignedModeIfNeeded();
           } catch (exp) {}
         } else {
           if (http.status !== 429) {
@@ -937,11 +1072,16 @@ export default class GleapSession {
           self.injectGrant(http);
         } catch (exp) {}
 
+        const generationAtSend = self.logoutGeneration;
         http.onerror = () => {
           reject();
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
+            // A logout meanwhile: this answer describes the previous contact.
+            if (self.logoutGeneration !== generationAtSend) {
+              return reject();
+            }
             if (http.status === 200 || http.status === 201) {
               try {
                 const sessionData = JSON.parse(http.responseText);
@@ -1023,12 +1163,38 @@ export default class GleapSession {
   identifySession = (userId, userData, userHash, refreshFileSession = false) => {
     // Remember the args before any early-out: a no-op identify against a
     // session that later gets recreated must still be replayable.
-    this.lastIdentify = { userId, userData, userHash };
+    const identify = { userId, userData, userHash };
+    this.lastIdentify = identify;
+
+    // Called before initialize: decide once the (cached) session and its
+    // grant are loaded, so a live cached grant does not cost an identify.
+    if (!this.ready && !(this.session && this.session.gleapId)) {
+      return this.trackContactUpdate(
+        new Promise((resolve, reject) => {
+          this.setOnSessionReady(() => {
+            // A newer identify or a logout meanwhile wins.
+            if (this.lastIdentify !== identify) {
+              return resolve();
+            }
+            Promise.resolve(this.identifySession(userId, userData, userHash, refreshFileSession)).then(resolve, reject);
+          });
+        })
+      );
+    }
+
+    // The server refused exactly this token or hash before: not again on every render.
+    if (this.refusedIdentity !== null && this.refusedIdentity === this.refusedIdentityOf(userId, userHash)) {
+      return;
+    }
 
     const sessionNeedsUpdate = this.checkIfSessionNeedsUpdate(userId, userData);
     const needsFileIdentity = !!userHash && this.session?.authenticatedFilesRequired && (!this.session?.fileAccessToken || Date.parse(this.session.fileAccessExpiresAt) <= Date.now());
-    if (!sessionNeedsUpdate && !refreshFileSession && !needsFileIdentity && !this.needsSignedIdentify(userId, userHash)) {
+    const signedMode = this.needsSignedModeIdentify();
+    if (!sessionNeedsUpdate && !refreshFileSession && !needsFileIdentity && !signedMode && !this.needsSignedIdentify(userId, userHash)) {
       return;
+    }
+    if (signedMode) {
+      this.markSignedModeIdentify();
     }
 
     return this.trackContactUpdate(this.sendIdentify(userId, userData, userHash, true));
@@ -1062,16 +1228,34 @@ export default class GleapSession {
 
         self.identifyInFlight = true;
         self.lastIdentifyFailure = null;
+        const generationAtSend = self.logoutGeneration;
+        // A logout (clearSession) since this identify went out: its answer is
+        // for the user who logged out and is dropped.
+        const loggedOutMeanwhile = () => {
+          if (self.logoutGeneration === generationAtSend) {
+            return false;
+          }
+          self.lastIdentifyFailure = 'superseded';
+          return true;
+        };
 
         http.onerror = () => {
+          if (loggedOutMeanwhile()) {
+            return reject();
+          }
           self.identifyInFlight = false;
           self.lastIdentifyFailure = 'network error';
+          self.identifyFailedTransiently = true;
           reject();
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
+            if (loggedOutMeanwhile()) {
+              return reject();
+            }
             self.identifyInFlight = false;
             if (http.status === 200 || http.status === 201) {
+              self.identifyFailedTransiently = false;
               try {
                 const sessionData = JSON.parse(http.responseText);
                 self.contactVersion++;
@@ -1120,6 +1304,22 @@ export default class GleapSession {
                 console.warn('Gleap: the identity token was refused (token_invalid): check the signing key and the userId claim.');
               } else if (refusal === 'signature_required') {
                 console.warn(SIGNATURE_REQUIRED_WARNING);
+              }
+              if (refusal === 'token_expired' || refusal === 'token_invalid' || refusal === 'signature_required') {
+                self.refusedIdentity = self.refusedIdentityOf(userId, userHash);
+              }
+              // Another user than the session's was refused: they must not keep
+              // the previous user's session. Start over as a visitor.
+              if (
+                refusal === 'signature_required' &&
+                self.session &&
+                self.session.userId &&
+                String(self.session.userId) !== String(userId)
+              ) {
+                self.clearSession(0, true);
+              }
+              if (!refusal && (http.status === 0 || http.status >= 500)) {
+                self.identifyFailedTransiently = true;
               }
               self.lastIdentifyFailure = refusal ? 'refused' : `HTTP ${http.status}`;
               reject();
@@ -1204,7 +1404,7 @@ export default class GleapSession {
       .then(
         () => {},
         (error) => {
-          if (this.lastIdentifyFailure === 'refused') {
+          if (this.lastIdentifyFailure === 'refused' || this.lastIdentifyFailure === 'superseded') {
             return;
           }
           const reason = error ? (error.message || error) : this.lastIdentifyFailure || 'unknown error';

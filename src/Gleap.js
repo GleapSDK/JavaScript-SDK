@@ -459,7 +459,7 @@ class Gleap {
    * @param {*} useCookies
    */
   static setUseCookies(useCookies) {
-    GleapSession.getInstance().useCookies = useCookies;
+    GleapSession.getInstance().setUseCookies(useCookies);
   }
 
   static disableLocalStorage() {
