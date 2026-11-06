@@ -44,6 +44,7 @@ import GleapThemeManager from './GleapThemeManager';
 import GleapTranslationManager from './GleapTranslationManager';
 import { injectStyledCSS } from './UI';
 import { normalizeSurveyOptions } from './GleapSurveyOptions';
+import { checkForHighlightParam, HIGHLIGHT_PARAM } from './GleapHighlight';
 
 if (
   typeof window !== 'undefined' &&
@@ -348,6 +349,11 @@ class Gleap {
         const fullScreen = surveyFlowFormat === 'survey_full' || surveyFlowFormat === 'full';
         Gleap.showSurvey(surveyFlow, fullScreen ? 'survey_full' : 'survey');
       }
+      // A "Show me" chat card opened this page: outline the button or field it names.
+      if (urlParams.get(HIGHLIGHT_PARAM)) {
+        checkForHighlightParam({ color: GleapConfigManager.getInstance().getFlowConfig()?.color });
+      }
+
       const tourId = urlParams.get('gleap_tour');
       if (tourId && tourId.length > 0) {
         var tourDelay = parseInt(urlParams.get('gleap_tour_delay'));
