@@ -37,6 +37,9 @@ const commonConfig = (isDevelopment, plugins = []) => {
             safari10: true,
             output: {
               comments: false,
+              // The CDN sends no charset, so a script is decoded with the host page's
+              // encoding: on a non-UTF-8 page raw non-ASCII breaks the whole bundle.
+              ascii_only: true,
             },
           },
           extractComments: false,

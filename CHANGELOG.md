@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.4.1
+Fixed: since 19.4.0 the SDK failed to load on pages that are not UTF-8 (no charset declared, or for example ISO-8859-1), with `Invalid regular expression: Range out of order in character class`, so the widget did not appear at all. The bundle held raw non-ASCII characters, which such a page decodes with its own encoding. The build now escapes all non-ASCII characters, which also keeps text in the bundle intact on those pages.
+
 ## 19.4.0
 New: **Show me** chat cards highlight their target. When Kai's Show me card opens a page of your app, the SDK finds the button or field the card names, scrolls to it and outlines it for a few seconds (waiting for content that renders late). The label is matched by its visible text, so a near-miss such as "Post as draft" for a "Save as draft" toggle still lands on it. The `gleap_highlight` parameter is removed from the address bar afterwards; `Gleap.disableQueryParams()` turns it off. The Messenger only offers the Show me button to SDKs from this version on; older SDKs and the mobile apps show Open only.
 
