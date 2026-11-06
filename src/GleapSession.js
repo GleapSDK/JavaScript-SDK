@@ -20,7 +20,7 @@ import {
 import GleapTooltipManager from './GleapTooltipManager';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
-import { decodeGrant, decodeUserJwt, fingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
+import { decodeGrant, decodeUserJwt, identityFingerprintOf, identifyRefusalOf, isUserJwt } from './GleapUserJwt';
 
 const AUTH_TOKEN_NAME = /^[a-zA-Z][a-zA-Z0-9_-]{0,39}$/;
 const JWT_PROVIDER_TIMEOUT_MS = 10 * 1000;
@@ -28,6 +28,13 @@ const JWT_PROVIDER_BACKOFF_MS = 30 * 1000;
 const JWT_REFRESH_WINDOW_MS = 5 * 60 * 1000;
 // Cookie lifetime for a grant without an exp claim (the server's default session max age).
 const GRANT_FALLBACK_LIFETIME_DAYS = 7;
+// Grant refresh: a minute before the grant's own lifetime runs out, never
+// sooner than 30 s after it arrived, at most one refresh identify a minute.
+const GRANT_REFRESH_MARGIN_MS = 60 * 1000;
+const GRANT_REFRESH_MIN_DELAY_MS = 30 * 1000;
+const GRANT_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
+const SIGNATURE_REQUIRED_WARNING =
+  'Gleap: this project enforces identity verification and the identify had no valid signature (signature_required). Pass a token from your backend to setUserJwt.';
 
 export default class GleapSession {
   region = GLEAP_DEFAULT_REGION;
@@ -95,6 +102,14 @@ export default class GleapSession {
   // help center on the same domain stay signed.
   grant = null;
   grantRefreshTimeout = null;
+  // When the current grant is due for a refresh (ms, device clock), when the
+  // last refresh identify went out, and whether one is still running.
+  grantRefreshAt = null;
+  lastGrantRefreshAt = 0;
+  grantRefreshInFlight = false;
+  // How the last identify failed ('refused' when a refusal was logged, else
+  // 'network error' / 'HTTP <status>'), for setUserJwt's log line.
+  lastIdentifyFailure = null;
   // Gleap.initialize(sdkKey, { sessionDuration }): asks the server for a
   // shorter grant (ms). Sent with every identify.
   sessionDuration = null;
@@ -287,7 +302,7 @@ export default class GleapSession {
               ? (decoded.exp * 1000 - Date.now()) / (24 * 60 * 60 * 1000)
               : GRANT_FALLBACK_LIFETIME_DAYS;
           if (days > 0) {
-            setGleapCookie(this.grantCookieName(), encodeURIComponent(next), days);
+            setGleapCookie(this.grantCookieName(), encodeURIComponent(next), days, true);
           } else {
             eraseGleapCookie(this.grantCookieName());
           }
@@ -296,7 +311,7 @@ export default class GleapSession {
         }
       } catch (exp) {}
     }
-    this.scheduleGrantRefresh();
+    this.scheduleGrantRefresh(next ? Date.now() : null);
     if (push) {
       this.pushSessionUpdate();
     }
@@ -312,34 +327,71 @@ export default class GleapSession {
   };
 
   /**
-   * A minute before the grant expires, the last signed identify is sent again
-   * (through the JWT provider when its token expired) for a new grant.
+   * When to renew a grant: a minute before its own lifetime (exp - iat) runs
+   * out, counted from `receivedAt` on the device clock, so a skewed clock
+   * cannot make it due at once. Never sooner than 30 s after receipt. A grant
+   * restored from its cookie has no receipt time: the device clock decides,
+   * still at least 30 s out. Null when the grant never expires.
    */
-  scheduleGrantRefresh = () => {
+  grantRefreshTime = (decoded, receivedAt) => {
+    if (!decoded || decoded.exp === null) {
+      return null;
+    }
+    const now = Date.now();
+    const remaining =
+      receivedAt && decoded.iat !== null && decoded.exp > decoded.iat
+        ? (decoded.exp - decoded.iat) * 1000 - (now - receivedAt)
+        : decoded.exp * 1000 - now;
+    return now + Math.max(GRANT_REFRESH_MIN_DELAY_MS, remaining - GRANT_REFRESH_MARGIN_MS);
+  };
+
+  /**
+   * Schedules sending the last signed identify again (through the JWT provider
+   * when its token expires soon) for a new grant. `receivedAt`: when the
+   * server handed the grant out (Date.now()), or null for a restored one.
+   */
+  scheduleGrantRefresh = (receivedAt = null) => {
     clearTimeout(this.grantRefreshTimeout);
     this.grantRefreshTimeout = null;
-    const decoded = this.grant ? decodeGrant(this.grant) : null;
-    if (!decoded || decoded.exp === null) {
-      return;
+    this.grantRefreshAt = this.grantRefreshTime(this.grant ? decodeGrant(this.grant) : null, receivedAt);
+    if (this.grantRefreshAt !== null) {
+      this.armGrantRefresh(this.grant, this.grantRefreshAt);
     }
-    const grant = this.grant;
-    // setTimeout overflows above ~24.8 days; a later check reschedules.
-    const delay = Math.min(Math.max(0, decoded.exp * 1000 - Date.now() - 60 * 1000), 2147483647);
+  };
+
+  armGrantRefresh = (grant, at) => {
+    clearTimeout(this.grantRefreshTimeout);
+    // setTimeout overflows above ~24.8 days; the callback re-arms until `at`.
+    const delay = Math.min(Math.max(0, at - Date.now()), 2147483647);
     this.grantRefreshTimeout = setTimeout(() => {
       this.grantRefreshTimeout = null;
       if (this.grant !== grant) {
         return;
       }
-      if (decoded.exp * 1000 - Date.now() > 2 * 60 * 1000) {
-        this.scheduleGrantRefresh();
+      const now = Date.now();
+      if (at - now > 1000) {
+        this.armGrantRefresh(grant, at);
         return;
       }
-      if (!this.lastIdentify || !this.lastIdentify.userHash || this.identifyInFlight) {
+      // One refresh at a time; the identify already on its way brings the next grant.
+      if (this.grantRefreshInFlight || this.identifyInFlight) {
         return;
       }
-      this.withFreshIdentify(({ userId, userData, userHash }) => {
-        this.identifySession(userId, userData, userHash, true)?.catch?.(() => {});
-      });
+      if (now - this.lastGrantRefreshAt < GRANT_REFRESH_MIN_INTERVAL_MS) {
+        this.armGrantRefresh(grant, this.lastGrantRefreshAt + GRANT_REFRESH_MIN_INTERVAL_MS);
+        return;
+      }
+      if (!this.lastIdentify || !this.lastIdentify.userHash) {
+        return;
+      }
+      this.lastGrantRefreshAt = now;
+      this.grantRefreshInFlight = true;
+      const done = () => {
+        this.grantRefreshInFlight = false;
+      };
+      Promise.resolve(
+        this.withFreshIdentify(({ userId, userData, userHash }) => this.identifySession(userId, userData, userHash, true))
+      ).then(done, done);
     }, delay);
   };
 
@@ -368,7 +420,7 @@ export default class GleapSession {
       const decoded = decodeGrant(grant);
       if (decoded && decoded.sid === this.session.gleapId) {
         this.grant = grant;
-        this.scheduleGrantRefresh();
+        this.scheduleGrantRefresh(null);
       }
     } catch (exp) {}
   };
@@ -609,6 +661,7 @@ export default class GleapSession {
    * Runs `send` with the last identify. When it carries an identity token
    * that expires within 5 minutes and a JWT provider is set, asks the
    * provider first and sends the fresh token instead. Synchronous otherwise.
+   * Returns what `send` returned (a Promise of it after a provider call).
    */
   withFreshIdentify = (send) => {
     const identify = this.lastIdentify;
@@ -618,15 +671,14 @@ export default class GleapSession {
     const token = decodeUserJwt(identify.userHash);
     const expiresSoon = token && token.exp !== null && token.exp * 1000 - Date.now() < JWT_REFRESH_WINDOW_MS;
     if (!expiresSoon || !this.jwtProvider) {
-      send(identify);
-      return;
+      return send(identify);
     }
-    this.requestUserJwt().then((fresh) => {
+    return this.requestUserJwt().then((fresh) => {
       // A logout or another identify meanwhile wins.
       if (this.lastIdentify !== identify) {
         return;
       }
-      send(fresh ? { ...identify, userId: decodeUserJwt(fresh).userId, userHash: fresh } : identify);
+      return send(fresh ? { ...identify, userId: decodeUserJwt(fresh).userId, userHash: fresh } : identify);
     });
   };
 
@@ -662,6 +714,11 @@ export default class GleapSession {
     });
     const request = Promise.race([Promise.resolve().then(() => provider()), timeout])
       .then((token) => {
+        if (token === null || token === undefined) {
+          // No token right now (logged out): no warning, same pause as a failure.
+          this.jwtProviderFailedAt = Date.now();
+          return null;
+        }
         if (!decodeUserJwt(token)) {
           throw new Error('it did not return a JWT with a userId');
         }
@@ -919,8 +976,11 @@ export default class GleapSession {
 
   signedIdentityKey = () => `signed-identify-${this.sdkKey}`;
 
+  // An identity token adds a fingerprint of what it says (kid + claims without
+  // iat/exp/nbf/jti): a token re-minted per page load for the same user and
+  // data is not sent again, a changed claim is.
   signedIdentityOf = (gleapId, userId, userHash) =>
-    isUserJwt(userHash) ? `${gleapId}:${userId}:${fingerprintOf(userHash)}` : `${gleapId}:${userId}`;
+    isUserJwt(userHash) ? `${gleapId}:${userId}:${identityFingerprintOf(userHash)}` : `${gleapId}:${userId}`;
 
   // `granted`: the identify returned a grant, so a later identify without one
   // (cookie gone, grant expired) has to be sent again to get a new one.
@@ -1001,9 +1061,11 @@ export default class GleapSession {
         } catch (exp) {}
 
         self.identifyInFlight = true;
+        self.lastIdentifyFailure = null;
 
         http.onerror = () => {
           self.identifyInFlight = false;
+          self.lastIdentifyFailure = 'network error';
           reject();
         };
         http.onreadystatechange = function (e) {
@@ -1032,6 +1094,10 @@ export default class GleapSession {
                   self.requestUserJwt().then((token) => {
                     // No token, or a logout / another identify meanwhile: nothing to retry.
                     if (!token || !self.lastIdentify || self.lastIdentify.userHash !== userHash) {
+                      if (!token) {
+                        console.warn('Gleap: the identity token has expired and the JWT provider returned no fresh one.');
+                      }
+                      self.lastIdentifyFailure = 'refused';
                       return Promise.reject();
                     }
                     const renewedUserId = decodeUserJwt(token).userId;
@@ -1052,7 +1118,10 @@ export default class GleapSession {
                 console.warn('Gleap: the identity token has expired. Pass a fresh one to Gleap.setUserJwt, or set Gleap.setUserJwtProvider.');
               } else if (refusal === 'token_invalid') {
                 console.warn('Gleap: the identity token was refused (token_invalid): check the signing key and the userId claim.');
+              } else if (refusal === 'signature_required') {
+                console.warn(SIGNATURE_REQUIRED_WARNING);
               }
+              self.lastIdentifyFailure = refusal ? 'refused' : `HTTP ${http.status}`;
               reject();
             }
           }
@@ -1103,7 +1172,7 @@ export default class GleapSession {
     return retry;
   };
 
-  /** Gleap.initialize(sdkKey, { sessionDuration }): a positive number of milliseconds, or nothing. */
+  /** Gleap.setSessionDuration / initialize(sdkKey, { sessionDuration }): a positive number of milliseconds, or null to drop it. */
   setSessionDuration = (sessionDuration) => {
     if (sessionDuration === undefined || sessionDuration === null) {
       this.sessionDuration = null;
@@ -1124,7 +1193,24 @@ export default class GleapSession {
       );
       return Promise.resolve();
     }
-    return Promise.resolve(this.identifySession(decoded.userId, {}, token)).then(() => {});
+    // Never rejects: a refusal is logged where it is read, anything else here.
+    let sent;
+    try {
+      sent = Promise.resolve(this.identifySession(decoded.userId, {}, token));
+    } catch (error) {
+      sent = Promise.reject(error);
+    }
+    return sent
+      .then(
+        () => {},
+        (error) => {
+          if (this.lastIdentifyFailure === 'refused') {
+            return;
+          }
+          const reason = error ? (error.message || error) : this.lastIdentifyFailure || 'unknown error';
+          console.warn(`Gleap: setUserJwt could not identify the user (${reason}). Nothing changed; call it again later.`);
+        }
+      );
   };
 
   /**

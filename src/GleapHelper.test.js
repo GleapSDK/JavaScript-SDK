@@ -1,4 +1,4 @@
-import { flattenCompany, formatRelativeTime } from './GleapHelper';
+import { flattenCompany, formatRelativeTime, setGleapCookie } from './GleapHelper';
 
 describe('formatRelativeTime — the notification meta line', () => {
   const agoBy = (ms) => new Date(Date.now() - ms).toISOString();
@@ -286,5 +286,29 @@ describe('flattenCompany — must never mutate the caller and never throw', () =
     company.id = 'acme-1';
     company.name = 'Acme';
     expect(flattenCompany({ company })).toEqual({ companyId: 'acme-1', companyName: 'Acme' });
+  });
+});
+
+describe('setGleapCookie', () => {
+  const written = (protocol, credential) => {
+    const previous = { window: global.window, document: global.document };
+    global.window = { location: { host: 'app.example.com', protocol } };
+    global.document = { cookie: '' };
+    setGleapCookie('name', 'value', 1, credential);
+    const cookie = global.document.cookie;
+    global.window = previous.window;
+    global.document = previous.document;
+    return cookie;
+  };
+
+  test('a credential cookie gets SameSite=Lax, and Secure on https', () => {
+    expect(written('https:', true)).toMatch(/; SameSite=Lax; Secure$/);
+    expect(written('http:', true)).toMatch(/; SameSite=Lax$/);
+  });
+
+  test('other cookies keep their attributes', () => {
+    const cookie = written('https:', false);
+    expect(cookie).not.toContain('SameSite');
+    expect(cookie).not.toContain('Secure');
   });
 });

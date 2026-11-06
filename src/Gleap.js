@@ -479,6 +479,7 @@ class Gleap {
    * Identifies the user with an identity token (HS256 JWT signed by your backend).
    * The token is the whole identify: its `userId` (or `user_id`) claim names the user,
    * every other claim lands on the contact as signed data. Kept in memory only.
+   * Never rejects; refusals are logged.
    * @param {string} token
    * @returns {Promise<void>}
    */
@@ -487,9 +488,19 @@ class Gleap {
   }
 
   /**
+   * How long (ms) a signed session stays signed; the server never goes beyond
+   * the project's maximum. Sent with every identify. `null` drops it.
+   * Same as `initialize(sdkKey, { sessionDuration })`.
+   * @param {number | null} sessionDuration
+   */
+  static setSessionDuration(sessionDuration) {
+    GleapSession.getInstance().setSessionDuration(sessionDuration);
+  }
+
+  /**
    * Sets a function that returns a fresh identity token (or a Promise of one).
-   * Gleap calls it when the current token expired or is about to.
-   * @param {() => (string | Promise<string>)} provider
+   * Gleap calls it when the current token expired or is about to. `null` removes it.
+   * @param {(() => (string | null | Promise<string | null>)) | null} provider
    */
   static setUserJwtProvider(provider) {
     GleapSession.getInstance().setUserJwtProvider(provider);

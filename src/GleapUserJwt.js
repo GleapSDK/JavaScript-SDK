@@ -66,6 +66,7 @@ export const decodeGrant = (grant) => {
     }
     return {
       sid: typeof payload.sid === 'string' ? payload.sid : null,
+      iat: typeof payload.iat === 'number' ? payload.iat : null,
       exp: typeof payload.exp === 'number' ? payload.exp : null,
     };
   } catch (exp) {
@@ -82,7 +83,41 @@ export const fingerprintOf = (value) => {
   return (hash >>> 0).toString(36);
 };
 
-/** The identify refusal code in a 401 body (contract §3) or a 400 `identity_mismatch`, or null. */
+// Claims that change on every mint without changing who the token names or what it says.
+const VOLATILE_CLAIMS = ['iat', 'exp', 'nbf', 'jti'];
+
+const stableStringify = (value) => {
+  if (Array.isArray(value)) {
+    return '[' + value.map(stableStringify).join(',') + ']';
+  }
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stableStringify(value[key])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+};
+
+/**
+ * A fingerprint of what an identity token says: its `kid` and its claims
+ * without iat/exp/nbf/jti. A backend that mints a fresh token per page load
+ * for the same user and data gets the same fingerprint, so the identify is not
+ * sent again; a changed claim (email, plan, ...) or key does change it.
+ * Null for anything that is not a JWT.
+ */
+export const identityFingerprintOf = (token) => {
+  if (!isUserJwt(token)) {
+    return null;
+  }
+  try {
+    const [header, payload] = token.split('.').slice(0, 2).map((segment) => JSON.parse(decodeSegment(segment)));
+    const claims = { ...(payload && typeof payload === 'object' ? payload : {}) };
+    VOLATILE_CLAIMS.forEach((claim) => delete claims[claim]);
+    return fingerprintOf(stableStringify({ kid: header && header.kid !== undefined ? header.kid : null, claims }));
+  } catch (exp) {
+    return fingerprintOf(token);
+  }
+};
+
+/** The identify refusal code in a 401 body (contract §3: token_expired, token_invalid, signature_required) or a 400 `identity_mismatch`, or null. */
 export const identifyRefusalOf = (status, responseText) => {
   if (typeof responseText !== 'string') {
     return null;
@@ -98,6 +133,9 @@ export const identifyRefusalOf = (status, responseText) => {
   }
   if (responseText.indexOf('token_invalid') !== -1) {
     return 'token_invalid';
+  }
+  if (responseText.indexOf('signature_required') !== -1) {
+    return 'signature_required';
   }
   return null;
 };

@@ -180,14 +180,20 @@ export namespace Gleap {
    * contact as signed data. Nothing else is sent. Kept in memory only.
    * A token that is not a JWT, has no userId or is over 4096 characters is refused
    * with a console warning and no request.
+   * Never rejects; refusals are logged.
    */
   function setUserJwt(token: string): Promise<void>;
   /**
    * Returns a fresh identity token. Called when the current token expired, or before
    * a renewal when it expires within 5 minutes. One call at a time, 10 s timeout,
-   * 30 s pause after a failure.
+   * 30 s pause after a failure. `null` removes the provider.
    */
-  function setUserJwtProvider(provider: () => string | Promise<string>): void;
+  function setUserJwtProvider(provider: (() => string | null | Promise<string | null>) | null): void;
+  /**
+   * How long (ms) a signed session stays signed; the server never goes beyond the
+   * project's maximum. Same as `initialize(sdkKey, { sessionDuration })`. `null` drops it.
+   */
+  function setSessionDuration(sessionDuration: number | null): void;
   /**
    * Stores per-user tokens for your API tools on the signed contact
    * (`{{session.authTokens.<name>}}`). Names: a letter followed by up to 39 letters,

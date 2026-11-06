@@ -85,6 +85,10 @@ A valid token signs the session: the server answers with a grant that the SDK se
 Gleap.initialize("SDK-TOKEN", { sessionDuration: 24 * 60 * 60 * 1000 });
 ```
 
+or later with `Gleap.setSessionDuration(24 * 60 * 60 * 1000)` (the same call as in the mobile SDKs).
+
+`Gleap.setUserJwt` never rejects: a refused token (`token_expired`, `token_invalid`, `signature_required`) or a network error is logged to the console.
+
 `Gleap.getIdentity()` returns `{ gleapId, gleapHash, grant, ... }` for handing the signed session to your own help center or portal. A token for another user than the current session's makes the SDK start a fresh session and identify again (the server merges it into the right contact).
 
 `Gleap.clearIdentity()` on logout clears the contact, the token, the grant (and its cookie) and the auth tokens. The JWT provider stays set.

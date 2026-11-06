@@ -43,7 +43,7 @@ describe('identifyRefusalOf', () => {
     const body = JSON.stringify({ status: 401, detail: { value: 'token_expired' } });
     expect(identifyRefusalOf(401, body)).toBe('token_expired');
     expect(identifyRefusalOf(401, '{"details":{"value":"token_invalid"}}')).toBe('token_invalid');
-    expect(identifyRefusalOf(401, '{"details":{"value":"signature_required"}}')).toBeNull();
+    expect(identifyRefusalOf(401, '{"details":{"value":"signature_required"}}')).toBe('signature_required');
     expect(identifyRefusalOf(403, body)).toBeNull();
     expect(identifyRefusalOf(400, '{"error":{"details":{"value":"identity_mismatch"}}}')).toBe('identity_mismatch');
     expect(identifyRefusalOf(400, '{"error":"bad request"}')).toBeNull();

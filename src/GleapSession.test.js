@@ -460,21 +460,50 @@ describe('identity tokens (setUserJwt)', () => {
     expect(warn).toHaveBeenCalledTimes(2);
   });
 
-  it('sends an unchanged token once, and a new token for the same user once more', () => {
+  it('sends an unchanged token once, a re-minted one not again, and a token with changed claims once more', () => {
     const session = readySession();
-    const first = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+    const first = jwtOf({ userId: 'user-1', plan: 'pro', iat: inSeconds(0), exp: inSeconds(3600) });
     session.setUserJwt(first);
     respondIdentified(identifyRequests()[0]);
     session.setUserJwt(first);
     expect(identifyRequests()).toHaveLength(1);
 
-    const second = jwtOf({ userId: 'user-1', exp: inSeconds(7200) });
-    session.setUserJwt(second);
+    // A backend that mints a fresh token per page load: same user and claims, new iat/exp/jti.
+    session.setUserJwt(jwtOf({ userId: 'user-1', plan: 'pro', iat: inSeconds(60), exp: inSeconds(7200), jti: 'n2' }));
+    expect(identifyRequests()).toHaveLength(1);
+
+    const changed = jwtOf({ userId: 'user-1', plan: 'enterprise', exp: inSeconds(7200) });
+    session.setUserJwt(changed);
     expect(identifyRequests()).toHaveLength(2);
-    expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(second);
+    expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(changed);
     respondIdentified(identifyRequests()[1]);
-    session.setUserJwt(second);
+    session.setUserJwt(changed);
     expect(identifyRequests()).toHaveLength(2);
+  });
+
+  it('logs signature_required and resolves', async () => {
+    const session = readySession();
+    const done = session.setUserJwt(jwtOf({ userId: 'user-1' }));
+    identifyRequests()[0].respond(401, refusal('signature_required'));
+    await expect(done).resolves.toBeUndefined();
+    expect(warn).toHaveBeenCalledWith(
+      'Gleap: this project enforces identity verification and the identify had no valid signature (signature_required). Pass a token from your backend to setUserJwt.'
+    );
+    expect(warn).toHaveBeenCalledTimes(1);
+  });
+
+  it('never rejects on a network error or a server error, and logs once', async () => {
+    const session = readySession();
+    const offline = session.setUserJwt(jwtOf({ userId: 'user-1' }));
+    identifyRequests()[0].error();
+    await expect(offline).resolves.toBeUndefined();
+    expect(warn).toHaveBeenLastCalledWith(expect.stringContaining('network error'));
+
+    const unavailable = session.setUserJwt(jwtOf({ userId: 'user-1', plan: 'x' }));
+    identifyRequests()[1].respond(503, '');
+    await expect(unavailable).resolves.toBeUndefined();
+    expect(warn).toHaveBeenLastCalledWith(expect.stringContaining('HTTP 503'));
+    expect(warn).toHaveBeenCalledTimes(2);
   });
 
   it('keeps the legacy hash identify keyed by user only', () => {
@@ -515,7 +544,7 @@ describe('identity tokens (setUserJwt)', () => {
     expect(provider).toHaveBeenCalledTimes(1);
 
     identifyRequests()[1].respond(401, refusal('token_expired'));
-    await expect(done).rejects.toBeUndefined();
+    await expect(done).resolves.toBeUndefined();
     expect(identifyRequests()).toHaveLength(2);
   });
 
@@ -544,7 +573,7 @@ describe('identity tokens (setUserJwt)', () => {
     const session = readySession();
     const done = session.setUserJwt(jwtOf({ userId: 'user-1' }));
     identifyRequests()[0].respond(401, refusal(code));
-    await expect(done).rejects.toBeUndefined();
+    await expect(done).resolves.toBeUndefined();
 
     expect(session.session.gleapId).toBe('gleap-id-1');
     expect(session.ready).toBe(true);
@@ -692,7 +721,7 @@ describe('grant (signed session credential)', () => {
     expect(JSON.stringify(cacheStore['session-sdk-key'])).not.toContain(grant);
     const sessionCookieWrites = setGleapCookie.mock.calls.filter(([name]) => name === 'session-sdk-key');
     expect(sessionCookieWrites.every(([, value]) => !decodeURIComponent(value).includes(grant))).toBe(true);
-    expect(setGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key', encodeURIComponent(grant), expect.any(Number));
+    expect(setGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key', encodeURIComponent(grant), expect.any(Number), true);
 
     session.updateSession({ name: 'Other' });
     const update = MockXhr.instances.find((xhr) => xhr.url.endsWith('/sessions/partialupdate'));
@@ -769,6 +798,75 @@ describe('grant (signed session credential)', () => {
     await flush();
     expect(identifyRequests()).toHaveLength(2);
     expect(session.session.gleapId).toBe('gleap-id-new');
+  });
+
+  describe('refresh', () => {
+    const shortGrant = (lifetimeSeconds, iatOffset = 0) =>
+      jwtOf({ sid: 'gleap-id-1', uid: 'user-1', kid: 'k1', kind: 'jwt', iat: inSeconds(iatOffset), exp: inSeconds(iatOffset + lifetimeSeconds) });
+    const signIn = (session, grant) => {
+      session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      respondWithGrant(identifyRequests()[identifyRequests().length - 1], grant);
+    };
+
+    it('renews a minute before the grant lifetime ends, counted from receipt', async () => {
+      const session = readySession();
+      signIn(session, shortGrant(3600));
+      jest.advanceTimersByTime(3540 * 1000 - 1);
+      expect(identifyRequests()).toHaveLength(1);
+      jest.advanceTimersByTime(1);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+    });
+
+    it('a 60-70 s grant waits 30 s and renews at most once a minute (no loop)', async () => {
+      const session = readySession();
+      signIn(session, shortGrant(65));
+      jest.advanceTimersByTime(29 * 1000);
+      expect(identifyRequests()).toHaveLength(1);
+      jest.advanceTimersByTime(1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+
+      // The refresh answers with another short grant: the next refresh waits for the minute.
+      jest.advanceTimersByTime(1000);
+      respondWithGrant(identifyRequests()[1], shortGrant(65, 1));
+      await flush();
+      jest.advanceTimersByTime(30 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+      jest.advanceTimersByTime(29 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(3);
+    });
+
+    it('a fast device clock does not make a fresh grant due at once', async () => {
+      const session = readySession();
+      // Issued by a server whose clock is two hours behind the device: exp already lies in the device's past.
+      signIn(session, shortGrant(3600, -7200));
+      jest.advanceTimersByTime(60 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(1);
+      jest.advanceTimersByTime(3480 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+    });
+
+    it('skips while a refresh is in flight', async () => {
+      const session = readySession();
+      signIn(session, shortGrant(65));
+      jest.advanceTimersByTime(30 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+      expect(session.grantRefreshInFlight).toBe(true);
+      // Re-arming for the same grant while the refresh runs sends nothing more.
+      session.armGrantRefresh(session.grant, Date.now());
+      jest.advanceTimersByTime(120 * 1000);
+      await flush();
+      expect(identifyRequests()).toHaveLength(2);
+      identifyRequests()[1].error();
+      await flush();
+      expect(session.grantRefreshInFlight).toBe(false);
+    });
   });
 
   it('sends sessionDuration with identify', () => {
