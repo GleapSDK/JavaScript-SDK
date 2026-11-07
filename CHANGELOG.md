@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.5.1
+Fixed: the `getIdentity()` typing lists the identified user's fields again (`userId`, `name`, `email`, `phone`, `companyId`) next to `gleapId`, `gleapHash` and `grant`; 19.5.0 typed only the session pair and the grant, which broke TypeScript callers that read the user from it. No runtime change.
+
 ## 19.5.0
 Added: signed customer identity. `Gleap.setUserJwt(token)` identifies the user with an identity token (HS256 JWT signed by your backend); its `userId` claim names the user and every other claim lands on the contact as signed data. The token is kept in memory only, and the call never rejects: refusals are logged.
 Added: `Gleap.setUserJwtProvider(provider)` hands Gleap a function that returns a fresh identity token; it is called when the current token expired or is about to.
