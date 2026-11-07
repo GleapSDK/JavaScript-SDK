@@ -1150,6 +1150,316 @@ describe('grant (signed session credential)', () => {
     });
   });
 
+  describe('signed session expiry (a visitor afterwards, like Intercom on the web)', () => {
+    const { GleapFrameManager } = require('./Gleap');
+    const UNSIGNED_SIGNED_MODE = { identity: { signed: false, grant: null, mode: 'signed' } };
+    const sessionsRequests = () => MockXhr.instances.filter((xhr) => xhr.url.endsWith('/sessions'));
+    const answerUnsigned = (xhr) => xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...UNSIGNED_SIGNED_MODE }));
+    const token = (seconds = 3600, extra = {}) => jwtOf({ userId: 'user-1', ...extra, exp: inSeconds(seconds) });
+    let info;
+
+    beforeEach(() => {
+      info = jest.spyOn(console, 'info').mockImplementation(() => {});
+    });
+    afterEach(() => {
+      info.mockRestore();
+      GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn() }));
+    });
+
+    // Signs user-1 in on gleap-id-1 with a grant that runs out in `grantSeconds`.
+    const signedIn = (grantSeconds = 600, jwtSeconds = 3600) => {
+      const session = readySession();
+      session.setUserJwt(token(jwtSeconds));
+      respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1', inSeconds(grantSeconds)));
+      return session;
+    };
+
+    // The page is closed, then reopened `laterSeconds` on; the grant cookie expired with the grant.
+    const reloadLater = (laterSeconds, setup = () => {}) => {
+      jest.clearAllTimers();
+      jest.setSystemTime(Date.now() + laterSeconds * 1000);
+      MockXhr.instances = [];
+      const session = buildSession();
+      setup(session);
+      session.startSession();
+      return session;
+    };
+
+    const expectVisitor = async (session) => {
+      await flush();
+      expect(session.session.gleapId).toBe(null);
+      expect(session.session.userId).toBe('');
+      expect(session.grant).toBe(null);
+      expect(cacheStore['session-sdk-key']).toBe(null);
+      expect(cacheStore['signed-session-sdk-key']).toBe(null);
+      expect(session.lastIdentify).toBe(null);
+      jest.advanceTimersByTime(0);
+      const fresh = sessionsRequests()[sessionsRequests().length - 1];
+      expect(fresh.headers['Gleap-Id']).toBeUndefined();
+      fresh.respond(200, JSON.stringify({ gleapId: 'gleap-id-guest', gleapHash: 'gleap-hash-guest' }));
+      await flush();
+      expect(session.session.gleapId).toBe('gleap-id-guest');
+      expect(session.session.userId).toBeFalsy();
+    };
+
+    it('records the signed session (never the grant) when a grant arrives', () => {
+      const session = signedIn(600);
+      expect(cacheStore['signed-session-sdk-key']).toEqual({ sid: 'gleap-id-1', uid: 'user-1', exp: inSeconds(600) });
+      expect(JSON.stringify(cacheStore['signed-session-sdk-key'])).not.toContain(session.grant);
+      expect(setGleapCookie).toHaveBeenCalledWith('signed-session-sdk-key', expect.any(String), 365);
+    });
+
+    it('a reload after the grant expired, without a token or provider, continues as a fresh visitor', async () => {
+      signedIn(600);
+      const session = reloadLater(11 * 60);
+      expect(sessionsRequests()[0].headers['Gleap-Id']).toBe('gleap-id-1');
+      expect(sessionsRequests()[0].headers['Gleap-Grant']).toBeUndefined();
+      answerUnsigned(sessionsRequests()[0]);
+      await expectVisitor(session);
+      expect(identifyRequests()).toHaveLength(0);
+      expect(info).toHaveBeenCalledWith(expect.stringContaining('continues as a visitor'));
+      // The visitor session is final: nothing more is sent.
+      jest.advanceTimersByTime(10 * 60 * 1000);
+      await flush();
+      expect(sessionsRequests()).toHaveLength(2);
+      expect(identifyRequests()).toHaveLength(0);
+    });
+
+    it('setUserJwt on the visitor session signs the user in again (the server merges the visitor into them)', async () => {
+      signedIn(600);
+      const session = reloadLater(11 * 60);
+      answerUnsigned(sessionsRequests()[0]);
+      await expectVisitor(session);
+      const fresh = token();
+      session.setUserJwt(fresh);
+      expect(identifyRequests()).toHaveLength(1);
+      expect(identifyRequests()[0].headers['Gleap-Id']).toBe('gleap-id-guest');
+      expect(JSON.parse(identifyRequests()[0].body).userHash).toBe(fresh);
+      respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+      await flush();
+      expect(session.session.userId).toBe('user-1');
+      expect(session.hasLiveGrant()).toBe(true);
+      expect(cacheStore['signed-session-sdk-key']).toEqual(expect.objectContaining({ sid: 'gleap-id-1', uid: 'user-1' }));
+    });
+
+    it('a JWT provider with a fresh token keeps the user signed (asked once)', async () => {
+      signedIn(600);
+      const fresh = token();
+      const provider = jest.fn(() => Promise.resolve(fresh));
+      const session = reloadLater(11 * 60, (s) => s.setUserJwtProvider(provider));
+      answerUnsigned(sessionsRequests()[0]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(1);
+      expect(JSON.parse(identifyRequests()[0].body).userHash).toBe(fresh);
+      respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+      await flush();
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      expect(session.session.userId).toBe('user-1');
+      expect(session.hasLiveGrant()).toBe(true);
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('a JWT provider that returns null: the session ends (provider asked once, kept afterwards)', async () => {
+      signedIn(600);
+      const provider = jest.fn(() => null);
+      const session = reloadLater(11 * 60, (s) => s.setUserJwtProvider(provider));
+      answerUnsigned(sessionsRequests()[0]);
+      await expectVisitor(session);
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(session.jwtProvider).toBe(provider);
+      expect(identifyRequests()).toHaveLength(0);
+    });
+
+    it('setUserJwt sent before the /sessions answer: its grant keeps the user signed', async () => {
+      signedIn(600);
+      const fresh = token();
+      const session = reloadLater(11 * 60, (s) => s.setUserJwt(fresh));
+      expect(identifyRequests()).toHaveLength(1);
+      answerUnsigned(sessionsRequests()[0]);
+      await flush();
+      jest.advanceTimersByTime(30 * 1000);
+      await flush();
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
+      await flush();
+      expect(session.session.userId).toBe('user-1');
+      expect(session.hasLiveGrant()).toBe(true);
+      expect(identifyRequests()).toHaveLength(1);
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('setUserJwt with a token the server refuses: the session ends', async () => {
+      signedIn(600);
+      const session = reloadLater(11 * 60, (s) => s.setUserJwt(token(3600, { plan: 'x' })));
+      answerUnsigned(sessionsRequests()[0]);
+      identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_invalid' } }));
+      await expectVisitor(session);
+    });
+
+    it('an expired held token without a provider is not sent (it would only be refused)', async () => {
+      // The page stayed closed past both the token and the grant; the app hands the same old token again.
+      signedIn(600, 300);
+      const session = reloadLater(11 * 60, (s) => s.lastIdentify = { userId: 'user-1', userData: {}, userHash: token(-60) });
+      answerUnsigned(sessionsRequests()[0]);
+      await expectVisitor(session);
+      expect(identifyRequests()).toHaveLength(0);
+    });
+
+    it('a renewal that fails on the network keeps the session (no drop while offline)', async () => {
+      signedIn(600);
+      const session = reloadLater(11 * 60, (s) => s.setUserJwt(token()));
+      answerUnsigned(sessionsRequests()[0]);
+      identifyRequests()[0].error();
+      await flush();
+      jest.advanceTimersByTime(60 * 1000);
+      await flush();
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      expect(session.session.userId).toBe('user-1');
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('a session identified without a token stays identified (no signed lifetime to expire)', async () => {
+      // identify('user-1', data) without a token: an identified session, never a grant.
+      const first = readySession();
+      first.identifySession('user-1', { name: 'Bec Changed' })?.catch?.(() => {});
+      identifyRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...UNSIGNED_SIGNED_MODE }));
+      expect(cacheStore['signed-session-sdk-key']).toBeUndefined();
+      const session = reloadLater(30 * 24 * 3600);
+      answerUnsigned(sessionsRequests()[0]);
+      await flush();
+      jest.advanceTimersByTime(60 * 1000);
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      expect(session.session.userId).toBe('user-1');
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('a grant that is merely missing (cookie gone) before its expiry keeps today\'s behaviour', async () => {
+      signedIn(600);
+      const session = reloadLater(5 * 60);
+      answerUnsigned(sessionsRequests()[0]);
+      await flush();
+      jest.advanceTimersByTime(0);
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      expect(session.session.userId).toBe('user-1');
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('a Classic answer (no identity) after the expiry keeps the session', async () => {
+      signedIn(600);
+      const session = reloadLater(11 * 60);
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+      await flush();
+      jest.advanceTimersByTime(0);
+      expect(session.session.userId).toBe('user-1');
+      expect(info).not.toHaveBeenCalled();
+    });
+
+    it('a visitor signed in through a merge (the answer names another session) gets the expiry check too', async () => {
+      seedCachedSession();
+      cacheStore['session-sdk-key'] = { gleapId: 'gleap-id-guest', gleapHash: 'gleap-hash-guest' };
+      const session = buildSession();
+      session.startSession();
+      session.setUserJwt(token(300));
+      identifyRequests()[0].respond(
+        200,
+        JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: true, kid: 'k1', kind: 'jwt', grant: grantFor('gleap-id-1', inSeconds(600)) } })
+      );
+      expect(session.session.gleapId).toBe('gleap-id-1');
+      expect(session.signedSessionExpiryTimeout).not.toBe(null);
+      session.lastIdentify = null;
+      MockXhr.instances = [];
+      jest.advanceTimersByTime(600 * 1000);
+      await flush();
+      expect(sessionsRequests()).toHaveLength(1);
+    });
+
+    it('clearSession forgets the signed session', () => {
+      const session = signedIn(600);
+      session.clearSession(0, false);
+      expect(cacheStore['signed-session-sdk-key']).toBe(null);
+      expect(eraseGleapCookie).toHaveBeenCalledWith('signed-session-sdk-key');
+      expect(session.signedSessionExpiryTimeout).toBe(null);
+    });
+
+    describe('a page left open past the expiry', () => {
+      it('asks the server at the expiry and continues as a visitor when nothing renews it', async () => {
+        // Token valid 5 min, grant 10 min, no provider: the refresh a minute before the end sends the expired token.
+        const session = signedIn(600, 300);
+        MockXhr.instances = [];
+        jest.advanceTimersByTime(540 * 1000);
+        await flush();
+        expect(identifyRequests()).toHaveLength(1);
+        identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_expired' } }));
+        await flush();
+        expect(sessionsRequests()).toHaveLength(0);
+
+        jest.advanceTimersByTime(60 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(1);
+        expect(sessionsRequests()[0].headers['Gleap-Id']).toBe('gleap-id-1');
+        answerUnsigned(sessionsRequests()[0]);
+        await expectVisitor(session);
+        // The refused token is not sent again.
+        expect(identifyRequests()).toHaveLength(1);
+      });
+
+      it('a renewed grant re-arms the check: nothing ends', async () => {
+        const session = signedIn(600);
+        MockXhr.instances = [];
+        jest.advanceTimersByTime(540 * 1000);
+        await flush();
+        respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1', inSeconds(600)));
+        jest.advanceTimersByTime(120 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(0);
+        expect(session.hasLiveGrant()).toBe(true);
+      });
+
+      it('takes a grant another tab renewed from the cookie', async () => {
+        const session = signedIn(600);
+        session.lastIdentify = null; // no refresh from this tab
+        const renewed = grantFor('gleap-id-1', inSeconds(1800));
+        getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(renewed) : null));
+        MockXhr.instances = [];
+        jest.advanceTimersByTime(600 * 1000);
+        await flush();
+        expect(session.grant).toBe(renewed);
+        expect(sessionsRequests()).toHaveLength(0);
+      });
+
+      it('waits while the messenger is open, then ends once it closes (at most an hour)', async () => {
+        let open = true;
+        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn(), isOpened: () => open }));
+        const session = signedIn(600);
+        session.lastIdentify = null;
+        MockXhr.instances = [];
+        jest.advanceTimersByTime(600 * 1000 + 30 * 60 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(0);
+        open = false;
+        jest.advanceTimersByTime(60 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(1);
+        answerUnsigned(sessionsRequests()[0]);
+        await expectVisitor(session);
+      });
+
+      it('the messenger left open: the session still ends an hour after the expiry', async () => {
+        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn(), isOpened: () => true }));
+        const session = signedIn(600);
+        session.lastIdentify = null;
+        MockXhr.instances = [];
+        jest.advanceTimersByTime(600 * 1000 + 59 * 60 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(0);
+        jest.advanceTimersByTime(2 * 60 * 1000);
+        await flush();
+        expect(sessionsRequests()).toHaveLength(1);
+      });
+    });
+  });
+
   it('drops an identify answer that lands after a logout', async () => {
     const session = readySession();
     session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));

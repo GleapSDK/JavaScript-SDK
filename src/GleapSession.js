@@ -35,6 +35,11 @@ const GRANT_REFRESH_MIN_DELAY_MS = 30 * 1000;
 const GRANT_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
 // A refresh that failed or could not run yet is tried again after this pause.
 const GRANT_REFRESH_RETRY_MS = 60 * 1000;
+// A signed session whose grant runs out while the messenger is open ends
+// once it closes, at the latest this long after the grant expired (Intercom's
+// one-hour cookie for activity after expiry). Checked once a minute.
+const SIGNED_SESSION_GRACE_MS = 60 * 60 * 1000;
+const SIGNED_SESSION_GRACE_CHECK_MS = 60 * 1000;
 const SIGNATURE_REQUIRED_WARNING =
   'Gleap: this project enforces identity verification and the identify had no valid signature (signature_required). Pass a token from your backend to setUserJwt.';
 
@@ -137,6 +142,16 @@ export default class GleapSession {
   // only, never the token itself): an app that identifies on every render
   // does not send the same refused token again and again.
   refusedIdentity = null;
+  // `{ sid, uid, exp }` of the last grant this device received (no credential):
+  // the session was signed until `exp`. Outlives the grant and its cookie
+  // (cache plus a cookie, like the session) so a reload after the expiry knows
+  // the session was signed. Signed mode ends such a session when its grant ran
+  // out and no fresh token arrives: the user continues as a visitor (Intercom's
+  // logged-out visitor). Sessions identified without a token or hash never
+  // get one and stay identified.
+  signedSession = null;
+  signedSessionExpiryTimeout = null;
+  signedSessionExpiryRunning = false;
 
   // GleapSession singleton
   static instance;
@@ -317,6 +332,9 @@ export default class GleapSession {
       return;
     }
     this.grant = next;
+    if (next) {
+      this.rememberSignedSession(decodeGrant(next));
+    }
     if (this.useCookies) {
       try {
         if (next) {
@@ -446,12 +464,14 @@ export default class GleapSession {
     }
   };
 
+  /** Erases the grant cookie and the signed-session cookie (cookies turned off). */
   eraseGrantCookie = () => {
     if (!this.sdkKey) {
       return;
     }
     try {
       eraseGleapCookie(this.grantCookieName());
+      eraseGleapCookie(this.signedSessionKey());
     } catch (exp) {}
   };
 
@@ -474,9 +494,230 @@ export default class GleapSession {
       const decoded = decodeGrant(grant);
       if (decoded && decoded.sid === this.session.gleapId) {
         this.grant = grant;
+        // A grant from an SDK before the signed-session record: record it now.
+        this.rememberSignedSession(decoded);
         this.scheduleGrantRefresh(null);
       }
     } catch (exp) {}
+  };
+
+  signedSessionKey = () => `signed-session-${this.sdkKey}`;
+
+  /** Records that the session `decoded.sid` was signed for `decoded.uid` until `decoded.exp`, and arms the expiry check. */
+  rememberSignedSession = (decoded) => {
+    if (!decoded || !decoded.sid || !decoded.uid) {
+      return;
+    }
+    const record = { sid: decoded.sid, uid: decoded.uid, exp: decoded.exp };
+    const current = this.signedSession;
+    if (!current || current.sid !== record.sid || current.uid !== record.uid || current.exp !== record.exp) {
+      this.signedSession = record;
+      if (!this.localStorageDisabled) {
+        try {
+          saveToGleapCache(this.signedSessionKey(), record);
+        } catch (exp) {}
+      }
+      if (this.useCookies) {
+        try {
+          setGleapCookie(this.signedSessionKey(), encodeURIComponent(JSON.stringify(record)), 365);
+        } catch (exp) {}
+      }
+    }
+    this.armSignedSessionExpiry();
+  };
+
+  forgetSignedSession = () => {
+    clearTimeout(this.signedSessionExpiryTimeout);
+    this.signedSessionExpiryTimeout = null;
+    this.signedSession = null;
+    try {
+      saveToGleapCache(this.signedSessionKey(), null);
+    } catch (exp) {}
+    if (this.useCookies) {
+      try {
+        eraseGleapCookie(this.signedSessionKey());
+      } catch (exp) {}
+    }
+  };
+
+  /** The signed-session record for the current session and user, or null. */
+  currentSignedSession = () => {
+    if (!this.signedSession) {
+      let stored = null;
+      try {
+        stored = this.localStorageDisabled ? null : loadFromGleapCache(this.signedSessionKey());
+      } catch (exp) {}
+      if (!stored && this.useCookies) {
+        try {
+          const cookie = getGleapCookie(this.signedSessionKey());
+          stored = cookie ? JSON.parse(decodeURIComponent(cookie)) : null;
+        } catch (exp) {}
+      }
+      if (stored && typeof stored === 'object' && typeof stored.sid === 'string' && typeof stored.uid === 'string') {
+        this.signedSession = { sid: stored.sid, uid: stored.uid, exp: typeof stored.exp === 'number' ? stored.exp : null };
+      }
+    }
+    const record = this.signedSession;
+    if (
+      !record ||
+      !this.session ||
+      !this.session.gleapId ||
+      record.sid !== this.session.gleapId ||
+      this.session.userId === undefined ||
+      this.session.userId === null ||
+      record.uid !== String(this.session.userId)
+    ) {
+      return null;
+    }
+    return record;
+  };
+
+  /** The current session was signed, its signed lifetime has passed and no live grant renewed it. */
+  signedSessionExpired = () => {
+    const record = this.currentSignedSession();
+    return !!record && record.exp !== null && record.exp * 1000 <= Date.now() && !this.hasLiveGrant();
+  };
+
+  /** Checks the signed session once its grant has run out (a page left open past the expiry). */
+  armSignedSessionExpiry = (at = null) => {
+    clearTimeout(this.signedSessionExpiryTimeout);
+    this.signedSessionExpiryTimeout = null;
+    const record = this.currentSignedSession();
+    // Already past (a reload after the expiry): the /sessions answer decides, no timer.
+    if (!record || record.exp === null || (at === null && record.exp * 1000 <= Date.now())) {
+      return;
+    }
+    const due = at !== null ? at : record.exp * 1000;
+    // setTimeout overflows above ~24.8 days; the callback re-arms until `due`.
+    const delay = Math.min(Math.max(0, due - Date.now()), 2147483647);
+    this.signedSessionExpiryTimeout = setTimeout(() => {
+      this.signedSessionExpiryTimeout = null;
+      this.onSignedSessionExpiryDue(due);
+    }, delay);
+  };
+
+  onSignedSessionExpiryDue = (due) => {
+    if (Date.now() < due - 1000) {
+      this.armSignedSessionExpiry(due);
+      return;
+    }
+    const record = this.currentSignedSession();
+    if (!record || record.exp === null || record.exp * 1000 > Date.now()) {
+      // Renewed meantime (its own expiry check was armed), or the session changed.
+      return;
+    }
+    // Another tab of the same site renewed it: take its grant from the cookie.
+    if (this.useCookies) {
+      try {
+        const cookie = getGleapCookie(this.grantCookieName());
+        const grant = cookie ? decodeURIComponent(cookie) : null;
+        const decoded = grant ? decodeGrant(grant) : null;
+        if (decoded && decoded.sid === this.session.gleapId && decoded.exp !== null && decoded.exp * 1000 > Date.now()) {
+          this.setGrant(grant);
+          return;
+        }
+      } catch (exp) {}
+    }
+    if (this.hasLiveGrant()) {
+      return;
+    }
+    // The user is in the messenger: wait until they close it, at most an hour.
+    if (this.messengerOpen() && Date.now() < record.exp * 1000 + SIGNED_SESSION_GRACE_MS) {
+      this.armSignedSessionExpiry(Date.now() + SIGNED_SESSION_GRACE_CHECK_MS);
+      return;
+    }
+    // Ask the server: in Signed mode it answers "not signed", which renews
+    // the session with a fresh token or ends it (startSession).
+    this.startSession();
+  };
+
+  messengerOpen = () => {
+    try {
+      const frameManager = GleapFrameManager.getInstance();
+      return !!(frameManager && typeof frameManager.isOpened === 'function' && frameManager.isOpened());
+    } catch (exp) {
+      return false;
+    }
+  };
+
+  /**
+   * A /sessions answer in Signed mode saying "not signed" for a session whose
+   * signed lifetime has passed. Tries once to sign it again: an identify already
+   * on its way, the held token or hash (renewed through the JWT provider when
+   * it expires soon), else a token from the provider. When none brings a live
+   * grant, the session ends like clearIdentity (the JWT provider stays) and a
+   * fresh visitor session starts; a later setUserJwt signs the user in again
+   * and the server merges the visitor's activity into them. Transient failures
+   * keep the session.
+   */
+  renewOrEndExpiredSignedSession = () => {
+    if (this.signedSessionExpiryRunning) {
+      return;
+    }
+    this.signedSessionExpiryRunning = true;
+    const generation = this.logoutGeneration;
+    let attempt = null;
+    try {
+      attempt = this.renewExpiredSignedSession();
+    } catch (exp) {}
+    const decide = () => {
+      // onContactSettled gives up after its timeout: an identify still on its way decides first.
+      if (this.logoutGeneration === generation && (this.identifyInFlight || this.pendingContactUpdates > 0)) {
+        settle();
+        return;
+      }
+      this.signedSessionExpiryRunning = false;
+      if (this.logoutGeneration !== generation || !this.signedSessionExpired() || this.identifyFailedTransiently) {
+        return;
+      }
+      this.endExpiredSignedSession();
+    };
+    const settle = () => this.onContactSettled(decide, JWT_PROVIDER_TIMEOUT_MS);
+    Promise.resolve(attempt).then(settle, settle);
+  };
+
+  /** The one renewal attempt for an expired signed session. Returns a Promise, or null when nothing was sent. */
+  renewExpiredSignedSession = () => {
+    if (this.identifyInFlight) {
+      // Its answer decides (onContactSettled waits for it).
+      return null;
+    }
+    const identify = this.lastIdentify;
+    const generation = this.logoutGeneration;
+    if (identify && identify.userHash && this.refusedIdentity !== this.refusedIdentityOf(identify.userId, identify.userHash)) {
+      const token = decodeUserJwt(identify.userHash);
+      const tokenExpired = token && token.exp !== null && token.exp * 1000 <= Date.now();
+      if (!tokenExpired || this.jwtProvider) {
+        this.markSignedModeIdentify();
+        return Promise.resolve(
+          this.withFreshIdentify(({ userId, userData, userHash }) => {
+            const fresh = decodeUserJwt(userHash);
+            if (fresh && fresh.exp !== null && fresh.exp * 1000 <= Date.now()) {
+              // The provider had nothing newer: the expired token would only be refused.
+              return;
+            }
+            return this.trackContactUpdate(this.sendIdentify(userId, userData, userHash, true));
+          })
+        ).catch(() => {});
+      }
+    }
+    if (this.jwtProvider) {
+      this.signedModeProviderAsked = true;
+      return this.requestUserJwt().then((token) => {
+        if (!token || this.logoutGeneration !== generation || this.identifyInFlight) {
+          return;
+        }
+        return this.setUserJwt(token);
+      });
+    }
+    return null;
+  };
+
+  endExpiredSignedSession = () => {
+    console.info(
+      'Gleap: the signed session expired and no fresh identity token arrived, so the user continues as a visitor. Call Gleap.setUserJwt (or set Gleap.setUserJwtProvider) to sign them in again; their visitor activity on this device is merged into their contact.'
+    );
+    this.clearSession(0, true);
   };
 
   /**
@@ -535,6 +776,8 @@ export default class GleapSession {
     this.authTokens = {};
     this.authTokensSentFor = null;
     this.setGrant(null, false);
+    this.forgetSignedSession();
+    this.signedSessionExpiryRunning = false;
     this.contactVersion++;
     this.logoutGeneration++;
     this.signedModeIdentifySent = false;
@@ -653,6 +896,9 @@ export default class GleapSession {
     // A cached session: its grant cookie is read before the session-ready
     // listeners run, so an identify queued before initialize sees it.
     this.restoreGrant();
+    // A grant for the session this answer switched to (a visitor merged into
+    // the contact) was recorded before the switch: arm its expiry check now.
+    this.armSignedSessionExpiry();
     if (session.fileAccessToken) this.openRequestedProtectedFile();
     clearTimeout(this.fileRefreshTimeout);
     if (session.fileAccessToken && this.lastIdentify?.userHash) {
@@ -977,6 +1223,7 @@ export default class GleapSession {
       }
     }
     this.restoreGrant();
+    this.armSignedSessionExpiry();
 
     const self = this;
     const contactVersionAtSend = this.contactVersion;
@@ -1003,7 +1250,19 @@ export default class GleapSession {
           try {
             const sessionData = JSON.parse(http.responseText);
             self.validateSession(sessionData);
-            self.identifyForSignedModeIfNeeded();
+            const answeredIdentity = sessionData && sessionData.identity;
+            if (
+              answeredIdentity &&
+              typeof answeredIdentity === 'object' &&
+              answeredIdentity.mode === 'signed' &&
+              answeredIdentity.signed === false &&
+              self.signedSessionExpired()
+            ) {
+              // Signed mode, and this session's signed lifetime has passed.
+              self.renewOrEndExpiredSignedSession();
+            } else {
+              self.identifyForSignedModeIfNeeded();
+            }
           } catch (exp) {}
         } else {
           if (http.status !== 429) {

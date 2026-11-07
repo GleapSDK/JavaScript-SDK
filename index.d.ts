@@ -24,6 +24,7 @@ export namespace Gleap {
    *
    * `options.sessionDuration`: how long (ms) a signed session stays signed before a new
    * identify is needed. The server never goes beyond the project's session max age.
+   * A signed session that runs out without a fresh token continues as a visitor.
    * A boolean second argument is the legacy `disablePing` flag and is still accepted
    * (the ping it controlled no longer exists, so it has no effect).
    *
@@ -227,7 +228,8 @@ export namespace Gleap {
    * a page reload: when the server reports Signed mode for an identified session without
    * a valid grant (no grant cookie) and no token was passed to `setUserJwt`, it is asked
    * once per page load and the user is identified with its token. Returning `null`
-   * sends nothing. One call at a time, 10 s timeout, 30 s pause after a failure.
+   * sends nothing; when the session's grant has expired, the user then continues as a
+   * visitor. One call at a time, 10 s timeout, 30 s pause after a failure.
    * `null` removes the provider.
    */
   function setUserJwtProvider(provider: (() => string | null | Promise<string | null>) | null): void;
