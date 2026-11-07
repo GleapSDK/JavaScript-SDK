@@ -493,7 +493,21 @@ export namespace Gleap {
    * The current session, including `gleapId`, `gleapHash` and `grant` (the signed-session
    * credential a signed identify returns; null when the session is not signed).
    */
-  function getIdentity(): { gleapId: string | null; gleapHash: string | null; grant: string | null; [key: string]: any };
+  /**
+   * The current session: the identified user's data (userId, name, email, phone, … as before) plus
+   * gleapId/gleapHash and, on a Signed project, the session grant. Guests have no userId.
+   */
+  function getIdentity(): {
+    userId: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+    companyId?: string;
+    gleapId: string | null;
+    gleapHash: string | null;
+    grant: string | null;
+    [key: string]: any;
+  };
   function isUserIdentified(): boolean;
   function setReplayOptions(options: {
     blockClass?: string | RegExp;
