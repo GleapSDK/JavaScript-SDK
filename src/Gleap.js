@@ -235,18 +235,28 @@ class Gleap {
   }
 
   /**
-   * Initializes the SDK
-   * @param {*} sdkKey
-   * @param {boolean | { disablePing?: boolean, sessionDuration?: number }} [options]
+   * Initializes the SDK with your Project ID (formerly called "SDK key"; the value is
+   * the same, existing keys keep working).
+   * @param {string | { projectId: string, sessionDuration?: number }} projectId
+   *   The Project ID, or an options object that carries it as `projectId`.
+   * @param {boolean | { projectId?: string, disablePing?: boolean, sessionDuration?: number }} [options]
    *   sessionDuration: how long (ms) a signed session stays signed; the server never goes
    *   beyond the project's maximum. A boolean (the legacy `disablePing` argument) and
    *   `disablePing` are accepted and have no effect: the ping no longer exists.
    */
-  static initialize(sdkKey, options) {
+  static initialize(projectId, options) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn('Gleap already initialized.');
       return;
+    }
+
+    // Gleap.initialize({ projectId, ...options })
+    if (projectId && typeof projectId === 'object') {
+      options = projectId;
+      projectId = options.projectId;
+    } else if (!projectId && options && typeof options === 'object' && options.projectId) {
+      projectId = options.projectId;
     }
 
     if (options && typeof options === 'object' && 'sessionDuration' in options) {
@@ -273,7 +283,7 @@ class Gleap {
 
     // Start session
     const sessionInstance = GleapSession.getInstance();
-    sessionInstance.sdkKey = sdkKey;
+    sessionInstance.sdkKey = projectId;
     sessionInstance.setOnSessionReady(() => {
       // Run auto configuration.
       setTimeout(() => {
@@ -498,7 +508,7 @@ class Gleap {
   /**
    * How long (ms) a signed session stays signed; the server never goes beyond
    * the project's maximum. Sent with every identify. `null` drops it.
-   * Same as `initialize(sdkKey, { sessionDuration })`.
+   * Same as `initialize(projectId, { sessionDuration })`.
    * @param {number | null} sessionDuration
    */
   static setSessionDuration(sessionDuration) {

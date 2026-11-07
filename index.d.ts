@@ -2,15 +2,39 @@
 export type GleapRegion = "eu" | "us";
 
 export namespace Gleap {
+  /** Options for `initialize`. */
+  interface InitializeOptions {
+    /**
+     * Your Project ID (Gleap dashboard: Settings > Project, or the install page).
+     * Only needed when `initialize` is called with the options object alone.
+     */
+    projectId?: string;
+    /**
+     * How long (ms) a signed session stays signed before a new identify is needed.
+     * The server never goes beyond the project's session max age.
+     */
+    sessionDuration?: number;
+    /** @deprecated Has no effect: the ping it controlled no longer exists. */
+    disablePing?: boolean;
+  }
   /**
+   * Initializes Gleap with your Project ID (formerly called "SDK key" or "API key";
+   * the value is the same, existing keys keep working).
+   *
    * `options.sessionDuration`: how long (ms) a signed session stays signed before a new
    * identify is needed. The server never goes beyond the project's session max age.
    * A boolean second argument is the legacy `disablePing` flag and is still accepted
    * (the ping it controlled no longer exists, so it has no effect).
+   *
+   * @example Gleap.initialize("YOUR_PROJECT_ID");
+   * @example Gleap.initialize({ projectId: "YOUR_PROJECT_ID", sessionDuration: 86400000 });
    */
   function initialize(
-    sdkKey: string,
-    options?: boolean | { disablePing?: boolean; sessionDuration?: number }
+    projectId: string,
+    options?: boolean | InitializeOptions
+  ): void;
+  function initialize(
+    options: InitializeOptions & { projectId: string }
   ): void;
   function sendSilentCrashReport(
     description: string,
@@ -200,7 +224,7 @@ export namespace Gleap {
   function setUserJwtProvider(provider: (() => string | null | Promise<string | null>) | null): void;
   /**
    * How long (ms) a signed session stays signed; the server never goes beyond the
-   * project's maximum. Same as `initialize(sdkKey, { sessionDuration })`. `null` drops it.
+   * project's maximum. Same as `initialize(projectId, { sessionDuration })`. `null` drops it.
    */
   function setSessionDuration(sessionDuration: number | null): void;
   /**

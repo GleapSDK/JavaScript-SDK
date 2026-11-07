@@ -112,7 +112,7 @@ export default class GleapSession {
   // How the last identify failed ('refused' when a refusal was logged, else
   // 'network error' / 'HTTP <status>'), for setUserJwt's log line.
   lastIdentifyFailure = null;
-  // Gleap.initialize(sdkKey, { sessionDuration }): asks the server for a
+  // Gleap.initialize(projectId, { sessionDuration }): asks the server for a
   // shorter grant (ms). Sent with every identify.
   sessionDuration = null;
   // Bumped only by clearSession (logout, destroy, rejected session). An
@@ -1457,7 +1457,7 @@ export default class GleapSession {
     return retry;
   };
 
-  /** Gleap.setSessionDuration / initialize(sdkKey, { sessionDuration }): a positive number of milliseconds, or null to drop it. */
+  /** Gleap.setSessionDuration / initialize(projectId, { sessionDuration }): a positive number of milliseconds, or null to drop it. */
   setSessionDuration = (sessionDuration) => {
     if (sessionDuration === undefined || sessionDuration === null) {
       this.sessionDuration = null;
