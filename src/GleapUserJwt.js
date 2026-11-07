@@ -52,7 +52,7 @@ export const decodeUserJwt = (token) => {
 };
 
 /**
- * Reads `{ sid, exp }` from a grant (the server-signed session credential an
+ * Reads `{ sid, uid, iat, exp }` from a grant (the server-signed session credential an
  * identify returns) without verifying it. Null for anything that is not a JWT.
  */
 export const decodeGrant = (grant) => {
@@ -66,6 +66,7 @@ export const decodeGrant = (grant) => {
     }
     return {
       sid: typeof payload.sid === 'string' ? payload.sid : null,
+      uid: typeof payload.uid === 'string' ? payload.uid : null,
       iat: typeof payload.iat === 'number' ? payload.iat : null,
       exp: typeof payload.exp === 'number' ? payload.exp : null,
     };

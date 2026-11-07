@@ -88,6 +88,8 @@ Gleap.initialize("YOUR_PROJECT_ID", { sessionDuration: 24 * 60 * 60 * 1000 });
 
 or later with `Gleap.setSessionDuration(24 * 60 * 60 * 1000)` (the same call as in the mobile SDKs).
 
+When the grant runs out and no fresh token arrives (no `setUserJwt` on this page load, and the JWT provider returns `null` or is not set), the signed session ends: the user continues as a visitor with no conversation history, as in Intercom's web Messenger. A token passed later signs them in again, and what they did as a visitor on this device is merged into their contact. If the messenger is open when the grant runs out, the session ends once it is closed, at the latest an hour later. A user identified with `Gleap.identify(userId, data)` and no token or hash was never signed and stays identified (only their last 14 days of conversations are shown in Signed mode).
+
 `Gleap.setUserJwt` never rejects: a refused token (`token_expired`, `token_invalid`, `signature_required`) or a network error is logged to the console.
 
 `Gleap.getIdentity()` returns `{ gleapId, gleapHash, grant, ... }` for handing the signed session to your own help center or portal. A token for another user than the current session's makes the SDK start a fresh session and identify again (the server merges it into the right contact).

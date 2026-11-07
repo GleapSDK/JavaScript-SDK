@@ -1,5 +1,11 @@
 # Changelog
 
+## 19.7.0
+Changed: a signed session that expires now ends, as in Intercom's web Messenger. When the grant runs out (the project's "Signed login lasts", 7 days by default, or `sessionDuration`) and no fresh identity token arrives (no `setUserJwt` on that page load, and the JWT provider returns `null` or is not set), the SDK ends the identified session and continues as a fresh visitor with no conversation history, like `Gleap.clearIdentity()` (the JWT provider stays set). Until now the user stayed identified but unsigned (14 days of history, protected fields read-only). Before ending it, the SDK tries once to sign the session again: an identify already on its way, the token passed to `setUserJwt`, or the JWT provider. A network failure keeps the session. A later `setUserJwt` (or provider token) signs the user in again, and the server merges their visitor activity on this device into their contact.
+Added: a page left open past the expiry is checked when the grant runs out. If another tab renewed the grant, the SDK takes it from the cookie. If the messenger is open, the session ends once it is closed, at the latest an hour after the expiry (Intercom's one-hour cookie for activity after expiry).
+Unchanged: users identified with `Gleap.identify(userId, data)` and no token or hash were never signed and stay identified. A grant that is only missing before its expiry (cookie deleted, cookies off) is restored as before. Classic projects are not affected.
+The SDK keeps `{ gleapId, userId, exp }` of the last grant (no credential) in the `signed-session-<projectId>` cache entry and cookie, so a reload after the expiry knows the session was signed.
+
 ## 19.6.1
 Documentation only: README, package description and doc comments name the Project ID (Settings → Project → General) and sign users in with `setUserJwt`. No code changes.
 
