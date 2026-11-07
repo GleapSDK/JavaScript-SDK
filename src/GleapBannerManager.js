@@ -1,4 +1,4 @@
-import Gleap, { GleapFrameManager } from './Gleap';
+import Gleap, { GleapFrameManager, GleapSession, GleapStreamedEvent } from './Gleap';
 import { isOutboundActionBlocked } from './GleapCaptureSettings';
 import { bootstrapGleapFrame } from './GleapHelper';
 import { originMatchesUrl } from './GleapMessageSecurity';
@@ -19,11 +19,21 @@ const clipsOverflow = (style) => {
  */
 export const bodyClipsInlineBanner = (htmlStyle, bodyStyle) => clipsOverflow(htmlStyle) && clipsOverflow(bodyStyle);
 
+// "Until dismissed" banners (server: outboundactions/untilDismissed.ts) come back on every page
+// load until the person closes them. The close is reported as this streamed event.
+export const closedBannerEventName = (outboundId) => `outbound-${outboundId}-closed`;
+
+// Closed until-dismissed banners per contact, so a copy the server queued before it heard of the
+// close is not shown again here.
+const MAX_CLOSED_BANNERS = 50;
+
 export default class GleapBannerManager {
   bannerUrl = 'https://outboundmedia.gleap.io';
   bannerContainer = null;
   bannerData = null;
   disabled = false;
+  // Engagements whose close was reported again during this page load.
+  closedReportedThisPage = new Set();
 
   // GleapBannerManager singleton
   static instance;
@@ -83,7 +93,9 @@ export default class GleapBannerManager {
           }
         }
         if (data.name === 'banner-close') {
+          const closedBanner = this.bannerData;
           this.removeBannerUI();
+          this.bannerWasClosed(closedBanner);
         }
         // While the widget is hidden for a capture (screenshot or recording), actions open nothing.
         if (isOutboundActionBlocked(data.name)) {
@@ -211,6 +223,82 @@ export default class GleapBannerManager {
   }
 
   showBanner(bannerData) {
+    const outboundId = bannerData?.untilDismissed ? bannerData?.outbound : null;
+    if (outboundId) {
+      // Closed here already: the server still sends it, so it never heard of the close. Tell it
+      // again, once per page load.
+      if (this.loadClosedBanners().includes(outboundId)) {
+        if (!this.closedReportedThisPage.has(outboundId)) {
+          this.closedReportedThisPage.add(outboundId);
+          this.reportBannerClosed(outboundId);
+        }
+        return;
+      }
+
+      // Already on screen: every trigger (e.g. each page view) delivers it again.
+      if (this.bannerContainer && this.bannerData?.untilDismissed && this.bannerData?.outbound === outboundId) {
+        return;
+      }
+    }
+
     this.injectBannerUI(bannerData);
+  }
+
+  /**
+   * The person closed the banner (its X or one of its buttons). An until-dismissed banner stays
+   * closed: remembered here and reported to the server.
+   */
+  bannerWasClosed(bannerData) {
+    const outboundId = bannerData?.untilDismissed ? bannerData?.outbound : null;
+    if (!outboundId) {
+      return;
+    }
+
+    this.rememberClosedBanner(outboundId);
+    this.closedReportedThisPage.add(outboundId);
+    this.reportBannerClosed(outboundId);
+  }
+
+  reportBannerClosed(outboundId) {
+    try {
+      const streamedEvent = GleapStreamedEvent.getInstance();
+      streamedEvent.logEvent(closedBannerEventName(outboundId));
+      // Right away, not with the next 2.5 s tick: the page may be left at once.
+      streamedEvent.streamEvents();
+    } catch (exp) {}
+  }
+
+  closedBannersKey() {
+    try {
+      const gleapId = GleapSession.getInstance()?.session?.gleapId;
+      return gleapId ? `gleap-closed-banners-${gleapId}` : null;
+    } catch (exp) {
+      return null;
+    }
+  }
+
+  loadClosedBanners() {
+    try {
+      const key = this.closedBannersKey();
+      if (!key) {
+        return [];
+      }
+      const closedBanners = JSON.parse(localStorage.getItem(key));
+      return Array.isArray(closedBanners) ? closedBanners : [];
+    } catch (exp) {
+      return [];
+    }
+  }
+
+  rememberClosedBanner(outboundId) {
+    try {
+      const key = this.closedBannersKey();
+      if (!key) {
+        return;
+      }
+      const closedBanners = this.loadClosedBanners().filter((id) => id !== outboundId);
+      closedBanners.push(outboundId);
+      localStorage.setItem(key, JSON.stringify(closedBanners.slice(-MAX_CLOSED_BANNERS)));
+    } catch (exp) {}
   }
 }
