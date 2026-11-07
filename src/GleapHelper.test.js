@@ -1,4 +1,4 @@
-import { flattenCompany, formatRelativeTime, setGleapCookie } from './GleapHelper';
+import { cookieDomainFor, eraseGleapCookie, flattenCompany, formatRelativeTime, setGleapCookie } from './GleapHelper';
 
 describe('formatRelativeTime — the notification meta line', () => {
   const agoBy = (ms) => new Date(Date.now() - ms).toISOString();
@@ -310,5 +310,54 @@ describe('setGleapCookie', () => {
     const cookie = written('https:', false);
     expect(cookie).not.toContain('SameSite');
     expect(cookie).not.toContain('Secure');
+  });
+});
+
+describe('cookie domain', () => {
+  const onHost = (host, write) => {
+    const previous = { window: global.window, document: global.document };
+    global.window = { location: { host, protocol: 'https:' } };
+    global.document = { cookie: '' };
+    write();
+    const cookie = global.document.cookie;
+    global.window = previous.window;
+    global.document = previous.document;
+    return cookie;
+  };
+
+  test.each([
+    ['app.example.com', 'example.com'],
+    ['app.example.com:8443', 'example.com'],
+    ['www.shop.example.co.uk', 'example.co.uk'],
+    ['localhost', 'localhost'],
+    ['localhost:3000', 'localhost'],
+    ['127.0.0.1', null],
+    ['127.0.0.1:8080', null],
+    ['192.168.1.20', null],
+    ['[::1]', null],
+    ['[::1]:8080', null],
+    ['[2001:db8::7]:443', null],
+    ['::1', null],
+    ['', null],
+  ])('cookieDomainFor(%p) is %p', (host, domain) => {
+    expect(cookieDomainFor(host)).toBe(domain);
+  });
+
+  test.each(['127.0.0.1:8080', '[::1]:8080'])('on %s the cookie is host-only and erasing it works the same way', (host) => {
+    const written = onHost(host, () => setGleapCookie('gleap-grant-key', 'grant', 1, true));
+    expect(written).toMatch(/^gleap-grant-key=grant; expires=[^;]+; path=\/; SameSite=Lax; Secure$/);
+    expect(written.toLowerCase()).not.toContain('domain');
+
+    const erased = onHost(host, () => eraseGleapCookie('gleap-grant-key'));
+    expect(erased).toBe('gleap-grant-key=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT');
+  });
+
+  test('a domain host and localhost keep their Domain attribute', () => {
+    expect(onHost('app.example.com', () => setGleapCookie('session-key', 'v', 365))).toContain(
+      '; path=/; domain=example.com'
+    );
+    expect(onHost('app.example.com', () => eraseGleapCookie('session-key'))).toMatch(/; Domain=example\.com$/);
+    expect(onHost('localhost:3000', () => setGleapCookie('session-key', 'v', 365))).toContain('; path=/; domain=localhost');
+    expect(onHost('localhost:3000', () => eraseGleapCookie('session-key'))).toMatch(/; Domain=localhost$/);
   });
 });
