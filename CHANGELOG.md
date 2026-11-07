@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 19.5.0
 Added: signed customer identity. `Gleap.setUserJwt(token)` identifies the user with an identity token (HS256 JWT signed by your backend); its `userId` claim names the user and every other claim lands on the contact as signed data. The token is kept in memory only, and the call never rejects: refusals are logged.
 Added: `Gleap.setUserJwtProvider(provider)` hands Gleap a function that returns a fresh identity token; it is called when the current token expired or is about to.
 Added: `Gleap.setAuthTokens(tokens)` stores per-user tokens for your API tools on the signed contact (`{{session.authTokens.<name>}}`); `null` removes one. Kept in memory only.
