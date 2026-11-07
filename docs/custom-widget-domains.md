@@ -9,7 +9,7 @@ Gleap.setApiUrl('https://api.support.example.com');
 Gleap.setFrameUrl('https://widget.support.example.com');
 Gleap.setWSApiUrl('wss://ws.support.example.com');
 Gleap.setRealtimeHost('sockets.support.example.com');
-Gleap.initialize('YOUR_PROJECT_SDK_KEY');
+Gleap.initialize('YOUR_PROJECT_ID');
 ```
 
 `setRealtimeHost` takes a hostname only; the messenger uses WSS on port 443.
@@ -32,7 +32,7 @@ no change.
 import Gleap from 'gleap';
 
 Gleap.setRegion('us'); // "eu" | "us", case-insensitive
-Gleap.initialize('YOUR_PROJECT_SDK_KEY');
+Gleap.initialize('YOUR_PROJECT_ID');
 ```
 
 `setRegion` sets three hosts at once:
@@ -58,7 +58,7 @@ The last call wins:
 ```js
 Gleap.setRegion('us');
 Gleap.setApiUrl('https://api.support.example.com'); // only the API host is custom
-Gleap.initialize('YOUR_PROJECT_SDK_KEY');
+Gleap.initialize('YOUR_PROJECT_ID');
 ```
 
 ### Static widget hosts are global
