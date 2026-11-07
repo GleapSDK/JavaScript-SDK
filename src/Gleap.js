@@ -507,7 +507,9 @@ class Gleap {
 
   /**
    * Sets a function that returns a fresh identity token (or a Promise of one).
-   * Gleap calls it when the current token expired or is about to. `null` removes it.
+   * Gleap calls it when the current token expired or is about to, and once per page
+   * load to sign the session again when the server reports Signed mode without a valid
+   * grant and no token was passed to setUserJwt. `null` removes it.
    * @param {(() => (string | null | Promise<string | null>)) | null} provider
    */
   static setUserJwtProvider(provider) {

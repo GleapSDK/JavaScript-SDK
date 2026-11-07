@@ -629,6 +629,34 @@ const removeSubDomain = (v) => {
   return v;
 };
 
+const IPV4_ADDRESS = /^\d{1,3}(\.\d{1,3}){3}$/;
+
+/**
+ * The cookie Domain attribute for a page on `host` (location.host, port
+ * included): the top-level domain, or null for an IP address (IPv4, or IPv6
+ * in brackets or bare), where a Domain attribute makes the browser drop the
+ * cookie, so the cookie stays host-only. `localhost` keeps `domain=localhost`.
+ */
+export const cookieDomainFor = (host) => {
+  if (!host || typeof host !== 'string') {
+    return null;
+  }
+  // [::1]:8080, or a bare IPv6 address (more than one colon).
+  if (host.charAt(0) === '[' || host.indexOf(':') !== host.lastIndexOf(':')) {
+    return null;
+  }
+  const hostname = host.split(':')[0];
+  if (!hostname || IPV4_ADDRESS.test(hostname)) {
+    return null;
+  }
+  return removeSubDomain(hostname);
+};
+
+const cookieDomainAttribute = (attributeName) => {
+  const domain = cookieDomainFor(window.location.host);
+  return domain ? '; ' + attributeName + '=' + domain : '';
+};
+
 export const loadFromGleapCache = (key) => {
   try {
     const cachedData = localStorage.getItem(`gleap-widget-${key}`);
@@ -659,7 +687,7 @@ export const clearGleapCache = (key) => {
 };
 
 /**
- * Writes a cookie on the top-level domain. `credential`: the value is a
+ * Writes a cookie on the top-level domain (host-only on an IP address). `credential`: the value is a
  * credential, so it gets SameSite=Lax and, on https, Secure.
  */
 export const setGleapCookie = (name, value, days, credential = false) => {
@@ -670,12 +698,11 @@ export const setGleapCookie = (name, value, days, credential = false) => {
       date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
       expires = '; expires=' + date.toUTCString();
     }
-    const host = removeSubDomain(window.location.host.split(':')[0]);
     var attributes = '';
     if (credential) {
       attributes = '; SameSite=Lax' + (window.location.protocol === 'https:' ? '; Secure' : '');
     }
-    document.cookie = name + '=' + (value || '') + expires + '; path=/; domain=' + host + attributes;
+    document.cookie = name + '=' + (value || '') + expires + '; path=/' + cookieDomainAttribute('domain') + attributes;
   } catch (exp) {}
 };
 
@@ -694,8 +721,7 @@ export const getGleapCookie = (name) => {
 
 export const eraseGleapCookie = (name) => {
   try {
-    const host = removeSubDomain(window.location.host.split(':')[0]);
-    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=' + host;
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT' + cookieDomainAttribute('Domain');
   } catch (exp) {}
 };
 

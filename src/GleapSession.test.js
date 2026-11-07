@@ -972,6 +972,184 @@ describe('grant (signed session credential)', () => {
     });
   });
 
+  describe('signed mode restored by the JWT provider alone (reload without setUserJwt)', () => {
+    const SIGNED_MODE = { identity: { signed: false, grant: null, mode: 'signed' } };
+    const sessionsRequests = () => MockXhr.instances.filter((xhr) => xhr.url.endsWith('/sessions'));
+    const answerSignedMode = (xhr, extra = {}) => xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE, ...extra }));
+
+    // A reload: the identified session is cached, the grant cookie is gone (IP host, cookie deleted)
+    // and setUserJwt's token lived in memory only. The app sets only the provider.
+    const reloadWithProvider = (provider) => {
+      seedCachedSession();
+      const session = buildSession();
+      if (provider) {
+        session.setUserJwtProvider(provider);
+      }
+      session.startSession();
+      return session;
+    };
+
+    it('asks the provider once and identifies with its token, which brings the grant back', async () => {
+      const token = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
+      const provider = jest.fn(() => Promise.resolve(token));
+      const session = reloadWithProvider(provider);
+      expect(provider).not.toHaveBeenCalled();
+
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(1);
+      const body = JSON.parse(identifyRequests()[0].body);
+      expect(body.userId).toBe('user-1');
+      expect(body.userHash).toBe(token);
+      expect(session.lastIdentify.userHash).toBe(token);
+
+      const grant = grantFor('gleap-id-1');
+      respondWithGrant(identifyRequests()[0], grant);
+      expect(session.grant).toBe(grant);
+      expect(setGleapCookie).toHaveBeenCalledWith('gleap-grant-sdk-key', encodeURIComponent(grant), expect.any(Number), true);
+    });
+
+    it('no loop: at most one provider call and one identify per session load', async () => {
+      const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
+      const session = reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(identifyRequests()).toHaveLength(1);
+
+      // The identify answers without a grant: still unsigned, but nothing is asked or sent again.
+      answerSignedMode(identifyRequests()[0]);
+      await flush();
+      session.startSession();
+      answerSignedMode(sessionsRequests()[1]);
+      await flush();
+      jest.advanceTimersByTime(10 * 60 * 1000);
+      session.startSession();
+      answerSignedMode(sessionsRequests()[2]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
+    it('one call at a time: a second signed-mode answer while the provider runs asks nothing more', async () => {
+      let resolveToken;
+      const provider = jest.fn(() => new Promise((resolve) => (resolveToken = resolve)));
+      const session = reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[0]);
+      session.startSession();
+      answerSignedMode(sessionsRequests()[1]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+
+      resolveToken(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      await flush();
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
+    it('no provider: no identify', async () => {
+      reloadWithProvider(null);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(identifyRequests()).toHaveLength(0);
+    });
+
+    it('the provider returns null: nothing is sent, nothing logged, and it is not asked again this load', async () => {
+      const provider = jest.fn(() => null);
+      const session = reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(0);
+      expect(warn).not.toHaveBeenCalled();
+
+      jest.advanceTimersByTime(10 * 60 * 1000);
+      session.startSession();
+      answerSignedMode(sessionsRequests()[1]);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(0);
+    });
+
+    it('a token for another user goes through identity_mismatch (fresh visitor, identify once more)', async () => {
+      const token = jwtOf({ userId: 'user-2', exp: inSeconds(3600) });
+      const provider = jest.fn(() => token);
+      const session = reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(identifyRequests()).toHaveLength(1);
+      expect(JSON.parse(identifyRequests()[0].body).userId).toBe('user-2');
+
+      identifyRequests()[0].respond(400, JSON.stringify({ error: { details: { value: 'identity_mismatch' } } }));
+      await flush();
+      expect(session.session.gleapId).toBe(null);
+      const fresh = sessionsRequests()[sessionsRequests().length - 1];
+      expect(fresh.headers['Gleap-Id']).toBeUndefined();
+      fresh.respond(200, JSON.stringify({ gleapId: 'gleap-id-new', gleapHash: 'gleap-hash-new' }));
+      await flush();
+
+      expect(identifyRequests()).toHaveLength(2);
+      expect(identifyRequests()[1].headers['Gleap-Id']).toBe('gleap-id-new');
+      expect(JSON.parse(identifyRequests()[1].body).userHash).toBe(token);
+      expect(provider).toHaveBeenCalledTimes(1);
+    });
+
+    it('a provider set after the /sessions answer is still asked once', async () => {
+      const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      const session = reloadWithProvider(null);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      expect(identifyRequests()).toHaveLength(0);
+
+      session.setUserJwtProvider(provider);
+      session.setUserJwtProvider(provider);
+      await flush();
+      expect(provider).toHaveBeenCalledTimes(1);
+      expect(identifyRequests()).toHaveLength(1);
+    });
+
+    it('does not ask for a Classic answer, an anonymous session, a live grant or a held token', async () => {
+      const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+
+      reloadWithProvider(provider);
+      sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
+
+      const anonymous = buildSession();
+      anonymous.setUserJwtProvider(provider);
+      anonymous.startSession();
+      sessionsRequests()[1].respond(200, JSON.stringify({ gleapId: 'gleap-id-9', gleapHash: 'gleap-hash-9', ...SIGNED_MODE }));
+
+      getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(grantFor('gleap-id-1')) : null));
+      reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[2], { identity: { signed: true, mode: 'signed' } });
+      getGleapCookie.mockReset().mockImplementation(() => null);
+      await flush();
+      expect(provider).not.toHaveBeenCalled();
+      expect(identifyRequests()).toHaveLength(0);
+
+      // The app passes its token itself: the held identify is sent, the provider is not asked.
+      const held = reloadWithProvider(provider);
+      held.setUserJwt(jwtOf({ userId: 'user-1', plan: 'pro', exp: inSeconds(3600) }));
+      expect(identifyRequests()).toHaveLength(1);
+      respondWithGrant(identifyRequests()[0], null);
+      answerSignedMode(sessionsRequests()[3]);
+      await flush();
+      expect(provider).not.toHaveBeenCalled();
+    });
+
+    it('a logout while the provider runs drops its token', async () => {
+      let resolveToken;
+      const provider = jest.fn(() => new Promise((resolve) => (resolveToken = resolve)));
+      const session = reloadWithProvider(provider);
+      answerSignedMode(sessionsRequests()[0]);
+      await flush();
+      session.clearSession(0, false);
+      resolveToken(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      await flush();
+      expect(identifyRequests()).toHaveLength(0);
+      expect(session.lastIdentify).toBeNull();
+    });
+  });
+
   it('drops an identify answer that lands after a logout', async () => {
     const session = readySession();
     session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));

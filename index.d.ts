@@ -190,8 +190,12 @@ export namespace Gleap {
   function setUserJwt(token: string): Promise<void>;
   /**
    * Returns a fresh identity token. Called when the current token expired, or before
-   * a renewal when it expires within 5 minutes. One call at a time, 10 s timeout,
-   * 30 s pause after a failure. `null` removes the provider.
+   * a renewal when it expires within 5 minutes. Also restores the signed session after
+   * a page reload: when the server reports Signed mode for an identified session without
+   * a valid grant (no grant cookie) and no token was passed to `setUserJwt`, it is asked
+   * once per page load and the user is identified with its token. Returning `null`
+   * sends nothing. One call at a time, 10 s timeout, 30 s pause after a failure.
+   * `null` removes the provider.
    */
   function setUserJwtProvider(provider: (() => string | null | Promise<string | null>) | null): void;
   /**

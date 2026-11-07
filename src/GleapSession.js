@@ -125,6 +125,10 @@ export default class GleapSession {
   // project switched to Signed after they were identified).
   signedModeIdentifySent = false;
   lastSignedModeIdentifyAt = 0;
+  // The same answer when no token is at hand (setUserJwt's token lives in
+  // memory only, so a reload has none) but a JWT provider is set: the
+  // provider is asked once per session load for a token to identify with.
+  signedModeProviderAsked = false;
   // An identify that failed on the network or with a server error: replayed
   // once the browser comes back online.
   identifyFailedTransiently = false;
@@ -534,6 +538,7 @@ export default class GleapSession {
     this.contactVersion++;
     this.logoutGeneration++;
     this.signedModeIdentifySent = false;
+    this.signedModeProviderAsked = false;
     this.identifyFailedTransiently = false;
 
     GleapFrameManager.getInstance().sendMessage(
@@ -784,9 +789,13 @@ export default class GleapSession {
     this.lastSignedModeIdentifyAt = Date.now();
   };
 
-  /** A /sessions answer in signed mode without a grant: sends the held identify once for one. */
+  /**
+   * A /sessions answer in signed mode without a grant: sends the held identify
+   * once for one. Without a held token, asks the JWT provider for one instead.
+   */
   identifyForSignedModeIfNeeded = () => {
     if (!this.needsSignedModeIdentify()) {
+      this.identifyWithProviderForSignedModeIfNeeded();
       return;
     }
     this.markSignedModeIdentify();
@@ -797,6 +806,60 @@ export default class GleapSession {
         )
       ).catch(() => {});
     } catch (exp) {}
+  };
+
+  /**
+   * Signed mode on an identified session without a live grant, with no token
+   * at hand (a reload after setUserJwt, or an identify without one) but a JWT
+   * provider set, and the provider not asked for it this session load yet.
+   */
+  needsSignedModeProviderIdentify = () => {
+    if (this.signedModeProviderAsked || this.signedModeIdentifySent || this.identifyInFlight || !this.jwtProvider) {
+      return false;
+    }
+    const identity = this.session && this.session.identity;
+    if (!this.session || !this.session.userId || !identity || identity.mode !== 'signed') {
+      return false;
+    }
+    if ((this.lastIdentify && this.lastIdentify.userHash) || this.hasLiveGrant()) {
+      return false;
+    }
+    return Date.now() - this.lastSignedModeIdentifyAt >= GRANT_REFRESH_MIN_INTERVAL_MS;
+  };
+
+  /**
+   * Restores a signed session from the JWT provider alone: asks it once per
+   * session load and identifies with the token like setUserJwt (a token for
+   * another user than the session's goes through identity_mismatch). No
+   * token: nothing happens. Returns a Promise that never rejects (undefined
+   * when nothing was asked).
+   */
+  identifyWithProviderForSignedModeIfNeeded = () => {
+    if (!this.needsSignedModeProviderIdentify()) {
+      return;
+    }
+    this.signedModeProviderAsked = true;
+    const generationAtAsk = this.logoutGeneration;
+    return this.requestUserJwt()
+      .then((token) => {
+        if (!token || this.logoutGeneration !== generationAtAsk || this.identifyInFlight) {
+          return;
+        }
+        // The app passed a token meanwhile, or the session no longer needs one.
+        const identity = this.session && this.session.identity;
+        if (
+          (this.lastIdentify && this.lastIdentify.userHash) ||
+          !this.session ||
+          !this.session.userId ||
+          !identity ||
+          identity.mode !== 'signed' ||
+          this.hasLiveGrant()
+        ) {
+          return;
+        }
+        return this.setUserJwt(token);
+      })
+      .catch(() => {});
   };
 
   /** Memory-only fingerprint of a refused identify (never the token itself). */
@@ -834,6 +897,12 @@ export default class GleapSession {
     }
     this.jwtProvider = provider;
     this.jwtProviderFailedAt = 0;
+    // Set after the /sessions answer arrived: a signed session can still be restored.
+    if (this.ready) {
+      try {
+        this.identifyWithProviderForSignedModeIfNeeded();
+      } catch (exp) {}
+    }
   };
 
   /**
