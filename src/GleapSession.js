@@ -100,7 +100,7 @@ export default class GleapSession {
   // (`identity.grant`). Sent as `Gleap-Grant` on every request and handed to
   // the messenger next to (never inside) the session. Kept out of `session`,
   // which is persisted to localStorage; stored only in the
-  // `gleap-grant-<apiKey>` cookie (when cookies are on) so a reload and a
+  // `gleap-grant-<projectId>` cookie (when cookies are on) so a reload and a
   // help center on the same domain stay signed.
   grant = null;
   grantRefreshTimeout = null;

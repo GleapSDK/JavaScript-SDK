@@ -4,11 +4,11 @@
 
 Add AI-native customer support, live chat, in-app bug reporting, a help center and surveys to websites and web apps using JavaScript or TypeScript with [Gleap](https://www.gleap.ai). Gleap is an Intercom alternative for software teams that connects customer conversations and feedback with product development.
 
-[SDK documentation](https://docs.gleap.ai/documentation/javascript/README) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
+[SDK documentation](https://docs.gleap.ai/en/articles/393-javascript-sdk-setup) · [Website](https://www.gleap.ai) · [Plans and pricing](https://www.gleap.ai/pricing)
 
 ## 📖 Docs & Examples
 
-Checkout our [documentation](https://docs.gleap.ai/documentation/javascript/README) for full reference.
+Checkout our documentation for full reference: [JavaScript SDK setup](https://docs.gleap.ai/en/articles/393-javascript-sdk-setup), [code snippet](https://docs.gleap.ai/en/articles/394-javascript-sdk-code-snippet) and [user identity](https://docs.gleap.ai/en/articles/395-javascript-sdk-user-identity).
 
 ## 🚀 Getting started
 
@@ -32,10 +32,11 @@ import Gleap from 'gleap';
 
 ### Initialize the SDK
 
-Add the following code to initialize the Gleap JavaScript SDK. Replace "YOUR_PROJECT_ID" with your Project ID from the [Gleap dashboard](https://app.gleap.io) (Settings > Project). The Project ID was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
+Add the following code to initialize the Gleap JavaScript SDK. Replace "YOUR_PROJECT_ID" with your Project ID from the [Gleap dashboard](https://app.gleap.ai) (**Settings → Project → General**). The Project ID was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
 
 ```
 Gleap.initialize("YOUR_PROJECT_ID");
+// or: Gleap.initialize({ projectId: "YOUR_PROJECT_ID" });
 ```
 
 ### Data region (optional)
@@ -49,12 +50,12 @@ Gleap.initialize("YOUR_PROJECT_ID");
 
 ### Identify your users
 
-#### Signed identity (recommended)
+#### Sign in with an identity token
 
-Your backend signs an HS256 JWT with an identity key from Settings > Security > Identity keys (put the key id in the `kid` header; the secret stays on your server). `userId` is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. The token is the whole identify: every claim lands on the contact as signed data that the browser cannot change. Call `Gleap.setUserJwt(token)` after login and on every page load of a logged-in user. See [Customer identity](https://docs.gleap.ai/documentation/guides/customer-identity).
+Your backend signs an HS256 JWT with an identity key from Settings → Security → Customer identity → Identity keys (put the key id in the `kid` header; the secret stays on your server). `userId` is required. Optional claims: `email`, `name`, `company` (`{ id, name }`), `plan`, and provider ids such as `stripeCustomerId`. Set `exp` to at most one hour. The token is the whole identify: every claim lands on the contact as signed data that the browser cannot change. Call `Gleap.setUserJwt(token)` after login and on every page load of a logged-in user; no separate `identify` call is needed. See [Customer identity](https://docs.gleap.ai/en/articles/709-customer-identity) and [JavaScript SDK user identity](https://docs.gleap.ai/en/articles/395-javascript-sdk-user-identity).
 
 ```
-// Your backend (Node, jsonwebtoken). Use an identity key from Settings > Security > Identity keys.
+// Your backend (Node, jsonwebtoken). Use an identity key from Settings → Security → Customer identity → Identity keys.
 const token = jwt.sign(
   { userId, email, stripeCustomerId, exp: Math.floor(Date.now() / 1000) + 60 * 60 },
   SECRET,
@@ -63,7 +64,7 @@ const token = jwt.sign(
 ```
 
 ```
-// Your app
+// Your app (token from your backend)
 Gleap.setUserJwt(token);
 ```
 
@@ -93,9 +94,9 @@ or later with `Gleap.setSessionDuration(24 * 60 * 60 * 1000)` (the same call as 
 
 `Gleap.clearIdentity()` on logout clears the contact, the token, the grant (and its cookie) and the auth tokens. The JWT provider stays set.
 
-#### Legacy user hash
+#### Older integrations
 
-Instead of a token you can still call `Gleap.identify(userId, data, userHash)`, with `userHash` the HMAC-SHA256 of the user id created on your server with the project's identity verification secret. It is accepted while "Accept legacy user hash" is on for the project.
+Older integrations that pass a user hash to `Gleap.identify(userId, data, userHash)` keep working while "Accept legacy user hash" is on for the project; see [Upgrade to identity tokens](https://docs.gleap.ai/en/articles/16752008-upgrade-to-identity-tokens) to move them to `Gleap.setUserJwt`. `Gleap.identify(userId, data)` without a hash creates an unsigned contact.
 
 ### Dark mode (optional)
 

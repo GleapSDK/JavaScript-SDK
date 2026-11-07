@@ -5,7 +5,7 @@ export namespace Gleap {
   /** Options for `initialize`. */
   interface InitializeOptions {
     /**
-     * Your Project ID (Gleap dashboard: Settings > Project, or the install page).
+     * Your Project ID (Gleap dashboard: Settings → Project → General).
      * Only needed when `initialize` is called with the options object alone.
      */
     projectId?: string;
@@ -19,7 +19,8 @@ export namespace Gleap {
   }
   /**
    * Initializes Gleap with your Project ID (formerly called "SDK key" or "API key";
-   * the value is the same, existing keys keep working).
+   * the value is the same, existing keys keep working). Find it in the Gleap dashboard
+   * under Settings → Project → General.
    *
    * `options.sessionDuration`: how long (ms) a signed session stays signed before a new
    * identify is needed. The server never goes beyond the project's session max age.
@@ -201,20 +202,28 @@ export namespace Gleap {
   }[]): void;
   function showTabNotificationBadge(showNotificationBadge: boolean): void;
   function attachNetworkLogs(networkLogs: string): void;
-  /** Clears the current contact, its identity token and auth tokens. The JWT provider stays set. */
+  /**
+   * Call on logout. Clears the current contact, its identity token, the grant and auth tokens.
+   * The JWT provider stays set.
+   */
   function clearIdentity(): void;
   /**
-   * Identifies the user with an identity token: an HS256 JWT signed by your backend.
+   * Identifies the user with an identity token: an HS256 JWT signed by your backend with an
+   * identity key (Settings → Security → Customer identity → Identity keys).
    * The `userId` (or `user_id`) claim names the user; every other claim lands on the
    * contact as signed data. Nothing else is sent. Kept in memory only.
+   * Call it after login and on every page load of a logged-in user; no separate
+   * `identify` call is needed.
    * A token that is not a JWT, has no userId or is over 4096 characters is refused
    * with a console warning and no request.
    * Never rejects; refusals are logged.
+   * @see https://docs.gleap.ai/en/articles/709-customer-identity
    */
   function setUserJwt(token: string): Promise<void>;
   /**
-   * Returns a fresh identity token. Called when the current token expired, or before
-   * a renewal when it expires within 5 minutes. Also restores the signed session after
+   * Optional: sets a function that returns a fresh identity token from your backend.
+   * Called when the current token expired, or before a renewal when it expires within
+   * 5 minutes. Also restores the signed session after
    * a page reload: when the server reports Signed mode for an identified session without
    * a valid grant (no grant cookie) and no token was passed to `setUserJwt`, it is asked
    * once per page load and the user is identified with its token. Returning `null`
@@ -245,6 +254,11 @@ export namespace Gleap {
   function setDisablePageTracking(
     disablePageTracking: boolean
   ): void;
+  /**
+   * Identifies the user by user id and contact data. Without a signature this is an
+   * unsigned contact; to sign the user in, use `setUserJwt`.
+   * @see https://docs.gleap.ai/en/articles/395-javascript-sdk-user-identity
+   */
   function identify(
     userId: string,
     customerData: {
@@ -263,7 +277,11 @@ export namespace Gleap {
       avatar?: string | null;
       createdAt?: Date | null;
     },
-    /** The HMAC-SHA256 of the user id (legacy), or an identity token (see `setUserJwt`). */
+    /**
+     * Older integrations pass the HMAC-SHA256 user hash here; it keeps working. An identity
+     * token is accepted too, but `setUserJwt` is the way to sign in.
+     * @see https://docs.gleap.ai/en/articles/16752008-upgrade-to-identity-tokens
+     */
     userHash?: string
   ): void;
   function updateContact(

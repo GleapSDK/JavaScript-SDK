@@ -235,8 +235,9 @@ class Gleap {
   }
 
   /**
-   * Initializes the SDK with your Project ID (formerly called "SDK key"; the value is
-   * the same, existing keys keep working).
+   * Initializes the SDK with your Project ID (formerly called "SDK key" or "API key"; the
+   * value is the same, existing keys keep working). Find it in the Gleap dashboard under
+   * Settings → Project → General.
    * @param {string | { projectId: string, sessionDuration?: number }} projectId
    *   The Project ID, or an options object that carries it as `projectId`.
    * @param {boolean | { projectId?: string, disablePing?: boolean, sessionDuration?: number }} [options]
@@ -485,9 +486,12 @@ class Gleap {
   }
 
   /**
-   * Indentifies the user session
+   * Identifies the user by user id and contact data. Without a signature this is an
+   * unsigned contact; to sign the user in, use setUserJwt.
    * @param {string} userId
    * @param {*} userData
+   * @param {string} [userHash] Older integrations pass the HMAC-SHA256 user hash here; it
+   *   keeps working (see https://docs.gleap.ai/en/articles/16752008-upgrade-to-identity-tokens).
    */
   static identify(userId, userData, userHash) {
     return GleapSession.getInstance().identifySession(userId, flattenCompany(gleapDataParser(userData)), userHash);
@@ -497,6 +501,8 @@ class Gleap {
    * Identifies the user with an identity token (HS256 JWT signed by your backend).
    * The token is the whole identify: its `userId` (or `user_id`) claim names the user,
    * every other claim lands on the contact as signed data. Kept in memory only.
+   * Call it after login and on every page load of a logged-in user; no separate identify
+   * call is needed. See https://docs.gleap.ai/en/articles/709-customer-identity
    * Never rejects; refusals are logged.
    * @param {string} token
    * @returns {Promise<void>}
@@ -545,7 +551,8 @@ class Gleap {
   }
 
   /**
-   * Clears the current contact, its identity token and auth tokens. The JWT provider stays set.
+   * Call on logout. Clears the current contact, its identity token, the grant and auth
+   * tokens. The JWT provider stays set.
    */
   static clearIdentity() {
     GleapSession.getInstance().clearSession();
