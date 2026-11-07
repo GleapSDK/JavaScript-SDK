@@ -658,7 +658,11 @@ export const clearGleapCache = (key) => {
   } catch {}
 };
 
-export const setGleapCookie = (name, value, days) => {
+/**
+ * Writes a cookie on the top-level domain. `credential`: the value is a
+ * credential, so it gets SameSite=Lax and, on https, Secure.
+ */
+export const setGleapCookie = (name, value, days, credential = false) => {
   try {
     var expires = '';
     if (days) {
@@ -667,7 +671,11 @@ export const setGleapCookie = (name, value, days) => {
       expires = '; expires=' + date.toUTCString();
     }
     const host = removeSubDomain(window.location.host.split(':')[0]);
-    document.cookie = name + '=' + (value || '') + expires + '; path=/; domain=' + host;
+    var attributes = '';
+    if (credential) {
+      attributes = '; SameSite=Lax' + (window.location.protocol === 'https:' ? '; Secure' : '');
+    }
+    document.cookie = name + '=' + (value || '') + expires + '; path=/; domain=' + host + attributes;
   } catch (exp) {}
 };
 

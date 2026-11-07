@@ -115,6 +115,9 @@ export const registerGleapAgentComponents = () => {
         let sdkKey = '';
         let gleapId = '';
         let gleapHash = '';
+        // The signed-session grant, from the same accessor the messenger handover
+        // uses: a cleared identity clears it here too.
+        let grant = null;
 
         try {
           const session = GleapSession.getInstance();
@@ -122,6 +125,7 @@ export const registerGleapAgentComponents = () => {
           sdkKey = session.sdkKey || '';
           gleapId = session.session?.gleapId || '';
           gleapHash = session.session?.gleapHash || '';
+          grant = session.grant || null;
         } catch (e) {}
 
         const config = {
@@ -136,6 +140,7 @@ export const registerGleapAgentComponents = () => {
           sdkKey,
           gleapId,
           gleapHash,
+          grant,
         };
 
         this._config = config;

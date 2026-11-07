@@ -1069,6 +1069,8 @@ export default class GleapFrameManager {
       name: 'session-update',
       data: {
         sessionData: GleapSession.getInstance().getSession(),
+        // Top level, never inside sessionData (the messenger persists that).
+        grant: GleapSession.getInstance().grant,
         apiUrl: GleapSession.getInstance().apiUrl,
         realtimeHost: GleapSession.getInstance().realtimeHost,
         sdkKey: GleapSession.getInstance().sdkKey,

@@ -237,12 +237,20 @@ class Gleap {
   /**
    * Initializes the SDK
    * @param {*} sdkKey
+   * @param {boolean | { disablePing?: boolean, sessionDuration?: number }} [options]
+   *   sessionDuration: how long (ms) a signed session stays signed; the server never goes
+   *   beyond the project's maximum. A boolean (the legacy `disablePing` argument) and
+   *   `disablePing` are accepted and have no effect: the ping no longer exists.
    */
-  static initialize(sdkKey) {
+  static initialize(sdkKey, options) {
     const instance = this.getInstance();
     if (instance.initialized) {
       console.warn('Gleap already initialized.');
       return;
+    }
+
+    if (options && typeof options === 'object' && 'sessionDuration' in options) {
+      GleapSession.getInstance().setSessionDuration(options.sessionDuration);
     }
 
     instance.initialized = true;
@@ -459,7 +467,7 @@ class Gleap {
    * @param {*} useCookies
    */
   static setUseCookies(useCookies) {
-    GleapSession.getInstance().useCookies = useCookies;
+    GleapSession.getInstance().setUseCookies(useCookies);
   }
 
   static disableLocalStorage() {
@@ -476,6 +484,47 @@ class Gleap {
   }
 
   /**
+   * Identifies the user with an identity token (HS256 JWT signed by your backend).
+   * The token is the whole identify: its `userId` (or `user_id`) claim names the user,
+   * every other claim lands on the contact as signed data. Kept in memory only.
+   * Never rejects; refusals are logged.
+   * @param {string} token
+   * @returns {Promise<void>}
+   */
+  static setUserJwt(token) {
+    return GleapSession.getInstance().setUserJwt(token);
+  }
+
+  /**
+   * How long (ms) a signed session stays signed; the server never goes beyond
+   * the project's maximum. Sent with every identify. `null` drops it.
+   * Same as `initialize(sdkKey, { sessionDuration })`.
+   * @param {number | null} sessionDuration
+   */
+  static setSessionDuration(sessionDuration) {
+    GleapSession.getInstance().setSessionDuration(sessionDuration);
+  }
+
+  /**
+   * Sets a function that returns a fresh identity token (or a Promise of one).
+   * Gleap calls it when the current token expired or is about to. `null` removes it.
+   * @param {(() => (string | null | Promise<string | null>)) | null} provider
+   */
+  static setUserJwtProvider(provider) {
+    GleapSession.getInstance().setUserJwtProvider(provider);
+  }
+
+  /**
+   * Stores per-user tokens for your API tools on the signed contact
+   * (`{{session.authTokens.<name>}}`). A `null` value removes a token. Kept in memory only.
+   * @param {Object<string, string | null>} tokens
+   * @returns {Promise<void>}
+   */
+  static setAuthTokens(tokens) {
+    return GleapSession.getInstance().setAuthTokens(tokens);
+  }
+
+  /**
    * Updates the contact data.
    * @param {*} userData
    */
@@ -484,17 +533,19 @@ class Gleap {
   }
 
   /**
-   * Clears the current contact.
+   * Clears the current contact, its identity token and auth tokens. The JWT provider stays set.
    */
   static clearIdentity() {
     GleapSession.getInstance().clearSession();
   }
 
   /**
-   * Returns the current user session
+   * Returns the current user session, plus `grant`: the signed-session credential
+   * (null when the session is not signed). Hand `{ gleapId, gleapHash, grant }` to a
+   * help center or portal to keep the user signed in there.
    */
   static getIdentity() {
-    return GleapSession.getInstance().getSession();
+    return { ...GleapSession.getInstance().getSession(), grant: GleapSession.getInstance().grant || null };
   }
 
   /**
