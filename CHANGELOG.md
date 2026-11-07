@@ -1,5 +1,9 @@
 # Changelog
 
+## 19.6.0
+Changed: the key `Gleap.initialize` takes is now called **Project ID** (formerly "SDK key" or "API key"). The value is the same and every existing key keeps working; nothing needs to change in your app. Typings, JSDoc and the README name the parameter `projectId`.
+Added: `Gleap.initialize({ projectId, sessionDuration })` takes the Project ID inside the options object, and `Gleap.initialize(undefined, { projectId })` works too. The positional form `Gleap.initialize(projectId, options)` and the legacy boolean second argument are unchanged. The options are typed as `Gleap.InitializeOptions`.
+
 ## 19.5.2
 Fixed: `Gleap.setUserJwtProvider` alone never signed the session again after a page reload. When the grant cookie was missing (an IP-address host, or the cookie deleted) and the app set only the provider, without calling `setUserJwt`, the user stayed unsigned although the server reported Signed mode. The SDK now asks the provider once per page load when the server reports Signed mode for an identified session without a valid grant and no token is held, and identifies with the returned token like `setUserJwt` (a token for another user goes through the usual `identity_mismatch` recovery). A provider that returns `null` sends nothing. Also applies when the provider is set after the session loaded.
 Fixed: cookies were never stored on IP-address hosts (for example `http://127.0.0.1:8080` or `http://[::1]:8080`). The SDK wrote an invalid `domain` attribute there, so the browser dropped the session and grant cookies. On an IP address they are now host-only cookies (no `domain`), and erasing them works the same way. Domain hosts and `localhost` are unchanged.

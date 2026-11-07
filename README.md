@@ -32,10 +32,10 @@ import Gleap from 'gleap';
 
 ### Initialize the SDK
 
-Add the following code to initialize the Gleap JavaScript SDK. Replace "SDK-TOKEN" with your actual SDK token from the [Gleap dashboard](https://app.gleap.io).
+Add the following code to initialize the Gleap JavaScript SDK. Replace "YOUR_PROJECT_ID" with your Project ID from the [Gleap dashboard](https://app.gleap.io) (Settings > Project). The Project ID was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
 
 ```
-Gleap.initialize("SDK-TOKEN");
+Gleap.initialize("YOUR_PROJECT_ID");
 ```
 
 ### Data region (optional)
@@ -44,7 +44,7 @@ Projects hosted in the US data region select it before initializing. The default
 
 ```
 Gleap.setRegion("us");
-Gleap.initialize("SDK-TOKEN");
+Gleap.initialize("YOUR_PROJECT_ID");
 ```
 
 ### Identify your users
@@ -79,10 +79,10 @@ Per-user tokens for your API tools (used as `{{session.authTokens.<name>}}`) are
 Gleap.setAuthTokens({ backend: userAccessToken });
 ```
 
-A valid token signs the session: the server answers with a grant that the SDK sends as the `Gleap-Grant` header on every request and hands to the messenger. It is kept in memory and in the `gleap-grant-<SDK-TOKEN>` cookie on your top-level domain (unless `Gleap.setUseCookies(false)`; on an IP address such as `127.0.0.1` it is a host-only cookie), so a page reload and a help center on a subdomain stay signed until it expires. The project's session max age (Settings > Security, 7 days by default) sets its lifetime; shorten it per app with `sessionDuration` in milliseconds:
+A valid token signs the session: the server answers with a grant that the SDK sends as the `Gleap-Grant` header on every request and hands to the messenger. It is kept in memory and in the `gleap-grant-<YOUR_PROJECT_ID>` cookie on your top-level domain (unless `Gleap.setUseCookies(false)`; on an IP address such as `127.0.0.1` it is a host-only cookie), so a page reload and a help center on a subdomain stay signed until it expires. The project's session max age (Settings > Security, 7 days by default) sets its lifetime; shorten it per app with `sessionDuration` in milliseconds:
 
 ```
-Gleap.initialize("SDK-TOKEN", { sessionDuration: 24 * 60 * 60 * 1000 });
+Gleap.initialize("YOUR_PROJECT_ID", { sessionDuration: 24 * 60 * 60 * 1000 });
 ```
 
 or later with `Gleap.setSessionDuration(24 * 60 * 60 * 1000)` (the same call as in the mobile SDKs).
