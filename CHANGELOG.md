@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.6.1
+Documentation only: README, package description and doc comments name the Project ID (Settings → Project → General) and sign users in with `setUserJwt`. No code changes.
+
 ## 19.6.0
 Changed: the key `Gleap.initialize` takes is now called **Project ID** (formerly "SDK key" or "API key"). The value is the same and every existing key keeps working; nothing needs to change in your app. Typings, JSDoc and the README name the parameter `projectId`.
 Added: `Gleap.initialize({ projectId, sessionDuration })` takes the Project ID inside the options object, and `Gleap.initialize(undefined, { projectId })` works too. The positional form `Gleap.initialize(projectId, options)` and the legacy boolean second argument are unchanged. The options are typed as `Gleap.InitializeOptions`.
