@@ -32,7 +32,7 @@ import Gleap from 'gleap';
 
 ### Initialize the SDK
 
-Add the following code to initialize the Gleap JavaScript SDK. Replace "YOUR_PROJECT_ID" with your Project ID from the [Gleap dashboard](https://app.gleap.io) (**Settings → Project → General**). The Project ID was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
+Add the following code to initialize the Gleap JavaScript SDK. Replace "YOUR_PROJECT_ID" with your Project ID from the [Gleap dashboard](https://app.gleap.ai) (**Settings → Project → General**). The Project ID was called "SDK key" or "API key" before; the value is the same and existing keys keep working.
 
 ```
 Gleap.initialize("YOUR_PROJECT_ID");
