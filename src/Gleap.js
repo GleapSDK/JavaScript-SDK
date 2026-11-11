@@ -78,6 +78,8 @@ class Gleap {
   // Global data
   globalData = {
     screenRecordingData: null,
+    // The feedback form's marked screenshot when it was taken from the tab (GleapMarkerManager).
+    screenshotImage: null,
     webReplay: null,
     snapshotPosition: {
       x: 0,

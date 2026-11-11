@@ -17,6 +17,17 @@ import Gleap, {
 // spinner that never ends. Generous on purpose — a 20k-element page captures in ~1.5s.
 const SCREENSHOT_CAPTURE_TIMEOUT_MS = 15000;
 
+const dataUrlToFile = (dataUrl, fileName) => {
+  const [header, base64] = dataUrl.split(',');
+  const type = (/^data:([^;]+)/.exec(header) || [])[1] || 'image/jpeg';
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new File([bytes], fileName, { type });
+};
+
 // Resolves early if the wrapped promise overruns. Rejection is passed through untouched, so a
 // genuinely failed capture still surfaces as a failed send exactly as before.
 const resolveAfterTimeout = (promise, timeoutMs, label) =>
@@ -71,9 +82,12 @@ export default class GleapFeedback {
   isSilent = false;
   outboundId = undefined;
   screenshotData = undefined;
+  // The marked screenshot as an uploaded image (see forgetSentCaptures); screenshotData otherwise.
+  screenshotUrl = undefined;
+  screenshotImage = undefined;
   webReplay = undefined;
   screenRecordingUrl = undefined;
-  // The form's recording this report uploads (see forgetSentScreenRecording).
+  // The form's recording this report uploads (see forgetSentCaptures).
   screenRecordingData = undefined;
   spamToken = undefined;
 
@@ -109,7 +123,7 @@ export default class GleapFeedback {
     var screenRecordingData = this.isSilent ? null : gleapInstance.getGlobalDataItem('screenRecordingData');
     if (screenRecordingData != null) {
       this.screenRecordingData = screenRecordingData;
-      var recordingUrlPromise = GleapScreenRecorder.uploadScreenRecording(screenRecordingData).then((recordingUrl) => {
+      var recordingUrlPromise = GleapScreenRecorder.uploadFile(screenRecordingData).then((recordingUrl) => {
         if (recordingUrl) {
           this.screenRecordingUrl = recordingUrl;
         }
@@ -119,21 +133,35 @@ export default class GleapFeedback {
 
     // Prepare screenshot
     if (!(this.excludeData && this.excludeData.screenshot)) {
-      // The replay options go along so form fields are masked the same way as in replays.
-      var screenshotDataPromise = startScreenCapture(
-        gleapInstance.isLiveMode(),
-        GleapReplayRecorder.getInstance().customOptions
-      ).then((screenshotData) => {
-        if (screenshotData) {
-          const snapshotPosition = gleapInstance.getGlobalDataItem('snapshotPosition');
-          screenshotData['x'] = snapshotPosition.x;
-          screenshotData['y'] = snapshotPosition.y;
-          this.screenshotData = screenshotData;
-        }
-      });
-      dataPromises.push(
-        resolveAfterTimeout(screenshotDataPromise, SCREENSHOT_CAPTURE_TIMEOUT_MS, 'screenshot capture')
-      );
+      // The DOM, rendered on the server. The replay options go along so form fields are masked the
+      // same way as in replays.
+      const captureDom = () =>
+        startScreenCapture(gleapInstance.isLiveMode(), GleapReplayRecorder.getInstance().customOptions).then(
+          (screenshotData) => {
+            if (screenshotData) {
+              const snapshotPosition = gleapInstance.getGlobalDataItem('snapshotPosition');
+              screenshotData['x'] = snapshotPosition.x;
+              screenshotData['y'] = snapshotPosition.y;
+              this.screenshotData = screenshotData;
+            }
+          }
+        );
+      // The screenshot the user marked, when the form took it from the tab (GleapMarkerManager): it
+      // goes out as an image. Without one (no tab capture in this browser, declined, a report sent
+      // without marking, a silent report) or when its upload fails, the DOM is rendered instead.
+      const screenshotImage = this.isSilent ? null : gleapInstance.getGlobalDataItem('screenshotImage');
+      const screenshotPromise = screenshotImage
+        ? GleapScreenRecorder.uploadFile(dataUrlToFile(screenshotImage.dataUrl, 'screenshot.jpg'))
+            .then((screenshotUrl) => {
+              if (!screenshotUrl) {
+                throw new Error('no-screenshot-url');
+              }
+              this.screenshotImage = screenshotImage;
+              this.screenshotUrl = screenshotUrl;
+            })
+            .catch(captureDom)
+        : captureDom();
+      dataPromises.push(resolveAfterTimeout(screenshotPromise, SCREENSHOT_CAPTURE_TIMEOUT_MS, 'screenshot capture'));
     }
 
     return Promise.all(dataPromises);
@@ -156,6 +184,7 @@ export default class GleapFeedback {
       isSilent: this.isSilent,
       outbound: this.outboundId,
       screenshotData: this.screenshotData,
+      screenshotUrl: this.screenshotUrl,
       webReplay: this.webReplay,
       screenRecordingUrl: this.screenRecordingUrl,
       spamToken: this.spamToken,
@@ -177,6 +206,7 @@ export default class GleapFeedback {
 
           if (keyToExclude === 'screenshot') {
             delete feedbackData.screenshotData;
+            delete feedbackData.screenshotUrl;
           }
 
           if (keyToExclude === 'replays') {
@@ -203,13 +233,16 @@ export default class GleapFeedback {
     });
   }
 
-  // The recording went out with this report: a later report must not upload it again.
-  forgetSentScreenRecording() {
+  // The recording and the marked screenshot went out with this report: a later report must not
+  // upload them again.
+  forgetSentCaptures() {
     try {
       const gleapInstance = Gleap.getInstance();
-      if (this.screenRecordingData && gleapInstance.getGlobalDataItem('screenRecordingData') === this.screenRecordingData) {
-        gleapInstance.setGlobalDataItem('screenRecordingData', null);
-      }
+      ['screenRecordingData', 'screenshotImage'].forEach((key) => {
+        if (this[key] && gleapInstance.getGlobalDataItem(key) === this[key]) {
+          gleapInstance.setGlobalDataItem(key, null);
+        }
+      });
     } catch (exp) {}
   }
 
@@ -231,7 +264,7 @@ export default class GleapFeedback {
             http.onreadystatechange = function (e) {
               if (http.readyState === 4) {
                 if (http.status === 200 || http.status === 201) {
-                  self.forgetSentScreenRecording();
+                  self.forgetSentCaptures();
                   try {
                     const feedback = JSON.parse(http.responseText);
                     resolve(feedback);

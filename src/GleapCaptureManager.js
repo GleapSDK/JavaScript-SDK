@@ -22,10 +22,10 @@ import {
   CAPTURE_MAX_RECORDING_SEC,
   CAPTURE_PLATFORM,
   CAPTURE_SDK_TYPE,
+  canCaptureTab,
   getCaptureConfig,
   getRecordingMethod,
   getSdkVersion,
-  hasDisplayMedia,
   hasUserMedia,
   isCaptureSupported,
   isDesktopChromium,
@@ -82,14 +82,6 @@ const HIDDEN_GLEAP_UI_SELECTOR = [
   '.gleap-admin-collapse-ui',
   'gleap-checklist',
 ].join(', ');
-
-const isTopWindow = () => {
-  try {
-    return window.top === window.self;
-  } catch (exp) {
-    return false;
-  }
-};
 
 const readStorage = (key) => {
   try {
@@ -680,10 +672,8 @@ export default class GleapCaptureManager {
     if (session.kind !== 'screenshot' || session.phase !== 'bar') {
       return;
     }
-    const config = getCaptureConfig();
-    // Called inside the Capture click: the tab capture needs that user activation. Not from inside a
-    // frame: the tab shows the whole page, the masks only know this frame.
-    const useTab = config.webScreenshotMethod !== 'dom-only' && isDesktopChromium() && hasDisplayMedia() && isTopWindow();
+    // Called inside the Capture click: the tab capture needs that user activation.
+    const useTab = canCaptureTab();
     const streamPromise = useTab ? requestTabStream() : null;
 
     session.phase = 'capturing';
@@ -999,9 +989,7 @@ export default class GleapCaptureManager {
     session.recording = null;
     session.result = result;
     // When it was paused: the logs leave those stretches out (Pause is for logging in or paying).
-    session.pauses = session.timeline
-      ? session.timeline.pauses.map((pause) => [pause[0], pause[1] || result.endedAt])
-      : [];
+    session.pauses = session.timeline ? session.timeline.pauses.map((pause) => [pause[0], pause[1] || result.endedAt]) : [];
     session.timelineEntries = session.timeline ? session.timeline.stop(result.endedAt) : [];
     const interactions = session.timeline ? session.timeline.interactions : 0;
     session.timeline = null;

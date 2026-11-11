@@ -124,6 +124,22 @@ export const isDesktopChromium = () => {
   }
 };
 
+const isTopWindow = () => {
+  try {
+    return window.top === window.self;
+  } catch (exp) {
+    return false;
+  }
+};
+
+/**
+ * Whether a screenshot can be one frame of the current tab (desktop Chromium, unless the project
+ * renders the DOM only). Not from inside a frame: the tab shows the whole page, the masks only know
+ * this frame. The request itself needs a user activation (requestTabStream inside the click).
+ */
+export const canCaptureTab = () =>
+  getCaptureConfig().webScreenshotMethod !== 'dom-only' && isDesktopChromium() && hasDisplayMedia() && isTopWindow();
+
 /**
  * 'display' (getDisplayMedia + MediaRecorder, desktop browsers) or 'rrweb' (a page recording,
  * phones and tablets).

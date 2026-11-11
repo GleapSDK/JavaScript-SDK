@@ -1,250 +1,152 @@
 import GleapSession from './GleapSession';
+import { DisplayRecording, requestDisplayStream } from './GleapCaptureRecorder';
+import { stopStream } from './GleapCaptureScreenshot';
+import { hasDisplayMedia, isDesktopChromium } from './GleapCaptureSettings';
 
+// The feedback form's screen recording ("Record screen" in the form's capture step). It records the
+// same way capture requests do (GleapCaptureRecorder): Chromium offers the current tab with one
+// click, other browsers show their own picker.
 export class GleapScreenRecorder {
-  // Constants
   static MAX_RECORD_TIME = 120; // 2 minutes
-  static MAX_WIDTH = 3072;
-  static MAX_HEIGHT = 1728;
-  static IDEAL_FRAME_RATE = 10;
-  static MAX_FRAME_RATE = 24;
-  static CHUNK_INTERVAL = 200; // milliseconds
-  static TIMER_UPDATE_INTERVAL = 1000; // milliseconds
   static RERENDER_DELAY = 100; // milliseconds
-
-  // MIME types in order of preference
-  static MIME_TYPES = [
-    'video/webm;codecs=vp9,opus',
-    'video/webm;codecs=vp8,opus',
-    'video/webm;codecs=vp9',
-    'video/webm;codecs=vp8',
-    'video/webm',
-    'video/mp4',
-  ];
 
   // CSS selectors
   static SELECTORS = {
     PREVIEW_VIDEO: '.bb-capture-preview video',
     TIMER_LABEL: '.bb-capture-toolbar-item-timer',
+    TOOLBAR: '.bb-capture-toolbar',
   };
 
   // Instance properties
   rerender;
-  stream;
-  mediaRecorder;
+  // The running DisplayRecording, from the Start click until it stopped.
+  recording = null;
   audioMuted = false;
   audioAvailable = true;
   available = true;
   isRecording = false;
   file = null;
-  maxRecordTime = GleapScreenRecorder.MAX_RECORD_TIME;
-  recordTime = 0;
-  recordingTimer = null;
   permissionErrorText = '';
-
-  // Internals for composed capture
-  _displayVideoTrack = null;
-  _displayStream = null;
-  _micStream = null;
 
   constructor(rerender, permissionErrorText) {
     this.rerender = rerender;
     this.permissionErrorText = permissionErrorText;
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-      this.available = false;
-    }
+    this.available = hasDisplayMedia();
 
     setTimeout(() => {
       this.rerender();
     }, GleapScreenRecorder.RERENDER_DELAY);
   }
 
-  getSupportedMimeType() {
-    // Prefer explicit audio+video codecs to ensure audio gets muxed.
-    for (const type of GleapScreenRecorder.MIME_TYPES) {
-      if (window.MediaRecorder && MediaRecorder.isTypeSupported(type)) {
-        return type;
-      }
-    }
-
-    return 'video/webm';
-  }
-
   formatTime(s) {
     return (s - (s %= 60)) / 60 + (9 < s ? ':' : ':0') + s;
   }
 
-  stopStreamTracks(stream) {
-    if (!stream) return;
-    try {
-      stream.getTracks().forEach((track) => track.stop());
-    } catch (_) {}
+  // The editor is gone once the form shows again: nothing to render then.
+  rerenderEditor() {
+    if (document.querySelector(GleapScreenRecorder.SELECTORS.TOOLBAR)) {
+      this.rerender();
+    }
   }
 
-  createMediaStream(tracks) {
-    const validTracks = tracks.filter((track) => track !== null);
-    return new MediaStream(validTracks);
+  setTimerLabel(remainingSec) {
+    const timerLabel = document.querySelector(GleapScreenRecorder.SELECTORS.TIMER_LABEL);
+    if (timerLabel) {
+      timerLabel.innerHTML = this.formatTime(Math.max(0, remainingSec));
+    }
   }
 
-  getFirstVideoTrack(stream) {
-    if (!stream) return null;
-    const videoTracks = stream.getVideoTracks();
-    return videoTracks.length > 0 ? videoTracks[0] : null;
-  }
-
-  getFirstAudioTrack(stream) {
-    if (!stream) return null;
-    const audioTracks = stream.getAudioTracks();
-    return audioTracks.length > 0 ? audioTracks[0] : null;
-  }
-
-  async startScreenRecording() {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || this.isRecording) {
+  // Called inside the Start click: the browser's share dialog needs that user activation.
+  startScreenRecording() {
+    if (!hasDisplayMedia()) {
       this.available = false;
       this.rerender();
       return;
     }
-
-    try {
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          width: {
-            ideal: Math.min(window.screen.width, GleapScreenRecorder.MAX_WIDTH),
-          },
-          height: {
-            ideal: Math.min(window.screen.height, GleapScreenRecorder.MAX_HEIGHT),
-          },
-          frameRate: {
-            ideal: GleapScreenRecorder.IDEAL_FRAME_RATE,
-            max: GleapScreenRecorder.MAX_FRAME_RATE,
-          },
-          displaySurface: 'monitor',
-        },
-        audio: false,
-        selfBrowserSurface: 'include',
-      });
-
-      // Keep references to both the original stream and video track
-      this._displayStream = displayStream;
-      this._displayVideoTrack = this.getFirstVideoTrack(displayStream);
-
-      // If user wants audio and permissions allow it, get mic, else continue with video-only
-      if (!this.audioMuted) {
-        await this.startAudioRecording();
-      } else {
-        this.audioAvailable = false;
-        const composed = this.createMediaStream([this._displayVideoTrack]);
-        this.stream = composed;
-        this.handleRecord({ stream: composed });
-      }
-
-      this.rerender();
-    } catch (error) {
-      window.alert(this.permissionErrorText);
-      this.rerender();
+    if (this.recording) {
+      return;
     }
+
+    const streamPromise = requestDisplayStream(isDesktopChromium());
+    const recording = new DisplayRecording({
+      maxDurationSec: GleapScreenRecorder.MAX_RECORD_TIME,
+      onTick: (elapsedSec) => this.setTimerLabel(GleapScreenRecorder.MAX_RECORD_TIME - elapsedSec),
+      onStop: (result) => this.onRecordingEnded(recording, result),
+      onError: () => this.onRecordingEnded(recording, null),
+    });
+    this.recording = recording;
+
+    streamPromise
+      .then((stream) => {
+        // Stopped or dismissed while the share dialog was open.
+        if (this.recording !== recording) {
+          stopStream(stream);
+          return null;
+        }
+        return recording.start(stream, !this.audioMuted).then(({ hasMicrophone }) => {
+          this.audioAvailable = hasMicrophone;
+          this.isRecording = true;
+          this.setTimerLabel(GleapScreenRecorder.MAX_RECORD_TIME);
+          this.rerenderEditor();
+        });
+      })
+      .catch(() => {
+        if (this.recording !== recording) {
+          return;
+        }
+        recording.cancel();
+        this.recording = null;
+        this.isRecording = false;
+        window.alert(this.permissionErrorText);
+        this.rerenderEditor();
+      });
+  }
+
+  // The Stop button, the time limit and the browser's "Stop sharing" all end here (DisplayRecording
+  // releases the screen and the microphone on every path). `result` is null when nothing was recorded.
+  onRecordingEnded(recording, result) {
+    if (this.recording !== recording) {
+      return;
+    }
+    this.recording = null;
+    this.isRecording = false;
+    this.setTimerLabel(GleapScreenRecorder.MAX_RECORD_TIME);
+
+    if (result) {
+      this.file = new File([result.blob], result.fileName, { type: result.type });
+      const previewVideoElement = document.querySelector(GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO);
+      if (previewVideoElement) {
+        previewVideoElement.src = URL.createObjectURL(result.blob);
+      }
+    }
+    this.rerenderEditor();
   }
 
   stopScreenRecording() {
-    if (!this.mediaRecorder || !this.stream || !this.isRecording) {
+    if (!this.recording) {
       return;
     }
-
-    if (this.recordingTimer) {
-      clearInterval(this.recordingTimer);
-      this.recordingTimer = null;
-    }
-
-    try {
-      this.mediaRecorder.stop();
-    } catch (_) {}
-
-    this.releaseCapture();
-
-    this.rerender();
-  }
-
-  // Stops the timer and every captured track: the screen (what Chrome uses for the recording
-  // indicator), the composed stream and the microphone.
-  releaseCapture() {
-    if (this.recordingTimer) {
-      clearInterval(this.recordingTimer);
-      this.recordingTimer = null;
-    }
-
-    // Stop composed stream tracks
-    this.stopStreamTracks(this.stream);
-
-    // Stop original display stream tracks (this is what Chrome uses for the recording indicator)
-    if (this._displayStream) {
-      this.stopStreamTracks(this._displayStream);
-      this._displayStream = null;
-    }
-
-    // Also stop original mic stream tracks if present
-    if (this._micStream) {
-      this.stopStreamTracks(this._micStream);
-      this._micStream = null;
-    }
-
-    this._displayVideoTrack = null;
-  }
-
-  async startAudioRecording() {
-    if (!this._displayVideoTrack) {
+    if (!this.isRecording) {
+      // The share dialog is still open: the stream is stopped when it arrives.
+      this.recording = null;
       return;
     }
-
-    try {
-      const voiceStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-        video: false,
-      });
-
-      this._micStream = voiceStream;
-      const micTrack = this.getFirstAudioTrack(voiceStream);
-
-      this.audioMuted = false;
-      this.audioAvailable = !!micTrack;
-
-      // Compose a NEW stream with exactly one video track + (optional) one mic track
-      const composed = this.createMediaStream([this._displayVideoTrack, micTrack]);
-
-      this.stream = composed;
-      this.handleRecord({ stream: composed });
-      this.rerender();
-    } catch (error) {
-      this.audioAvailable = false;
-
-      // Fallback to video-only if mic fails
-      const composed = this.createMediaStream([this._displayVideoTrack]);
-
-      this.stream = composed;
-      this.handleRecord({ stream: composed });
-      this.rerender();
-    }
+    this.recording.stop();
   }
 
   toggleAudio() {
     this.audioMuted = !this.audioMuted;
+    if (this.recording) {
+      this.recording.setMicrophoneEnabled(!this.audioMuted);
+    }
     this.rerender();
-
-    if (!this.stream) {
-      return;
-    }
-
-    const audioTracks = this.stream.getAudioTracks();
-    for (let i = 0; i < audioTracks.length; i++) {
-      const audioTrack = audioTracks[i];
-      audioTrack.enabled = !this.audioMuted;
-    }
   }
 
-  static async uploadScreenRecording(screenRecordingData) {
-    if (screenRecordingData == null) {
+  /**
+   * Uploads a file of a report (the screen recording, the tab screenshot); resolves with its URL.
+   */
+  static async uploadFile(file) {
+    if (file == null) {
       return null;
     }
 
@@ -254,7 +156,7 @@ export class GleapScreenRecorder {
       GleapSession.getInstance().injectSession(xhr);
 
       const formData = new FormData();
-      formData.append('file', screenRecordingData);
+      formData.append('file', file);
 
       xhr.onerror = function () {
         reject(new Error('Network error during file upload'));
@@ -279,83 +181,5 @@ export class GleapScreenRecorder {
     }
     this.file = null;
     this.rerender();
-  }
-
-  handleRecord({ stream }) {
-    const self = this;
-
-    const recordedChunks = [];
-    this.mediaRecorder = new MediaRecorder(stream, {
-      mimeType: this.getSupportedMimeType(),
-    });
-    this.isRecording = true;
-    this.recordTime = 0;
-
-    // Set timer (guard if label isn't present)
-    const timerLabel = document.querySelector(GleapScreenRecorder.SELECTORS.TIMER_LABEL);
-    if (this.recordingTimer) {
-      clearInterval(this.recordingTimer);
-      this.recordingTimer = null;
-    }
-    this.recordingTimer = setInterval(() => {
-      self.recordTime++;
-      const remainingTime = self.maxRecordTime - self.recordTime;
-      if (timerLabel) {
-        if (remainingTime > 0) {
-          timerLabel.innerHTML = self.formatTime(remainingTime);
-        } else {
-          timerLabel.innerHTML = '2:00';
-          self.stopScreenRecording();
-        }
-      } else if (remainingTime <= 0) {
-        self.stopScreenRecording();
-      }
-    }, GleapScreenRecorder.TIMER_UPDATE_INTERVAL);
-
-    this.mediaRecorder.ondataavailable = function (e) {
-      if (e.data && e.data.size > 0) {
-        recordedChunks.push(e.data);
-      }
-    };
-
-    const videoTrack = this.getFirstVideoTrack(stream);
-    if (videoTrack) {
-      // The browser's "Stop sharing" ends the screen track: stop like the Stop button does, so the
-      // timer and the microphone stop too (the recorder's onstop prepares the recording).
-      videoTrack.onended = function () {
-        if (self.isRecording) {
-          self.stopScreenRecording();
-        } else {
-          self.releaseCapture();
-        }
-      };
-    }
-
-    this.mediaRecorder.onstop = function () {
-      self.prepareRecording(recordedChunks);
-    };
-
-    // Start recording with configured chunk interval
-    this.mediaRecorder.start(GleapScreenRecorder.CHUNK_INTERVAL);
-
-    self.rerender();
-  }
-
-  prepareRecording(recordedChunks) {
-    const mimeType = this.getSupportedMimeType();
-    const completeBlob = new Blob(recordedChunks, { type: mimeType });
-
-    const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-    this.file = new File([completeBlob], `screen-recording.${extension}`, {
-      type: mimeType,
-    });
-
-    const previewVideoElement = document.querySelector(GleapScreenRecorder.SELECTORS.PREVIEW_VIDEO);
-    if (previewVideoElement) {
-      previewVideoElement.src = URL.createObjectURL(completeBlob);
-      this.audioAvailable = this.stream ? this.stream.getAudioTracks().length > 0 : this.audioAvailable;
-      this.isRecording = false;
-      this.rerender();
-    }
   }
 }

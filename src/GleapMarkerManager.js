@@ -1,7 +1,9 @@
-import Gleap, { GleapTranslationManager, GleapFrameManager } from './Gleap';
+import Gleap, { GleapTranslationManager, GleapFrameManager, GleapCaptureManager } from './Gleap';
 import { ScreenDrawer } from './ScreenDrawer';
 import { GleapScrollStopper } from './GleapScrollStopper';
 import { GleapScreenRecorder } from './GleapScreenRecorder';
+import { captureTabScreenshot, requestTabStream } from './GleapCaptureScreenshot';
+import { canCaptureTab } from './GleapCaptureSettings';
 import { loadIcon } from './UI';
 
 export default class GleapMarkerManager {
@@ -12,6 +14,8 @@ export default class GleapMarkerManager {
   screenDrawer = null;
   escListener = null;
   pageLeaveListener = null;
+  // True while the marked page is captured from the tab (the Next click until the frame is there).
+  capturingTab = false;
   overrideLanguage = Gleap.getInstance().overrideLanguage;
 
   constructor(type) {
@@ -100,6 +104,9 @@ export default class GleapMarkerManager {
   }
 
   clear() {
+    this.capturingTab = false;
+    Gleap.getInstance().setGlobalDataItem('screenshotImage', null);
+
     if (this.screenDrawer) {
       this.screenDrawer.destroyScrollTracker();
     }
@@ -248,6 +255,53 @@ export default class GleapMarkerManager {
   }
 
   showNextStep = function () {
+    if (this.capturingTab) {
+      return;
+    }
+    if (this.type === 'screenshot' && canCaptureTab()) {
+      this.captureTabScreenshot();
+      return;
+    }
+    this.finishNextStep();
+  };
+
+  // The marked page as the browser shows it: one frame of this tab, drawings included. Runs inside
+  // the Next click (the browser's share dialog needs that user activation). Declined, cancelled or
+  // failed: nothing is kept and the report renders the DOM as before (GleapFeedback).
+  captureTabScreenshot() {
+    this.capturingTab = true;
+    const streamPromise = requestTabStream();
+    const captureEditor = document.querySelector('.bb-capture-editor');
+    const setUiHidden = (hidden) => {
+      if (captureEditor) {
+        captureEditor.classList.toggle('bb-capture-editor--capturing', hidden);
+      }
+    };
+    // Hidden before the share dialog shows: a tab stream can still hand out frames painted before a
+    // later hide. The drawings stay.
+    setUiHidden(true);
+
+    const captureManager = GleapCaptureManager.getInstance();
+    captureTabScreenshot({
+      streamPromise,
+      setUiHidden,
+      privacyOptions: captureManager.privacyOptions(),
+      maskSelectors: captureManager.maskSelectors(),
+      isActive: () => this.capturingTab,
+    })
+      .catch(() => null)
+      .then((image) => {
+        // Dismissed meanwhile.
+        if (!this.capturingTab) {
+          return;
+        }
+        this.capturingTab = false;
+        Gleap.getInstance().setGlobalDataItem('screenshotImage', image);
+        this.finishNextStep();
+      });
+  }
+
+  finishNextStep() {
     // Adapt the UI
     this.showWidgetUI();
 
@@ -264,7 +318,7 @@ export default class GleapMarkerManager {
       });
       this.callback(true);
     }
-  };
+  }
 
   unregisterListeners() {
     if (this.escListener) {
@@ -376,6 +430,7 @@ export default class GleapMarkerManager {
   }
 
   dismiss() {
+    this.capturingTab = false;
     this.showWidgetUI();
 
     if (this.callback) {
