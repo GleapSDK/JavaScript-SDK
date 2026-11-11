@@ -20,6 +20,7 @@ export default class GleapEventManager {
       const gleapInstance = Gleap.getInstance();
       gleapInstance.setGlobalDataItem('webReplay', null);
       gleapInstance.setGlobalDataItem('screenRecordingData', null);
+      gleapInstance.setGlobalDataItem('screenshotImage', null);
       gleapInstance.takeCurrentReplay();
     }
 

@@ -1968,6 +1968,14 @@ export const injectStyledCSS = (
     .bb-capture-editor-recording .bb-capture-dismiss {
       display: none;
     }
+
+    .bb-capture-editor--capturing .bb-capture-toolbar,
+    .bb-capture-editor--capturing .bb-capture-toolbar-item-colorpicker,
+    .bb-capture-editor--capturing .bb-capture-dismiss,
+    .bb-capture-editor--capturing .bb-capture-editor-drag-info,
+    .bb-capture-editor--capturing .bb-capture-editor-borderlayer {
+      display: none !important;
+    }
     
     .bb-capture-editor-item-inactive {
       opacity: 0.3;

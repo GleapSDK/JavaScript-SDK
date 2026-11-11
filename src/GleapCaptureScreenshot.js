@@ -1554,14 +1554,9 @@ export const renderDom = ({ privacyOptions, maskSelectors, isActive }) =>
       .catch((error) => finish(error));
   });
 
-/**
- * Takes the screenshot: the shared tab when `streamPromise` (from requestTabStream) delivers one,
- * the DOM render otherwise (declined, cancelled, another surface or any error) — without asking again.
- * @returns {Promise<{dataUrl: string, width: number, height: number, method: 'tab'|'dom'}>}
- */
-export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, maskSelectors, isActive }) => {
-  const active = () => !isActive || isActive();
-  const fromTab = streamPromise
+// One frame of the shared tab, or null when there is no stream, it was declined or it failed.
+const captureTab = ({ streamPromise, setUiHidden, privacyOptions, maskSelectors, active }) =>
+  streamPromise
     ? streamPromise.then(
         (stream) => {
           if (!active()) {
@@ -1573,15 +1568,51 @@ export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, 
           );
         },
         () => {
-          // Declined or failed: the bar (hidden for the share dialog) shows its busy state again
-          // while the page is rendered instead.
+          // Declined or failed: the UI (hidden for the share dialog) shows again.
           setUiHidden(false);
           return null;
         }
       )
     : Promise.resolve(null);
 
-  return fromTab
+const encodeAndRelease = (capture) => {
+  try {
+    const encoded = encodeCapture(capture);
+    encoded.method = capture.method;
+    return encoded;
+  } finally {
+    releaseCanvas(capture.canvas);
+  }
+};
+
+/**
+ * Takes the screenshot from the shared tab only (`streamPromise` from requestTabStream). Resolves
+ * with null when the tab was declined, cancelled, another surface or failed: the caller has its own
+ * fallback (the feedback form renders the DOM on the server).
+ * @returns {Promise<{dataUrl: string, width: number, height: number, method: 'tab'}|null>}
+ */
+export const captureTabScreenshot = ({ streamPromise, setUiHidden, privacyOptions, maskSelectors, isActive }) => {
+  const active = () => !isActive || isActive();
+  return captureTab({ streamPromise, setUiHidden, privacyOptions, maskSelectors, active }).then((capture) => {
+    if (!capture) {
+      return null;
+    }
+    if (!active()) {
+      releaseCanvas(capture.canvas);
+      return null;
+    }
+    return encodeAndRelease(capture);
+  });
+};
+
+/**
+ * Takes the screenshot: the shared tab when `streamPromise` (from requestTabStream) delivers one,
+ * the DOM render otherwise (declined, cancelled, another surface or any error) — without asking again.
+ * @returns {Promise<{dataUrl: string, width: number, height: number, method: 'tab'|'dom'}>}
+ */
+export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, maskSelectors, isActive }) => {
+  const active = () => !isActive || isActive();
+  return captureTab({ streamPromise, setUiHidden, privacyOptions, maskSelectors, active })
     .then((capture) => {
       if (!active()) {
         if (capture) {
@@ -1591,13 +1622,5 @@ export const captureScreenshot = ({ streamPromise, setUiHidden, privacyOptions, 
       }
       return capture || renderDom({ privacyOptions, maskSelectors, isActive: active });
     })
-    .then((capture) => {
-      try {
-        const encoded = encodeCapture(capture);
-        encoded.method = capture.method;
-        return encoded;
-      } finally {
-        releaseCanvas(capture.canvas);
-      }
-    });
+    .then(encodeAndRelease);
 };
