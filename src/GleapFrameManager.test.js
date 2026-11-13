@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
-import GleapFrameManager from './GleapFrameManager';
+import GleapFrameManager, { FRAME_LOAD_TIMEOUT_MS } from './GleapFrameManager';
 
 // Stub the barrel so the real GleapFrameManager loads without the SDK_VERSION
 // Webpack global. flowConfig is a mutable object so tests can flip
@@ -315,5 +315,117 @@ describe('GleapFrameManager url handler', () => {
     dispatch(fm, { name: 'open-url', data: 'javascript:alert(1)', newTab: true });
     expect(open).not.toHaveBeenCalled();
     expect(window.location.href).toBe(before);
+  });
+});
+
+describe('GleapFrameManager opens reliably (iOS: never stuck until a reload)', () => {
+  const HIDDEN = 'gleap-frame-container--hidden';
+  const LOADING = 'gleap-frame-container--loading';
+  const CLOSING = 'gleap-frame-container--closing';
+  let warn;
+
+  // A frame that was injected but whose messenger hasn't pinged yet.
+  const setupLoading = () => {
+    const fm = setup();
+    fm.comReady = false;
+    fm.injectedFrame = true;
+    fm.gleapFrame = document.querySelector('.gleap-frame');
+    fm.gleapFrameContainer.classList.add(HIDDEN);
+    return fm;
+  };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+    warn.mockRestore();
+  });
+
+  it('keeps the loader up when opened again before the messenger pinged, and opens on the ping', () => {
+    const fm = setupLoading();
+    fm.showWidget();
+    jest.advanceTimersByTime(0);
+    const container = fm.gleapFrameContainer;
+    expect(container.classList.contains(HIDDEN)).toBe(false);
+    expect(container.classList.contains(LOADING)).toBe(true);
+    expect(fm.widgetOpened).toBe(true);
+
+    dispatch(fm, { name: 'ping' });
+    jest.advanceTimersByTime(300);
+    expect(container.classList.contains(LOADING)).toBe(false);
+  });
+
+  it('loads the messenger directly when the bootstrapped frame never pings, then takes the frame down', () => {
+    const fm = setupLoading();
+    const frame = fm.gleapFrame;
+    fm.showFrameContainer(true);
+    fm.armFrameLoadWatchdog(frame);
+
+    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
+    expect(frame.getAttribute('src')).toBe(fm.frameUrl);
+    expect(fm.gleapFrameContainer).not.toBeNull();
+
+    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
+    expect(fm.gleapFrameContainer).toBeNull();
+    expect(fm.injectedFrame).toBe(false);
+    expect(fm.widgetOpened).toBe(false);
+    expect(document.querySelector('.gleap-frame-container')).toBeNull();
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it('stands the watchdog down on the first ping', () => {
+    const fm = setupLoading();
+    fm.armFrameLoadWatchdog(fm.gleapFrame);
+    dispatch(fm, { name: 'ping' });
+    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS * 2);
+    expect(fm.gleapFrame.getAttribute('src')).toBeNull();
+    expect(fm.gleapFrameContainer).not.toBeNull();
+  });
+
+  it('forgets the connection on destroy, so messages for the next frame wait for its ping', () => {
+    const fm = setup();
+    fm.destroy();
+    expect(fm.comReady).toBe(false);
+    document.body.innerHTML = '<iframe class="gleap-frame"></iframe>';
+    fm.queue = [];
+    fm.sendMessage({ name: 'open-conversation', data: {} }, true);
+    expect(fm.queue).toEqual([{ name: 'open-conversation', data: {} }]);
+  });
+
+  it('restarts a frame that was still loading when the page went into the back/forward cache', () => {
+    const fm = setupLoading();
+    fm.showFrameContainer(true);
+    const inject = jest.spyOn(fm, 'injectFrame').mockImplementation(() => {});
+    const instance = jest.spyOn(GleapFrameManager, 'getInstance').mockReturnValue(fm);
+
+    fm.handlePageShow({ persisted: true });
+    expect(document.querySelector('.gleap-frame-container')).toBeNull();
+    expect(fm.injectedFrame).toBe(false);
+
+    jest.advanceTimersByTime(0);
+    expect(inject).toHaveBeenCalledTimes(1);
+    instance.mockRestore();
+  });
+
+  it('finishes a close that was cut short by the back/forward cache and re-sends the state', () => {
+    const fm = setup();
+    const container = fm.gleapFrameContainer;
+    container.classList.add(CLOSING);
+    fm.widgetOpened = false;
+    postMessage.mockClear();
+
+    fm.handlePageShow({ persisted: true });
+    expect(container.classList.contains(CLOSING)).toBe(false);
+    expect(container.classList.contains(HIDDEN)).toBe(true);
+    const status = postMessage.mock.calls.map(([raw]) => JSON.parse(raw)).find((m) => m.name === 'widget-status-update');
+    expect(status.data).toEqual({ isWidgetOpen: false });
+  });
+
+  it('ignores a regular page load', () => {
+    const fm = setupLoading();
+    fm.handlePageShow({ persisted: false });
+    expect(fm.gleapFrameContainer).not.toBeNull();
   });
 });
