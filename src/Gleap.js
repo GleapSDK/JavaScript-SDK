@@ -272,6 +272,8 @@ class Gleap {
     // otherwise only kicked off once the config round-trip finishes, which
     // leaves a window (slow network, uncached first visit) where a user can
     // open feedback before the recorder is running and submit an empty replay.
+    // It starts at the page's first idle moment (at most 2 s from now), so the
+    // full snapshot of a large page does not block its load.
     // If this project has web replays disabled, applyConfig() stops the
     // recorder again. That transient buffer can't reach a ticket: the feedback
     // widget (the only thing that emits 'flow-started', which is what snapshots

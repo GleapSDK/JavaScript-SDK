@@ -1,4 +1,5 @@
 import { isMobile } from './GleapHelper';
+import { runWhenIdle } from './GleapIdle';
 import { getReplayMaskingOptions } from './GleapInputMasking';
 import { record } from '@rrweb/record';
 import { pack } from '@rrweb/packer';
@@ -29,6 +30,11 @@ const MAX_BUFFER_SIZE = 10 * 1024 * 1024;
 const MIN_FORCED_CHECKOUT_INTERVAL_MS = 30 * 1000;
 
 const RRWEB_FULL_SNAPSHOT_EVENT_TYPE = 2;
+
+// rrweb's first full snapshot serializes the whole page (and inlines its stylesheets) in one task:
+// on a content-heavy page that is most of the SDK's main-thread work at load. The automatic
+// starts wait for an idle moment, at most this long.
+const IDLE_START_TIMEOUT_MS = 2000;
 
 // Allocation-free stand-in for JSON.stringify(value).length. It runs on every
 // recorded event, so it must stay cheap next to rrweb's own serialization.
@@ -68,6 +74,8 @@ export default class GleapReplayRecorder {
   customOptions = {};
   // A capture request's page recording runs rrweb itself, and rrweb records one session per page.
   pausedForCapture = false;
+  // Cancels the start startIfNotRunning scheduled for the next idle moment.
+  cancelIdleStart = undefined;
 
   // GleapReplayRecorder singleton
   static instance;
@@ -100,6 +108,7 @@ export default class GleapReplayRecorder {
    * @returns
    */
   start(keepBuffer = false) {
+    this.clearIdleStart();
     if (keepBuffer && this.startDate) {
       if (this.stopFunction) {
         try {
@@ -203,20 +212,34 @@ export default class GleapReplayRecorder {
   }
 
   /**
-   * Starts recording only if it isn't already running.
+   * Starts recording at the next idle moment (at the latest IDLE_START_TIMEOUT_MS from now), only
+   * if it isn't already running or about to start.
    *
    * The recorder is started eagerly at SDK init and then again once the config
    * confirms web replays are enabled. Without this guard that second call (and
    * the cached-vs-server config double apply) would call start(), which tears
    * down and rebuilds the rolling buffer, throwing away everything captured so
-   * far.
+   * far. A stop() before the idle moment (replays off in the config) cancels the start.
    */
   startIfNotRunning() {
-    if (this.stopFunction || this.pausedForCapture) {
+    if (this.stopFunction || this.pausedForCapture || this.cancelIdleStart) {
       return;
     }
 
-    this.start();
+    this.cancelIdleStart = runWhenIdle(() => {
+      this.cancelIdleStart = undefined;
+      if (this.stopFunction || this.pausedForCapture) {
+        return;
+      }
+      this.start();
+    }, IDLE_START_TIMEOUT_MS);
+  }
+
+  clearIdleStart() {
+    if (this.cancelIdleStart) {
+      this.cancelIdleStart();
+      this.cancelIdleStart = undefined;
+    }
   }
 
   /**
@@ -224,6 +247,7 @@ export default class GleapReplayRecorder {
    * @returns
    */
   stop() {
+    this.clearIdleStart();
     if (this.stopFunction) {
       this.stopFunction();
       this.stopFunction = undefined;
@@ -241,6 +265,12 @@ export default class GleapReplayRecorder {
    */
   pauseForCapture() {
     if (!this.stopFunction) {
+      // About to start: it starts after the capture instead.
+      if (this.cancelIdleStart) {
+        this.clearIdleStart();
+        this.pausedForCapture = true;
+        return true;
+      }
       return false;
     }
     try {
