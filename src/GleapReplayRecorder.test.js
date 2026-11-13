@@ -219,3 +219,85 @@ describe('approximateSize', () => {
     expect(ratio).toBeLessThan(1.25);
   });
 });
+
+// The first full snapshot serializes the whole page, which is most of the SDK's main-thread
+// work on a large page: the eager start at init and the config's start wait for an idle moment.
+describe('startIfNotRunning waits for an idle moment', () => {
+  let idleCallbacks;
+
+  beforeEach(() => {
+    idleCallbacks = [];
+    global.window.requestIdleCallback = jest.fn((callback, options) => {
+      idleCallbacks.push({ callback, options });
+      return idleCallbacks.length;
+    });
+    global.window.cancelIdleCallback = jest.fn((handle) => {
+      idleCallbacks[handle - 1].cancelled = true;
+    });
+  });
+  const runIdle = () => idleCallbacks.filter((entry) => !entry.cancelled).forEach((entry) => entry.callback());
+
+  test('records nothing until the browser is idle, then starts once', () => {
+    const recorder = new GleapReplayRecorder();
+    recorder.startIfNotRunning();
+    recorder.startIfNotRunning();
+
+    expect(record).not.toHaveBeenCalled();
+    expect(idleCallbacks).toHaveLength(1);
+    expect(idleCallbacks[0].options.timeout).toBeLessThanOrEqual(2000);
+
+    runIdle();
+    expect(record).toHaveBeenCalledTimes(1);
+    expect(recorder.startDate).toBeDefined();
+  });
+
+  test('a recorder that is already running is left as it is', () => {
+    const recorder = new GleapReplayRecorder();
+    recorder.start();
+    recorder.startIfNotRunning();
+
+    expect(idleCallbacks).toHaveLength(0);
+    expect(record).toHaveBeenCalledTimes(1);
+  });
+
+  test('stopped before the idle moment (replays off in the config) -> never records', () => {
+    const recorder = new GleapReplayRecorder();
+    recorder.startIfNotRunning();
+    recorder.stop();
+    runIdle();
+
+    expect(record).not.toHaveBeenCalled();
+  });
+
+  test('an explicit start before the idle moment is not followed by a second one', () => {
+    const recorder = new GleapReplayRecorder();
+    recorder.startIfNotRunning();
+    recorder.start();
+    runIdle();
+
+    expect(record).toHaveBeenCalledTimes(1);
+  });
+
+  test('a capture request before the idle moment -> no replay during the capture, the replay starts after it', () => {
+    const recorder = new GleapReplayRecorder();
+    recorder.startIfNotRunning();
+
+    expect(recorder.pauseForCapture()).toBe(true);
+    runIdle();
+    expect(record).not.toHaveBeenCalled();
+
+    recorder.resumeAfterCapture();
+    expect(record).toHaveBeenCalledTimes(1);
+  });
+
+  test('without requestIdleCallback (Safari) -> starts after the page has loaded, at the latest after the timeout', () => {
+    delete global.window.requestIdleCallback;
+    delete global.window.cancelIdleCallback;
+    const recorder = new GleapReplayRecorder();
+    recorder.startIfNotRunning();
+
+    expect(record).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(2000);
+    expect(record).toHaveBeenCalledTimes(1);
+  });
+});
