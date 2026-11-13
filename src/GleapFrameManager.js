@@ -25,6 +25,9 @@ import { bootstrapGleapFrame, loadFromGleapCache, runFunctionWhenDomIsReady, sav
 import { frameTargetOrigin, isSafeNavigationUrl, isScriptUrl } from './GleapMessageSecurity';
 import { widgetExpandMinWidth, widgetLoaderMarkup, widgetMaxHeight } from './UI';
 
+// How long an injected messenger frame may take to ping before the watchdog steps in (per stage).
+export const FRAME_LOAD_TIMEOUT_MS = 10000;
+
 export default class GleapFrameManager {
   frameUrl = 'https://messenger-app.gleap.io';
   gleapFrameContainer = null;
@@ -55,6 +58,8 @@ export default class GleapFrameManager {
   surveyRevealTimeout = null;
   // A freshly injected frame opens shortly after its first ping, unless it was closed meanwhile.
   openAfterPingTimeout = null;
+  // Watches an injected frame until its first ping (see armFrameLoadWatchdog).
+  frameLoadTimeout = null;
   // The messenger fell back to a legacy (pre Surveys 2.0) survey: use the old survey chrome.
   surveyLegacy = false;
   // Surveys 2.0 corners reported by the messenger (survey-theme): 'sharp' | 'pill', null = rounded.
@@ -100,6 +105,8 @@ export default class GleapFrameManager {
         appHeight();
         // Survey page: forward answer keys typed on the host page into the frame.
         document.addEventListener('keydown', (event) => this.forwardSurveyKey(event));
+        // Back/forward cache (iOS Safari restores pages on back/forward and when reopening a tab).
+        window.addEventListener('pageshow', (event) => this.handlePageShow(event));
         // Phones: keep the card survey sheet above the on-screen keyboard (iOS Safari
         // draws the keyboard over fixed elements; visualViewport shrinks instead).
         if (window.visualViewport) {
@@ -551,6 +558,9 @@ export default class GleapFrameManager {
     }
     this.injectedFrame = false;
     this.widgetOpened = false;
+    // The next frame is a new document: nothing reaches it (and the queue waits) until it pings.
+    this.comReady = false;
+    this.clearFrameLoadWatchdog();
     this.markerManager = undefined;
     if (this.surveyRevealTimeout) {
       clearTimeout(this.surveyRevealTimeout);
@@ -696,6 +706,7 @@ export default class GleapFrameManager {
 
         // Bootstrap the iframe content from the Gleap origin via about:blank + doc.write.
         bootstrapGleapFrame(this.gleapFrame, this.frameUrl);
+        this.armFrameLoadWatchdog(this.gleapFrame);
 
         this.updateFrameStyle();
 
@@ -706,6 +717,116 @@ export default class GleapFrameManager {
       });
     });
   };
+
+  /**
+   * The messenger frame can fail to load without any signal reaching us: the bootstrap fetch or
+   * the bundle inside the frame stalls on a flaky mobile connection, or iOS Safari cancels them
+   * when the page goes into the back/forward cache mid-load. Then `ping` never arrives, and on a
+   * phone the loader covers the whole screen with no way to close it, so the launcher is dead until
+   * a reload. Stage 1: load the messenger directly into the frame (the cross-origin path). Stage 2:
+   * still nothing — take the frame down, so the next launcher tap injects a fresh one.
+   */
+  armFrameLoadWatchdog(iframe) {
+    this.clearFrameLoadWatchdog();
+    if (!iframe) {
+      return;
+    }
+
+    this.frameLoadTimeout = setTimeout(() => {
+      this.frameLoadTimeout = null;
+      if (this.comReady || this.gleapFrame !== iframe) {
+        return;
+      }
+
+      try {
+        // The bootstrap may already have fallen back to a (slow) direct load; don't restart it.
+        if (iframe.getAttribute('src') !== this.frameUrl) {
+          iframe.src = this.frameUrl;
+        }
+      } catch (e) {}
+
+      this.frameLoadTimeout = setTimeout(() => {
+        this.frameLoadTimeout = null;
+        if (this.comReady || this.gleapFrame !== iframe) {
+          return;
+        }
+        try {
+          console.warn(
+            'Gleap: the messenger (' +
+              this.frameUrl +
+              ') did not load and was closed. If this keeps happening, check that your ' +
+              'Content-Security-Policy allows frame-src, script-src and style-src for https://*.gleap.io.'
+          );
+        } catch (e) {}
+        this.resetUnloadedFrame(false);
+      }, FRAME_LOAD_TIMEOUT_MS);
+    }, FRAME_LOAD_TIMEOUT_MS);
+  }
+
+  clearFrameLoadWatchdog() {
+    if (this.frameLoadTimeout) {
+      clearTimeout(this.frameLoadTimeout);
+      this.frameLoadTimeout = null;
+    }
+  }
+
+  /**
+   * Removes a frame whose messenger never connected. With `reopen`, a widget that was showing
+   * (its loader) is injected again right away; otherwise the next open injects a fresh frame.
+   */
+  resetUnloadedFrame(reopen) {
+    const wasOpened = this.widgetOpened;
+    this.unregisterEscListener();
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+    this.destroy();
+    try {
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+    } catch (e) {}
+    if (reopen && wasOpened) {
+      this.showWidget();
+    }
+  }
+
+  /**
+   * A page restored from the back/forward cache (iOS Safari: back/forward, reopening a tab) comes
+   * back with this manager's state but loads that were in flight may have been cancelled, and
+   * timers or animations may have been cut short. Re-sync so the launcher keeps working.
+   */
+  handlePageShow(event) {
+    if (!event || !event.persisted) {
+      return;
+    }
+
+    try {
+      if (this.injectedFrame && this.gleapFrameContainer && !this.comReady) {
+        // The frame was still loading when the page was frozen: start it over.
+        this.resetUnloadedFrame(true);
+        return;
+      }
+
+      const container = this.gleapFrameContainer;
+      if (container) {
+        if (this.closeTimeout) {
+          clearTimeout(this.closeTimeout);
+          this.closeTimeout = null;
+        }
+        container.classList.remove('gleap-frame-container--closing');
+        if (this.widgetOpened) {
+          container.classList.remove('gleap-frame-container--hidden');
+          container.classList.add('gleap-frame-container--animate');
+        } else if (!container.classList.contains('gleap-frame-container--measuring')) {
+          container.classList.add('gleap-frame-container--hidden');
+          container.classList.remove('gleap-frame-container--animate');
+        }
+        this.updateWidgetStatus();
+      }
+
+      GleapFeedbackButtonManager.getInstance().updateFeedbackButtonState();
+    } catch (e) {}
+  }
 
   showImage = (url) => {
     runFunctionWhenDomIsReady(() => {
@@ -938,7 +1059,13 @@ export default class GleapFrameManager {
 
   showWidget() {
     setTimeout(() => {
-      if (this.gleapFrameContainer) {
+      if (this.gleapFrameContainer && !this.comReady) {
+        // Injected but the messenger hasn't pinged yet: keep the loader up (not a blank frame);
+        // the ping opens it.
+        if (this.appMode === 'widget') {
+          this.showFrameContainer(true);
+        }
+      } else if (this.gleapFrameContainer) {
         this.runWidgetShouldOpenCallback();
       } else {
         GleapFrameManager.getInstance().injectFrame();
@@ -1125,6 +1252,7 @@ export default class GleapFrameManager {
     this.addMessageListener((data) => {
       if (data.name === 'ping') {
         this.comReady = true;
+        this.clearFrameLoadWatchdog();
         this.sendConfigUpdate();
         this.sendSessionUpdate();
         this.sendCaptureCapabilities();
