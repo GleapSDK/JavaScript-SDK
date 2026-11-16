@@ -972,10 +972,10 @@ class Gleap {
   }
 
   /**
-   * Sets the widget's color scheme, overriding the "Color scheme" setting in the dashboard.
+   * Sets the widget's color scheme, overriding the dashboard's setting.
    * Until this is called, the dashboard setting applies.
-   * Only takes effect when "Adapt to dark / light mode" is enabled in the dashboard;
-   * while it is disabled the widget is never themed, whatever is set here.
+   * Only takes effect when "Match light and dark mode" is on (Settings → Widget → Look);
+   * while it is off the widget is never themed, whatever is set here.
    * - 'auto': follows the host app's dark/light mode (theme classes/attributes such as
    *   `class="dark"` or `data-theme="dark"`, the CSS color-scheme, the page background,
    *   then the OS preference) and switches live when it changes.
