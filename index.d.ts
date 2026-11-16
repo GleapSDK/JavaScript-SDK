@@ -87,6 +87,7 @@ export namespace Gleap {
   function hideAiChatbar(): void;
   function askAI(question: string, showBackButton?: boolean): void;
   function setAiChatbarQuickActions(quickActions: string[]): void;
+  function setAiChatbarPlaceholder(placeholder: string): void;
   function startAgent(
     agentId: string,
     options?: { context?: any; initialQuestion?: string; initialMessage?: string }
@@ -308,6 +309,8 @@ export namespace Gleap {
   function openChecklists(showBackButton?: boolean): void;
   function openChecklist(checklistId: string, showBackButton?: boolean): void;
   function startChecklist(outboundId: string, showBackButton?: boolean, sharedKey?: string): void;
+  /** The full data of a checklist; listen to the `checklist-*` events with `Gleap.on` for updates. */
+  function getChecklistData(outboundId: string, sharedKey?: string): Promise<any>;
   function openNews(showBackButton?: boolean): void;
   function openNewsArticle(id: string, showBackButton?: boolean): void;
   function openConversations(showBackButton?: boolean): void;
@@ -330,13 +333,16 @@ export namespace Gleap {
   ): void;
   function searchHelpCenter(term: string, showBackButton?: boolean): void;
   function openFeatureRequests(showBackButton?: boolean): void;
-  function close(): void;
+  /** Close the widget. With `resetRoutes`, the messenger also goes back to its start screen. */
+  function close(resetRoutes?: boolean): void;
   function hide(): void;
   function setUseCookies(useCookies: boolean): void;
+  /** Treat the site as not reachable from the internet, like localhost: screenshots embed its CSS and images instead of loading them from the site later. */
+  function setOfflineMode(offlineMode: boolean): void;
   /**
-   * Sets the widget's color scheme, overriding the dashboard's "Color scheme"
-   * setting, which applies until this is called. Only takes effect when "Adapt
-   * to dark / light mode" is enabled in the dashboard; while it is disabled the
+   * Sets the widget's color scheme, overriding the dashboard's setting, which
+   * applies until this is called. Only takes effect when "Match light and dark
+   * mode" is on (Settings → Widget → Look); while it is off the
    * widget is never themed. "auto" follows the host app's dark/light mode (theme
    * classes/attributes like `class="dark"` or `data-theme="dark"`, the CSS
    * color-scheme, the page background, then the OS preference) and switches
@@ -506,11 +512,15 @@ export namespace Gleap {
     onError?: (error: any) => void;
     /** Called when a new conversation is created. */
     onConversationCreated?: (conversationId: string) => void;
+    /** Called for every streamed piece of the reply; `content` is the new text. */
+    onToken?: (data: { content?: string; [key: string]: any }) => void;
   }
 
   interface AgentChatInstance {
     /** Send a message to the agent. */
     sendMessage(content: string): Promise<void>;
+    /** Stop the reply that is streaming; the text received so far stays. */
+    cancelStream(): void;
     /** Clear all messages and start a new conversation. */
     clearMessages(): void;
     /** Update the context sent with future messages. */
