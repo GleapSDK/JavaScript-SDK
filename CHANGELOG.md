@@ -1,5 +1,8 @@
 # Changelog
 
+## 19.8.1
+Fixed: `package.json` declares `"license": "MIT"`, matching the LICENSE file. It said `Commercial`, which license scanners report as a finding. No code changes.
+
 ## 19.8.0
 Added: banners set to **Until dismissed** (Outbound → Frequency → How often) report when the person closes them, with the X or one of the banner's buttons, and stay closed for that person. Until this version, such a banner is shown once per person. A banner already on screen is not shown a second time when its trigger fires again, and a closed one is not shown again in this browser even if a copy was already on its way.
 
