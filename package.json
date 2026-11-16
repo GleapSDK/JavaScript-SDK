@@ -48,7 +48,7 @@
     "live-chat",
     "sdk"
   ],
-  "license": "Commercial",
+  "license": "MIT",
   "licenseFilename": "LICENSE",
   "devDependencies": {
     "@babel/cli": "^7.23.9",
