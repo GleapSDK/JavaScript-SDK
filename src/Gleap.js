@@ -1717,13 +1717,29 @@ class Gleap {
       .startProductTourConfig(tourId)
       .then((config) => {
         if (checkStartUrl && config?.startURL && !window?.location?.href?.includes(config?.baseURL)) {
-          window.location.href = `${config.startURL}?gleap_tour=${tourId}&gleap_tour_delay=1`;
+          window.location.href = Gleap.buildTourStartUrl(config.startURL, tourId);
           return;
         }
 
         self.startProductTourWithConfig(tourId, config, true);
       })
       .catch((error) => {});
+  }
+
+  // Adds the tour params to the start URL, keeping its own query (e.g. ?view=list) and hash.
+  static buildTourStartUrl(startURL, tourId) {
+    try {
+      const url = new URL(startURL, window.location.href);
+      url.searchParams.set('gleap_tour', tourId);
+      url.searchParams.set('gleap_tour_delay', '1');
+      return url.toString();
+    } catch (exp) {
+      const [base, hash] = startURL.split('#');
+      const separator = base.includes('?') ? '&' : '?';
+      return `${base}${separator}gleap_tour=${encodeURIComponent(tourId)}&gleap_tour_delay=1${
+        hash !== undefined ? `#${hash}` : ''
+      }`;
+    }
   }
 
   static checkForUncompletedTour() {
