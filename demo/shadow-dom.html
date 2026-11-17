@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gleap tours inside a shadow root</title>
+    <style>
+      body { font-family: sans-serif; margin: 0; }
+      #widget-container { height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <!-- Mirrors a widget mounted with attachShadow (Vue defineCustomElement, Lit, ...). -->
+    <div id="widget-container"></div>
+    <script src="build/cjs/index.js"></script>
+    <script>
+      const host = document.createElement('div');
+      document.getElementById('widget-container').appendChild(host);
+      const shadow = host.attachShadow({ mode: 'open' });
+      shadow.innerHTML = `
+        <style>
+          .app { display: grid; grid-template-columns: 180px 1fr; height: 100vh; }
+          .catalog { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #f3f4f6; }
+          .viewport { position: relative; background: #dfe6ee; }
+          .toolbar { position: absolute; right: 24px; bottom: 24px; display: flex; gap: 8px; }
+          button { padding: 12px; cursor: pointer; }
+          #log { position: absolute; left: 24px; top: 24px; font-family: monospace; }
+        </style>
+        <div class="app">
+          <div class="catalog">
+            <button class="box" data-testid="catalog-conveyor">Conveyor</button>
+            <button class="box" data-testid="catalog-profile">Profile</button>
+          </div>
+          <div class="viewport">
+            <div id="log">clicks: 0</div>
+            <div class="toolbar">
+              <button data-gleap-tour="fence">Fence</button>
+              <button class="measure">Measure</button>
+            </div>
+          </div>
+        </div>`;
+
+      window.clicks = [];
+      shadow.addEventListener('click', (e) => {
+        window.clicks.push(e.target.textContent);
+        shadow.getElementById('log').textContent = 'clicks: ' + window.clicks.join(', ');
+      });
+
+      // No project is initialized on this page; this only injects the SDK stylesheet.
+      Gleap.setStyles('#485bff', '#485bff', '#485bff');
+
+      const step = (selector, message, mode) => ({ selector, message: `<p>${message}</p>`, type: 'pointer', mode });
+      window.startDemoTour = () =>
+        Gleap.startProductTourWithConfig(
+          'shadow-demo',
+          {
+            type: 'tour',
+            tourType: 'tour',
+            nextText: 'Next',
+            doneText: 'Done',
+            prevText: 'Previous',
+            allowClose: true,
+            backButton: true,
+            steps: [
+              step('#widget-container > div >>> [data-testid="catalog-conveyor"]', 'Catalog entry (Next button)', 'BUTTON'),
+              step('#widget-container > div >>> [data-gleap-tour="fence"]', 'Click the fence tool to continue', 'CLICK'),
+              step('#widget-container > div >>> button.measure', 'Last step', 'BUTTON'),
+            ],
+          },
+          true
+        );
+    </script>
+  </body>
+</html>

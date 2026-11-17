@@ -235,13 +235,15 @@ export default class GleapProductTours {
     function onDocumentClick(evnt) {
       try {
         var gleapTourPopover = document.querySelector('.gleap-tour-popover');
+        // Inside a shadow root `evnt.target` is the host; the path has the real element.
+        const clickTarget = (typeof evnt?.composedPath === 'function' && evnt.composedPath()[0]) || evnt?.target;
         if (gleapTourPopover && !gleapTourPopover.contains(evnt.target)) {
           const stepIndex = self.gleapTourObj.getActiveIndex();
           const step = steps[stepIndex];
           const element = self.gleapTourObj.getActiveElement();
 
-          if (step?.mode === 'CLICK' && evnt?.target !== element) {
-            const isInsideElement = element.contains(evnt?.target);
+          if (step?.mode === 'CLICK' && clickTarget !== element) {
+            const isInsideElement = element.contains(clickTarget);
             if (!isInsideElement) {
               // Ignore clicks outside of the actual element.
               return;
@@ -281,7 +283,7 @@ export default class GleapProductTours {
         this.storeUncompletedTour();
       },
       onElementNotFound: (step) => {
-        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener('click', onDocumentClick, true);
 
         this.onComplete(false);
       },
@@ -294,7 +296,7 @@ export default class GleapProductTours {
           this.onComplete(false);
         }
 
-        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener('click', onDocumentClick, true);
       },
       onPopoverRender: (popoverElement) => {
         // Fix for images and videos.

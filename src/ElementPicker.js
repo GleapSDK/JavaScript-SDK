@@ -14,6 +14,27 @@ function getElementBounds(el) {
 }
 
 /**
+ * `document.elementFromPoint` that keeps going into open shadow roots. The
+ * document only ever reports the shadow host, which would make everything
+ * inside a web component pick as one element.
+ * @param {number} x - The x-coordinate.
+ * @param {number} y - The y-coordinate.
+ * @returns {Element|null} The innermost element at that point.
+ */
+function deepElementFromPoint(x, y) {
+  let el = document.elementFromPoint(x, y);
+  while (el && el.shadowRoot && typeof el.shadowRoot.elementFromPoint === 'function') {
+    const inner = el.shadowRoot.elementFromPoint(x, y);
+    // Browsers may answer with an element outside of the shadow tree.
+    if (!inner || inner === el || inner.getRootNode() !== el.shadowRoot) {
+      break;
+    }
+    el = inner;
+  }
+  return el;
+}
+
+/**
  * Class representing an overlay element.
  */
 class ElementOverlay {
@@ -193,7 +214,7 @@ class ElementPicker {
    * @param {MouseEvent} event - The click event.
    */
   handleClick(event) {
-    const clickedEl = document.elementFromPoint(event.clientX, event.clientY);
+    const clickedEl = deepElementFromPoint(event.clientX, event.clientY);
     if (this.options && this.options.elementFilter && clickedEl && !this.options.elementFilter(clickedEl)) {
       return;
     }
@@ -225,7 +246,7 @@ class ElementPicker {
 
     // Temporarily ignore the overlay's pointer events to detect the underlying element.
     this.overlay.ignoreCursor();
-    const elAtCursor = document.elementFromPoint(this.mouseX, this.mouseY);
+    const elAtCursor = deepElementFromPoint(this.mouseX, this.mouseY);
     const newTarget = elAtCursor;
     this.overlay.captureCursor();
 

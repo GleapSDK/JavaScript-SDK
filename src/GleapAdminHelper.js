@@ -1,5 +1,5 @@
 import ElementPicker from './ElementPicker';
-import { buildStableSelector } from './GleapTourSelector';
+import { buildStableSelector, withShadowHosts } from './GleapTourSelector';
 
 class GleapAdminHelper {
   picker = null;
@@ -45,7 +45,7 @@ class GleapAdminHelper {
           }
           if (anchor) {
             const tourId = anchor.getAttribute('data-gleap-tour');
-            selector = `[data-gleap-tour="${tourId}"]`;
+            selector = withShadowHosts(anchor, `[data-gleap-tour="${tourId}"]`);
           } else {
             selector = buildStableSelector(el);
           }
