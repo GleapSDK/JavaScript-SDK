@@ -156,12 +156,22 @@ export default class GleapAdminManager {
             document.querySelectorAll('.gleap-admin-highlight').forEach((el) => {
               el.classList.remove('gleap-admin-highlight');
             });
+            if (self.shadowHighlight) {
+              self.shadowHighlight.style.removeProperty('box-shadow');
+              self.shadowHighlight = null;
+            }
 
             // Find the element and highlight it.
             if (data?.data?.selector) {
               const element = querySelectorSafe(data?.data?.selector);
               if (element) {
                 element.classList.add('gleap-admin-highlight');
+                // The class is styled in the document, which does not apply inside a shadow root.
+                const root = element.getRootNode();
+                if (root !== document && root.host) {
+                  element.style.setProperty('box-shadow', '0px 0px 0px 4px red');
+                  self.shadowHighlight = element;
+                }
               }
             }
           }

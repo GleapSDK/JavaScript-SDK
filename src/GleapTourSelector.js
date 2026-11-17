@@ -1,4 +1,5 @@
 import unique from './unique-selector/src/unique-selector';
+import { SHADOW_SEPARATOR } from './GleapSafeSelector';
 
 /**
  * Ids and class names that frameworks generate at runtime or at build time.
@@ -75,13 +76,20 @@ export const UNSTABLE_SELECTOR_PATTERN = new RegExp(
 /**
  * Checks that a selector points at exactly the element it was built for.
  */
+// The tree a selector for this element is resolved in: its shadow root when it
+// lives in one, the document otherwise.
+const rootOf = (element) => {
+  const root = element && typeof element.getRootNode === 'function' ? element.getRootNode() : null;
+  return root && typeof root.querySelectorAll === 'function' ? root : document;
+};
+
 const resolvesToElement = (selector, element) => {
   if (!selector || selector === '*') {
     return false;
   }
 
   try {
-    const matches = document.querySelectorAll(selector);
+    const matches = rootOf(element).querySelectorAll(selector);
     return matches.length === 1 && matches[0] === element;
   } catch (e) {
     return false;
@@ -105,11 +113,11 @@ const escapeForRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
  * number is being handed out at runtime and will differ on the next mount.
  * This is what catches generators the pattern list above has never heard of.
  *
- * @return { Array } the generated ids currently in the document
+ * @return { Array } the generated ids currently in the document (or shadow root)
  */
-const collectGeneratedIds = () => {
+const collectGeneratedIds = (root = document) => {
   const idsByShape = {};
-  const elements = document.querySelectorAll('[id]');
+  const elements = root.querySelectorAll('[id]');
 
   for (let i = 0; i < elements.length; i++) {
     const id = elements[i].getAttribute('id');
@@ -164,12 +172,12 @@ const semanticCandidates = (element) => {
  * @param { Function } uniqueFn selector generator, injectable for tests
  * @return { String } selector
  */
-export const buildStableSelector = (element, uniqueFn = unique) => {
+const buildSelectorInRoot = (element, uniqueFn) => {
   const fallback = uniqueFn(element);
   const candidates = [];
 
   try {
-    const generatedIds = collectGeneratedIds();
+    const generatedIds = collectGeneratedIds(rootOf(element));
     const id = typeof element.getAttribute === 'function' ? element.getAttribute('id') : null;
 
     if (id && generatedIds.indexOf(id) < 0 && !UNSTABLE_SELECTOR_PATTERN.test(idFragment(id))) {
@@ -198,3 +206,23 @@ export const buildStableSelector = (element, uniqueFn = unique) => {
 
   return fallback;
 };
+
+/**
+ * Prefixes a selector with the shadow hosts above the element, so it can be
+ * resolved from the document: `#widget > div >>> button.save`.
+ *
+ * @param { Element } element the element the selector was built for
+ * @param { String } selector selector valid inside the element's own tree
+ * @param { Function } uniqueFn selector generator, injectable for tests
+ * @return { String } selector
+ */
+export const withShadowHosts = (element, selector, uniqueFn = unique) => {
+  const root = rootOf(element);
+  if (root === document || !root.host) {
+    return selector;
+  }
+  return `${buildStableSelector(root.host, uniqueFn)} ${SHADOW_SEPARATOR} ${selector}`;
+};
+
+export const buildStableSelector = (element, uniqueFn = unique) =>
+  withShadowHosts(element, buildSelectorInRoot(element, uniqueFn), uniqueFn);

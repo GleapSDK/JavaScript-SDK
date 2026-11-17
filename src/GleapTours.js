@@ -87,6 +87,45 @@ const GleapTours = (function () {
     }
     return null;
   }
+  // The interaction lockout is CSS in the document stylesheet. It cannot reach
+  // into a shadow root: the host gets `pointer-events: none` and everything in
+  // its tree inherits that, the active element included. So for an element in
+  // a shadow root the same rules are applied inline.
+  let shadowInteraction = null;
+  function isInShadowRoot(element) {
+    const root = element && typeof element.getRootNode === 'function' ? element.getRootNode() : null;
+    return !!(root && root !== document && root.host);
+  }
+  function restoreShadowInteraction() {
+    if (!shadowInteraction) {
+      return;
+    }
+    const { element, value, priority } = shadowInteraction;
+    shadowInteraction = null;
+    if (value) {
+      element.style.setProperty('pointer-events', value, priority);
+    } else {
+      element.style.removeProperty('pointer-events');
+    }
+  }
+  function applyShadowInteraction(element, disabled) {
+    restoreShadowInteraction();
+    if (!isInShadowRoot(element) || !element.style) {
+      return;
+    }
+    shadowInteraction = {
+      element,
+      value: element.style.getPropertyValue('pointer-events'),
+      priority: element.style.getPropertyPriority('pointer-events'),
+    };
+    element.style.setProperty('pointer-events', disabled ? 'none' : 'auto', 'important');
+  }
+  function clearActiveElement(element) {
+    element.classList.remove('gleap-tour-active-element', 'gleap-tour-no-interaction');
+    element.removeAttribute('aria-haspopup');
+    element.removeAttribute('aria-expanded');
+    element.removeAttribute('aria-controls');
+  }
   let currentState = {};
   function setState(key, value) {
     currentState[key] = value;
@@ -284,7 +323,7 @@ const GleapTours = (function () {
     }
 
     // Re-query the element if the cached reference is no longer in the DOM.
-    if (!document.body.contains(activeHighlight) && activeStep.element && typeof activeStep.element === 'string') {
+    if (!activeHighlight.isConnected && activeStep.element && typeof activeStep.element === 'string') {
       try {
         var freshEl = findRenderedElement(activeStep.element);
         if (freshEl) {
@@ -292,6 +331,10 @@ const GleapTours = (function () {
           setState('__activeElement', freshEl);
           setState('activeElement', freshEl);
           freshEl.classList.add('gleap-tour-active-element');
+          applyShadowInteraction(
+            freshEl,
+            activeStep.disableActiveInteraction ?? getConfig('disableActiveInteraction') ?? false
+          );
         }
       } catch (e) {}
     }
@@ -378,6 +421,7 @@ const GleapTours = (function () {
       toElement.classList.add('gleap-tour-no-interaction');
     }
     toElement.classList.add('gleap-tour-active-element');
+    applyShadowInteraction(toElement, disableActiveInteraction);
     toElement.setAttribute('aria-haspopup', 'dialog');
     toElement.setAttribute('aria-expanded', 'true');
     toElement.setAttribute('aria-controls', 'gleap-tour-popover-content');
@@ -385,12 +429,12 @@ const GleapTours = (function () {
   function destroyHighlight() {
     var _a;
     (_a = document.getElementById('gleap-tour-dummy-element')) == null ? void 0 : _a.remove();
-    document.querySelectorAll('.gleap-tour-active-element').forEach((element) => {
-      element.classList.remove('gleap-tour-active-element', 'gleap-tour-no-interaction');
-      element.removeAttribute('aria-haspopup');
-      element.removeAttribute('aria-expanded');
-      element.removeAttribute('aria-controls');
-    });
+    document.querySelectorAll('.gleap-tour-active-element').forEach(clearActiveElement);
+    // Not reachable by the query above.
+    if (shadowInteraction) {
+      clearActiveElement(shadowInteraction.element);
+      restoreShadowInteraction();
+    }
   }
   function requireRefresh() {
     const resizeTimeout = getState('__resizeTimeout');
