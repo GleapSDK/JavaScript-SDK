@@ -1,5 +1,15 @@
 # Changelog
 
+## 19.9.0
+Changed: the feedback form's **Record screen** uses the microphone only when **Developer options → Microphone** is on, and then it starts muted until the user turns it on. Until this version, form recordings asked for the microphone whenever the browser had one, regardless of that setting, and on a site that already had microphone permission the browser gave it without a prompt. The mic button is hidden when the setting is off. Projects that want sound in form recordings turn the setting on.
+Added: product tours and tooltips can point at elements inside open shadow roots. A selector continues into a shadow root with `host >>> inner`, the element picker stores such selectors, and the highlight, the interaction lockout and click-to-continue work for those elements.
+Changed: the feedback form's capture step uses the current tab on desktop Chromium. **Mark the bug** takes its screenshot from the tab, drawings included (one click in the browser's share dialog). Where the tab can't be captured, or the dialog is declined, the report renders the page on the server as before. **Record screen** offers the current tab first and records MP4 or WebM with a seekable duration.
+Changed: automatic replay recording starts once the page is idle (at most 2 s after `Gleap.initialize`; after the page's load event in Safari), so it no longer competes with the page while it loads. With replays off, the recorder never runs.
+Fixed: on iPhone (iOS Safari) the launcher sometimes didn't open the widget until a reload. The Messenger frame now reloads or resets itself when it doesn't answer within 10 s, recovers after back/forward navigation, and resets cleanly when the SDK starts again.
+Fixed: a product tour whose start URL has a query string lost the tour parameter in the redirect, so the tour never started.
+Fixed: a second tour in the same page load advanced two steps per click.
+Fixed: `index.d.ts` declares `setAiChatbarPlaceholder`, `getChecklistData`, `setOfflineMode`, `close(resetRoutes)`, `onToken` and `cancelStream`. They existed in the SDK, but TypeScript projects got type errors calling them.
+
 ## 19.8.1
 Fixed: `package.json` declares `"license": "MIT"`, matching the LICENSE file. It said `Commercial`, which license scanners report as a finding. No code changes.
 
