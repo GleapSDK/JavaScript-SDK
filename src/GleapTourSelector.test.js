@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, beforeEach } from 'vitest';
 import { UNSTABLE_SELECTOR_PATTERN, buildStableSelector } from './GleapTourSelector';
 
 const resolvesToElement = (selector, element) => {

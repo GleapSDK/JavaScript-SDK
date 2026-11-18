@@ -1,15 +1,16 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { test, expect, vi, beforeEach } from 'vitest';
 import GleapMarkerManager from './GleapMarkerManager';
 import { captureTabScreenshot, requestTabStream } from './GleapCaptureScreenshot';
 import { canCaptureTab } from './GleapCaptureSettings';
 
 // The feedback form's "Mark the bug" step takes its screenshot from the tab on Next (#228450).
 const mockGlobalData = {};
-const mockSendMessage = jest.fn();
+const mockSendMessage = vi.fn();
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {
     getInstance: () => ({
@@ -25,12 +26,12 @@ jest.mock('./Gleap', () => ({
     getInstance: () => ({ privacyOptions: () => ({ maskAllInputs: true }), maskSelectors: () => ['.secret'] }),
   },
 }));
-jest.mock('./ScreenDrawer', () => ({ ScreenDrawer: jest.fn() }));
-jest.mock('./GleapScrollStopper', () => ({ GleapScrollStopper: { enableScroll: jest.fn(), disableScroll: jest.fn() } }));
-jest.mock('./GleapScreenRecorder', () => ({ GleapScreenRecorder: jest.fn() }));
-jest.mock('./UI', () => ({ loadIcon: () => '' }));
-jest.mock('./GleapCaptureSettings', () => ({ canCaptureTab: jest.fn() }));
-jest.mock('./GleapCaptureScreenshot', () => ({ captureTabScreenshot: jest.fn(), requestTabStream: jest.fn() }));
+vi.mock('./ScreenDrawer', () => ({ ScreenDrawer: vi.fn() }));
+vi.mock('./GleapScrollStopper', () => ({ GleapScrollStopper: { enableScroll: vi.fn(), disableScroll: vi.fn() } }));
+vi.mock('./GleapScreenRecorder', () => ({ GleapScreenRecorder: vi.fn() }));
+vi.mock('./UI', () => ({ loadIcon: () => '' }));
+vi.mock('./GleapCaptureSettings', () => ({ canCaptureTab: vi.fn() }));
+vi.mock('./GleapCaptureScreenshot', () => ({ captureTabScreenshot: vi.fn(), requestTabStream: vi.fn() }));
 
 const IMAGE = { dataUrl: 'data:image/jpeg;base64,/9j/4AAQ', width: 1280, height: 720, method: 'tab' };
 const STREAM_PROMISE = Promise.resolve({ id: 'tab-stream' });
@@ -55,7 +56,7 @@ beforeEach(() => {
   document.body.innerHTML = '';
   manager = new GleapMarkerManager('screenshot');
   manager.createEditorUI();
-  callback = jest.fn();
+  callback = vi.fn();
   manager.callback = callback;
 });
 

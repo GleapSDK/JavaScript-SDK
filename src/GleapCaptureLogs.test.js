@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 
 // Background log collection sends only what a bug report carries, only what the request asks for,
 // and nothing when the app switched it off (Gleap.setRemoteLogCollectionEnabled(false)).
@@ -9,9 +10,9 @@ const mockFlowConfig = { enableWebReplays: true, capture: {} };
 const mockReplay = { startDate: 1, events: [{ type: 4, data: { href: 'https://app.test' } }], packed: false, type: 'rrweb' };
 const iso = (ms) => new Date(ms).toISOString();
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
-  default: { openConversation: jest.fn(), open: jest.fn() },
+  default: { openConversation: vi.fn(), open: vi.fn() },
   GleapConfigManager: {
     getInstance: () => ({ getFlowConfig: () => mockFlowConfig, onConfigLoaded: (callback) => callback() }),
   },
@@ -39,7 +40,7 @@ jest.mock('./Gleap', () => ({
     getInstance: () => ({ session: { gleapId: 'g1' }, sdkKey: 'key', apiUrl: 'https://api.test', injectSession: () => {} }),
   },
   GleapFrameManager: {
-    getInstance: () => ({ sendMessage: jest.fn(), setCaptureHidden: jest.fn(), setCaptureEditorOpen: jest.fn() }),
+    getInstance: () => ({ sendMessage: vi.fn(), setCaptureHidden: vi.fn(), setCaptureEditorOpen: vi.fn() }),
   },
   GleapTranslationManager: { getInstance: () => ({ isRTLLayout: false }) },
 }));
@@ -135,21 +136,21 @@ describe('log requests from the websocket', () => {
 
   const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-  beforeEach(() => {
-    jest.resetModules();
-    jest.doMock('./GleapCaptureApi', () => {
-      const actual = jest.requireActual('./GleapCaptureApi');
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.doMock('./GleapCaptureApi', async (importOriginal) => {
+      const actual = await importOriginal();
       return {
         ...actual,
-        claimCaptureRequest: jest.fn(() => Promise.resolve({ status: 200, data: { claimedElsewhere: false } })),
-        postCaptureLogs: jest.fn(() => Promise.resolve({ status: 200, data: {} })),
-        reportCaptureEvent: jest.fn(() => Promise.resolve({ status: 200, data: {} })),
+        claimCaptureRequest: vi.fn(() => Promise.resolve({ status: 200, data: { claimedElsewhere: false } })),
+        postCaptureLogs: vi.fn(() => Promise.resolve({ status: 200, data: {} })),
+        reportCaptureEvent: vi.fn(() => Promise.resolve({ status: 200, data: {} })),
       };
     });
-    api = require('./GleapCaptureApi');
-    const settings = require('./GleapCaptureSettings');
+    api = await import('./GleapCaptureApi');
+    const settings = await import('./GleapCaptureSettings');
     settings.setRemoteLogCollectionEnabled(true);
-    manager = new (require('./GleapCaptureManager').default)();
+    manager = new (await import('./GleapCaptureManager')).default();
     mockFlowConfig.capture = {};
   });
 
@@ -170,7 +171,7 @@ describe('log requests from the websocket', () => {
   });
 
   test('switched off by the app: answered "unsupported", nothing collected', async () => {
-    require('./GleapCaptureSettings').setRemoteLogCollectionEnabled(false);
+    (await import('./GleapCaptureSettings')).setRemoteLogCollectionEnabled(false);
     manager.handleServerRequest(request('cr-2'));
     await flush();
 
@@ -197,7 +198,7 @@ describe('log requests from the websocket', () => {
   });
 
   test('logs along with a screenshot or recording: none when the app switched log collection off', async () => {
-    const settings = require('./GleapCaptureSettings');
+    const settings = await import('./GleapCaptureSettings');
     const session = { options: { attachLogs: true } };
 
     settings.setRemoteLogCollectionEnabled(false);

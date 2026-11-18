@@ -1,21 +1,22 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapModalManager from './GleapModalManager';
 
 // Stub the barrel so the real GleapModalManager loads without the rest of the SDK.
 // We only drive the modal-height contract, which reaches GleapConfigManager.
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
   GleapConfigManager: {
-    getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })),
+    getInstance: vi.fn(() => ({ getFlowConfig: () => ({}) })),
   },
-  GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: jest.fn() })) },
+  GleapFrameManager: { getInstance: vi.fn(() => ({ urlHandler: vi.fn() })) },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  bootstrapGleapFrame: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  bootstrapGleapFrame: vi.fn(),
 }));
 
 const MODAL_ORIGIN = 'https://outboundmedia.gleap.io';
@@ -43,13 +44,13 @@ beforeEach(() => {
   document.body.className = '';
   setViewportHeight(800);
   manager = new GleapModalManager();
-  jest.spyOn(manager, '_postMessage').mockImplementation(() => {});
+  vi.spyOn(manager, '_postMessage').mockImplementation(() => {});
   manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
 });
 
 afterEach(() => {
   manager.hideModal();
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 const postedMessages = (name) => manager._postMessage.mock.calls.map((c) => c[0]).filter((m) => m.name === name);

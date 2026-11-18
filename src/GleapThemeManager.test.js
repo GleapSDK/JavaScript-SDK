@@ -1,34 +1,35 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const mockRefreshColorScheme = jest.fn();
-const mockSetStyles = jest.fn();
-const mockSendConfigUpdate = jest.fn();
-const mockChatbarSendConfigUpdate = jest.fn();
+const mockRefreshColorScheme = vi.fn();
+const mockSetStyles = vi.fn();
+const mockSendConfigUpdate = vi.fn();
+const mockChatbarSendConfigUpdate = vi.fn();
 const mockChatbar = { comReady: false, _sendConfigUpdate: mockChatbarSendConfigUpdate };
-const mockSendModalData = jest.fn();
+const mockSendModalData = vi.fn();
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: { setStyles: (...args) => mockSetStyles(...args) },
   GleapConfigManager: {
     getInstance: () => {
-      // The real config manager is used by the integration tests below.
-      const RealConfigManager = jest.requireActual('./GleapConfigManager').default;
+      // The real config manager (the module imported below, not this mock) is used by the integration tests below.
+      const RealConfigManager = GleapConfigManager;
       return mockUseRealConfigManager
         ? RealConfigManager.getInstance()
         : { refreshColorScheme: mockRefreshColorScheme, rawFlowConfig: mockDashboardConfig };
     },
   },
   GleapFrameManager: { getInstance: () => ({ sendConfigUpdate: mockSendConfigUpdate }) },
-  GleapFeedbackButtonManager: { getInstance: () => ({ updateFeedbackButtonState: jest.fn() }) },
-  GleapNotificationManager: { getInstance: () => ({ updateContainerStyle: jest.fn() }) },
-  GleapReplayRecorder: { getInstance: () => ({ startIfNotRunning: jest.fn(), stop: jest.fn() }) },
+  GleapFeedbackButtonManager: { getInstance: () => ({ updateFeedbackButtonState: vi.fn() }) },
+  GleapNotificationManager: { getInstance: () => ({ updateContainerStyle: vi.fn() }) },
+  GleapReplayRecorder: { getInstance: () => ({ startIfNotRunning: vi.fn(), stop: vi.fn() }) },
   GleapNetworkIntercepter: {
-    getInstance: () => ({ start: jest.fn(), setLoadAllResources: jest.fn(), setFilters: jest.fn(), setBlacklist: jest.fn() }),
+    getInstance: () => ({ start: vi.fn(), setLoadAllResources: vi.fn(), setFilters: vi.fn(), setBlacklist: vi.fn() }),
   },
-  GleapTranslationManager: { getInstance: () => ({ updateRTLSupport: jest.fn(), getActiveLanguage: () => 'en' }) },
+  GleapTranslationManager: { getInstance: () => ({ updateRTLSupport: vi.fn(), getActiveLanguage: () => 'en' }) },
   GleapAiChatbarManager: { getInstance: () => mockChatbar },
   GleapModalManager: { getInstance: () => ({ sendModalData: mockSendModalData }) },
   GleapSession: { getInstance: () => ({}) },
@@ -57,10 +58,10 @@ const resetDocument = () => {
 };
 
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
   prefersDark = false;
   mediaListeners = [];
-  window.matchMedia = jest.fn(() => ({
+  window.matchMedia = vi.fn(() => ({
     get matches() {
       return prefersDark;
     },
@@ -78,11 +79,11 @@ beforeEach(() => {
   mockUseRealConfigManager = false;
   mockDashboardConfig = { colorScheme: 'light' };
   mockChatbar.comReady = false;
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe('parseColor', () => {
@@ -484,7 +485,7 @@ describe('auto color scheme', () => {
     // Unrelated mutations don't trigger a refresh.
     document.body.style.overflow = 'hidden';
     await Promise.resolve();
-    jest.runAllTimers();
+    vi.runAllTimers();
     expect(mockRefreshColorScheme).toHaveBeenCalledTimes(2);
 
     document.documentElement.classList.remove('dark');
@@ -505,7 +506,7 @@ describe('auto color scheme', () => {
     mockRefreshColorScheme.mockClear();
     document.documentElement.classList.add('dark');
     await Promise.resolve();
-    jest.runAllTimers();
+    vi.runAllTimers();
     expect(mockRefreshColorScheme).not.toHaveBeenCalled();
   });
 
@@ -538,7 +539,7 @@ describe('GleapConfigManager integration', () => {
     const configManager = GleapConfigManager.getInstance();
     configManager.applyConfig(serverConfig());
     expect(configManager.getFlowConfig().backgroundColor).toBe('#FFFFFF');
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Still light (light host), so nothing is re-sent.
     GleapThemeManager.getInstance().setColorScheme('auto');
@@ -575,7 +576,7 @@ describe('GleapConfigManager integration', () => {
     const configManager = GleapConfigManager.getInstance();
     configManager.applyConfig({ flowConfig: { ...serverConfig().flowConfig, colorScheme: 'auto', darkBackgroundColor: '#101828' } });
     expect(configManager.getFlowConfig().backgroundColor).toBe('#FFFFFF');
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     document.documentElement.classList.add('dark');
     await Promise.resolve();
@@ -599,7 +600,7 @@ describe('GleapConfigManager integration', () => {
     expect(configManager.getFlowConfig()).toBe(flowConfig);
     const checklist = document.createElement('gleap-checklist');
     document.body.appendChild(checklist);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     GleapThemeManager.getInstance().setColorScheme('dark');
     expect(configManager.getFlowConfig()).toBe(flowConfig);
@@ -618,7 +619,7 @@ describe('GleapConfigManager integration', () => {
     configManager.applyConfig({ flowConfig });
     const checklist = document.createElement('gleap-checklist');
     document.body.appendChild(checklist);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     GleapThemeManager.getInstance().setColorScheme('dark', { darkBackgroundColor: '#000000' });
     expect(configManager.getFlowConfig()).toBe(flowConfig);
@@ -651,9 +652,9 @@ describe('GleapConfigManager integration', () => {
     const checklist = document.createElement('gleap-checklist');
     checklist._hasLoaded = true;
     checklist.checklistData = { id: 'c1' };
-    checklist.renderChecklist = jest.fn();
+    checklist.renderChecklist = vi.fn();
     document.body.appendChild(checklist);
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     GleapThemeManager.getInstance().setColorScheme('dark');
     const flowConfig = configManager.getFlowConfig();
@@ -675,7 +676,7 @@ describe('GleapConfigManager integration', () => {
     configManager.applyConfig({
       flowConfig: { colorScheme: 'light', backgroundColor: '#111111', color: '#485BFF', headerColor: '#485BFF', darkBackgroundColor: '#111111' },
     });
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     GleapThemeManager.getInstance().setColorScheme('dark');
     expect(configManager.getFlowConfig().backgroundColor).toBe('#111111');
@@ -706,7 +707,7 @@ describe('GleapConfigManager integration', () => {
         darkAurora: { ...aurora, seed: 2 },
       },
     });
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     GleapThemeManager.getInstance().setColorScheme('dark');
     const flowConfig = configManager.getFlowConfig();

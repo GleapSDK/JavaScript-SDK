@@ -1,22 +1,23 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapBannerManager, { bodyClipsInlineBanner, closedBannerEventName } from './GleapBannerManager';
 
-const mockUrlHandler = jest.fn();
-const mockLogEvent = jest.fn();
-const mockStreamEvents = jest.fn();
+const mockUrlHandler = vi.fn();
+const mockLogEvent = vi.fn();
+const mockStreamEvents = vi.fn();
 const mockSession = { session: { gleapId: 'gleap-1' } };
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
-  GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: mockUrlHandler })) },
-  GleapSession: { getInstance: jest.fn(() => mockSession) },
-  GleapStreamedEvent: { getInstance: jest.fn(() => ({ logEvent: mockLogEvent, streamEvents: mockStreamEvents })) },
+  GleapFrameManager: { getInstance: vi.fn(() => ({ urlHandler: mockUrlHandler })) },
+  GleapSession: { getInstance: vi.fn(() => mockSession) },
+  GleapStreamedEvent: { getInstance: vi.fn(() => ({ logEvent: mockLogEvent, streamEvents: mockStreamEvents })) },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  bootstrapGleapFrame: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  bootstrapGleapFrame: vi.fn(),
 }));
 
 const style = (overflowX, overflowY = overflowX) => ({ overflowX, overflowY });

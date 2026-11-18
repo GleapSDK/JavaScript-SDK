@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapAdminManager from './GleapAdminManager';
 import {
   GLEAP_ADMIN_ORIGINS,
@@ -39,7 +40,8 @@ describe('admin origin allowlist', () => {
     expect(isGleapAdminOrigin('https://app.gleap.io')).toBe(true);
   });
 
-  it.each(LOOKALIKES)('rejects %p', (origin) => {
+  // As objects: a title takes an array row apart into its items, so the array origin would read like a real one.
+  it.each(LOOKALIKES.map((origin) => ({ origin })))('rejects $origin', ({ origin }) => {
     expect(isGleapAdminOrigin(origin)).toBe(false);
     expect(resolveGleapAdminOrigin(origin)).toBe(GLEAP_DEFAULT_ADMIN_ORIGIN);
   });
@@ -64,11 +66,11 @@ describe('GleapAdminManager message origin', () => {
     GleapAdminManager.instance = undefined;
     manager = GleapAdminManager.getInstance();
     // Keep the admin UI side effects out of the origin check.
-    manager.initAdminHelper = jest.fn(() => manager.injectFrame());
-    manager.startPageListener = jest.fn();
+    manager.initAdminHelper = vi.fn(() => manager.injectFrame());
+    manager.startPageListener = vi.fn();
     listeners = [];
     const add = window.addEventListener.bind(window);
-    jest.spyOn(window, 'addEventListener').mockImplementation((type, fn, opts) => {
+    vi.spyOn(window, 'addEventListener').mockImplementation((type, fn, opts) => {
       if (type === 'message') listeners.push(fn);
       return add(type, fn, opts);
     });
@@ -77,7 +79,7 @@ describe('GleapAdminManager message origin', () => {
 
   afterEach(() => {
     listeners.forEach((fn) => window.removeEventListener('message', fn));
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it.each(['https://app.gleap.ai.evil.com', 'https://evilgleap.ai', 'https://example.com'])(

@@ -1,3 +1,4 @@
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   GleapNotificationManager,
   GleapSession,
@@ -8,11 +9,11 @@ import GleapTabCommunication from './GleapTabCommunication';
 
 // Keep the barrel import light (no DOM, no SDK_VERSION Webpack global): only the
 // managers GleapTabCommunication actually reaches for.
-jest.mock('./Gleap', () => ({
-  GleapNotificationManager: { getInstance: jest.fn() },
-  GleapSession: { getInstance: jest.fn() },
-  GleapFeedbackButtonManager: { getInstance: jest.fn() },
-  GleapAiChatbarManager: { getInstance: jest.fn() },
+vi.mock('./Gleap', () => ({
+  GleapNotificationManager: { getInstance: vi.fn() },
+  GleapSession: { getInstance: vi.fn() },
+  GleapFeedbackButtonManager: { getInstance: vi.fn() },
+  GleapAiChatbarManager: { getInstance: vi.fn() },
 }));
 
 // Minimal BroadcastChannel stand-in. Node's test env has no BroadcastChannel, so
@@ -63,9 +64,9 @@ beforeEach(() => {
   MockBroadcastChannel.reset();
   global.BroadcastChannel = MockBroadcastChannel;
 
-  notifStub = { clearAllNotifications: jest.fn(), clearNotificationsForConversation: jest.fn() };
-  buttonStub = { updateNotificationBadge: jest.fn() };
-  chatbarStub = { hideChatbarNotification: jest.fn() };
+  notifStub = { clearAllNotifications: vi.fn(), clearNotificationsForConversation: vi.fn() };
+  buttonStub = { updateNotificationBadge: vi.fn() };
+  chatbarStub = { hideChatbarNotification: vi.fn() };
   sessionStub = { sdkKey: SDK_KEY, session: { gleapId: 'user-1' } };
 
   GleapNotificationManager.getInstance.mockReturnValue(notifStub);
@@ -153,7 +154,7 @@ describe('inbound notifications-cleared', () => {
   test('applying the inbound clear does not post back on the channel (loop guard)', () => {
     const tc = GleapTabCommunication.getInstance();
     tc.start();
-    const postSpy = jest.spyOn(tc.channel, 'postMessage');
+    const postSpy = vi.spyOn(tc.channel, 'postMessage');
 
     openSiblingTab().postMessage({ type: 'notifications-cleared', gleapId: 'user-1' });
 
@@ -227,7 +228,7 @@ describe('inbound conversation-notifications-cleared', () => {
   test('applying the inbound clear does not post back on the channel (loop guard)', () => {
     const tc = GleapTabCommunication.getInstance();
     tc.start();
-    const postSpy = jest.spyOn(tc.channel, 'postMessage');
+    const postSpy = vi.spyOn(tc.channel, 'postMessage');
 
     openSiblingTab().postMessage({
       type: 'conversation-notifications-cleared',
@@ -274,7 +275,7 @@ describe('inbound chatbar-notification-cleared', () => {
   test('applying the inbound dismissal does not post back on the channel (loop guard)', () => {
     const tc = GleapTabCommunication.getInstance();
     tc.start();
-    const postSpy = jest.spyOn(tc.channel, 'postMessage');
+    const postSpy = vi.spyOn(tc.channel, 'postMessage');
 
     openSiblingTab().postMessage({ type: 'chatbar-notification-cleared', gleapId: 'user-1' });
 

@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import {
   checkForHighlightParam,
   clearHighlight,
@@ -35,7 +36,7 @@ describe('GleapHighlight', () => {
 
   afterEach(() => {
     clearHighlight();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   describe('scoreLabel', () => {
@@ -95,7 +96,7 @@ describe('GleapHighlight', () => {
 
   describe('showHighlight', () => {
     beforeAll(() => {
-      Element.prototype.scrollIntoView = jest.fn();
+      Element.prototype.scrollIntoView = vi.fn();
     });
 
     it('outlines the element and removes the outline on the next click', () => {
@@ -110,16 +111,16 @@ describe('GleapHighlight', () => {
     });
 
     it('fades out on its own', () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       showHighlight(document.getElementById('save'));
-      jest.advanceTimersByTime(7000);
+      vi.advanceTimersByTime(7000);
       expect(document.getElementById('gleap-highlight-overlay')).toBeNull();
     });
   });
 
   describe('checkForHighlightParam', () => {
     it('strips the parameter, keeps the rest of the URL and the router state, and waits for the element', () => {
-      jest.useFakeTimers();
+      vi.useFakeTimers();
       document.body.innerHTML = '<div id="app"></div>';
       window.history.replaceState({ route: 'settings' }, '', '/account/settings/publishing?tab=1&gleap_highlight=Post+as+draft#top');
 
@@ -135,7 +136,7 @@ describe('GleapHighlight', () => {
       const original = Element.prototype.getClientRects;
       Element.prototype.getClientRects = () => [{}];
       try {
-        jest.advanceTimersByTime(400);
+        vi.advanceTimersByTime(400);
         expect(document.getElementById('gleap-highlight-overlay')).not.toBeNull();
       } finally {
         Element.prototype.getClientRects = original;

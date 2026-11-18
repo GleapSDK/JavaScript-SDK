@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { REDACTED_VALUE, sanitizeNetworkLogs } from './GleapNetworkLogSanitizer';
 import GleapNetworkIntercepter from './GleapNetworkIntercepter';
 

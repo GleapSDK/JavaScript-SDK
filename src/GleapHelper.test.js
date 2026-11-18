@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { cookieDomainFor, eraseGleapCookie, flattenCompany, formatRelativeTime, setGleapCookie } from './GleapHelper';
 
 describe('formatRelativeTime — the notification meta line', () => {
@@ -339,7 +340,7 @@ describe('cookie domain', () => {
     ['[2001:db8::7]:443', null],
     ['::1', null],
     ['', null],
-  ])('cookieDomainFor(%p) is %p', (host, domain) => {
+  ])('cookieDomainFor(%j) is %j', (host, domain) => {
     expect(cookieDomainFor(host)).toBe(domain);
   });
 

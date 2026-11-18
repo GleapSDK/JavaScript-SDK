@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import Gleap, { GleapSession } from './Gleap';
 
 // initialize() names the key "Project ID"; the positional form keeps working.
@@ -12,8 +13,8 @@ describe('Gleap.initialize(projectId)', () => {
     Gleap.getInstance().initialized = false;
     GleapSession.instance = undefined;
     // startSession is an instance arrow property: stub it on the fresh singleton.
-    startSpy = jest.spyOn(GleapSession.getInstance(), 'startSession').mockImplementation(() => {});
-    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    startSpy = vi.spyOn(GleapSession.getInstance(), 'startSession').mockImplementation(() => {});
+    warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {

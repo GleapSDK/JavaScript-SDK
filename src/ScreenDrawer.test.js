@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ScreenDrawer } from './ScreenDrawer';
 
 const setScroll = (x, y) => {

@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect } from 'vitest';
 import { querySelectorSafe, querySelectorAllSafe, matchesSelectorSafe } from './GleapSafeSelector';
 import { buildStableSelector, withShadowHosts } from './GleapTourSelector';
 

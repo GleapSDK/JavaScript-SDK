@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GleapMetaDataManager from './GleapMetaDataManager';
 
 // Normally injected by Webpack's DefinePlugin.
@@ -49,7 +50,7 @@ describe('GleapMetaDataManager env data controls', () => {
 
   test('disabled env data is not gathered at all', () => {
     const instance = GleapMetaDataManager.getInstance();
-    const collect = jest.spyOn(instance, 'collectMetaData');
+    const collect = vi.spyOn(instance, 'collectMetaData');
 
     GleapMetaDataManager.setDisableEnvData(true);
 

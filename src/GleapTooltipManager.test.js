@@ -1,25 +1,26 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GleapTooltipManager from './GleapTooltipManager';
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
-  GleapSession: { getInstance: jest.fn(() => ({})) },
+  GleapSession: { getInstance: vi.fn(() => ({})) },
 }));
 
-jest.mock('./UI', () => ({
-  loadIcon: jest.fn(() => '<svg></svg>'),
+vi.mock('./UI', () => ({
+  loadIcon: vi.fn(() => '<svg></svg>'),
 }));
 
-jest.mock('@floating-ui/dom', () => ({
-  autoUpdate: jest.fn(() => jest.fn()),
-  computePosition: jest.fn(() => Promise.resolve({ x: 0, y: 0, middlewareData: {}, placement: 'right' })),
-  arrow: jest.fn(),
-  flip: jest.fn(),
-  offset: jest.fn(),
-  shift: jest.fn(),
+vi.mock('@floating-ui/dom', () => ({
+  autoUpdate: vi.fn(() => vi.fn()),
+  computePosition: vi.fn(() => Promise.resolve({ x: 0, y: 0, middlewareData: {}, placement: 'right' })),
+  arrow: vi.fn(),
+  flip: vi.fn(),
+  offset: vi.fn(),
+  shift: vi.fn(),
 }));
 
 const hotspotTooltip = (overrides = {}) => ({
