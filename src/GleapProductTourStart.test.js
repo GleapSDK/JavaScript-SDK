@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import Gleap, { GleapSession } from './Gleap';
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
@@ -14,7 +15,7 @@ describe('Gleap.startProductTour redirect to the start URL', () => {
   const startFrom = async (currentUrl, config) => {
     delete window.location;
     window.location = { href: currentUrl };
-    configSpy = jest.spyOn(GleapSession.getInstance(), 'startProductTourConfig').mockResolvedValue(config);
+    configSpy = vi.spyOn(GleapSession.getInstance(), 'startProductTourConfig').mockResolvedValue(config);
     Gleap.startProductTour('tour-1', true);
     await flush();
     return new URL(window.location.href);

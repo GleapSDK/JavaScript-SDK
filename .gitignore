@@ -84,3 +84,6 @@ lerna-debug.log
 # System Files
 .DS_Store
 Thumbs.db
+# Test output
+test-results/
+playwright-report/

@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import Gleap, { GleapBannerManager, GleapFrameManager, GleapModalManager, GleapSession } from './Gleap';
 import GleapNetworkIntercepter from './GleapNetworkIntercepter';
 import { GLEAP_DEFAULT_REGION, GLEAP_REGIONS, resolveGleapRegion } from './GleapRegions';
@@ -37,7 +38,7 @@ let warnSpy;
 beforeEach(() => {
   // Fresh session singleton per test so the defaults are observable.
   GleapSession.instance = undefined;
-  warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -181,7 +182,7 @@ describe('region side effects', () => {
 
   test('setAgentConversationUrl applies to newly attached agent conversations', () => {
     // The iframe bootstrap fetches the frame document; keep it pending.
-    global.fetch = jest.fn(() => new Promise(() => {}));
+    global.fetch = vi.fn(() => new Promise(() => {}));
 
     const create = () => {
       const element = document.createElement('gleap-agent-conversation');

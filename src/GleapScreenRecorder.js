@@ -2,6 +2,9 @@ import GleapSession from './GleapSession';
 import { DisplayRecording, requestDisplayStream } from './GleapCaptureRecorder';
 import { stopStream } from './GleapCaptureScreenshot';
 import { getCaptureConfig, hasDisplayMedia, hasUserMedia, isDesktopChromium } from './GleapCaptureSettings';
+import { MIC_BUTTON } from './GleapScreenRecorderMicButton';
+
+export { MIC_BUTTON };
 
 // The feedback form's screen recording ("Record screen" in the form's capture step). It records the
 // same way capture requests do (GleapCaptureRecorder): Chromium offers the current tab with one
@@ -21,8 +24,7 @@ export class GleapScreenRecorder {
   rerender;
   // The running DisplayRecording, from the Start click until it stopped.
   recording = null;
-  // The microphone is opt-in: off until the user turns it on, and never used unless the project
-  // allows it (Developer options → Microphone, flowConfig.capture.allowMicrophone).
+  // Opt-in: off until the user turns it on, and never used unless the project allows it.
   audioMuted = true;
   audioAvailable = false;
   available = true;
@@ -41,27 +43,31 @@ export class GleapScreenRecorder {
     }, GleapScreenRecorder.RERENDER_DELAY);
   }
 
-  // Read on every use: the project's config can arrive or change after the form opened.
+  /**
+   * Whether this recording may use the microphone: Developer options → Microphone is on and the
+   * browser has getUserMedia. Read on every use, as the project's config can arrive after the form.
+   * @returns {boolean}
+   */
   microphoneAllowed() {
     return getCaptureConfig().allowMicrophone === true && hasUserMedia();
   }
 
   /**
-   * What the toolbar's mic button shows: 'hidden' (the project doesn't allow the microphone, or this
-   * recording started without it and it can't be added now), 'unavailable' (asked for, but the
-   * browser gave none), 'on' or 'off'.
+   * What the toolbar's mic button shows. A recording that started without the microphone can't
+   * add it, so the button is hidden until it ends.
+   * @returns {string} one of MIC_BUTTON
    */
   micButtonState() {
     if (!this.available || !this.microphoneAllowed()) {
-      return 'hidden';
+      return MIC_BUTTON.HIDDEN;
     }
     if (this.isRecording && this.audioMuted && !this.audioAvailable) {
-      return 'hidden';
+      return MIC_BUTTON.HIDDEN;
     }
     if (!this.audioAvailable) {
-      return 'unavailable';
+      return MIC_BUTTON.UNAVAILABLE;
     }
-    return this.audioMuted ? 'off' : 'on';
+    return this.audioMuted ? MIC_BUTTON.OFF : MIC_BUTTON.ON;
   }
 
   formatTime(s) {

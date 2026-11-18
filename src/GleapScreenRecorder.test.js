@@ -1,37 +1,38 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
-import { GleapScreenRecorder } from './GleapScreenRecorder';
+import { test, expect, vi, beforeEach } from 'vitest';
+import { GleapScreenRecorder, MIC_BUTTON } from './GleapScreenRecorder';
 import { requestDisplayStream } from './GleapCaptureRecorder';
 import { getCaptureConfig, hasDisplayMedia, hasUserMedia, isDesktopChromium } from './GleapCaptureSettings';
+import { stopStream } from './GleapCaptureScreenshot';
 
 // The feedback form's recorder runs on the capture requests' recording engine (#228450).
 const mockRecordings = [];
 
-jest.mock('./GleapSession', () => ({ __esModule: true, default: { getInstance: () => ({}) } }));
-jest.mock('./GleapCaptureScreenshot', () => ({ stopStream: jest.fn() }));
-jest.mock('./GleapCaptureSettings', () => ({
-  getCaptureConfig: jest.fn(() => ({})),
-  hasDisplayMedia: jest.fn(() => true),
-  hasUserMedia: jest.fn(() => true),
-  isDesktopChromium: jest.fn(() => true),
+vi.mock('./GleapSession', () => ({ __esModule: true, default: { getInstance: () => ({}) } }));
+vi.mock('./GleapCaptureScreenshot', () => ({ stopStream: vi.fn() }));
+vi.mock('./GleapCaptureSettings', () => ({
+  getCaptureConfig: vi.fn(() => ({})),
+  hasDisplayMedia: vi.fn(() => true),
+  hasUserMedia: vi.fn(() => true),
+  isDesktopChromium: vi.fn(() => true),
 }));
-jest.mock('./GleapCaptureRecorder', () => ({
-  requestDisplayStream: jest.fn(),
+vi.mock('./GleapCaptureRecorder', () => ({
+  requestDisplayStream: vi.fn(),
   DisplayRecording: class {
     constructor(options) {
       this.options = options;
       // Like the real engine: a microphone track only when one was asked for.
-      this.start = jest.fn((stream, withMicrophone) => Promise.resolve({ hasMicrophone: !!withMicrophone }));
-      this.stop = jest.fn();
-      this.cancel = jest.fn();
-      this.setMicrophoneEnabled = jest.fn();
+      this.start = vi.fn((stream, withMicrophone) => Promise.resolve({ hasMicrophone: !!withMicrophone }));
+      this.stop = vi.fn();
+      this.cancel = vi.fn();
+      this.setMicrophoneEnabled = vi.fn();
       mockRecordings.push(this);
     }
   },
 }));
 
-const { stopStream } = jest.requireMock('./GleapCaptureScreenshot');
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const STREAM = { id: 'tab-stream' };
 
@@ -40,7 +41,7 @@ const createRecorder = () => new GleapScreenRecorder(rerender, 'No access to the
 
 beforeEach(() => {
   mockRecordings.length = 0;
-  rerender = jest.fn();
+  rerender = vi.fn();
   hasDisplayMedia.mockReturnValue(true);
   hasUserMedia.mockReturnValue(true);
   // Developer options → Microphone is on in most tests; the setting's own tests turn it off.
@@ -48,8 +49,8 @@ beforeEach(() => {
   isDesktopChromium.mockReturnValue(true);
   requestDisplayStream.mockReset().mockReturnValue(Promise.resolve(STREAM));
   stopStream.mockClear();
-  window.alert = jest.fn();
-  URL.createObjectURL = jest.fn(() => 'blob:preview');
+  window.alert = vi.fn();
+  URL.createObjectURL = vi.fn(() => 'blob:preview');
   document.body.innerHTML =
     '<div class="bb-capture-toolbar"><div class="bb-capture-toolbar-item-timer"></div></div>' +
     '<div class="bb-capture-preview"><video></video></div>';
@@ -81,8 +82,8 @@ test('other browsers get their own picker; the microphone is off until the user 
   expect(mockRecordings[0].start).toHaveBeenCalledWith(STREAM, false);
 });
 
-// Gleap #229336: the form recorded sound with Developer options → Microphone off, silently where
-// the site already had microphone permission.
+// A site that already holds microphone permission gets no browser prompt, so the setting is the
+// only thing that keeps sound out of the recording.
 test('with the Microphone setting off the recording never asks for the microphone', async () => {
   getCaptureConfig.mockReturnValue({});
   const recorder = createRecorder();
@@ -172,17 +173,17 @@ test('without getDisplayMedia the recorder is unavailable', () => {
   expect(requestDisplayStream).not.toHaveBeenCalled();
 });
 
-test('the mic button: hidden without the setting, off by default, on once turned on', async () => {
+test('the mic button: hidden without the setting, off by default, on once turned on', () => {
   getCaptureConfig.mockReturnValue({});
-  expect(createRecorder().micButtonState()).toBe('hidden');
+  expect(createRecorder().micButtonState()).toBe(MIC_BUTTON.HIDDEN);
 
   getCaptureConfig.mockReturnValue({ allowMicrophone: true });
   const recorder = createRecorder();
-  expect(recorder.micButtonState()).toBe('off');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.OFF);
   recorder.toggleAudio();
-  expect(recorder.micButtonState()).toBe('on');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.ON);
   recorder.toggleAudio();
-  expect(recorder.micButtonState()).toBe('off');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.OFF);
 });
 
 test('started without the microphone: the button goes away for that recording and is back after it', async () => {
@@ -190,12 +191,12 @@ test('started without the microphone: the button goes away for that recording an
   recorder.startScreenRecording();
   await flush();
 
-  expect(recorder.micButtonState()).toBe('hidden');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.HIDDEN);
   recorder.toggleAudio();
   expect(mockRecordings[0].setMicrophoneEnabled).not.toHaveBeenCalled();
 
   mockRecordings[0].options.onStop(null);
-  expect(recorder.micButtonState()).toBe('off');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.OFF);
 });
 
 test('turned on but the browser gave no microphone: shown as unavailable, mute does nothing', async () => {
@@ -205,7 +206,7 @@ test('turned on but the browser gave no microphone: shown as unavailable, mute d
   mockRecordings[0].start.mockReturnValue(Promise.resolve({ hasMicrophone: false }));
   await flush();
 
-  expect(recorder.micButtonState()).toBe('unavailable');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.UNAVAILABLE);
   recorder.toggleAudio();
   expect(mockRecordings[0].setMicrophoneEnabled).not.toHaveBeenCalled();
 });
@@ -216,8 +217,8 @@ test('muting while recording with the microphone turns its track off', async () 
   recorder.startScreenRecording();
   await flush();
 
-  expect(recorder.micButtonState()).toBe('on');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.ON);
   recorder.toggleAudio();
   expect(mockRecordings[0].setMicrophoneEnabled).toHaveBeenCalledWith(false);
-  expect(recorder.micButtonState()).toBe('off');
+  expect(recorder.micButtonState()).toBe(MIC_BUTTON.OFF);
 });

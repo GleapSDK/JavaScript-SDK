@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect } from 'vitest';
 
 import GleapReplayRecorder from './GleapReplayRecorder';
 import { startScreenCapture } from './ScreenCapture';

@@ -1,13 +1,14 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GleapConfigManager } from './Gleap';
 import { forwardSurveyAnalyticsEvent, surveyAnalyticsParams } from './GleapSurveyAnalyticsForwarder';
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn() },
-  GleapConfigManager: { getInstance: jest.fn() },
+  default: { getInstance: vi.fn() },
+  GleapConfigManager: { getInstance: vi.fn() },
 }));
 
 const setFlowConfig = (flowConfig) => {
@@ -31,8 +32,8 @@ describe('GleapSurveyAnalyticsForwarder', () => {
   beforeEach(() => {
     setFlowConfig({});
     window.dataLayer = [];
-    window.gtag = jest.fn();
-    window.fbq = jest.fn();
+    window.gtag = vi.fn();
+    window.fbq = vi.fn();
   });
 
   afterEach(() => {
@@ -96,19 +97,19 @@ describe('GleapSurveyAnalyticsForwarder', () => {
   test('each sink is optional', () => {
     delete window.gtag;
     delete window.fbq;
-    window.dataLayer = { push: jest.fn() }; // not an array: left alone
+    window.dataLayer = { push: vi.fn() }; // not an array: left alone
     expect(() => forwardSurveyAnalyticsEvent('survey-shown', message({ forward: true }))).not.toThrow();
     expect(window.dataLayer.push).not.toHaveBeenCalled();
 
     delete window.dataLayer;
-    window.fbq = jest.fn();
+    window.fbq = vi.fn();
     forwardSurveyAnalyticsEvent('survey-shown', message({ forward: true }));
     expect(window.fbq).toHaveBeenCalledTimes(1);
     expect(window.dataLayer).toBeUndefined();
   });
 
   test('a throwing sink does not stop the others', () => {
-    window.gtag = jest.fn(() => {
+    window.gtag = vi.fn(() => {
       throw new Error('gtag broken');
     });
     expect(forwardSurveyAnalyticsEvent('survey-shown', message({ forward: true }))).toBe(true);

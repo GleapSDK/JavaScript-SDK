@@ -1,20 +1,21 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapModalManager, { MODAL_LOAD_TIMEOUT_MS } from './GleapModalManager';
 import { bootstrapGleapFrame } from './GleapHelper';
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
   GleapConfigManager: {
-    getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })),
+    getInstance: vi.fn(() => ({ getFlowConfig: () => ({}) })),
   },
-  GleapFrameManager: { getInstance: jest.fn(() => ({ urlHandler: jest.fn() })) },
+  GleapFrameManager: { getInstance: vi.fn(() => ({ urlHandler: vi.fn() })) },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  bootstrapGleapFrame: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  bootstrapGleapFrame: vi.fn(),
 }));
 
 const MODAL_URL = 'https://outboundmedia.gleap.io/modal';
@@ -36,19 +37,19 @@ let manager;
 let warn;
 
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
   document.body.innerHTML = '';
   document.body.className = '';
   bootstrapGleapFrame.mockReset();
-  warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   manager = new GleapModalManager();
-  jest.spyOn(manager, '_postMessage').mockImplementation(() => {});
+  vi.spyOn(manager, '_postMessage').mockImplementation(() => {});
 });
 
 afterEach(() => {
   manager.hideModal();
-  jest.restoreAllMocks();
-  jest.useRealTimers();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('the card stays invisible until it has content', () => {
@@ -73,10 +74,10 @@ describe('load watchdog', () => {
     expect(bootstrapGleapFrame).toHaveBeenCalledWith(frame(), MODAL_URL);
     expect(frame().getAttribute('src')).toBeNull();
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 1);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 1);
     expect(frame().getAttribute('src')).toBeNull();
 
-    jest.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1);
     expect(frame().getAttribute('src')).toBe(MODAL_URL);
     // Still showing — the direct load gets its own chance.
     expect(wrapper()).not.toBeNull();
@@ -86,7 +87,7 @@ describe('load watchdog', () => {
   it('takes the blank card down when the direct load does not report in either', () => {
     manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 2);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 2);
 
     expect(wrapper()).toBeNull();
     expect(document.body.classList.contains('gleap-modal-open')).toBe(false);
@@ -98,7 +99,7 @@ describe('load watchdog', () => {
     manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
 
     emitFromModal('modal-loaded');
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 3);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 3);
 
     expect(frame().getAttribute('src')).toBeNull();
     expect(wrapper()).not.toBeNull();
@@ -108,12 +109,12 @@ describe('load watchdog', () => {
   it('accepts a late modal-loaded from the direct load and keeps the card', () => {
     manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
     expect(frame().getAttribute('src')).toBe(MODAL_URL);
 
     emitFromModal('modal-loaded');
     emitFromModal('modal-height', { height: 200 });
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 2);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 2);
 
     expect(wrapper()).not.toBeNull();
     expect(wrapper().classList.contains('gleap-modal-wrapper--loading')).toBe(false);
@@ -124,15 +125,15 @@ describe('load watchdog', () => {
     bootstrapGleapFrame.mockImplementation((iframe, url) => {
       iframe.src = url;
     });
-    const setSrc = jest.spyOn(HTMLIFrameElement.prototype, 'src', 'set');
+    const setSrc = vi.spyOn(HTMLIFrameElement.prototype, 'src', 'set');
 
     manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
     expect(setSrc).toHaveBeenCalledTimes(1);
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
     expect(setSrc).toHaveBeenCalledTimes(1);
     // ...but it still gives up on it eventually.
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS);
     expect(wrapper()).toBeNull();
   });
 
@@ -140,21 +141,21 @@ describe('load watchdog', () => {
     manager.showModal({ config: { steps: [{ title: 'Hi' }] } });
     manager.hideModal();
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 3);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS * 3);
     expect(warn).not.toHaveBeenCalled();
     expect(manager.modalLoadTimeout).toBeNull();
   });
 
   it('re-arms for every show, even while a previous card is still pending', () => {
     manager.showModal({ config: { steps: [{ title: 'first' }] } });
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 100);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 100);
 
     manager.showModal({ config: { steps: [{ title: 'second' }] } });
-    jest.advanceTimersByTime(200);
+    vi.advanceTimersByTime(200);
     // The first card's timer must not have fired against the second card.
     expect(frame().getAttribute('src')).toBeNull();
 
-    jest.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 200);
+    vi.advanceTimersByTime(MODAL_LOAD_TIMEOUT_MS - 200);
     expect(frame().getAttribute('src')).toBe(MODAL_URL);
   });
 });

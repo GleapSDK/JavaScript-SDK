@@ -1,7 +1,8 @@
 /**
- * @jest-environment jsdom
- * @jest-environment-options {"url": "file:///C:/Users/me/AppData/Local/Programs/twinmind/resources/app.asar/dist/renderer/index.html"}
+ * @vitest-environment jsdom
+ * @vitest-environment-options {"url": "file:///C:/Users/me/AppData/Local/Programs/twinmind/resources/app.asar/dist/renderer/index.html"}
  */
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { bootstrapGleapFrame, isHttpDocument } from './GleapHelper';
 
 const MODAL_URL = 'https://outboundmedia.gleap.io/modal';
@@ -19,7 +20,7 @@ describe('bootstrapGleapFrame inside a file:// host document', () => {
   });
 
   it('skips the about:blank bootstrap and loads the frame directly', async () => {
-    global.fetch = jest.fn();
+    global.fetch = vi.fn();
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
 

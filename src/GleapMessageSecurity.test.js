@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect } from 'vitest';
 import { frameTargetOrigin, isSafeNavigationUrl, isScriptUrl, originMatchesUrl } from './GleapMessageSecurity';
 
 describe('isSafeNavigationUrl (default url handler)', () => {
@@ -25,7 +26,7 @@ describe('isSafeNavigationUrl (default url handler)', () => {
     undefined,
     null,
     {},
-  ])('rejects %p', (url) => {
+  ])('rejects %j', (url) => {
     expect(isSafeNavigationUrl(url)).toBe(false);
   });
 });

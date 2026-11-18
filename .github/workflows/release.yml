@@ -57,7 +57,7 @@ jobs:
         run: npm ci
 
       - name: Test
-        run: npm test -- --ci
+        run: npm test
 
       - name: Pack (dry run)
         run: npm pack --dry-run

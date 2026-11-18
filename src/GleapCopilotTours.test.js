@@ -1,23 +1,24 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GleapCopilotTours, { getJoinedIndicatorPositionClass } from './GleapCopilotTours';
 
 // Stub the barrel so the real GleapCopilotTours loads without the rest of the SDK.
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
   GleapConfigManager: {
-    getInstance: jest.fn(() => ({ flowConfig: { color: '#485BFF' } })),
+    getInstance: vi.fn(() => ({ flowConfig: { color: '#485BFF' } })),
   },
-  GleapTranslationManager: { translateText: jest.fn((key) => key) },
+  GleapTranslationManager: { translateText: vi.fn((key) => key) },
 }));
 
-jest.mock('./GleapHelper', () => ({ applyGleapCSPNonce: jest.fn() }));
-jest.mock('./GleapInputFiller', () => ({ typeIntoElement: jest.fn() }));
-jest.mock('./UI', () => ({
-  calculateContrast: jest.fn(() => '#ffffff'),
-  loadIcon: jest.fn(() => '<svg></svg>'),
+vi.mock('./GleapHelper', () => ({ applyGleapCSPNonce: vi.fn() }));
+vi.mock('./GleapInputFiller', () => ({ typeIntoElement: vi.fn() }));
+vi.mock('./UI', () => ({
+  calculateContrast: vi.fn(() => '#ffffff'),
+  loadIcon: vi.fn(() => '<svg></svg>'),
 }));
 
 const localStorageKey = 'gleap-tour-data';
@@ -43,12 +44,12 @@ const installAudioDouble = () => {
   createdAudioSources = [];
   playBehaviour = 'resolve';
 
-  window.Audio = jest.fn(function (src) {
+  window.Audio = vi.fn(function (src) {
     createdAudioSources.push(src);
     this.muted = false;
-    this.pause = jest.fn();
-    this.addEventListener = jest.fn();
-    this.play = jest.fn(() => {
+    this.pause = vi.fn();
+    this.addEventListener = vi.fn();
+    this.play = vi.fn(() => {
       if (playBehaviour === 'reject') return Promise.reject(new DOMException('blocked', 'NotAllowedError'));
       if (playBehaviour === 'never') return new Promise(() => {});
       return Promise.resolve();
@@ -67,7 +68,7 @@ const newTour = (config = buildConfig(), tourId = 'tour-1') => {
 // start() awaits the autoplay probe (a real promise) before touching the DOM, so let the
 // microtask queue drain between advancing the fake timers.
 const flush = async (ms = 0) => {
-  if (ms > 0) jest.advanceTimersByTime(ms);
+  if (ms > 0) vi.advanceTimersByTime(ms);
   await Promise.resolve();
   await Promise.resolve();
 };
@@ -78,8 +79,8 @@ beforeEach(() => {
   document.head.innerHTML = '';
   installAudioDouble();
   // jsdom implements neither, and the pointer positioning calls both.
-  window.scrollTo = jest.fn();
-  Element.prototype.scrollIntoView = jest.fn();
+  window.scrollTo = vi.fn();
+  Element.prototype.scrollIntoView = vi.fn();
 });
 
 describe('audio state across page changes', () => {
@@ -108,7 +109,7 @@ describe('audio state across page changes', () => {
   });
 
   it('stays muted after a page change instead of asking the browser again', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     localStorage.setItem(localStorageKey, JSON.stringify({ tourId: 'tour-1', audioMuted: true }));
     const tours = newTour();
 
@@ -118,11 +119,11 @@ describe('audio state across page changes', () => {
     expect(tours.audioMuted).toBe(true);
     // The autoplay probe would have unmuted the tour - it must not run on a resume.
     expect(window.Audio).not.toHaveBeenCalled();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('does not re-prompt with the unmute modal after a page change', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     localStorage.setItem(localStorageKey, JSON.stringify({ tourId: 'tour-1', audioMuted: true }));
     const tours = newTour(buildConfig({ showUnmuteModal: true }));
 
@@ -130,11 +131,11 @@ describe('audio state across page changes', () => {
     await flush();
 
     expect(document.querySelector('.gleap-audio-unmute-modal')).toBeNull();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('falls back to the autoplay probe on a fresh start', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     playBehaviour = 'reject';
     const tours = newTour();
 
@@ -142,13 +143,13 @@ describe('audio state across page changes', () => {
     await flush();
 
     expect(tours.audioMuted).toBe(true);
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });
 
 describe('autoplay probe', () => {
   it('starts the tour even when play() never settles', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     playBehaviour = 'never';
     const tours = newTour();
 
@@ -157,13 +158,13 @@ describe('autoplay probe', () => {
 
     expect(tours.audioMuted).toBe(false);
     expect(document.getElementById('copilot-joined-container')).not.toBeNull();
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });
 
 describe('read text aloud', () => {
   it('skips the stored voice clip when the setting is off', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tours = newTour(buildConfig({ playVoice: false }));
     tours.audioMuted = false;
     tours.setupCopilotTour();
@@ -172,11 +173,11 @@ describe('read text aloud', () => {
     await flush(100);
 
     expect(createdAudioSources).not.toContain('https://example.com/1.mp3');
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('plays the stored voice clip when the setting is on', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tours = newTour();
     tours.audioMuted = false;
     tours.setupCopilotTour();
@@ -185,13 +186,13 @@ describe('read text aloud', () => {
     await flush(100);
 
     expect(createdAudioSources).toContain('https://example.com/1.mp3');
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });
 
 describe('step message flattening', () => {
   const bubbleText = async (message) => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tours = newTour(buildConfig({ steps: [{ selector: '', message, type: 'post', mode: 'BUTTON' }] }));
     tours.setupCopilotTour();
 
@@ -199,7 +200,7 @@ describe('step message flattening', () => {
     await flush(100);
 
     const text = document.getElementById('copilot-info-bubble-content').textContent;
-    jest.useRealTimers();
+    vi.useRealTimers();
     return text;
   };
 
@@ -269,7 +270,7 @@ describe('joined indicator position', () => {
   });
 
   it('pins the indicator top-right when the tour config has no position', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tours = newTour();
 
     tours.start();
@@ -277,11 +278,11 @@ describe('joined indicator position', () => {
 
     const indicator = document.getElementById('copilot-joined-container');
     expect(positionClasses(indicator)).toEqual(['copilot-joined-container--top-right']);
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('pins the indicator to the configured corner', async () => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     const tours = newTour(buildConfig({ joinedIndicatorPosition: 'BOTTOM_LEFT' }));
 
     tours.start();
@@ -292,6 +293,6 @@ describe('joined indicator position', () => {
     expect(document.getElementById('copilot-tour-styles').textContent).toContain(
       '.copilot-joined-container--bottom-left {',
     );
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 });

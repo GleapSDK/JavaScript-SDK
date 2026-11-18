@@ -2,6 +2,7 @@ import Gleap, { GleapTranslationManager, GleapFrameManager, GleapCaptureManager 
 import { ScreenDrawer } from './ScreenDrawer';
 import { GleapScrollStopper } from './GleapScrollStopper';
 import { GleapScreenRecorder } from './GleapScreenRecorder';
+import { renderMicButton } from './GleapScreenRecorderMicButton';
 import { captureTabScreenshot, requestTabStream } from './GleapCaptureScreenshot';
 import { canCaptureTab } from './GleapCaptureSettings';
 import { loadIcon } from './UI';
@@ -644,26 +645,14 @@ export default class GleapMarkerManager {
       const toolbarItem = toolbarItems[i];
       const type = toolbarItem.getAttribute('data-type');
       switch (type) {
-        case 'mic': {
-          // Developer options → Microphone decides whether the button is there at all.
-          const micState = this.screenRecorder.micButtonState();
-          toolbarItem.style.display = micState === 'hidden' ? 'none' : '';
-          if (micState === 'on' || micState === 'off') {
-            toolbarItem.classList.remove(itemInactiveClass);
-            if (micState === 'on') {
-              toolbarItem.classList.remove('bb-capture-toolbar-item--inactivecross');
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('mute');
-            } else {
-              toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('unmute');
-            }
-          } else {
-            toolbarItem.classList.add(itemInactiveClass);
-            toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
-            audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('browserNotSupported');
-          }
+        case 'mic':
+          renderMicButton(toolbarItem, {
+            state: this.screenRecorder.micButtonState(),
+            tooltip: audioRecordingTooltip,
+            inactiveClass: itemInactiveClass,
+            translate: (key) => GleapTranslationManager.translateText(key),
+          });
           break;
-        }
 
         case 'recording':
           if (this.screenRecorder.available) {
