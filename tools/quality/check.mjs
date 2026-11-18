@@ -154,7 +154,7 @@ const main = async () => {
   try {
     return await runFile(values.file);
   } catch (error) {
-    // An edit hook must not stop a session over a missing origin/master or typescript. CI still runs it.
+    // An edit hook must not stop a session over a missing default branch or typescript. CI still runs it.
     console.error(`quality check skipped for ${values.file}: ${error.message}`);
     return 0;
   }

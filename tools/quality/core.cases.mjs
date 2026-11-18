@@ -941,6 +941,28 @@ export const defineCoreCases = ({ describe, it, afterAll, config, LIMITS, checkC
       git(repo, 'update-ref', 'refs/remotes/origin/sibling', 'HEAD');
       assert.ok(run(repo).out.includes('origin/master'));
     });
+    // The hooks pass no --base. A branch without commits of its own sits on the default branch, which wins.
+    it('takes the default branch from origin/HEAD', () => {
+      const repo = makeRepo(EXISTING);
+      put(repo, LOGIC, broken(90));
+      git(repo, 'commit', '-qam', 'develop moved on');
+      git(repo, 'update-ref', 'refs/remotes/origin/develop', 'HEAD');
+      git(repo, 'symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/develop');
+      const { code, out } = run(repo);
+      assert.equal(code, 0, out);
+      assert.ok(out.includes('origin/develop'), out);
+    });
+    it('without origin/HEAD, takes origin/main over an old merged branch', () => {
+      const repo = makeRepo(EXISTING);
+      git(repo, 'update-ref', 'refs/remotes/origin/old-fix', 'HEAD');
+      git(repo, 'update-ref', '-d', 'refs/remotes/origin/master');
+      put(repo, LOGIC, broken(90));
+      git(repo, 'commit', '-qam', 'main moved on');
+      git(repo, 'update-ref', 'refs/remotes/origin/main', 'HEAD');
+      const { code, out } = run(repo);
+      assert.equal(code, 0, out);
+      assert.ok(out.includes('origin/main'), out);
+    });
     it('does not write to the index or the object store of the checkout', () => {
       const repo = makeRepo(EXISTING);
       put(repo, pathFor('fresh'), moduleOf(1));

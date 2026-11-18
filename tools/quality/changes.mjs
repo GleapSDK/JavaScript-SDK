@@ -4,8 +4,6 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpat
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
-const DEFAULT_BASE = 'origin/master';
-
 const git = ({ root, args, input, env }) =>
   execFileSync('git', args, {
     cwd: root,
@@ -34,23 +32,33 @@ export const forkPointOf = ({ root, base, head }) => gitText({ root, args: ['mer
 
 export const headOf = ({ root }) => gitText({ root, args: ['rev-parse', 'HEAD'] });
 
-// The closest remote branch this one left. origin/master wins a tie, and a branch that holds this one plus more
+// origin/HEAD as the clone recorded it, else origin/main or origin/master, whichever exists.
+const defaultBranchOf = ({ root, rows }) => {
+  try {
+    return gitText({ root, args: ['symbolic-ref', '--short', 'refs/remotes/origin/HEAD'] });
+  } catch {
+    return ['origin/main', 'origin/master'].find((ref) => rows.some((row) => row.startsWith(`${ref} `)));
+  }
+};
+
+// The closest remote branch this one left. The default branch wins a tie, and a branch that holds this one plus more
 // is its child, not its base. A ref at this very commit is this work pushed under another name, unless the commit is
-// on origin/master anyway. Costs about 250 ms across 2000 refs, so the answer is kept per commit.
+// on the default branch anyway. Costs about 250 ms across 2000 refs, so the answer is kept per commit.
 const findBase = ({ root, head }) => {
   const branch = gitText({ root, args: ['branch', '--show-current'] });
   const skipped = new Set(['origin/HEAD', 'origin', `origin/${branch}`]);
   const refs = gitText({ root, args: ['for-each-ref', '--format=%(refname:short) %(ahead-behind:HEAD)', 'refs/remotes/origin'] });
   const rows = refs.split('\n').filter(Boolean);
-  const defaultRow = rows.find((row) => row.startsWith(`${DEFAULT_BASE} `));
+  const defaultBase = defaultBranchOf({ root, rows });
+  const defaultRow = rows.find((row) => row.startsWith(`${defaultBase} `));
   const isAheadOfDefault = !defaultRow || Number(defaultRow.split(' ')[2]) > 0;
   let best = null;
   for (const row of rows) {
     const [ref, ahead, behind] = row.split(' ');
-    const isChild = Number(ahead) > 0 && Number(behind) === 0 && ref !== DEFAULT_BASE;
-    const isThisCommit = Number(ahead) === 0 && Number(behind) === 0 && ref !== DEFAULT_BASE;
+    const isChild = Number(ahead) > 0 && Number(behind) === 0 && ref !== defaultBase;
+    const isThisCommit = Number(ahead) === 0 && Number(behind) === 0 && ref !== defaultBase;
     if (skipped.has(ref) || isChild || (isThisCommit && isAheadOfDefault)) continue;
-    const isBetter = !best || Number(behind) < best.behind || (Number(behind) === best.behind && ref === DEFAULT_BASE);
+    const isBetter = !best || Number(behind) < best.behind || (Number(behind) === best.behind && ref === defaultBase);
     if (isBetter) best = { ref, behind: Number(behind) };
   }
   if (!best) throw new Error(`no remote branch to compare ${head.slice(0, 10)} with`);
