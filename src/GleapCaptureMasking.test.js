@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, beforeAll, afterAll } from 'vitest';
 
 // What capture requests must keep private: the black boxes painted over screenshots, and the page
 // recording (rrweb) used where there is no screen capture. Both follow the rules bug reports use
@@ -8,11 +9,11 @@
 
 const mockReplayRecorder = {
   customOptions: {},
-  pauseForCapture: jest.fn(() => false),
-  resumeAfterCapture: jest.fn(),
+  pauseForCapture: vi.fn(() => false),
+  resumeAfterCapture: vi.fn(),
 };
 
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
   default: {},
   GleapNetworkIntercepter: { getInstance: () => ({ getRequests: () => [], stopped: false, setStopped: () => {} }) },

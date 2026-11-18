@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { bootstrapGleapFrame, warnOnCSPViolation, isHttpDocument, ROUTE_FAILED_EVENT } from './GleapHelper';
 
 const MODAL_URL = 'https://outboundmedia.gleap.io/modal';
@@ -20,18 +21,18 @@ let warn;
 
 beforeEach(() => {
   document.body.innerHTML = '';
-  warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
   delete global.fetch;
 });
 
 describe('bootstrapGleapFrame on a regular http(s) page', () => {
   it('fetches the app document from the Gleap origin', async () => {
     expect(isHttpDocument()).toBe(true);
-    global.fetch = jest.fn(() => okResponse('<html><head></head><body></body></html>'));
+    global.fetch = vi.fn(() => okResponse('<html><head></head><body></body></html>'));
     const iframe = appendFrame();
 
     bootstrapGleapFrame(iframe, MODAL_URL);
@@ -41,7 +42,7 @@ describe('bootstrapGleapFrame on a regular http(s) page', () => {
   });
 
   it('keeps the bootstrapped document when the app route was applied', async () => {
-    global.fetch = jest.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
+    global.fetch = vi.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
     const iframe = appendFrame();
     // Give the frame a same-origin http document URL, as browsers do after doc.open() (jsdom
     // keeps about:blank, against which no path can be set — see the next test).
@@ -59,9 +60,9 @@ describe('bootstrapGleapFrame on a regular http(s) page', () => {
     // replaceState is refused on some origins (sandboxed, file://, exotic schemes — and jsdom's
     // about:blank). The route script swallows that, and the app router would then match
     // nothing: a blank frame.
-    global.fetch = jest.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
+    global.fetch = vi.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
     const iframe = appendFrame();
-    const listener = jest.fn();
+    const listener = vi.fn();
     iframe.addEventListener(ROUTE_FAILED_EVENT, listener);
 
     bootstrapGleapFrame(iframe, MODAL_URL);
@@ -72,7 +73,7 @@ describe('bootstrapGleapFrame on a regular http(s) page', () => {
   });
 
   it('loads the frame directly when the fetch fails', async () => {
-    global.fetch = jest.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+    global.fetch = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')));
     const iframe = appendFrame();
 
     bootstrapGleapFrame(iframe, MODAL_URL);
@@ -83,8 +84,8 @@ describe('bootstrapGleapFrame on a regular http(s) page', () => {
   });
 
   it('never assigns src twice, however many checks conclude the same thing', async () => {
-    global.fetch = jest.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
-    const setSrc = jest.spyOn(HTMLIFrameElement.prototype, 'src', 'set');
+    global.fetch = vi.fn(() => okResponse('<html><head><script></script></head><body></body></html>'));
+    const setSrc = vi.spyOn(HTMLIFrameElement.prototype, 'src', 'set');
     const iframe = appendFrame();
     // Route failure (about:blank, see above) and a CSP block on the bundle, back to back.
     bootstrapGleapFrame(iframe, MODAL_URL);
@@ -109,7 +110,7 @@ describe('warnOnCSPViolation fallback hook', () => {
 
   beforeEach(() => {
     doc = document.implementation.createHTMLDocument('frame');
-    onBlocked = jest.fn();
+    onBlocked = vi.fn();
     warnOnCSPViolation(doc, { baseHref: BASE_HREF, onBlocked });
   });
 

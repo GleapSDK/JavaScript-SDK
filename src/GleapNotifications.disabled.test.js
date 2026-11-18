@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { test, expect, vi, beforeEach, afterEach } from 'vitest';
 import Gleap, {
   GleapAudioManager,
   GleapConfigManager,
@@ -30,20 +31,20 @@ const visibleCards = (manager) => manager.notificationContainer.querySelectorAll
 
 beforeEach(() => {
   // Exercise the real public setter and notification renderer, without SDK startup.
-  jest.spyOn(Gleap, 'getInstance').mockReturnValue({ disableInAppNotifications: false });
-  jest.spyOn(GleapSession, 'getInstance').mockReturnValue({
+  vi.spyOn(Gleap, 'getInstance').mockReturnValue({ disableInAppNotifications: false });
+  vi.spyOn(GleapSession, 'getInstance').mockReturnValue({
     session: { gleapId: 'signup-visitor' },
     getName: () => 'Visitor',
   });
-  jest.spyOn(GleapConfigManager, 'getInstance').mockReturnValue({ getFlowConfig: () => ({}) });
-  jest.spyOn(GleapAudioManager, 'ping').mockImplementation(() => {});
-  jest.spyOn(cache, 'loadFromGleapCache').mockReturnValue(null);
-  jest.spyOn(cache, 'saveToGleapCache').mockImplementation(() => {});
+  vi.spyOn(GleapConfigManager, 'getInstance').mockReturnValue({ getFlowConfig: () => ({}) });
+  vi.spyOn(GleapAudioManager, 'ping').mockImplementation(() => {});
+  vi.spyOn(cache, 'loadFromGleapCache').mockReturnValue(null);
+  vi.spyOn(cache, 'saveToGleapCache').mockImplementation(() => {});
   GleapNotificationManager.instance = undefined;
 });
 
 afterEach(() => {
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
   GleapNotificationManager.instance = undefined;
   document.body.innerHTML = '';
 });
@@ -111,9 +112,9 @@ test('reenabling notifications still respects their page exclusions', () => {
 });
 
 test('support chat can still open while notification cards are disabled', () => {
-  const frame = { setAppMode: jest.fn(), showWidget: jest.fn(), hideWidget: jest.fn() };
-  jest.spyOn(GleapFrameManager, 'getInstance').mockReturnValue(frame);
-  const buttonManager = jest.spyOn(GleapFeedbackButtonManager, 'getInstance');
+  const frame = { setAppMode: vi.fn(), showWidget: vi.fn(), hideWidget: vi.fn() };
+  vi.spyOn(GleapFrameManager, 'getInstance').mockReturnValue(frame);
+  const buttonManager = vi.spyOn(GleapFeedbackButtonManager, 'getInstance');
 
   Gleap.setDisableInAppNotifications(true);
   Gleap.open();

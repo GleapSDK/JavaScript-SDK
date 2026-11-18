@@ -1,34 +1,35 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { test, expect, vi, beforeEach } from 'vitest';
 import { GleapScreenRecorder } from './GleapScreenRecorder';
 import { requestDisplayStream } from './GleapCaptureRecorder';
 import { hasDisplayMedia, isDesktopChromium } from './GleapCaptureSettings';
+import { stopStream } from './GleapCaptureScreenshot';
 
 // The feedback form's recorder runs on the capture requests' recording engine (#228450).
 const mockRecordings = [];
 
-jest.mock('./GleapSession', () => ({ __esModule: true, default: { getInstance: () => ({}) } }));
-jest.mock('./GleapCaptureScreenshot', () => ({ stopStream: jest.fn() }));
-jest.mock('./GleapCaptureSettings', () => ({
-  hasDisplayMedia: jest.fn(() => true),
-  isDesktopChromium: jest.fn(() => true),
+vi.mock('./GleapSession', () => ({ __esModule: true, default: { getInstance: () => ({}) } }));
+vi.mock('./GleapCaptureScreenshot', () => ({ stopStream: vi.fn() }));
+vi.mock('./GleapCaptureSettings', () => ({
+  hasDisplayMedia: vi.fn(() => true),
+  isDesktopChromium: vi.fn(() => true),
 }));
-jest.mock('./GleapCaptureRecorder', () => ({
-  requestDisplayStream: jest.fn(),
+vi.mock('./GleapCaptureRecorder', () => ({
+  requestDisplayStream: vi.fn(),
   DisplayRecording: class {
     constructor(options) {
       this.options = options;
-      this.start = jest.fn(() => Promise.resolve({ hasMicrophone: true }));
-      this.stop = jest.fn();
-      this.cancel = jest.fn();
-      this.setMicrophoneEnabled = jest.fn();
+      this.start = vi.fn(() => Promise.resolve({ hasMicrophone: true }));
+      this.stop = vi.fn();
+      this.cancel = vi.fn();
+      this.setMicrophoneEnabled = vi.fn();
       mockRecordings.push(this);
     }
   },
 }));
 
-const { stopStream } = jest.requireMock('./GleapCaptureScreenshot');
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 const STREAM = { id: 'tab-stream' };
 
@@ -37,13 +38,13 @@ const createRecorder = () => new GleapScreenRecorder(rerender, 'No access to the
 
 beforeEach(() => {
   mockRecordings.length = 0;
-  rerender = jest.fn();
+  rerender = vi.fn();
   hasDisplayMedia.mockReturnValue(true);
   isDesktopChromium.mockReturnValue(true);
   requestDisplayStream.mockReset().mockReturnValue(Promise.resolve(STREAM));
   stopStream.mockClear();
-  window.alert = jest.fn();
-  URL.createObjectURL = jest.fn(() => 'blob:preview');
+  window.alert = vi.fn();
+  URL.createObjectURL = vi.fn(() => 'blob:preview');
   document.body.innerHTML =
     '<div class="bb-capture-toolbar"><div class="bb-capture-toolbar-item-timer"></div></div>' +
     '<div class="bb-capture-preview"><video></video></div>';

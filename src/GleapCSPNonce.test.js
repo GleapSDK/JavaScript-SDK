@@ -1,16 +1,14 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, test, expect, vi, afterEach } from 'vitest';
 
 // The nonce is auto-detected at module-evaluation time (document.currentScript is only
 // readable then), so every detection test has to require the module with the DOM already
 // in the state under test — hence the isolated re-require instead of a top-level import.
-const loadHelper = () => {
-  let helper;
-  jest.isolateModules(() => {
-    helper = require('./GleapHelper');
-  });
-  return helper;
+const loadHelper = async () => {
+  vi.resetModules();
+  return import('./GleapHelper');
 };
 
 const addSdkScript = (nonce, { hideAttribute = false } = {}) => {
@@ -35,12 +33,12 @@ const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 // bootstrapGleapFrame writes into iframe.contentDocument. Replacing it with a spy is what
 // lets us assert on the exact markup — the whole point of the fix is what lands in there.
 const bootstrapAndCaptureMarkup = async (helper, html, url = 'https://messenger-app.gleap.io/') => {
-  const writtenDoc = { open: jest.fn(), write: jest.fn(), close: jest.fn() };
+  const writtenDoc = { open: vi.fn(), write: vi.fn(), close: vi.fn() };
   const iframe = document.createElement('iframe');
   document.body.appendChild(iframe);
   Object.defineProperty(iframe, 'contentDocument', { value: writtenDoc, configurable: true });
 
-  global.fetch = jest.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(html) }));
+  global.fetch = vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(html) }));
 
   helper.bootstrapGleapFrame(iframe, url);
   await flush();
@@ -52,49 +50,49 @@ afterEach(() => {
   document.head.innerHTML = '';
   document.body.innerHTML = '';
   delete global.fetch;
-  jest.restoreAllMocks();
+  vi.restoreAllMocks();
 });
 
 describe('CSP nonce detection from the SDK script tag', () => {
-  test('picks up the nonce so a correctly-nonced loader needs no configuration', () => {
+  test('picks up the nonce so a correctly-nonced loader needs no configuration', async () => {
     addSdkScript('r4nd0m123');
-    expect(loadHelper().getGleapCSPNonce()).toBe('r4nd0m123');
+    expect((await loadHelper()).getGleapCSPNonce()).toBe('r4nd0m123');
   });
 
   // Regression: reading getAttribute('nonce') first returns "" on exactly the strict-CSP
   // pages this feature exists for, because browsers hide the content attribute.
-  test('still detects the nonce when the content attribute is hidden', () => {
+  test('still detects the nonce when the content attribute is hidden', async () => {
     addSdkScript('hidden-nonce-value', { hideAttribute: true });
-    expect(loadHelper().getGleapCSPNonce()).toBe('hidden-nonce-value');
+    expect((await loadHelper()).getGleapCSPNonce()).toBe('hidden-nonce-value');
   });
 
-  test('is null when the SDK tag carries no nonce', () => {
+  test('is null when the SDK tag carries no nonce', async () => {
     addSdkScript(undefined);
-    expect(loadHelper().getGleapCSPNonce()).toBeNull();
+    expect((await loadHelper()).getGleapCSPNonce()).toBeNull();
   });
 
-  test('is null when there is no SDK tag at all', () => {
-    expect(loadHelper().getGleapCSPNonce()).toBeNull();
+  test('is null when there is no SDK tag at all', async () => {
+    expect((await loadHelper()).getGleapCSPNonce()).toBeNull();
   });
 });
 
 describe('setGleapCSPNonce', () => {
-  test('overrides the auto-detected nonce', () => {
+  test('overrides the auto-detected nonce', async () => {
     addSdkScript('detected');
-    const helper = loadHelper();
+    const helper = await loadHelper();
     helper.setGleapCSPNonce('configured');
     expect(helper.getGleapCSPNonce()).toBe('configured');
   });
 
-  test('falls back to the detected nonce when passed a rejected value', () => {
+  test('falls back to the detected nonce when passed a rejected value', async () => {
     addSdkScript('detected');
-    const helper = loadHelper();
+    const helper = await loadHelper();
     helper.setGleapCSPNonce(null);
     expect(helper.getGleapCSPNonce()).toBe('detected');
   });
 
-  test('trims surrounding whitespace', () => {
-    const helper = loadHelper();
+  test('trims surrounding whitespace', async () => {
+    const helper = await loadHelper();
     helper.setGleapCSPNonce('  spaced-nonce  ');
     expect(helper.getGleapCSPNonce()).toBe('spaced-nonce');
   });
@@ -105,17 +103,17 @@ describe('setGleapCSPNonce', () => {
     ['a space-separated injection', 'abc onload=alert(1)'],
     ['a non-string', { nonce: 'abc' }],
     ['an empty string', ''],
-  ])('rejects %s', (_label, value) => {
-    const helper = loadHelper();
+  ])('rejects %s', async (_label, value) => {
+    const helper = await loadHelper();
     helper.setGleapCSPNonce(value);
     expect(helper.getGleapCSPNonce()).toBeNull();
   });
 });
 
 describe('applyGleapCSPNonce', () => {
-  test('sets both the attribute and the IDL property on a created <style>', () => {
+  test('sets both the attribute and the IDL property on a created <style>', async () => {
     addSdkScript('style-nonce');
-    const helper = loadHelper();
+    const helper = await loadHelper();
     const node = document.createElement('style');
 
     helper.applyGleapCSPNonce(node);
@@ -124,14 +122,14 @@ describe('applyGleapCSPNonce', () => {
     expect(node.nonce).toBe('style-nonce');
   });
 
-  test('returns the element for chaining', () => {
-    const helper = loadHelper();
+  test('returns the element for chaining', async () => {
+    const helper = await loadHelper();
     const node = document.createElement('style');
     expect(helper.applyGleapCSPNonce(node)).toBe(node);
   });
 
-  test('leaves the element untouched when there is no nonce', () => {
-    const helper = loadHelper();
+  test('leaves the element untouched when there is no nonce', async () => {
+    const helper = await loadHelper();
     const node = document.createElement('style');
 
     helper.applyGleapCSPNonce(node);
@@ -139,8 +137,8 @@ describe('applyGleapCSPNonce', () => {
     expect(node.hasAttribute('nonce')).toBe(false);
   });
 
-  test('does not throw on a null element', () => {
-    const helper = loadHelper();
+  test('does not throw on a null element', async () => {
+    const helper = await loadHelper();
     expect(() => helper.applyGleapCSPNonce(null)).not.toThrow();
   });
 });
@@ -155,7 +153,7 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
   // 'strict-dynamic' propagated trust nor the benefit of a host allowlist. Only a nonce works.
   test('stamps the nonce onto the app bundle script', async () => {
     addSdkScript('bundle-nonce');
-    const { markup } = await bootstrapAndCaptureMarkup(loadHelper(), APP_HTML);
+    const { markup } = await bootstrapAndCaptureMarkup(await loadHelper(), APP_HTML);
 
     expect(markup).toContain(
       '<script nonce="bundle-nonce" src="https://messenger-app.gleap.io/static/js/main.60ab06fe.js">'
@@ -164,14 +162,14 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
 
   test('stamps the nonce onto the injected route-setter script', async () => {
     addSdkScript('route-nonce');
-    const { markup } = await bootstrapAndCaptureMarkup(loadHelper(), APP_HTML);
+    const { markup } = await bootstrapAndCaptureMarkup(await loadHelper(), APP_HTML);
 
     expect(markup).toContain('<script nonce="route-nonce">try{history.replaceState(');
   });
 
   test('stamps the nonce onto inline <style> tags', async () => {
     addSdkScript('css-nonce');
-    const { markup } = await bootstrapAndCaptureMarkup(loadHelper(), APP_HTML);
+    const { markup } = await bootstrapAndCaptureMarkup(await loadHelper(), APP_HTML);
 
     expect(markup).toContain('<style nonce="css-nonce">body{margin:0}</style>');
   });
@@ -179,7 +177,7 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
   test('still sets the SPA route before the app bundle runs', async () => {
     addSdkScript('order-nonce');
     const { markup } = await bootstrapAndCaptureMarkup(
-      loadHelper(),
+      await loadHelper(),
       APP_HTML,
       'https://messenger-app.gleap.io/conversation'
     );
@@ -191,7 +189,7 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
   test('does not double-stamp a tag that already carries a nonce', async () => {
     addSdkScript('dedupe-nonce');
     const { markup } = await bootstrapAndCaptureMarkup(
-      loadHelper(),
+      await loadHelper(),
       '<html><head><script nonce="server-side" src="/static/js/main.js"></script></head></html>'
     );
 
@@ -201,14 +199,14 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
 
   // Non-CSP pages are the overwhelming majority — they must keep byte-identical markup.
   test('writes unchanged markup when there is no nonce', async () => {
-    const { markup } = await bootstrapAndCaptureMarkup(loadHelper(), APP_HTML);
+    const { markup } = await bootstrapAndCaptureMarkup(await loadHelper(), APP_HTML);
 
     expect(markup).not.toContain('nonce');
     expect(markup).toContain('<script src="https://messenger-app.gleap.io/static/js/main.60ab06fe.js">');
   });
 
   test('a rejected nonce never reaches the markup', async () => {
-    const helper = loadHelper();
+    const helper = await loadHelper();
     helper.setGleapCSPNonce('abc" onload="alert(1)');
     const { markup } = await bootstrapAndCaptureMarkup(helper, APP_HTML);
 
@@ -218,14 +216,14 @@ describe('bootstrapGleapFrame — nonce stamping on the written document', () =>
 
   test('falls back to iframe.src when the bootstrap fetch fails', async () => {
     addSdkScript('fallback-nonce');
-    const helper = loadHelper();
+    const helper = await loadHelper();
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
     Object.defineProperty(iframe, 'contentDocument', {
-      value: { open: jest.fn(), write: jest.fn(), close: jest.fn() },
+      value: { open: vi.fn(), write: vi.fn(), close: vi.fn() },
       configurable: true,
     });
-    global.fetch = jest.fn(() => Promise.reject(new Error('CORS')));
+    global.fetch = vi.fn(() => Promise.reject(new Error('CORS')));
 
     helper.bootstrapGleapFrame(iframe, 'https://messenger-app.gleap.io/');
     await flush();
@@ -241,18 +239,18 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
     const iframe = document.createElement('iframe');
     document.body.appendChild(iframe);
     Object.defineProperty(iframe, 'contentDocument', {
-      value: { open: jest.fn(), write: jest.fn(), close: jest.fn() },
+      value: { open: vi.fn(), write: vi.fn(), close: vi.fn() },
       configurable: true,
     });
-    global.fetch = jest.fn(() => Promise.reject(new TypeError('Failed to fetch')));
+    global.fetch = vi.fn(() => Promise.reject(new TypeError('Failed to fetch')));
     helper.bootstrapGleapFrame(iframe, url);
     await flush();
     return iframe;
   };
 
   test('a failing bootstrap fetch warns once, names the URL, and links the CSP docs', async () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const helper = loadHelper();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = await loadHelper();
 
     const iframe = await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
 
@@ -266,8 +264,8 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
   });
 
   test('the same failing URL does not warn twice, a different URL does', async () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const helper = loadHelper();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = await loadHelper();
 
     await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
     await bootstrapFailingFetch(helper, 'https://messenger-app.gleap.io/chatbar');
@@ -280,10 +278,10 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
   const bootstrapAndCaptureViolationListener = async (helper) => {
     const listeners = {};
     const writtenDoc = {
-      open: jest.fn(),
-      write: jest.fn(),
-      close: jest.fn(),
-      addEventListener: jest.fn((name, fn) => {
+      open: vi.fn(),
+      write: vi.fn(),
+      close: vi.fn(),
+      addEventListener: vi.fn((name, fn) => {
         listeners[name] = fn;
       }),
     };
@@ -291,15 +289,15 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
     document.body.appendChild(iframe);
     Object.defineProperty(iframe, 'contentDocument', { value: writtenDoc, configurable: true });
     const html = '<html><head><script src="/static/js/main.js"></script></head><body></body></html>';
-    global.fetch = jest.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(html) }));
+    global.fetch = vi.fn(() => Promise.resolve({ ok: true, text: () => Promise.resolve(html) }));
     helper.bootstrapGleapFrame(iframe, 'https://messenger-app.gleap.io/');
     await flush();
     return { writtenDoc, violationListener: listeners['securitypolicyviolation'] };
   };
 
   test('a CSP violation inside the bootstrapped frame is surfaced with URI and directive', async () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const helper = loadHelper();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = await loadHelper();
 
     const { writtenDoc, violationListener } = await bootstrapAndCaptureViolationListener(helper);
 
@@ -323,8 +321,8 @@ describe('bootstrapGleapFrame — CSP/network failure diagnostics', () => {
   });
 
   test('duplicate violations warn once; Report-Only violations stay silent', async () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const helper = loadHelper();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const helper = await loadHelper();
 
     const { violationListener } = await bootstrapAndCaptureViolationListener(helper);
 

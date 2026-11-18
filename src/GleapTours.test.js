@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapTours from './GleapTours';
 
 // jsdom has no layout, so every element reports no client rects. Treat an
@@ -20,11 +21,11 @@ describe('GleapTours step target resolution', () => {
   let onElementNotFound;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.spyOn(Element.prototype, 'getClientRects').mockImplementation(function () {
+    vi.useFakeTimers();
+    vi.spyOn(Element.prototype, 'getClientRects').mockImplementation(function () {
       return isHiddenInTest(this) ? [] : [{ top: 0, left: 0, width: 40, height: 20 }];
     });
-    onElementNotFound = jest.fn(() => tour.destroy());
+    onElementNotFound = vi.fn(() => tour.destroy());
   });
 
   afterEach(() => {
@@ -32,9 +33,9 @@ describe('GleapTours step target resolution', () => {
       tour.destroy();
     }
     tour = null;
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.runOnlyPendingTimers();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     document.body.innerHTML = '';
   });
 
@@ -65,7 +66,7 @@ describe('GleapTours step target resolution', () => {
     expect(tour.getActiveElement()).toBeUndefined();
     expect(document.querySelector('.label').classList.contains('gleap-tour-active-element')).toBe(false);
 
-    jest.advanceTimersByTime(5200);
+    vi.advanceTimersByTime(5200);
 
     expect(onElementNotFound).toHaveBeenCalledTimes(1);
     expect(onElementNotFound.mock.calls[0][0].element).toBe('.menu-item > .label');
@@ -86,12 +87,12 @@ describe('GleapTours step target resolution', () => {
     document.body.innerHTML = '<nav><a class="menu-item"><span class="label" style="display: none">Library</span></a></nav>';
     startTour('.menu-item > .label');
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     document.querySelector('.label').style.display = '';
-    jest.advanceTimersByTime(200);
+    vi.advanceTimersByTime(200);
 
     expect(tour.getActiveElement()).toBe(document.querySelector('.label'));
-    jest.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(5000);
     expect(onElementNotFound).not.toHaveBeenCalled();
   });
 
@@ -99,7 +100,7 @@ describe('GleapTours step target resolution', () => {
     document.body.innerHTML = '<nav></nav>';
     startTour('.menu-item > .label');
 
-    jest.advanceTimersByTime(5200);
+    vi.advanceTimersByTime(5200);
 
     expect(onElementNotFound).toHaveBeenCalledTimes(1);
   });

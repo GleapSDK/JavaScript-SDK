@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 
 import { startScreenCapture } from './ScreenCapture';
 
@@ -15,7 +16,7 @@ const fakeAnimation = (target, property = 'opacity') => ({
 });
 
 const installRootAnimations = (root, animations) => {
-  root.getAnimations = jest.fn(() => animations);
+  root.getAnimations = vi.fn(() => animations);
   return root.getAnimations;
 };
 
@@ -215,7 +216,7 @@ const fakeComputedStyle = (values) => {
 // A '::before' / '::after' entry in an element's values is the style of that pseudo-element.
 const stubComputedStyles = (stylesByElement) => {
   const getComputedStyle = window.getComputedStyle;
-  jest.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
+  vi.spyOn(window, 'getComputedStyle').mockImplementation((element, pseudo) => {
     if (!stylesByElement.has(element)) {
       return getComputedStyle.call(window, element, pseudo);
     }
@@ -255,7 +256,7 @@ describe('startScreenCapture — blocked elements', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   // Private: the text, the attributes (the id too), and a nested image, link and field.
@@ -465,8 +466,8 @@ describe('startScreenCapture — blocked elements', () => {
       '<div class="rr-block"><img src="/avatar/jane.png"></div>' +
       '<img class="rr-block" src="/photos/jane.png"><img src="/logo.png">';
     const requested = [];
-    jest.spyOn(XMLHttpRequest.prototype, 'open').mockImplementation((method, url) => requested.push(url));
-    jest.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function () {
+    vi.spyOn(XMLHttpRequest.prototype, 'open').mockImplementation((method, url) => requested.push(url));
+    vi.spyOn(XMLHttpRequest.prototype, 'send').mockImplementation(function () {
       this.onerror();
     });
 
@@ -509,7 +510,7 @@ describe('startScreenCapture — blocked elements keep the layout around them', 
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
     delete Range.prototype.getClientRects;
   });
 
@@ -724,7 +725,7 @@ describe('startScreenCapture — blocked elements keep the layout around them', 
 
   describe('baselines', () => {
     beforeEach(() => {
-      jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
+      vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({
         measureText: () => ({ fontBoundingBoxAscent: 14 }),
       });
     });
@@ -844,7 +845,7 @@ describe('startScreenCapture — masked text', () => {
   });
 
   test("the site's maskTextFn formats masked text, as in replays", async () => {
-    const maskTextFn = jest.fn((text) => `[${text.length}]`);
+    const maskTextFn = vi.fn((text) => `[${text.length}]`);
     document.body.innerHTML = '<p class="rr-mask" id="note">Jane Doe</p>';
 
     const doc = parse((await startScreenCapture(true, { maskTextFn })).html);
@@ -952,7 +953,7 @@ describe('startScreenCapture — frames', () => {
     document.body.innerHTML = '<iframe id="dialog" src="about:blank"></iframe>';
     document.getElementById('dialog').contentDocument.body.innerHTML = '<p>Fortschritt</p>';
     const setAttribute = Element.prototype.setAttribute;
-    const spy = jest.spyOn(HTMLIFrameElement.prototype, 'setAttribute').mockImplementation(function (name, value) {
+    const spy = vi.spyOn(HTMLIFrameElement.prototype, 'setAttribute').mockImplementation(function (name, value) {
       if (name === 'srcdoc') {
         throw new TypeError("This document requires 'TrustedHTML' assignment.");
       }

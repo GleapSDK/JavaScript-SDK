@@ -1,3 +1,4 @@
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import GleapFeedback from './GleapFeedback';
 import { startScreenCapture } from './ScreenCapture';
 import { GleapScreenRecorder } from './GleapScreenRecorder';
@@ -10,12 +11,12 @@ const REPLAY_OPTIONS = { maskAllInputs: true };
 // The SDK's global data; tests add to it (reset in beforeEach).
 const mockGlobalData = {};
 
-jest.mock('./Gleap', () => {
-  const manager = (methods) => ({ getInstance: jest.fn(() => methods) });
+vi.mock('./Gleap', () => {
+  const manager = (methods) => ({ getInstance: vi.fn(() => methods) });
   return {
     __esModule: true,
     default: {
-      getInstance: jest.fn(() => ({
+      getInstance: vi.fn(() => ({
         getGlobalDataItem: (key) => mockGlobalData[key] ?? null,
         setGlobalDataItem: (key, value) => {
           mockGlobalData[key] = value;
@@ -25,7 +26,7 @@ jest.mock('./Gleap', () => {
     },
     GleapConsoleLogManager: manager({ getLogs: () => [{ log: 'hello' }] }),
     GleapStreamedEvent: manager({ getEventArray: () => [] }),
-    GleapSession: manager({ apiUrl: 'https://api.gleap.io', injectSession: jest.fn() }),
+    GleapSession: manager({ apiUrl: 'https://api.gleap.io', injectSession: vi.fn() }),
     GleapCustomDataManager: manager({ getCustomData: () => ({}), getTicketAttributes: () => ({}) }),
     GleapMetaDataManager: manager({ getMetaData: () => ({}) }),
     GleapNetworkIntercepter: manager({ getRequests: () => [{ url: 'https://app.example.com/api' }] }),
@@ -34,11 +35,11 @@ jest.mock('./Gleap', () => {
   };
 });
 
-jest.mock('./ScreenCapture', () => ({
-  startScreenCapture: jest.fn(() => Promise.resolve({ html: '<html></html>' })),
+vi.mock('./ScreenCapture', () => ({
+  startScreenCapture: vi.fn(() => Promise.resolve({ html: '<html></html>' })),
 }));
 
-jest.mock('./GleapScreenRecorder', () => ({ GleapScreenRecorder: { uploadFile: jest.fn() } }));
+vi.mock('./GleapScreenRecorder', () => ({ GleapScreenRecorder: { uploadFile: vi.fn() } }));
 
 // Minimal XHR double: tests drive responses explicitly via respond().
 class MockXhr {
@@ -80,7 +81,7 @@ const send = async ({ isSilent = false, excludeData = {} } = {}) => {
     undefined,
     undefined
   ).sendFeedback();
-  const settled = jest.fn();
+  const settled = vi.fn();
   result.then(
     (value) => settled('resolved', value),
     () => settled('rejected')

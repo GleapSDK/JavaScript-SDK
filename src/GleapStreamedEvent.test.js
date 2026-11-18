@@ -1,21 +1,22 @@
+import { describe, it, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import Gleap, { GleapMetaDataManager, GleapNotificationManager, GleapSession } from './Gleap';
 import GleapStreamedEvent from './GleapStreamedEvent';
 
 // Stub the barrel so the real GleapStreamedEvent loads without a DOM or the
 // SDK_VERSION Webpack global.
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn() },
-  GleapFrameManager: { getInstance: jest.fn(() => ({ isOpened: () => false })) },
-  GleapMetaDataManager: { getInstance: jest.fn(() => ({})) },
-  GleapAiChatbarManager: { getInstance: jest.fn(() => ({})) },
-  GleapNotificationManager: { getInstance: jest.fn() },
-  GleapSession: { getInstance: jest.fn(() => ({})) },
-  GleapAdminManager: { getInstance: jest.fn(() => ({})) },
-  GleapEventManager: { notifyEvent: jest.fn() },
+  default: { getInstance: vi.fn() },
+  GleapFrameManager: { getInstance: vi.fn(() => ({ isOpened: () => false })) },
+  GleapMetaDataManager: { getInstance: vi.fn(() => ({})) },
+  GleapAiChatbarManager: { getInstance: vi.fn(() => ({})) },
+  GleapNotificationManager: { getInstance: vi.fn() },
+  GleapSession: { getInstance: vi.fn(() => ({})) },
+  GleapAdminManager: { getInstance: vi.fn(() => ({})) },
+  GleapEventManager: { notifyEvent: vi.fn() },
 }));
 
-jest.mock('./GleapHelper', () => ({
+vi.mock('./GleapHelper', () => ({
   gleapDataParser: (data) => data,
 }));
 
@@ -23,41 +24,41 @@ describe('startPageListener — notification page-rule re-evaluation (#141052)',
   let checkPageRulesForUrl;
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    checkPageRulesForUrl = jest.fn();
+    vi.useFakeTimers();
+    checkPageRulesForUrl = vi.fn();
     GleapNotificationManager.getInstance.mockReturnValue({ checkPageRulesForUrl });
     global.window = { location: { href: 'https://app.example.com/a' } };
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     delete global.window;
   });
 
   test('re-evaluates page rules every tick, even with page tracking disabled', () => {
     Gleap.getInstance.mockReturnValue({ disablePageTracking: true });
     const streamer = new GleapStreamedEvent();
-    const logEventSpy = jest.spyOn(streamer, 'logEvent');
+    const logEventSpy = vi.spyOn(streamer, 'logEvent');
 
     streamer.startPageListener();
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(checkPageRulesForUrl).toHaveBeenCalledWith('https://app.example.com/a');
     // disablePageTracking must only suppress pageView streaming, not page rules.
     expect(logEventSpy).not.toHaveBeenCalled();
 
     global.window.location.href = 'https://app.example.com/b';
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(checkPageRulesForUrl).toHaveBeenLastCalledWith('https://app.example.com/b');
   });
 
   test('still streams pageView events when page tracking is enabled', () => {
     Gleap.getInstance.mockReturnValue({ disablePageTracking: false });
     const streamer = new GleapStreamedEvent();
-    const logEventSpy = jest.spyOn(streamer, 'logEvent');
+    const logEventSpy = vi.spyOn(streamer, 'logEvent');
 
     streamer.startPageListener();
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(logEventSpy).toHaveBeenCalledWith('pageView', { page: 'https://app.example.com/a' });
     expect(checkPageRulesForUrl).toHaveBeenCalledWith('https://app.example.com/a');
@@ -113,14 +114,14 @@ describe('event pings', () => {
   // Advances the clock and runs a loop tick; true when that tick sent a ping.
   const tickAfter = (streamer, ms) => {
     const count = requests.length;
-    jest.advanceTimersByTime(ms);
+    vi.advanceTimersByTime(ms);
     streamer.streamEvents();
     return requests.length > count;
   };
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    jest.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
     requests = [];
     global.XMLHttpRequest = FakeXHR;
     global.SDK_VERSION = 'test';
@@ -128,17 +129,17 @@ describe('event pings', () => {
       ready: true,
       session: { gleapId: 'id', gleapHash: 'hash' },
       apiUrl: 'https://api.test',
-      injectSession: jest.fn(),
+      injectSession: vi.fn(),
     };
     GleapSession.getInstance.mockReturnValue(sessionInstance);
     GleapMetaDataManager.getInstance.mockReturnValue({ getSessionDuration: () => 1 });
     // No jitter: every delay is exactly its base value.
-    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     delete global.XMLHttpRequest;
     delete global.SDK_VERSION;
   });
@@ -169,7 +170,7 @@ describe('event pings', () => {
     expect(tickAfter(streamer, 29999)).toBe(false);
 
     // Timed out: aborted, counted as a failure, the events stay and go again after the backoff.
-    jest.advanceTimersByTime(1);
+    vi.advanceTimersByTime(1);
     expect(requests[0].aborted).toBe(true);
     expect(names(streamer.streamedEventArray)).toEqual(['a', 'b']);
     expect(tickAfter(streamer, 2999)).toBe(false);
@@ -363,12 +364,12 @@ describe('WebSocket reconnects', () => {
   // Advances the clock; true when a new socket was opened in that time.
   const reconnectsAfter = (ms) => {
     const count = sockets.length;
-    jest.advanceTimersByTime(ms);
+    vi.advanceTimersByTime(ms);
     return sockets.length > count;
   };
 
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     sockets = [];
     online = true;
     global.WebSocket = FakeWebSocket;
@@ -379,12 +380,12 @@ describe('WebSocket reconnects', () => {
     sessionInstance = { session: { gleapId: 'id', gleapHash: 'hash' }, sdkKey: 'key', wsApiUrl: 'wss://ws.test' };
     GleapSession.getInstance.mockReturnValue(sessionInstance);
     // No jitter: every delay is exactly its base value.
-    jest.spyOn(Math, 'random').mockReturnValue(0.5);
+    vi.spyOn(Math, 'random').mockReturnValue(0.5);
   });
 
   afterEach(() => {
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
     delete global.WebSocket;
     delete global.SDK_VERSION;
     delete global.window;
@@ -418,14 +419,14 @@ describe('WebSocket reconnects', () => {
 
     // Accepted, then closed before 10 s: still backs off.
     latest().open();
-    jest.advanceTimersByTime(9999);
+    vi.advanceTimersByTime(9999);
     latest().drop();
     expect(reconnectsAfter(1999)).toBe(false);
     expect(reconnectsAfter(1)).toBe(true);
 
     // Open for 10 s: 1 s again.
     latest().open();
-    jest.advanceTimersByTime(10000);
+    vi.advanceTimersByTime(10000);
     latest().drop();
     expect(reconnectsAfter(999)).toBe(false);
     expect(reconnectsAfter(1)).toBe(true);
@@ -446,10 +447,10 @@ describe('WebSocket reconnects', () => {
     latest().drop();
     streamer.handleClose({});
     // Just the reconnect: no second one and no ping interval of the dropped socket.
-    expect(jest.getTimerCount()).toBe(1);
+    expect(vi.getTimerCount()).toBe(1);
 
-    jest.spyOn(streamer, 'trackInitialEvents').mockImplementation(() => {});
-    jest.spyOn(streamer, 'runEventStreamLoop').mockImplementation(() => {});
+    vi.spyOn(streamer, 'trackInitialEvents').mockImplementation(() => {});
+    vi.spyOn(streamer, 'runEventStreamLoop').mockImplementation(() => {});
     sessionInstance.session = { gleapId: 'id2', gleapHash: 'hash2' };
     streamer.restart();
     expect(sockets).toHaveLength(2);
@@ -482,7 +483,7 @@ describe('WebSocket reconnects', () => {
     // A drop while offline schedules nothing.
     online = false;
     latest().drop();
-    expect(jest.getTimerCount()).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
 
     // Back online with an open socket: it is kept.
     online = true;

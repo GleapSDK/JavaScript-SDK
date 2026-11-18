@@ -1,10 +1,11 @@
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { record } from '@rrweb/record';
 import GleapReplayRecorder, { approximateSize } from './GleapReplayRecorder';
 
 // The recorder only needs rrweb's emit callback; tests drive it directly.
-jest.mock('@rrweb/record', () => ({ record: jest.fn() }));
-jest.mock('@rrweb/packer', () => ({ pack: (event) => event }));
-jest.mock('./GleapHelper', () => ({ isMobile: () => false }));
+vi.mock('@rrweb/record', () => ({ record: vi.fn() }));
+vi.mock('@rrweb/packer', () => ({ pack: (event) => event }));
+vi.mock('./GleapHelper', () => ({ isMobile: () => false }));
 
 const MB = 1024 * 1024;
 const META = 4;
@@ -42,17 +43,17 @@ const bufferedHrefs = (recorder) =>
     .map((event) => event.data.href);
 
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
   record.mockReset().mockImplementation((options) => {
     emit = options.emit;
-    return jest.fn();
+    return vi.fn();
   });
-  record.takeFullSnapshot = jest.fn((isCheckout) => checkpoint('forced', MB, isCheckout));
+  record.takeFullSnapshot = vi.fn((isCheckout) => checkpoint('forced', MB, isCheckout));
   global.window = { location: { origin: 'https://app.example.com' }, innerWidth: 1920, innerHeight: 1080 };
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
   delete global.window;
 });
 
@@ -91,7 +92,7 @@ describe('replay buffer byte budget (#147738)', () => {
     for (let i = 0; i < 4; i++) emit(mutation(3 * MB));
     expect(record.takeFullSnapshot).not.toHaveBeenCalled();
 
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
 
     expect(record.takeFullSnapshot).toHaveBeenCalledTimes(1);
     expect(record.takeFullSnapshot).toHaveBeenCalledWith(true);
@@ -103,13 +104,13 @@ describe('replay buffer byte budget (#147738)', () => {
     startRecorder();
     checkpoint('first', MB, false);
     for (let i = 0; i < 4; i++) emit(mutation(3 * MB));
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
     for (let i = 0; i < 4; i++) emit(mutation(3 * MB));
 
-    jest.advanceTimersByTime(29 * 1000);
+    vi.advanceTimersByTime(29 * 1000);
     expect(record.takeFullSnapshot).toHaveBeenCalledTimes(1);
 
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
     expect(record.takeFullSnapshot).toHaveBeenCalledTimes(2);
   });
 
@@ -118,7 +119,7 @@ describe('replay buffer byte budget (#147738)', () => {
     checkpoint('first', 12 * MB, false);
     emit(mutation(MB));
 
-    jest.advanceTimersByTime(10 * 60 * 1000);
+    vi.advanceTimersByTime(10 * 60 * 1000);
 
     expect(record.takeFullSnapshot).not.toHaveBeenCalled();
     expect(bufferedHrefs(recorder)).toEqual(['first']);
@@ -130,7 +131,7 @@ describe('replay buffer byte budget (#147738)', () => {
     for (let i = 0; i < 4; i++) emit(mutation(3 * MB));
 
     recorder.stop();
-    jest.advanceTimersByTime(60 * 1000);
+    vi.advanceTimersByTime(60 * 1000);
 
     expect(record.takeFullSnapshot).not.toHaveBeenCalled();
   });
@@ -154,7 +155,7 @@ describe('input masking options passed to rrweb', () => {
   });
 
   test("a site's maskInputOptions keep their kinds; its maskInputFn is wrapped, not replaced", () => {
-    const siteMaskInputFn = jest.fn(() => 'masked by site');
+    const siteMaskInputFn = vi.fn(() => 'masked by site');
     const options = recordOptions({ maskInputOptions: { select: true }, maskInputFn: siteMaskInputFn });
 
     expect(options.maskInputOptions.select).toBe(true);
@@ -213,7 +214,7 @@ describe('approximateSize', () => {
         timestamp: 1790000000000,
       },
     ],
-  ])('%s -> within 25%% of its serialized size', (_label, event) => {
+  ])('%s -> within 25% of its serialized size', (_label, event) => {
     const ratio = approximateSize(event) / JSON.stringify(event).length;
     expect(ratio).toBeGreaterThan(0.75);
     expect(ratio).toBeLessThan(1.25);
@@ -227,11 +228,11 @@ describe('startIfNotRunning waits for an idle moment', () => {
 
   beforeEach(() => {
     idleCallbacks = [];
-    global.window.requestIdleCallback = jest.fn((callback, options) => {
+    global.window.requestIdleCallback = vi.fn((callback, options) => {
       idleCallbacks.push({ callback, options });
       return idleCallbacks.length;
     });
-    global.window.cancelIdleCallback = jest.fn((handle) => {
+    global.window.cancelIdleCallback = vi.fn((handle) => {
       idleCallbacks[handle - 1].cancelled = true;
     });
   });
@@ -297,7 +298,7 @@ describe('startIfNotRunning waits for an idle moment', () => {
     recorder.startIfNotRunning();
 
     expect(record).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(2000);
     expect(record).toHaveBeenCalledTimes(1);
   });
 });

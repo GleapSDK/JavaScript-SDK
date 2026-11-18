@@ -1,49 +1,51 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import GleapSession from './GleapSession';
 import { saveToGleapCache, loadFromGleapCache, setGleapCookie, eraseGleapCookie, getGleapCookie } from './GleapHelper';
+import { GleapFrameManager } from './Gleap';
 
 // The session manager only needs the sibling managers to exist; none of the
 // paths under test depend on their behavior beyond being callable.
-jest.mock('./Gleap', () => ({
-  GleapBannerManager: { getInstance: jest.fn(() => ({ removeBannerUI: jest.fn() })) },
-  GleapEventManager: { notifyEvent: jest.fn() },
+vi.mock('./Gleap', () => ({
+  GleapBannerManager: { getInstance: vi.fn(() => ({ removeBannerUI: vi.fn() })) },
+  GleapEventManager: { notifyEvent: vi.fn() },
   GleapFrameManager: {
-    getInstance: jest.fn(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn() })),
+    getInstance: vi.fn(() => ({ sendMessage: vi.fn(), sendSessionUpdate: vi.fn() })),
   },
-  GleapModalManager: { getInstance: jest.fn(() => ({ hideModal: jest.fn() })) },
+  GleapModalManager: { getInstance: vi.fn(() => ({ hideModal: vi.fn() })) },
   GleapNotificationManager: {
-    getInstance: jest.fn(() => ({ clearAllNotifications: jest.fn(), setNotificationCount: jest.fn() })),
+    getInstance: vi.fn(() => ({ clearAllNotifications: vi.fn(), setNotificationCount: vi.fn() })),
   },
-  GleapStreamedEvent: { getInstance: jest.fn(() => ({ restart: jest.fn(), stop: jest.fn() })) },
-  GleapTranslationManager: { getInstance: jest.fn(() => ({ getActiveLanguage: () => 'en' })) },
+  GleapStreamedEvent: { getInstance: vi.fn(() => ({ restart: vi.fn(), stop: vi.fn() })) },
+  GleapTranslationManager: { getInstance: vi.fn(() => ({ getActiveLanguage: () => 'en' })) },
 }));
 
-jest.mock('./ChecklistNetworkManager', () => ({
+vi.mock('./ChecklistNetworkManager', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ clearCache: jest.fn() })) },
+  default: { getInstance: vi.fn(() => ({ clearCache: vi.fn() })) },
 }));
 
-jest.mock('./AgentNetworkManager', () => ({
+vi.mock('./AgentNetworkManager', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ clearCache: jest.fn() })) },
+  default: { getInstance: vi.fn(() => ({ clearCache: vi.fn() })) },
 }));
 
-jest.mock('./GleapTooltipManager', () => ({
+vi.mock('./GleapTooltipManager', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ destroy: jest.fn(), load: jest.fn() })) },
+  default: { getInstance: vi.fn(() => ({ destroy: vi.fn(), load: vi.fn() })) },
 }));
 
-jest.mock('./GleapAiChatbarManager', () => ({
+vi.mock('./GleapAiChatbarManager', () => ({
   __esModule: true,
   default: { instance: null },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  eraseGleapCookie: jest.fn(),
-  getDeviceType: jest.fn(() => 'desktop'),
-  getGleapCookie: jest.fn(() => null),
-  loadFromGleapCache: jest.fn(() => null),
-  saveToGleapCache: jest.fn(),
-  setGleapCookie: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  eraseGleapCookie: vi.fn(),
+  getDeviceType: vi.fn(() => 'desktop'),
+  getGleapCookie: vi.fn(() => null),
+  loadFromGleapCache: vi.fn(() => null),
+  saveToGleapCache: vi.fn(),
+  setGleapCookie: vi.fn(),
 }));
 
 // Minimal XHR double: tests drive responses explicitly via respond()/error().
@@ -109,12 +111,12 @@ const buildSession = () => {
 };
 
 beforeEach(() => {
-  jest.useFakeTimers();
+  vi.useFakeTimers();
   MockXhr.instances = [];
   global.XMLHttpRequest = MockXhr;
   // No dispatchEvent on purpose: validateSession guards on its existence, and
   // node has no CustomEvent to construct.
-  global.window = { addEventListener: jest.fn() };
+  global.window = { addEventListener: vi.fn() };
   cacheStore = {};
   loadFromGleapCache.mockReset().mockImplementation((key) => (key in cacheStore ? cacheStore[key] : null));
   saveToGleapCache.mockReset().mockImplementation((key, value) => {
@@ -123,7 +125,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  jest.useRealTimers();
+  vi.useRealTimers();
 });
 
 describe('startSession failure handling', () => {
@@ -143,7 +145,7 @@ describe('startSession failure handling', () => {
     expect(saveToGleapCache).not.toHaveBeenCalledWith(expect.anything(), null);
 
     // The retry re-sends the same session credentials.
-    jest.advanceTimersByTime(10 * 1000);
+    vi.advanceTimersByTime(10 * 1000);
     const retry = MockXhr.instances[1];
     expect(retry).toBeDefined();
     expect(retry.headers['Gleap-Id']).toBe('gleap-id-1');
@@ -162,7 +164,7 @@ describe('startSession failure handling', () => {
     expect(saveToGleapCache).toHaveBeenCalledWith(expect.anything(), null);
 
     // Retry happens without stale credentials.
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
     const retry = MockXhr.instances[1];
     expect(retry).toBeDefined();
     expect(retry.headers['Gleap-Id']).toBeUndefined();
@@ -175,7 +177,7 @@ describe('startSession failure handling', () => {
     MockXhr.instances[0].respond(503);
 
     expect(session.session.gleapId).toBe(null);
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
     expect(MockXhr.instances.length).toBe(2);
   });
 
@@ -187,7 +189,7 @@ describe('startSession failure handling', () => {
     MockXhr.instances[0].respond(429);
 
     expect(session.session.gleapId).toBe('gleap-id-1');
-    jest.advanceTimersByTime(60 * 60 * 1000);
+    vi.advanceTimersByTime(60 * 60 * 1000);
     expect(MockXhr.instances.length).toBe(1);
   });
 });
@@ -351,7 +353,7 @@ describe('user switch in the same browser', () => {
     session.startSession();
     session.identifySession('user-2', { email: 'other@example.com' });
 
-    const started = jest.fn(() => session.session.userId);
+    const started = vi.fn(() => session.session.userId);
     session.onContactSettled(started);
     expect(started).not.toHaveBeenCalled();
 
@@ -373,9 +375,9 @@ describe('authenticated file sessions', () => {
     const session = buildSession();
     session.lastIdentify = { userId: 'user-1', userData: {}, userHash: 'verified-hmac' };
     session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
-    jest.advanceTimersByTime(300000);
+    vi.advanceTimersByTime(300000);
     session.validateSession({ ...CACHED_IDENTIFIED_SESSION });
-    jest.advanceTimersByTime(300000);
+    vi.advanceTimersByTime(300000);
     expect(identifyRequests()).toHaveLength(1);
   });
   it('re-verifies an unchanged cached identity when the project now requires authenticated files', () => {
@@ -397,7 +399,7 @@ describe('authenticated file sessions', () => {
     const session = buildSession();
     session.lastIdentify = { userId: 'user-1', userData: { email: 'bec@example.com' }, userHash: 'verified-hmac' };
     session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
-    jest.advanceTimersByTime(600000);
+    vi.advanceTimersByTime(600000);
     expect(identifyRequests()).toHaveLength(1);
     expect(JSON.parse(identifyRequests()[0].body).userHash).toBe('verified-hmac');
   });
@@ -426,7 +428,7 @@ describe('identity tokens (setUserJwt)', () => {
 
   let warn;
   beforeEach(() => {
-    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
   afterEach(() => {
     warn.mockRestore();
@@ -516,7 +518,7 @@ describe('identity tokens (setUserJwt)', () => {
   it('on token_expired asks the provider once and retries with the new token', async () => {
     const session = readySession();
     const fresh = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
-    const provider = jest.fn(() => Promise.resolve(fresh));
+    const provider = vi.fn(() => Promise.resolve(fresh));
     session.setUserJwtProvider(provider);
 
     const done = session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(-10) }));
@@ -533,7 +535,7 @@ describe('identity tokens (setUserJwt)', () => {
 
   it('retries only once and shares one provider call', async () => {
     const session = readySession();
-    const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
+    const provider = vi.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
     session.setUserJwtProvider(provider);
 
     const done = session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(-10) }));
@@ -550,13 +552,13 @@ describe('identity tokens (setUserJwt)', () => {
 
   it('pauses 30 s after a provider failure', async () => {
     const session = buildSession();
-    const provider = jest.fn(() => Promise.reject(new Error('offline')));
+    const provider = vi.fn(() => Promise.reject(new Error('offline')));
     session.setUserJwtProvider(provider);
 
     expect(await session.requestUserJwt()).toBeNull();
     expect(await session.requestUserJwt()).toBeNull();
     expect(provider).toHaveBeenCalledTimes(1);
-    jest.advanceTimersByTime(30 * 1000);
+    vi.advanceTimersByTime(30 * 1000);
     await session.requestUserJwt();
     expect(provider).toHaveBeenCalledTimes(2);
   });
@@ -565,7 +567,7 @@ describe('identity tokens (setUserJwt)', () => {
     const session = buildSession();
     session.setUserJwtProvider(() => new Promise(() => {}));
     const pending = session.requestUserJwt();
-    jest.advanceTimersByTime(10 * 1000);
+    vi.advanceTimersByTime(10 * 1000);
     expect(await pending).toBeNull();
   });
 
@@ -584,12 +586,12 @@ describe('identity tokens (setUserJwt)', () => {
   it('asks the provider before a file-access renewal when the token expires within 5 minutes', async () => {
     const session = buildSession();
     const fresh = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
-    const provider = jest.fn(() => fresh);
+    const provider = vi.fn(() => fresh);
     session.setUserJwtProvider(provider);
     session.lastIdentify = { userId: 'user-1', userData: {}, userHash: jwtOf({ userId: 'user-1', exp: inSeconds(60) }) };
     session.validateSession({ ...CACHED_IDENTIFIED_SESSION, fileAccessToken: 'file-session', fileAccessExpiresAt: new Date(Date.now() + 900000).toISOString() });
 
-    jest.advanceTimersByTime(600000);
+    vi.advanceTimersByTime(600000);
     await flush();
     expect(provider).toHaveBeenCalledTimes(1);
     expect(identifyRequests()).toHaveLength(1);
@@ -598,7 +600,7 @@ describe('identity tokens (setUserJwt)', () => {
 
   it('clearIdentity drops the token and auth tokens but keeps the provider', () => {
     const session = readySession();
-    const provider = jest.fn();
+    const provider = vi.fn();
     session.setUserJwtProvider(provider);
     session.setUserJwt(jwtOf({ userId: 'user-1' }));
     session.authTokens = { backend: 'secret' };
@@ -613,7 +615,7 @@ describe('auth tokens (setAuthTokens)', () => {
   const authTokenRequests = () => MockXhr.instances.filter((xhr) => xhr.url && xhr.url.endsWith('/sessions/auth-tokens'));
   let warn;
   beforeEach(() => {
-    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
   afterEach(() => {
     warn.mockRestore();
@@ -694,7 +696,7 @@ describe('grant (signed session credential)', () => {
 
   let warn;
   beforeEach(() => {
-    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     setGleapCookie.mockClear();
     eraseGleapCookie.mockClear();
     getGleapCookie.mockReset().mockImplementation(() => null);
@@ -754,7 +756,7 @@ describe('grant (signed session credential)', () => {
     const session = readySession();
     session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
     respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
-    const provider = jest.fn();
+    const provider = vi.fn();
     session.setUserJwtProvider(provider);
     session.clearSession(0, false);
     expect(session.grant).toBe(null);
@@ -811,9 +813,9 @@ describe('grant (signed session credential)', () => {
     it('renews a minute before the grant lifetime ends, counted from receipt', async () => {
       const session = readySession();
       signIn(session, shortGrant(3600));
-      jest.advanceTimersByTime(3540 * 1000 - 1);
+      vi.advanceTimersByTime(3540 * 1000 - 1);
       expect(identifyRequests()).toHaveLength(1);
-      jest.advanceTimersByTime(1);
+      vi.advanceTimersByTime(1);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
     });
@@ -821,20 +823,20 @@ describe('grant (signed session credential)', () => {
     it('a 60-70 s grant waits 30 s and renews at most once a minute (no loop)', async () => {
       const session = readySession();
       signIn(session, shortGrant(65));
-      jest.advanceTimersByTime(29 * 1000);
+      vi.advanceTimersByTime(29 * 1000);
       expect(identifyRequests()).toHaveLength(1);
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
 
       // The refresh answers with another short grant: the next refresh waits for the minute.
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       respondWithGrant(identifyRequests()[1], shortGrant(65, 1));
       await flush();
-      jest.advanceTimersByTime(30 * 1000);
+      vi.advanceTimersByTime(30 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
-      jest.advanceTimersByTime(29 * 1000);
+      vi.advanceTimersByTime(29 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(3);
     });
@@ -843,10 +845,10 @@ describe('grant (signed session credential)', () => {
       const session = readySession();
       // Issued by a server whose clock is two hours behind the device: exp already lies in the device's past.
       signIn(session, shortGrant(3600, -7200));
-      jest.advanceTimersByTime(60 * 1000);
+      vi.advanceTimersByTime(60 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(1);
-      jest.advanceTimersByTime(3480 * 1000);
+      vi.advanceTimersByTime(3480 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
     });
@@ -854,13 +856,13 @@ describe('grant (signed session credential)', () => {
     it('skips while a refresh is in flight', async () => {
       const session = readySession();
       signIn(session, shortGrant(65));
-      jest.advanceTimersByTime(30 * 1000);
+      vi.advanceTimersByTime(30 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
       expect(session.grantRefreshInFlight).toBe(true);
       // Re-arming for the same grant while the refresh runs sends nothing more.
       session.armGrantRefresh(session.grant, Date.now());
-      jest.advanceTimersByTime(120 * 1000);
+      vi.advanceTimersByTime(120 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
       identifyRequests()[1].error();
@@ -871,15 +873,15 @@ describe('grant (signed session credential)', () => {
     it('a failed refresh is tried again a minute later', async () => {
       const session = readySession();
       signIn(session, shortGrant(65));
-      jest.advanceTimersByTime(30 * 1000);
+      vi.advanceTimersByTime(30 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
       identifyRequests()[1].error();
       await flush();
-      jest.advanceTimersByTime(59 * 1000);
+      vi.advanceTimersByTime(59 * 1000);
       await flush();
       expect(identifyRequests()).toHaveLength(2);
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
       await flush();
       expect(identifyRequests()).toHaveLength(3);
     });
@@ -916,7 +918,7 @@ describe('grant (signed session credential)', () => {
       session.setUserJwt(token());
       session.startSession();
       sessionsRequests()[1].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...SIGNED_MODE }));
-      jest.advanceTimersByTime(10 * 60 * 1000);
+      vi.advanceTimersByTime(10 * 60 * 1000);
       expect(identifyRequests()).toHaveLength(1);
     });
 
@@ -938,7 +940,7 @@ describe('grant (signed session credential)', () => {
       expect(session.hasLiveGrant()).toBe(true);
       eraseGleapCookie.mockClear();
       MockXhr.instances = [];
-      jest.advanceTimersByTime(60 * 1000);
+      vi.advanceTimersByTime(60 * 1000);
 
       // The grant still looks live locally, but the server no longer accepts it.
       session.startSession();
@@ -955,7 +957,7 @@ describe('grant (signed session credential)', () => {
       identifyRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: false, mode: 'signed' } }));
       session.startSession();
       sessionsRequests()[1].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, identity: { signed: false, mode: 'signed' } }));
-      jest.advanceTimersByTime(10 * 60 * 1000);
+      vi.advanceTimersByTime(10 * 60 * 1000);
       expect(identifyRequests()).toHaveLength(1);
     });
 
@@ -991,7 +993,7 @@ describe('grant (signed session credential)', () => {
 
     it('asks the provider once and identifies with its token, which brings the grant back', async () => {
       const token = jwtOf({ userId: 'user-1', exp: inSeconds(3600) });
-      const provider = jest.fn(() => Promise.resolve(token));
+      const provider = vi.fn(() => Promise.resolve(token));
       const session = reloadWithProvider(provider);
       expect(provider).not.toHaveBeenCalled();
 
@@ -1011,7 +1013,7 @@ describe('grant (signed session credential)', () => {
     });
 
     it('no loop: at most one provider call and one identify per session load', async () => {
-      const provider = jest.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
+      const provider = vi.fn(() => Promise.resolve(jwtOf({ userId: 'user-1', exp: inSeconds(3600) })));
       const session = reloadWithProvider(provider);
       answerSignedMode(sessionsRequests()[0]);
       await flush();
@@ -1023,7 +1025,7 @@ describe('grant (signed session credential)', () => {
       session.startSession();
       answerSignedMode(sessionsRequests()[1]);
       await flush();
-      jest.advanceTimersByTime(10 * 60 * 1000);
+      vi.advanceTimersByTime(10 * 60 * 1000);
       session.startSession();
       answerSignedMode(sessionsRequests()[2]);
       await flush();
@@ -1033,7 +1035,7 @@ describe('grant (signed session credential)', () => {
 
     it('one call at a time: a second signed-mode answer while the provider runs asks nothing more', async () => {
       let resolveToken;
-      const provider = jest.fn(() => new Promise((resolve) => (resolveToken = resolve)));
+      const provider = vi.fn(() => new Promise((resolve) => (resolveToken = resolve)));
       const session = reloadWithProvider(provider);
       answerSignedMode(sessionsRequests()[0]);
       session.startSession();
@@ -1054,7 +1056,7 @@ describe('grant (signed session credential)', () => {
     });
 
     it('the provider returns null: nothing is sent, nothing logged, and it is not asked again this load', async () => {
-      const provider = jest.fn(() => null);
+      const provider = vi.fn(() => null);
       const session = reloadWithProvider(provider);
       answerSignedMode(sessionsRequests()[0]);
       await flush();
@@ -1062,7 +1064,7 @@ describe('grant (signed session credential)', () => {
       expect(identifyRequests()).toHaveLength(0);
       expect(warn).not.toHaveBeenCalled();
 
-      jest.advanceTimersByTime(10 * 60 * 1000);
+      vi.advanceTimersByTime(10 * 60 * 1000);
       session.startSession();
       answerSignedMode(sessionsRequests()[1]);
       await flush();
@@ -1072,7 +1074,7 @@ describe('grant (signed session credential)', () => {
 
     it('a token for another user goes through identity_mismatch (fresh visitor, identify once more)', async () => {
       const token = jwtOf({ userId: 'user-2', exp: inSeconds(3600) });
-      const provider = jest.fn(() => token);
+      const provider = vi.fn(() => token);
       const session = reloadWithProvider(provider);
       answerSignedMode(sessionsRequests()[0]);
       await flush();
@@ -1094,7 +1096,7 @@ describe('grant (signed session credential)', () => {
     });
 
     it('a provider set after the /sessions answer is still asked once', async () => {
-      const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      const provider = vi.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
       const session = reloadWithProvider(null);
       answerSignedMode(sessionsRequests()[0]);
       await flush();
@@ -1108,7 +1110,7 @@ describe('grant (signed session credential)', () => {
     });
 
     it('does not ask for a Classic answer, an anonymous session, a live grant or a held token', async () => {
-      const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
+      const provider = vi.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
 
       reloadWithProvider(provider);
       sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
@@ -1138,7 +1140,7 @@ describe('grant (signed session credential)', () => {
 
     it('a logout while the provider runs drops its token', async () => {
       let resolveToken;
-      const provider = jest.fn(() => new Promise((resolve) => (resolveToken = resolve)));
+      const provider = vi.fn(() => new Promise((resolve) => (resolveToken = resolve)));
       const session = reloadWithProvider(provider);
       answerSignedMode(sessionsRequests()[0]);
       await flush();
@@ -1151,7 +1153,6 @@ describe('grant (signed session credential)', () => {
   });
 
   describe('signed session expiry (a visitor afterwards, like Intercom on the web)', () => {
-    const { GleapFrameManager } = require('./Gleap');
     const UNSIGNED_SIGNED_MODE = { identity: { signed: false, grant: null, mode: 'signed' } };
     const sessionsRequests = () => MockXhr.instances.filter((xhr) => xhr.url.endsWith('/sessions'));
     const answerUnsigned = (xhr) => xhr.respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION, ...UNSIGNED_SIGNED_MODE }));
@@ -1159,11 +1160,11 @@ describe('grant (signed session credential)', () => {
     let info;
 
     beforeEach(() => {
-      info = jest.spyOn(console, 'info').mockImplementation(() => {});
+      info = vi.spyOn(console, 'info').mockImplementation(() => {});
     });
     afterEach(() => {
       info.mockRestore();
-      GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn() }));
+      GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: vi.fn(), sendSessionUpdate: vi.fn() }));
     });
 
     // Signs user-1 in on gleap-id-1 with a grant that runs out in `grantSeconds`.
@@ -1176,8 +1177,8 @@ describe('grant (signed session credential)', () => {
 
     // The page is closed, then reopened `laterSeconds` on; the grant cookie expired with the grant.
     const reloadLater = (laterSeconds, setup = () => {}) => {
-      jest.clearAllTimers();
-      jest.setSystemTime(Date.now() + laterSeconds * 1000);
+      vi.clearAllTimers();
+      vi.setSystemTime(Date.now() + laterSeconds * 1000);
       MockXhr.instances = [];
       const session = buildSession();
       setup(session);
@@ -1193,7 +1194,7 @@ describe('grant (signed session credential)', () => {
       expect(cacheStore['session-sdk-key']).toBe(null);
       expect(cacheStore['signed-session-sdk-key']).toBe(null);
       expect(session.lastIdentify).toBe(null);
-      jest.advanceTimersByTime(0);
+      vi.advanceTimersByTime(0);
       const fresh = sessionsRequests()[sessionsRequests().length - 1];
       expect(fresh.headers['Gleap-Id']).toBeUndefined();
       fresh.respond(200, JSON.stringify({ gleapId: 'gleap-id-guest', gleapHash: 'gleap-hash-guest' }));
@@ -1219,7 +1220,7 @@ describe('grant (signed session credential)', () => {
       expect(identifyRequests()).toHaveLength(0);
       expect(info).toHaveBeenCalledWith(expect.stringContaining('continues as a visitor'));
       // The visitor session is final: nothing more is sent.
-      jest.advanceTimersByTime(10 * 60 * 1000);
+      vi.advanceTimersByTime(10 * 60 * 1000);
       await flush();
       expect(sessionsRequests()).toHaveLength(2);
       expect(identifyRequests()).toHaveLength(0);
@@ -1245,7 +1246,7 @@ describe('grant (signed session credential)', () => {
     it('a JWT provider with a fresh token keeps the user signed (asked once)', async () => {
       signedIn(600);
       const fresh = token();
-      const provider = jest.fn(() => Promise.resolve(fresh));
+      const provider = vi.fn(() => Promise.resolve(fresh));
       const session = reloadLater(11 * 60, (s) => s.setUserJwtProvider(provider));
       answerUnsigned(sessionsRequests()[0]);
       await flush();
@@ -1262,7 +1263,7 @@ describe('grant (signed session credential)', () => {
 
     it('a JWT provider that returns null: the session ends (provider asked once, kept afterwards)', async () => {
       signedIn(600);
-      const provider = jest.fn(() => null);
+      const provider = vi.fn(() => null);
       const session = reloadLater(11 * 60, (s) => s.setUserJwtProvider(provider));
       answerUnsigned(sessionsRequests()[0]);
       await expectVisitor(session);
@@ -1278,7 +1279,7 @@ describe('grant (signed session credential)', () => {
       expect(identifyRequests()).toHaveLength(1);
       answerUnsigned(sessionsRequests()[0]);
       await flush();
-      jest.advanceTimersByTime(30 * 1000);
+      vi.advanceTimersByTime(30 * 1000);
       await flush();
       expect(session.session.gleapId).toBe('gleap-id-1');
       respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1'));
@@ -1312,7 +1313,7 @@ describe('grant (signed session credential)', () => {
       answerUnsigned(sessionsRequests()[0]);
       identifyRequests()[0].error();
       await flush();
-      jest.advanceTimersByTime(60 * 1000);
+      vi.advanceTimersByTime(60 * 1000);
       await flush();
       expect(session.session.gleapId).toBe('gleap-id-1');
       expect(session.session.userId).toBe('user-1');
@@ -1328,7 +1329,7 @@ describe('grant (signed session credential)', () => {
       const session = reloadLater(30 * 24 * 3600);
       answerUnsigned(sessionsRequests()[0]);
       await flush();
-      jest.advanceTimersByTime(60 * 1000);
+      vi.advanceTimersByTime(60 * 1000);
       expect(session.session.gleapId).toBe('gleap-id-1');
       expect(session.session.userId).toBe('user-1');
       expect(info).not.toHaveBeenCalled();
@@ -1339,7 +1340,7 @@ describe('grant (signed session credential)', () => {
       const session = reloadLater(5 * 60);
       answerUnsigned(sessionsRequests()[0]);
       await flush();
-      jest.advanceTimersByTime(0);
+      vi.advanceTimersByTime(0);
       expect(session.session.gleapId).toBe('gleap-id-1');
       expect(session.session.userId).toBe('user-1');
       expect(info).not.toHaveBeenCalled();
@@ -1350,7 +1351,7 @@ describe('grant (signed session credential)', () => {
       const session = reloadLater(11 * 60);
       sessionsRequests()[0].respond(200, JSON.stringify({ ...CACHED_IDENTIFIED_SESSION }));
       await flush();
-      jest.advanceTimersByTime(0);
+      vi.advanceTimersByTime(0);
       expect(session.session.userId).toBe('user-1');
       expect(info).not.toHaveBeenCalled();
     });
@@ -1369,7 +1370,7 @@ describe('grant (signed session credential)', () => {
       expect(session.signedSessionExpiryTimeout).not.toBe(null);
       session.lastIdentify = null;
       MockXhr.instances = [];
-      jest.advanceTimersByTime(600 * 1000);
+      vi.advanceTimersByTime(600 * 1000);
       await flush();
       expect(sessionsRequests()).toHaveLength(1);
     });
@@ -1387,14 +1388,14 @@ describe('grant (signed session credential)', () => {
         // Token valid 5 min, grant 10 min, no provider: the refresh a minute before the end sends the expired token.
         const session = signedIn(600, 300);
         MockXhr.instances = [];
-        jest.advanceTimersByTime(540 * 1000);
+        vi.advanceTimersByTime(540 * 1000);
         await flush();
         expect(identifyRequests()).toHaveLength(1);
         identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_expired' } }));
         await flush();
         expect(sessionsRequests()).toHaveLength(0);
 
-        jest.advanceTimersByTime(60 * 1000);
+        vi.advanceTimersByTime(60 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(1);
         expect(sessionsRequests()[0].headers['Gleap-Id']).toBe('gleap-id-1');
@@ -1407,10 +1408,10 @@ describe('grant (signed session credential)', () => {
       it('a renewed grant re-arms the check: nothing ends', async () => {
         const session = signedIn(600);
         MockXhr.instances = [];
-        jest.advanceTimersByTime(540 * 1000);
+        vi.advanceTimersByTime(540 * 1000);
         await flush();
         respondWithGrant(identifyRequests()[0], grantFor('gleap-id-1', inSeconds(600)));
-        jest.advanceTimersByTime(120 * 1000);
+        vi.advanceTimersByTime(120 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(0);
         expect(session.hasLiveGrant()).toBe(true);
@@ -1422,7 +1423,7 @@ describe('grant (signed session credential)', () => {
         const renewed = grantFor('gleap-id-1', inSeconds(1800));
         getGleapCookie.mockImplementation((name) => (name === 'gleap-grant-sdk-key' ? encodeURIComponent(renewed) : null));
         MockXhr.instances = [];
-        jest.advanceTimersByTime(600 * 1000);
+        vi.advanceTimersByTime(600 * 1000);
         await flush();
         expect(session.grant).toBe(renewed);
         expect(sessionsRequests()).toHaveLength(0);
@@ -1430,15 +1431,15 @@ describe('grant (signed session credential)', () => {
 
       it('waits while the messenger is open, then ends once it closes (at most an hour)', async () => {
         let open = true;
-        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn(), isOpened: () => open }));
+        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: vi.fn(), sendSessionUpdate: vi.fn(), isOpened: () => open }));
         const session = signedIn(600);
         session.lastIdentify = null;
         MockXhr.instances = [];
-        jest.advanceTimersByTime(600 * 1000 + 30 * 60 * 1000);
+        vi.advanceTimersByTime(600 * 1000 + 30 * 60 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(0);
         open = false;
-        jest.advanceTimersByTime(60 * 1000);
+        vi.advanceTimersByTime(60 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(1);
         answerUnsigned(sessionsRequests()[0]);
@@ -1446,14 +1447,14 @@ describe('grant (signed session credential)', () => {
       });
 
       it('the messenger left open: the session still ends an hour after the expiry', async () => {
-        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: jest.fn(), sendSessionUpdate: jest.fn(), isOpened: () => true }));
+        GleapFrameManager.getInstance.mockImplementation(() => ({ sendMessage: vi.fn(), sendSessionUpdate: vi.fn(), isOpened: () => true }));
         const session = signedIn(600);
         session.lastIdentify = null;
         MockXhr.instances = [];
-        jest.advanceTimersByTime(600 * 1000 + 59 * 60 * 1000);
+        vi.advanceTimersByTime(600 * 1000 + 59 * 60 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(0);
-        jest.advanceTimersByTime(2 * 60 * 1000);
+        vi.advanceTimersByTime(2 * 60 * 1000);
         await flush();
         expect(sessionsRequests()).toHaveLength(1);
       });
@@ -1501,13 +1502,13 @@ describe('grant (signed session credential)', () => {
 
   it('a provider token that already expired counts as a failure (30 s pause)', async () => {
     const session = readySession();
-    const provider = jest.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(0) }));
+    const provider = vi.fn(() => jwtOf({ userId: 'user-1', exp: inSeconds(0) }));
     session.setUserJwtProvider(provider);
     await expect(session.requestUserJwt()).resolves.toBe(null);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('expired token'));
     await expect(session.requestUserJwt()).resolves.toBe(null);
     expect(provider).toHaveBeenCalledTimes(1);
-    jest.advanceTimersByTime(30 * 1000);
+    vi.advanceTimersByTime(30 * 1000);
     await session.requestUserJwt();
     expect(provider).toHaveBeenCalledTimes(2);
   });

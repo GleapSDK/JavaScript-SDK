@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { resolveInputTarget, setInputValue, typeIntoElement } from './GleapInputFiller';
 
 const realInputValue = (element) =>
@@ -111,11 +112,11 @@ describe('setInputValue', () => {
 
 describe('typeIntoElement', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    vi.useFakeTimers();
     document.body.innerHTML = '';
   });
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
   });
 
   it('types the exact value and fires one input event per character plus a final change', () => {
@@ -125,10 +126,10 @@ describe('typeIntoElement', () => {
     const changeEvents = [];
     input.addEventListener('input', (e) => inputEvents.push(e.target.value));
     input.addEventListener('change', (e) => changeEvents.push(e.target.value));
-    const onDone = jest.fn();
+    const onDone = vi.fn();
 
     typeIntoElement(input, 'Oslo', { charDelay: 100, onDone });
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(input.value).toBe('Oslo');
     expect(inputEvents).toEqual(['O', 'Os', 'Osl', 'Oslo']);
@@ -142,7 +143,7 @@ describe('typeIntoElement', () => {
     document.body.appendChild(input);
 
     typeIntoElement(input, 'new', { charDelay: 100 });
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(input.value).toBe('new');
   });
@@ -154,7 +155,7 @@ describe('typeIntoElement', () => {
     document.body.appendChild(field);
 
     typeIntoElement(field, 'Oslo', { charDelay: 100 });
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(field.querySelector('input').value).toBe('Oslo');
   });
@@ -162,10 +163,10 @@ describe('typeIntoElement', () => {
   it('still calls onDone when there is nothing to type into, so the tour never stalls', () => {
     const div = document.createElement('div');
     document.body.appendChild(div);
-    const onDone = jest.fn();
+    const onDone = vi.fn();
 
     typeIntoElement(div, 'Oslo', { charDelay: 100, onDone });
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(onDone).toHaveBeenCalledTimes(1);
   });
@@ -181,11 +182,11 @@ describe('typeIntoElement', () => {
       get: () => '',
       configurable: true,
     });
-    const onDone = jest.fn();
+    const onDone = vi.fn();
 
     expect(() => {
       typeIntoElement(editable, 'Oslo', { charDelay: 100, onDone });
-      jest.advanceTimersByTime(1000);
+      vi.advanceTimersByTime(1000);
     }).not.toThrow();
     expect(onDone).toHaveBeenCalledTimes(1);
   });
@@ -193,10 +194,10 @@ describe('typeIntoElement', () => {
   it('handles an empty value without hanging', () => {
     const input = document.createElement('input');
     document.body.appendChild(input);
-    const onDone = jest.fn();
+    const onDone = vi.fn();
 
     typeIntoElement(input, '', { charDelay: 100, onDone });
-    jest.advanceTimersByTime(1000);
+    vi.advanceTimersByTime(1000);
 
     expect(input.value).toBe('');
     expect(onDone).toHaveBeenCalledTimes(1);

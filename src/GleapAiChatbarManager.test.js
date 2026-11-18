@@ -1,26 +1,27 @@
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import { GleapFrameManager, GleapSession, GleapTabCommunication } from './Gleap';
 import GleapAiChatbarManager from './GleapAiChatbarManager';
 
 // Keep the barrel + helper imports light (no DOM bootstrap, no SDK_VERSION global).
 // The manager only reaches for GleapSession/GleapTabCommunication on the paths under
 // test here; the other managers just need to exist so the module resolves.
-jest.mock('./Gleap', () => ({
-  GleapFrameManager: { getInstance: jest.fn(() => ({})) },
-  GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })) },
-  GleapSession: { getInstance: jest.fn() },
-  GleapEventManager: { notifyEvent: jest.fn() },
-  GleapTranslationManager: { getInstance: jest.fn(() => ({ getOverrideLanguage: () => null })) },
-  GleapTabCommunication: { getInstance: jest.fn() },
+vi.mock('./Gleap', () => ({
+  GleapFrameManager: { getInstance: vi.fn(() => ({})) },
+  GleapConfigManager: { getInstance: vi.fn(() => ({ getFlowConfig: () => ({}) })) },
+  GleapSession: { getInstance: vi.fn() },
+  GleapEventManager: { notifyEvent: vi.fn() },
+  GleapTranslationManager: { getInstance: vi.fn(() => ({ getOverrideLanguage: () => null })) },
+  GleapTabCommunication: { getInstance: vi.fn() },
 }));
 
-jest.mock('./GleapAgentToolManager', () => ({
+vi.mock('./GleapAgentToolManager', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ getAgentTools: () => [] })) },
+  default: { getInstance: vi.fn(() => ({ getAgentTools: () => [] })) },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  bootstrapGleapFrame: jest.fn(),
-  runFunctionWhenDomIsReady: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  bootstrapGleapFrame: vi.fn(),
+  runFunctionWhenDomIsReady: vi.fn(),
 }));
 
 let sendMessageMock;
@@ -28,7 +29,7 @@ let messageHandler; // the window 'message' listener registered by _listenForMes
 
 // A fake chatbar iframe whose contentWindow captures every posted message.
 const attachReadyFrame = (manager) => {
-  const contentWindow = { postMessage: jest.fn() };
+  const contentWindow = { postMessage: vi.fn() };
   manager.chatbarFrame = { contentWindow };
   manager.comReady = true;
   return contentWindow;
@@ -46,13 +47,13 @@ beforeEach(() => {
   // constructor's _listenForMessages / _listenForOutsideClicks, capturing the
   // 'message' handler so we can simulate inbound frame messages.
   global.window = {
-    addEventListener: jest.fn((type, handler) => {
+    addEventListener: vi.fn((type, handler) => {
       if (type === 'message') messageHandler = handler;
     }),
   };
-  global.document = { addEventListener: jest.fn() };
+  global.document = { addEventListener: vi.fn() };
 
-  sendMessageMock = jest.fn();
+  sendMessageMock = vi.fn();
   GleapTabCommunication.getInstance.mockReturnValue({ sendMessage: sendMessageMock });
   GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' } });
 
@@ -164,7 +165,7 @@ describe('inbound chatbar-notification-read (from the frame)', () => {
     attachReadyFrame(manager);
 
     messageHandler({
-      source: { postMessage: jest.fn() }, // some other window
+      source: { postMessage: vi.fn() }, // some other window
       data: JSON.stringify({ name: 'chatbar-notification-read' }),
     });
 

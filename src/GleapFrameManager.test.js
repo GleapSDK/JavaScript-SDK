@@ -1,6 +1,7 @@
 /**
- * @jest-environment jsdom
+ * @vitest-environment jsdom
  */
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import GleapFrameManager, { FRAME_LOAD_TIMEOUT_MS } from './GleapFrameManager';
 
@@ -8,42 +9,45 @@ import GleapFrameManager, { FRAME_LOAD_TIMEOUT_MS } from './GleapFrameManager';
 // Webpack global. flowConfig is a mutable object so tests can flip
 // hideExpandButton the way a config reload would.
 const mockFlowConfig = {};
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ setGlobalDataItem: jest.fn() })) },
-  GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => mockFlowConfig })) },
+  default: { getInstance: vi.fn(() => ({ setGlobalDataItem: vi.fn() })) },
+  GleapConfigManager: { getInstance: vi.fn(() => ({ getFlowConfig: () => mockFlowConfig })) },
   GleapFeedbackButtonManager: {
-    getInstance: jest.fn(() => ({
+    getInstance: vi.fn(() => ({
       buttonHidden: null,
-      updateNotificationBadge: jest.fn(),
-      updateFeedbackButtonState: jest.fn(),
+      updateNotificationBadge: vi.fn(),
+      updateFeedbackButtonState: vi.fn(),
     })),
   },
   GleapTranslationManager: {
-    getInstance: jest.fn(() => ({ isRTLLayout: false, getOverrideLanguage: () => '' })),
+    getInstance: vi.fn(() => ({ isRTLLayout: false, getOverrideLanguage: () => '' })),
   },
   GleapNotificationManager: {
-    getInstance: jest.fn(() => ({ clearAllNotifications: jest.fn(), reloadNotificationsFromCache: jest.fn() })),
+    getInstance: vi.fn(() => ({ clearAllNotifications: vi.fn(), reloadNotificationsFromCache: vi.fn() })),
   },
-  GleapEventManager: { notifyEvent: jest.fn() },
-  GleapBannerManager: { getInstance: jest.fn(() => ({})) },
-  GleapSession: { getInstance: jest.fn(() => ({ getSession: () => ({}) })) },
+  GleapEventManager: { notifyEvent: vi.fn() },
+  GleapBannerManager: { getInstance: vi.fn(() => ({})) },
+  GleapSession: { getInstance: vi.fn(() => ({ getSession: () => ({}) })) },
+  // Not part of these tests: the frame manager skips capture messages without it. Vitest throws on an export a
+  // mock leaves out, so it is listed as absent.
+  GleapCaptureManager: undefined,
 }));
 
-jest.mock('./GleapAgentToolManager', () => ({
+vi.mock('./GleapAgentToolManager', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn(() => ({ getAgentTools: () => [] })) },
+  default: { getInstance: vi.fn(() => ({ getAgentTools: () => [] })) },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  loadFromGleapCache: jest.fn(() => null),
-  saveToGleapCache: jest.fn(),
-  bootstrapGleapFrame: jest.fn(),
-  runFunctionWhenDomIsReady: jest.fn(),
+vi.mock('./GleapHelper', () => ({
+  loadFromGleapCache: vi.fn(() => null),
+  saveToGleapCache: vi.fn(),
+  bootstrapGleapFrame: vi.fn(),
+  runFunctionWhenDomIsReady: vi.fn(),
 }));
 
-jest.mock('./UI', () => ({
-  widgetLoaderMarkup: jest.fn(() => ''),
+vi.mock('./UI', () => ({
+  widgetLoaderMarkup: vi.fn(() => ''),
   widgetMaxHeight: 700,
   widgetExpandMinWidth: 768,
 }));
@@ -66,7 +70,7 @@ const setup = () => {
   previous = fm;
   fm.gleapFrameContainer = document.querySelector('.gleap-frame-container');
   fm.comReady = true;
-  postMessage = jest.spyOn(document.querySelector('.gleap-frame').contentWindow, 'postMessage').mockImplementation(() => {});
+  postMessage = vi.spyOn(document.querySelector('.gleap-frame').contentWindow, 'postMessage').mockImplementation(() => {});
   return fm;
 };
 
@@ -88,7 +92,7 @@ const matchWidthQuery = (query) => {
 beforeEach(() => {
   isMobile = false;
   viewportWidth = 1440;
-  window.matchMedia = jest.fn(matchWidthQuery);
+  window.matchMedia = vi.fn(matchWidthQuery);
   Object.keys(mockFlowConfig).forEach((k) => delete mockFlowConfig[k]);
   loadFromGleapCache.mockReset().mockReturnValue(null);
   saveToGleapCache.mockReset();
@@ -276,7 +280,7 @@ describe('GleapFrameManager expand/collapse window', () => {
 describe('GleapFrameManager url handler', () => {
   let open;
   beforeEach(() => {
-    open = jest.spyOn(window, 'open').mockImplementation(() => null);
+    open = vi.spyOn(window, 'open').mockImplementation(() => null);
   });
   afterEach(() => open.mockRestore());
 
@@ -299,7 +303,7 @@ describe('GleapFrameManager url handler', () => {
 
   it('runs a custom handler for deep links but never for script URLs', () => {
     const fm = setup();
-    const custom = jest.fn();
+    const custom = vi.fn();
     fm.setUrlHandler(custom);
     fm.urlHandler('myapp://settings', false);
     fm.urlHandler('javascript:alert(1)', false);
@@ -335,25 +339,25 @@ describe('GleapFrameManager opens reliably (iOS: never stuck until a reload)', (
   };
 
   beforeEach(() => {
-    jest.useFakeTimers();
-    warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+    vi.useFakeTimers();
+    warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
   afterEach(() => {
-    jest.useRealTimers();
+    vi.useRealTimers();
     warn.mockRestore();
   });
 
   it('keeps the loader up when opened again before the messenger pinged, and opens on the ping', () => {
     const fm = setupLoading();
     fm.showWidget();
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
     const container = fm.gleapFrameContainer;
     expect(container.classList.contains(HIDDEN)).toBe(false);
     expect(container.classList.contains(LOADING)).toBe(true);
     expect(fm.widgetOpened).toBe(true);
 
     dispatch(fm, { name: 'ping' });
-    jest.advanceTimersByTime(300);
+    vi.advanceTimersByTime(300);
     expect(container.classList.contains(LOADING)).toBe(false);
   });
 
@@ -363,11 +367,11 @@ describe('GleapFrameManager opens reliably (iOS: never stuck until a reload)', (
     fm.showFrameContainer(true);
     fm.armFrameLoadWatchdog(frame);
 
-    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
+    vi.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
     expect(frame.getAttribute('src')).toBe(fm.frameUrl);
     expect(fm.gleapFrameContainer).not.toBeNull();
 
-    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
+    vi.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS);
     expect(fm.gleapFrameContainer).toBeNull();
     expect(fm.injectedFrame).toBe(false);
     expect(fm.widgetOpened).toBe(false);
@@ -379,7 +383,7 @@ describe('GleapFrameManager opens reliably (iOS: never stuck until a reload)', (
     const fm = setupLoading();
     fm.armFrameLoadWatchdog(fm.gleapFrame);
     dispatch(fm, { name: 'ping' });
-    jest.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS * 2);
+    vi.advanceTimersByTime(FRAME_LOAD_TIMEOUT_MS * 2);
     expect(fm.gleapFrame.getAttribute('src')).toBeNull();
     expect(fm.gleapFrameContainer).not.toBeNull();
   });
@@ -397,14 +401,14 @@ describe('GleapFrameManager opens reliably (iOS: never stuck until a reload)', (
   it('restarts a frame that was still loading when the page went into the back/forward cache', () => {
     const fm = setupLoading();
     fm.showFrameContainer(true);
-    const inject = jest.spyOn(fm, 'injectFrame').mockImplementation(() => {});
-    const instance = jest.spyOn(GleapFrameManager, 'getInstance').mockReturnValue(fm);
+    const inject = vi.spyOn(fm, 'injectFrame').mockImplementation(() => {});
+    const instance = vi.spyOn(GleapFrameManager, 'getInstance').mockReturnValue(fm);
 
     fm.handlePageShow({ persisted: true });
     expect(document.querySelector('.gleap-frame-container')).toBeNull();
     expect(fm.injectedFrame).toBe(false);
 
-    jest.advanceTimersByTime(0);
+    vi.advanceTimersByTime(0);
     expect(inject).toHaveBeenCalledTimes(1);
     instance.mockRestore();
   });

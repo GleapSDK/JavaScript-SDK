@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { decodeUserJwt, identifyRefusalOf } from './GleapUserJwt';
 
 const b64url = (value) => Buffer.from(value).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');

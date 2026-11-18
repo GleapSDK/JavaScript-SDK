@@ -17,8 +17,10 @@
   "scripts": {
     "start": "webpack serve --env development",
     "build": "webpack",
-    "test": "jest",
-    "prepare": "npm run build",
+    "test": "vitest run",
+    "test:smoke": "playwright test",
+    "typecheck": "tsc --noEmit --strict --types node index.d.ts",
+    "prepare": "(sh .githooks/install.sh 2>/dev/null || true) && npm run build",
     "trypublish": "npm publish || true",
     "dev": "wrangler dev",
     "deploy": "npm run build && wrangler deploy",
@@ -60,27 +62,23 @@
     "@node-minify/clean-css": "^8.0.6",
     "@node-minify/core": "^8.0.6",
     "@node-minify/csso": "^8.0.6",
+    "@playwright/test": "^1.65.1",
     "babel-loader": "^9.1.3",
     "babel-preset-minify": "^0.5.2",
     "css-loader": "^6.10.0",
     "eslint": "^8.57.0",
     "file-loader": "^6.2.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^26.1.0",
     "style-loader": "^3.3.4",
     "terser-webpack-plugin": "^5.3.10",
+    "typescript": "^5.9.3",
     "uglify-js": "^3.17.4",
     "url-loader": "^4.1.1",
+    "vitest": "^4.1.12",
     "webpack": "^5.90.3",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.2",
     "wrangler": "^3.0.0"
-  },
-  "jest": {
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/scripts/testMock.js",
-      "\\.(css|less)$": "<rootDir>/scripts/testMock.js"
-    }
   },
   "dependencies": {
     "@floating-ui/dom": "^1.7.5",

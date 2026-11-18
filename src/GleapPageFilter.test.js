@@ -1,3 +1,4 @@
+import { describe, it, test, expect } from 'vitest';
 import { checkPageRules, checkPageFilter } from './GleapPageFilter';
 
 const url = (path) => `https://app.example.com${path}`;

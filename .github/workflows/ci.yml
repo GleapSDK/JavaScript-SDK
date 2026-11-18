@@ -1,5 +1,8 @@
 name: CI
 
+# Every PR and master push: the unit tests (with the quality check's own), the shipped typings, the build, the smoke
+# tests of the built bundles in Chromium, and the npm package's file list. No path filter: a required check that never
+# reports blocks the PR.
 on:
   pull_request:
   push:
@@ -9,20 +12,26 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
     name: Test, build and pack
     runs-on: ubuntu-latest
+    # The default is 360 minutes; a test that never exits must not burn them.
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
           cache: npm
-      # `npm ci` runs `prepare` (webpack build).
+      # `npm ci` runs `prepare`, which builds the bundles the smoke tests load.
       - run: npm ci
-      - run: npm test -- --ci
+      - run: npm test
+      - run: npm run typecheck
+      - name: Install Chromium for the smoke tests
+        run: npx playwright install --with-deps --only-shell chromium
+      - run: npm run test:smoke
       - run: npm pack --dry-run

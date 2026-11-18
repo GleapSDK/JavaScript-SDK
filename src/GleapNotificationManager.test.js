@@ -1,3 +1,4 @@
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 import Gleap, { GleapTabCommunication, GleapSession, GleapAudioManager } from './Gleap';
 import { loadFromGleapCache, saveToGleapCache } from './GleapHelper';
 import GleapNotificationManager from './GleapNotificationManager';
@@ -5,30 +6,30 @@ import GleapNotificationManager from './GleapNotificationManager';
 // Stub the barrel so the real GleapNotificationManager loads without a DOM or the
 // SDK_VERSION Webpack global. We only drive clearAllNotifications, which reaches
 // GleapTabCommunication, GleapSession and saveToGleapCache.
-jest.mock('./Gleap', () => ({
+vi.mock('./Gleap', () => ({
   __esModule: true,
-  default: { getInstance: jest.fn() },
-  GleapFeedbackButtonManager: { getInstance: jest.fn(() => ({ updateNotificationBadge: jest.fn() })) },
-  GleapConfigManager: { getInstance: jest.fn(() => ({ getFlowConfig: () => ({}) })) },
-  GleapSession: { getInstance: jest.fn() },
-  GleapAudioManager: { ping: jest.fn() },
+  default: { getInstance: vi.fn() },
+  GleapFeedbackButtonManager: { getInstance: vi.fn(() => ({ updateNotificationBadge: vi.fn() })) },
+  GleapConfigManager: { getInstance: vi.fn(() => ({ getFlowConfig: () => ({}) })) },
+  GleapSession: { getInstance: vi.fn() },
+  GleapAudioManager: { ping: vi.fn() },
   GleapTranslationManager: {
-    getInstance: jest.fn(() => ({ isRTLLayout: false, getActiveLanguage: () => 'en' })),
+    getInstance: vi.fn(() => ({ isRTLLayout: false, getActiveLanguage: () => 'en' })),
     translateText: (s) => s,
   },
-  GleapEventManager: { notifyEvent: jest.fn() },
-  GleapAiChatbarManager: { getInstance: jest.fn(() => ({})) },
-  GleapTabCommunication: { getInstance: jest.fn() },
+  GleapEventManager: { notifyEvent: vi.fn() },
+  GleapAiChatbarManager: { getInstance: vi.fn(() => ({})) },
+  GleapTabCommunication: { getInstance: vi.fn() },
 }));
 
-jest.mock('./GleapHelper', () => ({
-  loadFromGleapCache: jest.fn(),
-  saveToGleapCache: jest.fn(),
-  formatRelativeTime: jest.fn(() => 'now'),
+vi.mock('./GleapHelper', () => ({
+  loadFromGleapCache: vi.fn(),
+  saveToGleapCache: vi.fn(),
+  formatRelativeTime: vi.fn(() => 'now'),
 }));
 
-jest.mock('./UI', () => ({
-  loadIcon: jest.fn(() => ''),
+vi.mock('./UI', () => ({
+  loadIcon: vi.fn(() => ''),
 }));
 
 let sendMessageMock;
@@ -36,16 +37,16 @@ let sendMessageMock;
 const withContainer = (nm) => {
   nm.notificationContainer = {
     firstChild: null,
-    appendChild: jest.fn(),
-    removeChild: jest.fn(),
-    classList: { add: jest.fn(), remove: jest.fn(), toggle: jest.fn(), contains: jest.fn(() => false) },
+    appendChild: vi.fn(),
+    removeChild: vi.fn(),
+    classList: { add: vi.fn(), remove: vi.fn(), toggle: vi.fn(), contains: vi.fn(() => false) },
   };
   return nm;
 };
 
 beforeEach(() => {
   Gleap.getInstance.mockReturnValue({ disableInAppNotifications: false });
-  sendMessageMock = jest.fn();
+  sendMessageMock = vi.fn();
   GleapTabCommunication.getInstance.mockReturnValue({ sendMessage: sendMessageMock });
   GleapSession.getInstance.mockReturnValue({ session: { gleapId: 'user-1' } });
 
@@ -78,7 +79,7 @@ describe('clearNotificationsForConversation', () => {
 
   test('filters in-memory notifications and re-renders when something was removed', () => {
     const nm = GleapNotificationManager.getInstance();
-    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const renderSpy = vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     const keep = convNotification('token-other');
     nm.notifications = [convNotification('token-read'), keep];
     loadFromGleapCache.mockReturnValue(null);
@@ -91,7 +92,7 @@ describe('clearNotificationsForConversation', () => {
 
   test('does not re-render when nothing matched', () => {
     const nm = GleapNotificationManager.getInstance();
-    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const renderSpy = vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     nm.notifications = [convNotification('token-other')];
     loadFromGleapCache.mockReturnValue(null);
 
@@ -170,7 +171,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
     saveToGleapCache.mockReset();
     // The suite runs in the node environment; renderNotifications only needs
     // createElement + property assignments, so a minimal stub is enough.
-    global.document = { createElement: jest.fn(() => ({})) };
+    global.document = { createElement: vi.fn(() => ({})) };
     setUrl(ALLOWED_URL);
   });
 
@@ -221,7 +222,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
 
   test('checkPageRulesForUrl re-renders only once per URL', () => {
     const nm = GleapNotificationManager.getInstance();
-    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const renderSpy = vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     nm.notifications = [pageRuledNotification()];
 
     nm.checkPageRulesForUrl(ALLOWED_URL);
@@ -232,7 +233,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
 
   test('checkPageRulesForUrl skips re-rendering when nothing is page-ruled', () => {
     const nm = GleapNotificationManager.getInstance();
-    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const renderSpy = vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     nm.notifications = [plainNotification()];
 
     nm.checkPageRulesForUrl('https://a.example.com/1');
@@ -243,7 +244,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
 
   test('legacy single pageFilter notifications also trigger re-evaluation', () => {
     const nm = GleapNotificationManager.getInstance();
-    const renderSpy = jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    const renderSpy = vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     nm.notifications = [{ outbound: 'o1', data: { text: 'x' }, pageFilter: '/x', pageFilterType: 'notcontains' }];
 
     nm.checkPageRulesForUrl('https://a.example.com/1');
@@ -266,7 +267,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
   test('a notification arriving on an excluded page is stored + persisted (not consumed), without a ping', () => {
     setUrl(EXCLUDED_URL);
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     const notification = { ...pageRuledNotification(), sound: true };
 
     nm.showNotification(notification);
@@ -278,7 +279,7 @@ describe('page rules — render-time evaluation (#141052)', () => {
 
   test('a notification arriving on an allowed page still pings', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
 
     nm.showNotification({ ...pageRuledNotification(), sound: true });
 
@@ -298,7 +299,7 @@ describe('notification stack', () => {
     loadFromGleapCache.mockReset();
     saveToGleapCache.mockReset();
     global.window = { location: { href: 'https://a.example.com/' } };
-    global.document = { createElement: jest.fn(() => ({})) };
+    global.document = { createElement: vi.fn(() => ({})) };
   });
 
   afterEach(() => {
@@ -308,7 +309,7 @@ describe('notification stack', () => {
 
   test('showNotification keeps the newest 4, dropping the oldest beyond that', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
 
     for (let i = 1; i <= 6; i++) {
       nm.showNotification(plainNotification(`n${i}`));
@@ -319,7 +320,7 @@ describe('notification stack', () => {
 
   test('reloadNotificationsFromCache keeps the NEWEST 4 (the same end shift() trims from)', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     loadFromGleapCache.mockReturnValue(
       [1, 2, 3, 4, 5, 6].map((i) => ({ ...plainNotification(`n${i}`), cachedForGleapId: 'user-1' }))
     );
@@ -412,7 +413,7 @@ describe('notification cache vs identity (#225880)', () => {
 
   test('showNotification stamps the receiving gleapId on the cached notification', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
 
     nm.showNotification(plainNotification('hello'));
 
@@ -423,7 +424,7 @@ describe('notification cache vs identity (#225880)', () => {
 
   test('reloadNotificationsFromCache drops notifications cached for another (or no) gleapId', () => {
     const nm = withContainer(GleapNotificationManager.getInstance());
-    jest.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
+    vi.spyOn(nm, 'renderNotifications').mockImplementation(() => {});
     const own = plainNotification('own', 'user-1');
     loadFromGleapCache.mockReturnValue([
       plainNotification('previous user', 'user-0'),
