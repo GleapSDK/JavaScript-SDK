@@ -1,7 +1,10 @@
 import GleapSession from './GleapSession';
 import { DisplayRecording, requestDisplayStream } from './GleapCaptureRecorder';
 import { stopStream } from './GleapCaptureScreenshot';
-import { hasDisplayMedia, isDesktopChromium } from './GleapCaptureSettings';
+import { getCaptureConfig, hasDisplayMedia, hasUserMedia, isDesktopChromium } from './GleapCaptureSettings';
+import { MIC_BUTTON } from './GleapScreenRecorderMicButton';
+
+export { MIC_BUTTON };
 
 // The feedback form's screen recording ("Record screen" in the form's capture step). It records the
 // same way capture requests do (GleapCaptureRecorder): Chromium offers the current tab with one
@@ -21,8 +24,9 @@ export class GleapScreenRecorder {
   rerender;
   // The running DisplayRecording, from the Start click until it stopped.
   recording = null;
-  audioMuted = false;
-  audioAvailable = true;
+  // Opt-in: off until the user turns it on, and never used unless the project allows it.
+  audioMuted = true;
+  audioAvailable = false;
   available = true;
   isRecording = false;
   file = null;
@@ -32,10 +36,38 @@ export class GleapScreenRecorder {
     this.rerender = rerender;
     this.permissionErrorText = permissionErrorText;
     this.available = hasDisplayMedia();
+    this.audioAvailable = this.microphoneAllowed();
 
     setTimeout(() => {
       this.rerender();
     }, GleapScreenRecorder.RERENDER_DELAY);
+  }
+
+  /**
+   * Whether this recording may use the microphone: Developer options → Microphone is on and the
+   * browser has getUserMedia. Read on every use, as the project's config can arrive after the form.
+   * @returns {boolean}
+   */
+  microphoneAllowed() {
+    return getCaptureConfig().allowMicrophone === true && hasUserMedia();
+  }
+
+  /**
+   * What the toolbar's mic button shows. A recording that started without the microphone can't
+   * add it, so the button is hidden until it ends.
+   * @returns {string} one of MIC_BUTTON
+   */
+  micButtonState() {
+    if (!this.available || !this.microphoneAllowed()) {
+      return MIC_BUTTON.HIDDEN;
+    }
+    if (this.isRecording && this.audioMuted && !this.audioAvailable) {
+      return MIC_BUTTON.HIDDEN;
+    }
+    if (!this.audioAvailable) {
+      return MIC_BUTTON.UNAVAILABLE;
+    }
+    return this.audioMuted ? MIC_BUTTON.OFF : MIC_BUTTON.ON;
   }
 
   formatTime(s) {
@@ -83,7 +115,7 @@ export class GleapScreenRecorder {
           stopStream(stream);
           return null;
         }
-        return recording.start(stream, !this.audioMuted).then(({ hasMicrophone }) => {
+        return recording.start(stream, this.microphoneAllowed() && !this.audioMuted).then(({ hasMicrophone }) => {
           this.audioAvailable = hasMicrophone;
           this.isRecording = true;
           this.setTimerLabel(GleapScreenRecorder.MAX_RECORD_TIME);
@@ -110,6 +142,8 @@ export class GleapScreenRecorder {
     }
     this.recording = null;
     this.isRecording = false;
+    // The next recording may ask for the microphone again.
+    this.audioAvailable = this.microphoneAllowed();
     this.setTimerLabel(GleapScreenRecorder.MAX_RECORD_TIME);
 
     if (result) {
@@ -135,6 +169,9 @@ export class GleapScreenRecorder {
   }
 
   toggleAudio() {
+    if (!this.microphoneAllowed() || !this.audioAvailable) {
+      return;
+    }
     this.audioMuted = !this.audioMuted;
     if (this.recording) {
       this.recording.setMicrophoneEnabled(!this.audioMuted);
