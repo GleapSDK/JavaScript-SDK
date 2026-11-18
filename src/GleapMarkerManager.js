@@ -2,6 +2,7 @@ import Gleap, { GleapTranslationManager, GleapFrameManager, GleapCaptureManager 
 import { ScreenDrawer } from './ScreenDrawer';
 import { GleapScrollStopper } from './GleapScrollStopper';
 import { GleapScreenRecorder } from './GleapScreenRecorder';
+import { renderMicButton } from './GleapScreenRecorderMicButton';
 import { captureTabScreenshot, requestTabStream } from './GleapCaptureScreenshot';
 import { canCaptureTab } from './GleapCaptureSettings';
 import { loadIcon } from './UI';
@@ -645,20 +646,12 @@ export default class GleapMarkerManager {
       const type = toolbarItem.getAttribute('data-type');
       switch (type) {
         case 'mic':
-          if (this.screenRecorder.audioAvailable && this.screenRecorder.available) {
-            toolbarItem.classList.remove(itemInactiveClass);
-            if (!this.screenRecorder.audioMuted) {
-              toolbarItem.classList.remove('bb-capture-toolbar-item--inactivecross');
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('mute');
-            } else {
-              toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
-              audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('unmute');
-            }
-          } else {
-            toolbarItem.classList.add(itemInactiveClass);
-            toolbarItem.classList.add('bb-capture-toolbar-item--inactivecross');
-            audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('browserNotSupported');
-          }
+          renderMicButton(toolbarItem, {
+            state: this.screenRecorder.micButtonState(),
+            tooltip: audioRecordingTooltip,
+            inactiveClass: itemInactiveClass,
+            translate: (key) => GleapTranslationManager.translateText(key),
+          });
           break;
 
         case 'recording':
