@@ -1,0 +1,29 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-edited-file.mjs",
+            "timeout": 30,
+            "statusMessage": "Checking the edited file..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-before-stop.mjs",
+            "timeout": 600,
+            "statusMessage": "Quality check, typings and affected tests..."
+          }
+        ]
+      }
+    ]
+  }
+}
