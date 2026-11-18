@@ -644,10 +644,13 @@ export default class GleapMarkerManager {
       const toolbarItem = toolbarItems[i];
       const type = toolbarItem.getAttribute('data-type');
       switch (type) {
-        case 'mic':
-          if (this.screenRecorder.audioAvailable && this.screenRecorder.available) {
+        case 'mic': {
+          // Developer options → Microphone decides whether the button is there at all.
+          const micState = this.screenRecorder.micButtonState();
+          toolbarItem.style.display = micState === 'hidden' ? 'none' : '';
+          if (micState === 'on' || micState === 'off') {
             toolbarItem.classList.remove(itemInactiveClass);
-            if (!this.screenRecorder.audioMuted) {
+            if (micState === 'on') {
               toolbarItem.classList.remove('bb-capture-toolbar-item--inactivecross');
               audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('mute');
             } else {
@@ -660,6 +663,7 @@ export default class GleapMarkerManager {
             audioRecordingTooltip.innerHTML = GleapTranslationManager.translateText('browserNotSupported');
           }
           break;
+        }
 
         case 'recording':
           if (this.screenRecorder.available) {
