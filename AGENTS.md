@@ -27,7 +27,7 @@ CI (`.github/workflows/ci.yml`) runs the tests, the typings check, the build, th
 
 Done means the tests that reach your change pass, the quality check passes, and CI is green. Also run `npm run typecheck` when `index.d.ts` changed, and `npm run build` then `npm run test:smoke` when the change touches the public API, what runs when the bundle loads, a dependency, or the build. Say which commands you ran and what they printed.
 
-A build rewrites the tracked `build/` and `published/latest/` and adds `published/<version>/`. Leave them out of your commits: `git checkout -- build published/latest` and remove the new version folder. Releases and their version folders are made by people.
+A build rewrites the tracked `build/` and `published/latest/` and adds `published/<version>/`. Leave them out of your commits: `git checkout -- build published/latest` and remove the new version folder. Releases and their version folders are made by people. Search skips these built bundles (`.ignore`); name a path to read one.
 
 Do not start the demo or a dev server (`npm start`, `npm run dev`, `preview_start`) unless asked. If you must, say so first, check `lsof -nP -iTCP -sTCP:LISTEN`, and stop it in the same turn. Never run `npm run deploy`, `npm run deploy:staging`, `npm publish` or `wrangler`: they ship to customers.
 
