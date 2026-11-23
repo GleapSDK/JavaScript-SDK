@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+Fixed: `index.d.ts` declared `Gleap.setStyles` with one object, but the SDK takes positional arguments: `setStyles(primaryColor, headerColor, buttonColor, backgroundColor?, borderRadius?, buttonX?, buttonY?, buttonStyle?, headerColor2?, headerColor3?)`. A call in the declared object form threw an error on the page and injected no styles. TypeScript projects that call `setStyles` with an object now get a compile error pointing at that call, which never worked; pass the values as arguments instead. No runtime change.
+
 ## 19.9.0
 Changed: the feedback form's **Record screen** uses the microphone only when **Developer options → Microphone** is on, and then it starts muted until the user turns it on. Until this version, form recordings asked for the microphone whenever the browser had one, regardless of that setting, and on a site that already had microphone permission the browser gave it without a prompt. The mic button is hidden when the setting is off. Projects that want sound in form recordings turn the setting on.
 Added: product tours and tooltips can point at elements inside open shadow roots. A selector continues into a shadow root with `host >>> inner`, the element picker stores such selectors, and the highlight, the interaction lockout and click-to-continue work for those elements.

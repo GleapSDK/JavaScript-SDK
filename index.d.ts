@@ -170,16 +170,36 @@ export namespace Gleap {
   function trackEvent(name: string, data?: any): void;
   function setAppBuildNumber(buildNumber: string): void;
   function setAppVersionCode(versionCode: string): void;
-  function setStyles(styles: {
-    primaryColor: string;
-    headerColor: string;
-    buttonColor: string;
-    backgroundColor: string;
-    borderRadius?: number;
-    buttonX?: number;
-    buttonY?: number;
-    buttonStyle?: string;
-  }): void;
+  /**
+   * Replaces the widget's stylesheet: colors, corner radius and the launcher's offsets.
+   * Takes positional arguments. The SDK applies the dashboard's look the same way
+   * whenever the project's config loads, which replaces an earlier call.
+   * Colors are six-digit hex colors such as "#485BFF".
+   * @param primaryColor UI color.
+   * @param headerColor Header color.
+   * @param buttonColor Launcher color.
+   * @param backgroundColor Widget background. Default "#ffffff".
+   * @param borderRadius Corner radius in px. Default 20.
+   * @param buttonX Distance of the launcher and widget from the page's side, in px. Default 20.
+   * @param buttonY Distance of the launcher from the page's bottom, in px. Default 20.
+   * @param buttonStyle The launcher's position ("BOTTOM_LEFT", "BOTTOM_RIGHT", "BUTTON_CLASSIC",
+   * "BUTTON_CLASSIC_LEFT", "BUTTON_CLASSIC_BOTTOM" or "BUTTON_NONE"), used to place
+   * notifications clear of it. Default "BOTTOM_LEFT".
+   * @param headerColor2 Second header gradient color. Defaults to `headerColor`.
+   * @param headerColor3 Third header gradient color. Defaults to `headerColor`.
+   */
+  function setStyles(
+    primaryColor: string,
+    headerColor: string,
+    buttonColor: string,
+    backgroundColor?: string,
+    borderRadius?: number,
+    buttonX?: number,
+    buttonY?: number,
+    buttonStyle?: string,
+    headerColor2?: string,
+    headerColor3?: string
+  ): void;
   function disableConsoleLogOverwrite(): void;
   function setLiveSite(isLiveSite: boolean): void;
   function enableShortcuts(enabled: boolean): void;
