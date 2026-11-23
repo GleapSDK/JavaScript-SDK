@@ -6,7 +6,7 @@ Terms, as in the Server: a conversation is a ticket (`Bug` in the Server's model
 
 How it ships:
 
-- **CDN:** `build/browser/index.js` assigns `window.Gleap`. Cloudflare Workers Builds deploys `published/` (`wrangler.jsonc`) to `sdk.gleap.io` on every push to `master`, so `sdk.gleap.io/latest/index.js` changes for every customer that loads `latest` with each merge. The build adds `published/<version>/` for the current version only: an older version's URL keeps working only while its folder is committed.
+- **CDN:** `build/browser/index.js` assigns `window.Gleap`. Cloudflare Workers Builds deploys `published/` (`wrangler.jsonc`) to `sdk.gleap.io` on every push to `master`, so `sdk.gleap.io/latest/index.js` changes for every customer that loads `latest` with each merge. The build adds `published/<version>/` for the current version only: an older version's URL keeps working only while its folder is committed. That deploy installs with npm 10 (`npm clean-install`): after any dependency change, `npx -y npm@10.9.2 ci --ignore-scripts --dry-run` must pass (CI checks it), or run `npx -y npm@10.9.2 install --ignore-scripts` to fill in what npm 10 expects.
 - **npm:** `gleap` with `build/esm/index.mjs`, `build/cjs/index.js` (UMD) and `index.d.ts`, published by `.github/workflows/release.yml` when a version tag is pushed (README.md → Releasing). Apps pin versions, so old SDKs stay out there for years.
 - **The Messenger** (the Messenger-App repo) runs in an iframe the SDK writes (`bootstrapGleapFrame` in `src/GleapHelper.js`) and talks to it by `postMessage`. It deploys on its own, so every SDK version still out there talks to today's Messenger.
 

@@ -27,6 +27,10 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      # Cloudflare Workers Builds, which deploys the CDN, installs with npm 10. npm 10 rejects a lockfile that npm 11
+      # accepts when an optional peer dependency is missing from it, and the deploy then fails without a red PR.
+      - name: Lockfile works with the CDN deploy's npm 10
+        run: npx -y npm@10.9.2 ci --ignore-scripts --dry-run --no-audit --no-fund
       # `npm ci` runs `prepare`, which builds the bundles the smoke tests load.
       - run: npm ci
       - run: npm test
