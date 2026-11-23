@@ -55,14 +55,6 @@ const commonConfig = (isDevelopment, plugins = []) => {
             loader: "babel-loader",
           },
         },
-        {
-          test: /\.css$/i,
-          use: ["style-loader", "css-loader"],
-        },
-        {
-          test: /\.(png|jpe?g|gif|svg|eot|ttf|woff|woff2)$/,
-          use: ["url-loader"],
-        },
       ],
     },
     plugins: [

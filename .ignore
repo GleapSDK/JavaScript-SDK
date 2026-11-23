@@ -1,0 +1,16 @@
+# Search tools that read .ignore (ripgrep, and the agents' Grep and Glob built on it) skip these paths. Git still
+# tracks them and the build, the CDN deploy and npm are not affected. They hold built bundles, which match nearly
+# every identifier in src once per version: the code to read and change is in src/.
+
+# Every CDN version since 4.0.1. Only the response headers, which are deploy config, stay searchable.
+/published/*
+!/published/_headers
+
+# The committed build output, rewritten by every build.
+/build/
+
+# Old bundles and minified vendor code the demo pages load.
+/demo/index.js
+/demo/index.min.css
+/demo/spring-dev-bundle.js
+/demo/htmlimports.js
