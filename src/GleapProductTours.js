@@ -85,9 +85,10 @@ export default class GleapProductTours {
           }
         })
         .catch((error) => {
-          console.log('Product tour is not live. Cleaning up...');
-          console.error(error);
-
+          // A tour that is not live on this page (or a failed request) is a normal case, not an error.
+          if (!(error && error.gleapReason)) {
+            console.error(error);
+          }
           self.onComplete(false);
         });
     }

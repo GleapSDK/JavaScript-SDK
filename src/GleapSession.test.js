@@ -80,7 +80,9 @@ class MockXhr {
     }
   }
 
+  // Like a browser: the request ends with status 0, then the error event fires.
   error() {
+    this.respond(0);
     if (this.onerror) {
       this.onerror();
     }
@@ -1557,5 +1559,67 @@ describe('grant (signed session credential)', () => {
     session.setSessionDuration(60 * 60 * 1000);
     session.setUserJwt(jwtOf({ userId: 'user-1', exp: inSeconds(3600) }));
     expect(JSON.parse(identifyRequests()[0].body).sessionDuration).toBe(3600000);
+  });
+});
+
+describe('failed requests reject with an Error', () => {
+  beforeEach(() => {
+    global.SDK_VERSION = '0.0.0-test';
+  });
+  afterEach(() => {
+    delete global.SDK_VERSION;
+  });
+
+  const readySession = () => {
+    seedCachedSession();
+    const session = buildSession();
+    session.startSession();
+    return session;
+  };
+  const partialUpdates = () => MockXhr.instances.filter((xhr) => xhr.url && xhr.url.endsWith('/sessions/partialupdate'));
+
+  it('updateContact rejects with an Error on a network error', async () => {
+    const session = readySession();
+    const done = session.updateSession({ name: 'Other' });
+    partialUpdates()[0].error();
+    await expect(done).rejects.toThrow('Gleap updateContact failed: network error');
+    await expect(done).rejects.toMatchObject({ gleapReason: 'network error' });
+  });
+
+  it('updateContact rejects with an Error on a server error', async () => {
+    const session = readySession();
+    const done = session.updateSession({ name: 'Other' });
+    partialUpdates()[0].respond(500);
+    await expect(done).rejects.toThrow('Gleap updateContact failed: HTTP 500');
+  });
+
+  it('identify names the refusal in its Error', async () => {
+    const session = readySession();
+    const done = session.identifySession('user-2', { email: 'other@example.com' });
+    identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_invalid' } }));
+    await expect(done).rejects.toThrow('Gleap identify failed: refused (token_invalid)');
+  });
+
+  it('updateContact resolves when a logout happened meanwhile', async () => {
+    const session = readySession();
+    const done = session.updateSession({ name: 'Other' });
+    session.clearSession(0, false);
+    partialUpdates()[0].respond(200, JSON.stringify({ gleapId: 'gleap-id-1', gleapHash: 'gleap-hash-1' }));
+    await expect(done).resolves.toBeUndefined();
+  });
+
+  it('identify resolves when a logout happened meanwhile', async () => {
+    const session = readySession();
+    const done = session.identifySession('user-2', { email: 'other@example.com' });
+    session.clearSession(0, false);
+    identifyRequests()[0].error();
+    await expect(done).resolves.toBeUndefined();
+  });
+
+  it('identify rejects with an Error on a network error', async () => {
+    const session = readySession();
+    const done = session.identifySession('user-2', { email: 'other@example.com' });
+    identifyRequests()[0].error();
+    await expect(done).rejects.toThrow('Gleap identify failed: network error');
   });
 });

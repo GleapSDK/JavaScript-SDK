@@ -35,6 +35,18 @@ const GRANT_REFRESH_MIN_DELAY_MS = 30 * 1000;
 const GRANT_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
 // A refresh that failed or could not run yet is tried again after this pause.
 const GRANT_REFRESH_RETRY_MS = 60 * 1000;
+
+// identify and updateContact reject with an Error, so error trackers show a
+// message and a stack trace instead of a non-error rejection. `gleapReason`
+// marks it as a failed Gleap request (not a bug) and keeps the short reason.
+const requestError = (action, reason) => {
+  const error = new Error(`Gleap ${action} failed: ${reason}`);
+  error.gleapReason = reason;
+  return error;
+};
+// Browsers end a failed request with status 0 before its error event fires.
+const httpFailure = (status) => (status === 0 ? 'network error' : `HTTP ${status}`);
+
 // A signed session whose grant runs out while the messenger is open ends
 // once it closes, at the latest this long after the grant expired (Intercom's
 // one-hour cookie for activity after expiry). Checked once a minute.
@@ -1403,7 +1415,7 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject('Session not ready yet.');
+          return reject(requestError('updateContact', 'session not ready'));
         }
 
         const http = new XMLHttpRequest();
@@ -1418,13 +1430,13 @@ export default class GleapSession {
 
         const generationAtSend = self.logoutGeneration;
         http.onerror = () => {
-          reject();
+          reject(requestError('updateContact', 'network error'));
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
-            // A logout meanwhile: this answer describes the previous contact.
+            // A logout meanwhile: this answer describes the previous contact. Not a failure.
             if (self.logoutGeneration !== generationAtSend) {
-              return reject();
+              return resolve();
             }
             if (http.status === 200 || http.status === 201) {
               try {
@@ -1436,7 +1448,7 @@ export default class GleapSession {
                 reject(exp);
               }
             } else {
-              reject();
+              reject(requestError('updateContact', httpFailure(http.status)));
             }
           }
         };
@@ -1557,7 +1569,7 @@ export default class GleapSession {
       // Wait for gleap session to be ready.
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject('Session not ready yet.');
+          return reject(requestError('identify', 'session not ready'));
         }
 
         const http = new XMLHttpRequest();
@@ -1585,17 +1597,17 @@ export default class GleapSession {
 
         http.onerror = () => {
           if (loggedOutMeanwhile()) {
-            return reject();
+            return resolve();
           }
           self.identifyInFlight = false;
           self.lastIdentifyFailure = 'network error';
           self.identifyFailedTransiently = true;
-          reject();
+          reject(requestError('identify', 'network error'));
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
             if (loggedOutMeanwhile()) {
-              return reject();
+              return resolve();
             }
             self.identifyInFlight = false;
             if (http.status === 200 || http.status === 201) {
@@ -1626,7 +1638,7 @@ export default class GleapSession {
                         console.warn('Gleap: the identity token has expired and the JWT provider returned no fresh one.');
                       }
                       self.lastIdentifyFailure = 'refused';
-                      return Promise.reject();
+                      return Promise.reject(requestError('identify', 'identity token expired'));
                     }
                     const renewedUserId = decodeUserJwt(token).userId;
                     self.lastIdentify = { userId: renewedUserId, userData, userHash: token };
@@ -1665,8 +1677,8 @@ export default class GleapSession {
               if (!refusal && (http.status === 0 || http.status >= 500)) {
                 self.identifyFailedTransiently = true;
               }
-              self.lastIdentifyFailure = refusal ? 'refused' : `HTTP ${http.status}`;
-              reject();
+              self.lastIdentifyFailure = refusal ? 'refused' : httpFailure(http.status);
+              reject(requestError('identify', refusal ? `refused (${refusal})` : self.lastIdentifyFailure));
             }
           }
         };
@@ -1751,7 +1763,7 @@ export default class GleapSession {
           if (this.lastIdentifyFailure === 'refused' || this.lastIdentifyFailure === 'superseded') {
             return;
           }
-          const reason = error ? (error.message || error) : this.lastIdentifyFailure || 'unknown error';
+          const reason = (error && (error.gleapReason || error.message || error)) || this.lastIdentifyFailure || 'unknown error';
           console.warn(`Gleap: setUserJwt could not identify the user (${reason}). Nothing changed; call it again later.`);
         }
       );
@@ -1833,7 +1845,7 @@ export default class GleapSession {
     return new Promise((resolve, reject) => {
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject('Session not ready yet.');
+          return reject(requestError('product tour', 'session not ready'));
         }
 
         const http = new XMLHttpRequest();
@@ -1847,7 +1859,7 @@ export default class GleapSession {
         } catch (exp) {}
 
         http.onerror = () => {
-          reject();
+          reject(requestError('product tour', 'network error'));
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
@@ -1861,7 +1873,7 @@ export default class GleapSession {
                 reject(exp);
               }
             } else {
-              reject();
+              reject(requestError('product tour', httpFailure(http.status)));
             }
           }
         };
@@ -1879,7 +1891,7 @@ export default class GleapSession {
     return new Promise((resolve, reject) => {
       this.setOnSessionReady(function () {
         if (!self.session.gleapId || !self.session.gleapHash) {
-          return reject('Session not ready yet.');
+          return reject(requestError('product tour', 'session not ready'));
         }
 
         const http = new XMLHttpRequest();
@@ -1893,7 +1905,7 @@ export default class GleapSession {
         } catch (exp) {}
 
         http.onerror = () => {
-          reject();
+          reject(requestError('product tour', 'network error'));
         };
         http.onreadystatechange = function (e) {
           if (http.readyState === 4) {
@@ -1903,13 +1915,13 @@ export default class GleapSession {
                 if (tourData && tourData.status === 'live' && tourData.passedPageFilter) {
                   resolve(tourData.config);
                 } else {
-                  reject();
+                  reject(requestError('product tour', 'not live on this page'));
                 }
               } catch (exp) {
                 reject(exp);
               }
             } else {
-              reject();
+              reject(requestError('product tour', httpFailure(http.status)));
             }
           }
         };

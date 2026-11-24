@@ -926,9 +926,10 @@ class Gleap {
         Gleap.getInstance().softReInitialize();
 
         // Update language for contact.
+        // The SDK makes this call, so the host app can't catch a failed request.
         Gleap.updateContact({
           lang: language,
-        });
+        })?.catch?.(() => {});
       }, 1000);
     }
   }
