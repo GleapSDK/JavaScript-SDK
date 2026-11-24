@@ -1582,21 +1582,22 @@ describe('failed requests reject with an Error', () => {
     const session = readySession();
     const done = session.updateSession({ name: 'Other' });
     partialUpdates()[0].error();
-    await expect(done).rejects.toThrow(new Error('Gleap updateContact failed: network error'));
+    await expect(done).rejects.toThrow('Gleap updateContact failed: network error');
+    await expect(done).rejects.toMatchObject({ gleapReason: 'network error' });
   });
 
   it('updateContact rejects with an Error on a server error', async () => {
     const session = readySession();
     const done = session.updateSession({ name: 'Other' });
     partialUpdates()[0].respond(500);
-    await expect(done).rejects.toThrow(new Error('Gleap updateContact failed: HTTP 500'));
+    await expect(done).rejects.toThrow('Gleap updateContact failed: HTTP 500');
   });
 
   it('identify names the refusal in its Error', async () => {
     const session = readySession();
     const done = session.identifySession('user-2', { email: 'other@example.com' });
     identifyRequests()[0].respond(401, JSON.stringify({ detail: { value: 'token_invalid' } }));
-    await expect(done).rejects.toThrow(new Error('Gleap identify failed: refused (token_invalid)'));
+    await expect(done).rejects.toThrow('Gleap identify failed: refused (token_invalid)');
   });
 
   it('updateContact resolves when a logout happened meanwhile', async () => {
@@ -1619,6 +1620,6 @@ describe('failed requests reject with an Error', () => {
     const session = readySession();
     const done = session.identifySession('user-2', { email: 'other@example.com' });
     identifyRequests()[0].error();
-    await expect(done).rejects.toThrow(new Error('Gleap identify failed: network error'));
+    await expect(done).rejects.toThrow('Gleap identify failed: network error');
   });
 });

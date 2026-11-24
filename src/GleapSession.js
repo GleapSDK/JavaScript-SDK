@@ -37,8 +37,13 @@ const GRANT_REFRESH_MIN_INTERVAL_MS = 60 * 1000;
 const GRANT_REFRESH_RETRY_MS = 60 * 1000;
 
 // identify and updateContact reject with an Error, so error trackers show a
-// message and a stack trace instead of a non-error rejection.
-const requestError = (action, reason) => new Error(`Gleap ${action} failed: ${reason}`);
+// message and a stack trace instead of a non-error rejection. `gleapReason`
+// marks it as a failed Gleap request (not a bug) and keeps the short reason.
+const requestError = (action, reason) => {
+  const error = new Error(`Gleap ${action} failed: ${reason}`);
+  error.gleapReason = reason;
+  return error;
+};
 // Browsers end a failed request with status 0 before its error event fires.
 const httpFailure = (status) => (status === 0 ? 'network error' : `HTTP ${status}`);
 
@@ -1758,7 +1763,7 @@ export default class GleapSession {
           if (this.lastIdentifyFailure === 'refused' || this.lastIdentifyFailure === 'superseded') {
             return;
           }
-          const reason = this.lastIdentifyFailure || (error && (error.message || error)) || 'unknown error';
+          const reason = (error && (error.gleapReason || error.message || error)) || this.lastIdentifyFailure || 'unknown error';
           console.warn(`Gleap: setUserJwt could not identify the user (${reason}). Nothing changed; call it again later.`);
         }
       );

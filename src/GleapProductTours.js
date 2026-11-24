@@ -84,8 +84,11 @@ export default class GleapProductTours {
             return this.start();
           }
         })
-        .catch(() => {
-          // A tour that is not live on this page is a normal case, not an error.
+        .catch((error) => {
+          // A tour that is not live on this page (or a failed request) is a normal case, not an error.
+          if (!(error && error.gleapReason)) {
+            console.error(error);
+          }
           self.onComplete(false);
         });
     }
