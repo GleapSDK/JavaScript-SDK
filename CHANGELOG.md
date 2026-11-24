@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+Changed: when `Gleap.identify` or `Gleap.updateContact` fails, the promise it returns rejects with an `Error`, for example `Gleap updateContact failed: network error`, `Gleap identify failed: HTTP 500` or `Gleap identify failed: refused (token_invalid)`. Until this version it rejected with `undefined` or the string `'Session not ready yet.'`, which error trackers such as Bugsnag and Sentry report as a non-error unhandled rejection with no message. A logout while one of these requests was still on its way now resolves instead of rejecting. Add a `.catch()` to these calls if your app does not want failed requests (for example a user who is offline) in its error tracker.
+Changed: a product tour that is not live on the current page no longer writes to `console.error`.
+
 ## 19.9.0
 Changed: the feedback form's **Record screen** uses the microphone only when **Developer options → Microphone** is on, and then it starts muted until the user turns it on. Until this version, form recordings asked for the microphone whenever the browser had one, regardless of that setting, and on a site that already had microphone permission the browser gave it without a prompt. The mic button is hidden when the setting is off. Projects that want sound in form recordings turn the setting on.
 Added: product tours and tooltips can point at elements inside open shadow roots. A selector continues into a shadow root with `host >>> inner`, the element picker stores such selectors, and the highlight, the interaction lockout and click-to-continue work for those elements.

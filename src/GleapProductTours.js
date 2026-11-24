@@ -84,10 +84,8 @@ export default class GleapProductTours {
             return this.start();
           }
         })
-        .catch((error) => {
-          console.log('Product tour is not live. Cleaning up...');
-          console.error(error);
-
+        .catch(() => {
+          // A tour that is not live on this page is a normal case, not an error.
           self.onComplete(false);
         });
     }
