@@ -74,7 +74,7 @@ Everything in `.claude/rules/code-conventions.md`, including the one-job-one-sys
 
 ### 3. Public API and compatibility (critical)
 
-Flag a removed or renamed `Gleap.*` method, parameter, option, default, callback, event, custom element, cookie or storage key; a changed meaning without a major version; an API change without `index.d.ts`, `CHANGELOG.md` and, for a new call, `README.md`; new behaviour that existing projects get without opting in; a third positional parameter on a public method.
+Flag a removed or renamed `Gleap.*` method, parameter, option, default, callback, event, custom element, cookie or storage key; a changed meaning without a major version; an API change without `index.d.ts`, `CHANGELOG.md` and, for a new call, `README.md`; new behaviour that existing projects get without opting in; a third positional parameter on a public method; a `CHANGELOG.md` section that does not follow `AGENTS.md` → Changelog (headings, `Breaking changes` always present, one line per item with a PR link).
 
 ### 4. Host page: globals, teardown, errors (critical)
 

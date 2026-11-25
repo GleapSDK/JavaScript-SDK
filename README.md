@@ -116,7 +116,7 @@ We are here to help! hello@gleap.io
 
 ## Releasing
 
-1. Set `version` in `package.json` and add a `## X.Y.Z` section to `CHANGELOG.md`.
+1. Set `version` in `package.json` and add a `## X.Y.Z` section to `CHANGELOG.md` in the format in `AGENTS.md` → Changelog (grouped headings, one line per item).
 2. Merge to `master`. Cloudflare Workers Builds deploys the CDN build (`sdk.gleap.io`) on every push to `master`.
 3. `git tag X.Y.Z && git push origin X.Y.Z` (plain version, no `v`).
 

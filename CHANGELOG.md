@@ -1,174 +1,361 @@
 # Changelog
 
 ## 19.9.1
-Changed: when `Gleap.identify` or `Gleap.updateContact` fails, the promise it returns rejects with an `Error`, for example `Gleap updateContact failed: network error`, `Gleap identify failed: HTTP 500` or `Gleap identify failed: refused (token_invalid)`. Until this version it rejected with `undefined` or the string `'Session not ready yet.'`, which error trackers such as Bugsnag and Sentry report as a non-error unhandled rejection with no message. A logout while one of these requests was still on its way now resolves instead of rejecting. If your app does not want failed requests (for example a user who is offline) in its error tracker, catch them with `Promise.resolve(Gleap.identify(...)).catch(() => {})`. Wrap the call in `Promise.resolve`, because these calls return nothing when there is nothing to send. `Gleap.setLanguage` catches its own contact update.
-Changed: a product tour that is not live on the current page no longer writes to `console.error`.
-Fixed: `index.d.ts` declared `Gleap.setStyles` with one object, but the SDK takes positional arguments: `setStyles(primaryColor, headerColor, buttonColor, backgroundColor?, borderRadius?, buttonX?, buttonY?, buttonStyle?, headerColor2?, headerColor3?)`. A call in the declared object form threw an error on the page and injected no styles. TypeScript projects that call `setStyles` with an object now get a compile error pointing at that call, which never worked; pass the values as arguments instead. No runtime change.
+
+### Breaking changes
+- TypeScript: `Gleap.setStyles` is typed with positional arguments, as the SDK always took them. A call with one object now fails to compile (it never worked). Pass the values as arguments. ([#230](https://github.com/GleapSDK/JavaScript-SDK/pull/230))
+- `Gleap.identify` and `Gleap.updateContact` reject with an `Error` with a message, not `undefined` or a string. Error trackers now report these failures; catch them if you don't want that. ([#231](https://github.com/GleapSDK/JavaScript-SDK/pull/231))
+- A logout while `identify` or `updateContact` is still running resolves instead of rejecting. ([#231](https://github.com/GleapSDK/JavaScript-SDK/pull/231))
+
+### Changed
+- A product tour that is not live on the page no longer logs to `console.error`. ([#231](https://github.com/GleapSDK/JavaScript-SDK/pull/231))
 
 ## 19.9.0
-Changed: the feedback form's **Record screen** uses the microphone only when **Developer options → Microphone** is on, and then it starts muted until the user turns it on. Until this version, form recordings asked for the microphone whenever the browser had one, regardless of that setting, and on a site that already had microphone permission the browser gave it without a prompt. The mic button is hidden when the setting is off. Projects that want sound in form recordings turn the setting on.
-Added: product tours and tooltips can point at elements inside open shadow roots. A selector continues into a shadow root with `host >>> inner`, the element picker stores such selectors, and the highlight, the interaction lockout and click-to-continue work for those elements.
-Changed: the feedback form's capture step uses the current tab on desktop Chromium. **Mark the bug** takes its screenshot from the tab, drawings included (one click in the browser's share dialog). Where the tab can't be captured, or the dialog is declined, the report renders the page on the server as before. **Record screen** offers the current tab first and records MP4 or WebM with a seekable duration.
-Changed: automatic replay recording starts once the page is idle (at most 2 s after `Gleap.initialize`; after the page's load event in Safari), so it no longer competes with the page while it loads. With replays off, the recorder never runs.
-Fixed: on iPhone (iOS Safari) the launcher sometimes didn't open the widget until a reload. The Messenger frame now reloads or resets itself when it doesn't answer within 10 s, recovers after back/forward navigation, and resets cleanly when the SDK starts again.
-Fixed: a product tour whose start URL has a query string lost the tour parameter in the redirect, so the tour never started.
-Fixed: a second tour in the same page load advanced two steps per click.
-Fixed: `index.d.ts` declares `setAiChatbarPlaceholder`, `getChecklistData`, `setOfflineMode`, `close(resetRoutes)`, `onToken` and `cancelStream`. They existed in the SDK, but TypeScript projects got type errors calling them.
+
+### Breaking changes
+- **Record screen** in the feedback form uses the microphone only when **Developer options → Microphone** is on, and starts muted. Turn the setting on to keep sound in form recordings. ([#224](https://github.com/GleapSDK/JavaScript-SDK/pull/224))
+
+### Added
+- Product tours and tooltips can point at elements inside open shadow roots with `host >>> inner`. ([#222](https://github.com/GleapSDK/JavaScript-SDK/pull/222))
+
+### Changed
+- On desktop Chromium, **Mark the bug** and **Record screen** capture the current tab, after one click in the browser's share dialog. The server render stays the fallback. ([#214](https://github.com/GleapSDK/JavaScript-SDK/pull/214))
+- Replay recording starts once the page is idle, at most 2 s after `Gleap.initialize`. ([#216](https://github.com/GleapSDK/JavaScript-SDK/pull/216))
+
+### Fixed
+- On iPhone, the launcher sometimes did not open the widget until a reload. ([#215](https://github.com/GleapSDK/JavaScript-SDK/pull/215))
+- A tour whose start URL has a query string never started. ([#218](https://github.com/GleapSDK/JavaScript-SDK/pull/218))
+- A second tour in the same page load moved two steps per click. ([#222](https://github.com/GleapSDK/JavaScript-SDK/pull/222))
+- `index.d.ts` declares `setAiChatbarPlaceholder`, `getChecklistData`, `setOfflineMode`, `close(resetRoutes)`, `onToken` and `cancelStream`. ([#221](https://github.com/GleapSDK/JavaScript-SDK/pull/221))
 
 ## 19.8.1
-Fixed: `package.json` declares `"license": "MIT"`, matching the LICENSE file. It said `Commercial`, which license scanners report as a finding. No code changes.
+
+### Breaking changes
+- None.
+
+### Fixed
+- `package.json` declares `"license": "MIT"`, matching the LICENSE file. No code changes. ([#219](https://github.com/GleapSDK/JavaScript-SDK/pull/219))
 
 ## 19.8.0
-Added: banners set to **Until dismissed** (Outbound → Frequency → How often) report when the person closes them, with the X or one of the banner's buttons, and stay closed for that person. Until this version, such a banner is shown once per person. A banner already on screen is not shown a second time when its trigger fires again, and a closed one is not shown again in this browser even if a copy was already on its way.
+
+### Breaking changes
+- Banners set to **Until dismissed** show until the person closes them, then stay closed. Before, they showed once per person. ([#205](https://github.com/GleapSDK/JavaScript-SDK/pull/205))
 
 ## 19.7.0
-Changed: a signed session that expires now ends, as in Intercom's web Messenger. When the grant runs out (the project's "Signed login lasts", 7 days by default, or `sessionDuration`) and no fresh identity token arrives (no `setUserJwt` on that page load, and the JWT provider returns `null` or is not set), the SDK ends the identified session and continues as a fresh visitor with no conversation history, like `Gleap.clearIdentity()` (the JWT provider stays set). Until now the user stayed identified but unsigned (14 days of history, protected fields read-only). Before ending it, the SDK tries once to sign the session again: an identify already on its way, the token passed to `setUserJwt`, or the JWT provider. A network failure keeps the session. A later `setUserJwt` (or provider token) signs the user in again, and the server merges their visitor activity on this device into their contact.
-Added: a page left open past the expiry is checked when the grant runs out. If another tab renewed the grant, the SDK takes it from the cookie. If the messenger is open, the session ends once it is closed, at the latest an hour after the expiry (Intercom's one-hour cookie for activity after expiry).
-Unchanged: users identified with `Gleap.identify(userId, data)` and no token or hash were never signed and stay identified. A grant that is only missing before its expiry (cookie deleted, cookies off) is restored as before. Classic projects are not affected.
-The SDK keeps `{ gleapId, userId, exp }` of the last grant (no credential) in the `signed-session-<projectId>` cache entry and cookie, so a reload after the expiry knows the session was signed.
+
+### Breaking changes
+- Signed sessions end when they expire and no new identity token arrives. The user goes on as a new visitor, like after `Gleap.clearIdentity()`. Users identified without a token or hash are not affected. ([#212](https://github.com/GleapSDK/JavaScript-SDK/pull/212))
+- A page left open past the expiry ends the session too. If the Messenger is open, it ends once the Messenger closes, at most one hour later. ([#212](https://github.com/GleapSDK/JavaScript-SDK/pull/212))
+
+### Changed
+- Before a session ends, the SDK tries once to sign it again with `setUserJwt` or the JWT provider. ([#212](https://github.com/GleapSDK/JavaScript-SDK/pull/212))
 
 ## 19.6.1
-Documentation only: README, package description and doc comments name the Project ID (Settings → Project → General) and sign users in with `setUserJwt`. No code changes.
+
+### Breaking changes
+- None.
+
+### Changed
+- Documentation only: the README and doc comments use the name Project ID and `setUserJwt`. No code changes. ([#210](https://github.com/GleapSDK/JavaScript-SDK/pull/210))
 
 ## 19.6.0
-Changed: the key `Gleap.initialize` takes is now called **Project ID** (formerly "SDK key" or "API key"). The value is the same and every existing key keeps working; nothing needs to change in your app. Typings, JSDoc and the README name the parameter `projectId`.
-Added: `Gleap.initialize({ projectId, sessionDuration })` takes the Project ID inside the options object, and `Gleap.initialize(undefined, { projectId })` works too. The positional form `Gleap.initialize(projectId, options)` and the legacy boolean second argument are unchanged. The options are typed as `Gleap.InitializeOptions`.
+
+### Breaking changes
+- None.
+
+### Added
+- `Gleap.initialize({ projectId, sessionDuration })` takes the Project ID inside the options object. ([#209](https://github.com/GleapSDK/JavaScript-SDK/pull/209))
+
+### Changed
+- The key `Gleap.initialize` takes is now called **Project ID** (formerly SDK key or API key). Existing keys keep working. ([#209](https://github.com/GleapSDK/JavaScript-SDK/pull/209))
 
 ## 19.5.2
-Fixed: `Gleap.setUserJwtProvider` alone never signed the session again after a page reload. When the grant cookie was missing (an IP-address host, or the cookie deleted) and the app set only the provider, without calling `setUserJwt`, the user stayed unsigned although the server reported Signed mode. The SDK now asks the provider once per page load when the server reports Signed mode for an identified session without a valid grant and no token is held, and identifies with the returned token like `setUserJwt` (a token for another user goes through the usual `identity_mismatch` recovery). A provider that returns `null` sends nothing. Also applies when the provider is set after the session loaded.
-Fixed: cookies were never stored on IP-address hosts (for example `http://127.0.0.1:8080` or `http://[::1]:8080`). The SDK wrote an invalid `domain` attribute there, so the browser dropped the session and grant cookies. On an IP address they are now host-only cookies (no `domain`), and erasing them works the same way. Domain hosts and `localhost` are unchanged.
+
+### Breaking changes
+- None.
+
+### Fixed
+- `Gleap.setUserJwtProvider` alone did not sign the session again after a page reload. ([#208](https://github.com/GleapSDK/JavaScript-SDK/pull/208))
+- Cookies were not stored on IP address hosts such as `http://127.0.0.1:8080`. ([#208](https://github.com/GleapSDK/JavaScript-SDK/pull/208))
 
 ## 19.5.1
-Fixed: the `getIdentity()` typing lists the identified user's fields again (`userId`, `name`, `email`, `phone`, `companyId`) next to `gleapId`, `gleapHash` and `grant`; 19.5.0 typed only the session pair and the grant, which broke TypeScript callers that read the user from it. No runtime change.
+
+### Breaking changes
+- None.
+
+### Fixed
+- TypeScript: `getIdentity()` lists the user's fields (`userId`, `name`, `email`, `phone`, `companyId`) again. ([#207](https://github.com/GleapSDK/JavaScript-SDK/pull/207))
 
 ## 19.5.0
-Added: signed customer identity. `Gleap.setUserJwt(token)` identifies the user with an identity token (HS256 JWT signed by your backend); its `userId` claim names the user and every other claim lands on the contact as signed data. The token is kept in memory only, and the call never rejects: refusals are logged.
-Added: `Gleap.setUserJwtProvider(provider)` hands Gleap a function that returns a fresh identity token; it is called when the current token expired or is about to.
-Added: `Gleap.setAuthTokens(tokens)` stores per-user tokens for your API tools on the signed contact (`{{session.authTokens.<name>}}`); `null` removes one. Kept in memory only.
-Added: `Gleap.setSessionDuration(ms)` and `Gleap.initialize(sdkKey, { sessionDuration })` ask the server for a shorter signed session (never beyond the project's maximum). Only sent with an identify when you set it. A boolean second argument to `initialize` (the legacy `disablePing`) is still accepted and typed.
-Added: a signed identify returns a grant, the server-signed session credential. The SDK sends it as the `Gleap-Grant` header on every request, keeps it in the `gleap-grant-<apiKey>` cookie (when cookies are on) so a reload stays signed, refreshes it a minute before it runs out, hands it to the messenger, the AI chat bar and agent conversations, and returns it from `Gleap.getIdentity()`. `Gleap.clearIdentity()` drops it everywhere.
-Added: when the project runs in signed identity mode (`identity.mode === 'signed'`) and a returning user's session has no live grant, the SDK sends the held identify once to get one, without looping.
-Added: identify refusals are recognised by code (`token_expired`, `token_invalid`, `signature_required`, `identity_mismatch`); an expired token asks the JWT provider for a new one.
+
+### Breaking changes
+- None.
+
+### Added
+- `Gleap.setUserJwt(token)` signs the user in with an identity token (an HS256 JWT from your backend). ([#203](https://github.com/GleapSDK/JavaScript-SDK/pull/203))
+- `Gleap.setUserJwtProvider(provider)` gives Gleap a function that returns a fresh token. ([#203](https://github.com/GleapSDK/JavaScript-SDK/pull/203))
+- `Gleap.setAuthTokens(tokens)` stores per-user tokens for your API tools. ([#203](https://github.com/GleapSDK/JavaScript-SDK/pull/203))
+- `Gleap.setSessionDuration(ms)` and the `sessionDuration` option ask for a shorter signed session. ([#203](https://github.com/GleapSDK/JavaScript-SDK/pull/203))
+- `Gleap.getIdentity()` returns the signed session grant. ([#203](https://github.com/GleapSDK/JavaScript-SDK/pull/203))
 
 ## 19.4.1
-Fixed: since 19.4.0 the SDK failed to load on pages that are not UTF-8 (no charset declared, or for example ISO-8859-1), with `Invalid regular expression: Range out of order in character class`, so the widget did not appear at all. The bundle held raw non-ASCII characters, which such a page decodes with its own encoding. The build now escapes all non-ASCII characters, which also keeps text in the bundle intact on those pages.
+
+### Breaking changes
+- None.
+
+### Fixed
+- Since 19.4.0, the SDK failed to load on pages that are not UTF-8. ([#206](https://github.com/GleapSDK/JavaScript-SDK/pull/206))
 
 ## 19.4.0
-New: **Show me** chat cards highlight their target. When Kai's Show me card opens a page of your app, the SDK finds the button or field the card names, scrolls to it and outlines it for a few seconds (waiting for content that renders late). The label is matched by its visible text, so a near-miss such as "Post as draft" for a "Save as draft" toggle still lands on it. The `gleap_highlight` parameter is removed from the address bar afterwards; `Gleap.disableQueryParams()` turns it off. The Messenger only offers the Show me button to SDKs from this version on; older SDKs and the mobile apps show Open only.
+
+### Breaking changes
+- None.
+
+### Added
+- **Show me** chat cards scroll to and outline the button or field they name. `Gleap.disableQueryParams()` turns it off. ([#204](https://github.com/GleapSDK/JavaScript-SDK/pull/204))
 
 ## 19.3.9
-Fixed: a hotspot tooltip floated over the page while the panel around it scrolled, instead of staying next to its element. Since 19.3.7 the hotspot is absolutely positioned so it does not shift the element's layout; inside a scrolling panel without a positioned ancestor it was anchored outside the panel. The hotspot now uses its element as the anchor and scrolls with it.
+
+### Breaking changes
+- None.
+
+### Fixed
+- A hotspot tooltip floated over the page when the panel around it scrolled. ([#202](https://github.com/GleapSDK/JavaScript-SDK/pull/202))
 
 ## 19.3.8
-Fixed: `Gleap.identify` with a `userHash` sent nothing when the browser already held a contact identified with the same user id and data without a hash (identified before identity verification was switched on, or before the app passed a hash). The server never received the hash, so the contact was never marked as verified. The SDK now sends the hashed identify once per contact and browser and skips unchanged identifies again afterwards. Only the user id is remembered, never the hash; logging out with `Gleap.clearIdentity()` clears it.
+
+### Breaking changes
+- None.
+
+### Fixed
+- `Gleap.identify` with a `userHash` sent nothing when the same user was cached without a hash, so the contact was never verified. ([#200](https://github.com/GleapSDK/JavaScript-SDK/pull/200))
 
 ## 19.3.7
-Fixed: the launcher could not be reached with the keyboard. It is now a focusable button with a name ("Open support chat" or your button text) and an expanded state; Enter and Space open the messenger and move focus into it, a focus ring shows on keyboard focus, and closing the messenger from inside returns focus to the launcher.
-Fixed: hotspot tooltips only appeared after a full reload in apps that navigate without one (Turbo Drive, SPAs). Tooltips now follow URL changes, re-attach to re-rendered elements and are removed when their page rules no longer match. A hotspot no longer shifts the element it points at.
+
+### Breaking changes
+- None.
+
+### Fixed
+- The launcher can be used with the keyboard (Enter and Space open it, focus moves into the Messenger and back). ([#198](https://github.com/GleapSDK/JavaScript-SDK/pull/198))
+- Hotspot tooltips follow page changes in apps that navigate without a reload (Turbo, SPAs). ([#196](https://github.com/GleapSDK/JavaScript-SDK/pull/196))
 
 ## 19.3.6
-Fixed: a language switch in the app never reached the contact. `Gleap.identify` and `Gleap.updateContact` skipped the request when the user data was unchanged, without looking at the language, so apps that change language without a full reload (Turbo, SPAs updating `<html lang>`) kept the old language on the contact and language-targeted outreach used it. The SDK now sends the update when the active language differs from the contact's.
-Fixed: `Gleap.clearIdentity()` called before the widget UI mounted (a queued call in the async snippet) left the previous contact's cached notifications in place, and a reload showed them to the next visitor. Cached notifications are now cleared regardless and are only shown to the contact that received them.
-Fixed: cached notification cards ignored disabled notifications and were still shown.
+
+### Breaking changes
+- None.
+
+### Fixed
+- A language switch in the app did not reach the contact when the user data was unchanged. ([#194](https://github.com/GleapSDK/JavaScript-SDK/pull/194))
+- `Gleap.clearIdentity()` before the widget loaded kept the last contact's notifications. ([#190](https://github.com/GleapSDK/JavaScript-SDK/pull/190))
+- Cached notification cards ignored disabled notifications. ([#192](https://github.com/GleapSDK/JavaScript-SDK/pull/192))
 
 ## 19.3.5
-Fixed: a product tour step whose selector only matched a hidden element (`display: none`, such as the label of a collapsed menu or the hidden copy of a responsive menu) froze the page. The step pointed at the top-left corner, the overlay blocked every click, a click step had no way forward and reloading brought the step back. Steps now use the first visible match; with none, the tour waits up to 5 s for the element to appear and then ends, like a selector that matches nothing.
+
+### Breaking changes
+- None.
+
+### Fixed
+- A tour step that matched only a hidden element froze the page. Steps use the first visible match. ([#188](https://github.com/GleapSDK/JavaScript-SDK/pull/188))
 
 ## 19.3.4
-New: the widget can switch the visitor to a contact after the "Verify email" workflow step confirmed their email (`adopt-session`). The SDK checks the handed-over session with the server first and never replaces a user your app identified.
-New: custom actions from chat messages and message cards now pass their data to your `Gleap.registerCustomAction` callback as `data` (next to `name` and `shareToken`), with a Messenger that sends it. Callbacks that only read `name` keep working.
+
+### Breaking changes
+- None.
+
+### Added
+- The widget can switch the visitor to a contact after the **Verify email** workflow step. A user your app identified is never replaced. ([#185](https://github.com/GleapSDK/JavaScript-SDK/pull/185))
+- `Gleap.registerCustomAction` callbacks get the action's `data`. ([#187](https://github.com/GleapSDK/JavaScript-SDK/pull/187))
 
 ## 19.3.3
-Fixed: charts and other SVG graphics could be missing from screenshots. An empty `<style>` inside an `<svg>` was captured as a stylesheet link to `null`, and the screenshot then dropped everything in the svg after it. Inline style sheets now always stay `<style>` elements; linked style sheets whose rules can't be read are still linked.
+
+### Breaking changes
+- None.
+
+### Fixed
+- Charts and other SVG graphics could be missing from screenshots. ([#186](https://github.com/GleapSDK/JavaScript-SDK/pull/186))
 
 ## 19.3.2
-Fixed: screenshots showed dialogs and other content inside iframes as an empty box. The capture now includes the page of every same-origin iframe (frames in frames too, with the same masking and blocking rules) and stores it in the frame's `srcdoc`, so the screenshot shows what the user saw instead of loading the frame's URL without their session. Cross-origin iframes, and frames still loading their `src`, render as before. Canvases inside iframes are captured too. Typed values, scroll positions and canvases inside iframes need the matching screenshot renderer update.
+
+### Breaking changes
+- None.
+
+### Fixed
+- Screenshots show the content of same-origin iframes instead of an empty box. ([#184](https://github.com/GleapSDK/JavaScript-SDK/pull/184))
 
 ## 19.3.1
-Security: the default URL handler opens only http(s), mailto, tel and relative links (never `javascript:` or `data:`), new tabs open with `noopener`, banner and modal messages need an exact origin match, and messages to the widget, chatbar and agent conversation frames are pinned to their own origin. A custom `Gleap.setUrlHandler` still receives app deep links, never script URLs.
-Fixed: screenshot and recording logs are sent only once the capture is saved (none after a cancel, a retake replaces them), and recording logs leave out paused stretches. With a custom API URL (`Gleap.setApiUrl`) the SDK's own calls stay out of the network logs, and the `Gleap-Hash` session header is always masked. Screenshot downloads stay out of the network logs, images that can't be downloaded are tinted instead of breaking the screenshot, and switching users no longer races.
+
+### Breaking changes
+- Security: the default URL handler opens only http(s), mailto, tel and relative links. `javascript:` and `data:` links no longer open. ([#182](https://github.com/GleapSDK/JavaScript-SDK/pull/182))
+
+### Changed
+- Security: new tabs open with `noopener`, and messages between the SDK and its frames need an exact origin match. ([#182](https://github.com/GleapSDK/JavaScript-SDK/pull/182))
+
+### Fixed
+- Screenshot and recording logs are sent only once the capture is saved. ([#182](https://github.com/GleapSDK/JavaScript-SDK/pull/182))
+- With `Gleap.setApiUrl`, the SDK's own calls stay out of the network logs, and the `Gleap-Hash` header is always masked. ([#182](https://github.com/GleapSDK/JavaScript-SDK/pull/182))
+- Images that can't be downloaded no longer break a screenshot, and switching users no longer races. ([#180](https://github.com/GleapSDK/JavaScript-SDK/pull/180))
 
 ## 19.3.0
-New capture experience: when Kai or a teammate asks for a screenshot or recording, the page shows a small frosted capture bar (Enter to capture, Esc to cancel) instead of the dark panel, with a shutter flash and the result flying into the chat card. Recordings can be paused and resumed, show a progress ring toward the time limit, and the default limit is now 2 minutes. The editor keeps all its tools with a cleaner toolbar. Works with older Messenger versions (no fly-in or pause there).
+
+### Breaking changes
+- None.
+
+### Changed
+- New capture bar when Kai or a teammate asks for a screenshot or recording. Recordings can pause and resume. ([#177](https://github.com/GleapSDK/JavaScript-SDK/pull/177))
+- The default recording limit is 2 minutes. ([#177](https://github.com/GleapSDK/JavaScript-SDK/pull/177))
 
 ## 19.2.3
-Fixed: the SDK closed its websocket without a close code, so the server logged every page leave and reconnect as an abnormal close (1005); it now closes with 1000. Going back online no longer drops a socket that is still connecting and opens a second one. The keepalive is a single `PING` text frame every 25 s (was two frames every 10 s), which still keeps idle proxies and load balancers from cutting the connection.
+
+### Breaking changes
+- None.
+
+### Fixed
+- The websocket closes with code 1000 and does not open a second socket when the browser goes back online. ([#175](https://github.com/GleapSDK/JavaScript-SDK/pull/175))
+- The keepalive is one `PING` frame every 25 s. ([#175](https://github.com/GleapSDK/JavaScript-SDK/pull/175))
 
 ## 19.2.2
-Fixed: a product tour or tooltip selector that is not valid CSS, such as an attribute typed without its brackets (`data-test="x"` instead of `[data-test="x"]`), no longer throws. The bracketless form now finds its element; anything else counts as not found, so the tour ends cleanly instead of stopping with an error, copilot tours stop waiting after 5 s, and tooltips keep working.
-Fixed: the tour editor's element picker no longer stores ids and classes that Mantine and React 19 generate at runtime (`mantine-…` ids, `«r1»` / `_r_1_` from `useId`, Mantine 6 `mantine-<hash>`, Mantine 7 `m_<hash>` and `__m__-…` classes). They changed on the next page load, deploy or Mantine update and silently ended the tour; the picker now prefers stable names such as `mantine-Button-root`.
+
+### Breaking changes
+- None.
+
+### Fixed
+- A tour or tooltip selector that is not valid CSS no longer throws. The tour ends cleanly. ([#172](https://github.com/GleapSDK/JavaScript-SDK/pull/172))
+- The tour element picker no longer stores ids and classes that Mantine and React generate at runtime. ([#172](https://github.com/GleapSDK/JavaScript-SDK/pull/172))
 
 ## 19.2.1
-Surveys: questions asking for the email, name or phone of an identified contact are skipped (with the Surveys 2.0 "Skip when known" option). `Gleap.showSurvey` and every automatic survey now wait for an `identify` or `updateContact` still in flight (at most 5 s), so the survey starts with the identified contact instead of the guest.
-Fixed: a survey with nothing left to ask could leave an empty white card on screen (and `Gleap.isOpened()` true) when its frame was not loaded yet. A frame that was never shown now hides without the close animation and without a `close` event; `Gleap.close()` on a closed widget no longer fires `close`.
-Fixed: a survey card opened in a frame that had shown a card before was revealed before it had a height of its own; it now waits for its own content, like a fresh frame.
+
+### Breaking changes
+- `Gleap.close()` on a widget that is already closed no longer fires the `close` event. ([#170](https://github.com/GleapSDK/JavaScript-SDK/pull/170))
+
+### Changed
+- Surveys skip email, name and phone questions for an identified contact (with **Skip when known**). ([#170](https://github.com/GleapSDK/JavaScript-SDK/pull/170))
+- Surveys wait up to 5 s for an `identify` or `updateContact` still running. ([#170](https://github.com/GleapSDK/JavaScript-SDK/pull/170))
+
+### Fixed
+- A survey with nothing left to ask could leave an empty white card on screen. ([#170](https://github.com/GleapSDK/JavaScript-SDK/pull/170))
 
 ## 19.2.0
-Surveys 2.0: `Gleap.showSurvey(surveyId, options)` takes `{ format: 'card' | 'full' | 'page', fields, personalToken, container, resume }`; the old format strings (`'survey'`, `'survey_full'`, `'survey_web'`) keep working. A survey shown before the SDK is ready now opens once it is.
-New survey containers: the card is a 348px corner popover with an enter animation and becomes a bottom sheet (handle, scrim, home-indicator inset) on phones; full screen covers the whole viewport and the survey draws its own background and close button (no more centred 640px card over a blurred backdrop); `page` renders inline in `container` (or `document.body`) and grows with the survey. Card and page surveys only appear once their height is known. Reduced motion is respected. Legacy surveys (not yet migrated) keep the previous card and full-screen look.
-New events `survey-shown`, `survey-answered`, `survey-completed` and `survey-closed` (with `surveyId`, `version`, `responseId`, …); `outbound-sent` keeps firing as before.
-New standalone `survey-embed.js` (~3 KB): `<div data-gleap-survey="ID" data-api-key="KEY" data-mode="inline|popup|tab">` loads the SDK on demand and shows the survey inline, as a popup or behind a side tab.
-Fixed: inline banners did not show on pages whose `body` clips its overflow, the usual app-shell layout (`html, body { height: 100%; overflow: hidden }`). The banner sits in the body's top margin, which the body cut off, so only an empty strip appeared above the page. On such pages the banner now goes into the body's top padding (added to the page's own padding), which the body does not clip; with `box-sizing: border-box` the app also keeps fitting the viewport instead of losing the banner's height at the bottom. Pages that scroll normally and floating banners are unchanged.
+
+### Breaking changes
+- None.
+
+### Added
+- Surveys 2.0: `Gleap.showSurvey(surveyId, options)` takes `format`, `fields`, `personalToken`, `container` and `resume`. Old format strings keep working. ([#168](https://github.com/GleapSDK/JavaScript-SDK/pull/168))
+- New survey looks: a corner card (a bottom sheet on phones), full screen, and inline `page`. ([#168](https://github.com/GleapSDK/JavaScript-SDK/pull/168))
+- New events `survey-shown`, `survey-answered`, `survey-completed` and `survey-closed`. ([#168](https://github.com/GleapSDK/JavaScript-SDK/pull/168))
+- New `survey-embed.js` (about 3 KB) shows a survey inline, as a popup or behind a side tab. ([#168](https://github.com/GleapSDK/JavaScript-SDK/pull/168))
+
+### Fixed
+- Inline banners did not show on pages whose `body` clips its overflow. ([#169](https://github.com/GleapSDK/JavaScript-SDK/pull/169))
 
 ## 19.1.1
-Fixed: the product tour and tooltip visual editor now works from the dashboard on app.gleap.ai. The SDK accepts the editor's messages from exactly `https://app.gleap.ai` and `https://app.gleap.io` (no lookalike domains), loads the editor from the dashboard that opened it, and sends its replies only to that dashboard.
+
+### Breaking changes
+- None.
+
+### Fixed
+- The product tour editor works from the dashboard on app.gleap.ai. ([#167](https://github.com/GleapSDK/JavaScript-SDK/pull/167))
 
 ## 19.1.0
-Capture requests ("show me the issue"): when a workflow, an AI agent or a teammate asks the customer for a screenshot or a screen recording in a conversation, the customer answers from the card in the widget and the SDK captures the page. On desktop Chrome and Edge the screenshot is taken from the tab itself after one "Share this tab" confirmation (exact pixels); everywhere else, and when sharing is declined, the page is rendered in the browser. Screen recordings use the browser's screen sharing (MP4 where supported, otherwise WebM with its duration written in so players can seek), with the microphone if the project allows it; while recording, everything a screenshot masks is blurred on the page. When screen sharing doesn't start, and on phones and tablets, the customer can record the page instead (a page recording the dashboard plays like a session replay). Password, one-time-code and card fields, the `gl-mask` / `gl-block` / `rr-mask` / `rr-block` classes, the `setReplayOptions` privacy options, payment frames and the project's masked elements are left out. The capture bar is a small dark pill the customer can drag; all its texts come from the widget's translations.
-Logs requests: workflows, AI agents and teammates can collect the page's console logs, network logs, custom data, environment data and events in the background, the same data a bug report carries. They arrive over the SDK's websocket and are uploaded once, gzipped.
-New: `Gleap.setCaptureEnabled(enabled)` (off: the widget only offers a file upload) and `Gleap.setRemoteLogCollectionEnabled(enabled)` (off: logs requests are answered as unsupported and captures are sent without logs).
-The classic screen recording now stops cleanly when the customer clicks the browser's "Stop sharing" and is no longer uploaded twice. The browser bundle grows by about 34 KB gzipped.
+
+### Breaking changes
+- None.
+
+### Added
+- Workflows, AI agents and teammates can ask the customer for a screenshot or screen recording in a conversation. Sensitive fields are masked. ([#163](https://github.com/GleapSDK/JavaScript-SDK/pull/163))
+- They can also collect the page's console logs, network logs and other bug report data in the background. ([#163](https://github.com/GleapSDK/JavaScript-SDK/pull/163))
+- Both are on by default. `Gleap.setCaptureEnabled(false)` and `Gleap.setRemoteLogCollectionEnabled(false)` turn them off. ([#163](https://github.com/GleapSDK/JavaScript-SDK/pull/163))
+
+### Changed
+- The browser bundle grows by about 34 KB gzipped. ([#163](https://github.com/GleapSDK/JavaScript-SDK/pull/163))
+
+### Fixed
+- The classic screen recording stops cleanly on the browser's **Stop sharing** and is uploaded only once. ([#163](https://github.com/GleapSDK/JavaScript-SDK/pull/163))
 
 ## 19.0.1
-Fixed: the SDK's injected styles made the host page slower. The product tour rule `.gleap-tour-popover-navigation-btns button + button` ends in a bare `button`, so Chrome restyled sibling elements across the whole page whenever a node was inserted anywhere, not only inside Gleap's UI (on a page with ~19k nodes, ~2,000 extra elements per popover open or close). The tour buttons are now spaced with `gap` on their flex container, which looks the same; when the Previous button is hidden, the Next button no longer keeps a stray 4px margin.
+
+### Breaking changes
+- None.
+
+### Fixed
+- The SDK's tour styles made the host page slower. ([#165](https://github.com/GleapSDK/JavaScript-SDK/pull/165))
 
 ## 19.0.0
-Added widget color schemes, so the widget can match the host app's dark/light mode. Turn it on in the dashboard (Widget → Look & feel → Adapt to dark / light mode, delivered as `colorScheme` in the flow config) or at runtime with `Gleap.setColorScheme("auto" | "light" | "dark", options?)`, which overrides the dashboard (until the first call, the dashboard setting applies):
-`"auto"` follows the host app and switches live when it changes. It looks at theme markers on `<html>`/`<body>` (classes like `dark`/`light`, attributes like `data-theme`, `data-bs-theme`, `data-color-scheme`, `data-mode`), then the page's CSS `color-scheme`, then the page background, and finally the OS `prefers-color-scheme`.
-`"light"` / `"dark"` force a scheme, e.g. from your app's own theme toggle. Any other value is treated as `"auto"`.
-`Gleap.setColorScheme` only takes effect when "Adapt to dark / light mode" is enabled in the dashboard. While it is disabled (`colorScheme` missing or `"default"`), the widget is never themed, whatever the runtime scheme or backgrounds.
-The dashboard colors are the light palette. Dark mode uses the dark colors set in the dashboard: header colors (`darkHeaderColor`, `darkHeaderColor2`, `darkHeaderColor3`), UI color (`darkColor`) and background (`darkBackgroundColor`); a color without a dark value keeps its light one. Dark mode also uses the dark logo, header background image and composer glow set in the dashboard (`darkLogo`, `darkBgImage`, `darkAurora`); an empty dark logo/image means none in dark mode, and configs without these fields keep the light ones. Without any dark colors the widget keeps its normal colors, even when the host app is dark. The launcher, notifications, messenger, modals, AI chatbar and checklists all switch palettes, live. The runtime `{ lightBackgroundColor, darkBackgroundColor }` options (#rgb/#rrggbb) override the background of the respective scheme; a runtime `darkBackgroundColor` also enables dark mode on its own. Button color is unchanged.
-The active scheme also applies to the AI chatbar (its style switches to the matching light/dark variant), to open modals, and to `<gleap-checklist>` elements without an explicit `dark` attribute. Product tour popovers now follow a dark widget background instead of staying white (their text was unreadable on dark backgrounds).
-Can be called before or after `Gleap.initialize`.
-Console logs are more complete and readable. The SDK no longer replaces `window.console` with a copy: it wraps `log`, `info`, `warn`, `error`, `debug` and `assert` (logged only when the assertion fails) in place and always calls the original method. `Gleap.disableConsoleLogOverwrite()` restores only the methods Gleap still owns, so a tool that wrapped the console after Gleap keeps working. Arguments are formatted instead of concatenated: objects and arrays are logged as compact JSON (four levels deep, circular references marked) instead of `[object Object]`, errors with their stack, DOM elements as `<tag#id.class>`, Maps and Sets summarized, and `%s`, `%d`, `%i`, `%f`, `%o`, `%O` and `%j` substitutions are applied (`%c` styles are dropped). Uncaught errors and unhandled promise rejections are now logged as errors. An entry is cut at 1,000 characters (5,000 for errors) and marked `… [truncated]`.
-Network logs no longer hold responses in memory. The logger copied every `text/*` response and read the copy in full, so a server-sent events stream was buffered for the lifetime of the page and its connection stayed open after the app closed it. Streaming responses (`text/event-stream`, NDJSON, gRPC, `multipart/x-mixed-replace`) are now never read, other text responses are read from a copy up to 150 KB and the copy is then cancelled, and binary responses are not read at all (`[binary body omitted]`). Status, status text and response headers are recorded as soon as the headers arrive.
-Network log entries are more accurate. URLs are logged absolute and methods upper case. Request headers passed as a `Headers` object (logged as `{}` before), a list of pairs or a `Request` are recorded, and request bodies from `URLSearchParams`, `FormData` (text fields plus file names and sizes), blobs, typed arrays and `Request` objects are logged as text. Failed requests (network error, abort, timeout) carry the error, e.g. `TypeError: Failed to fetch`. XHR requests now record response headers, log `json` responses as JSON instead of `<json>`, report aborts and timeouts, and a reused XHR no longer adds another set of listeners on every `open()`. Resource timing entries have the correct time, and requests made with a relative URL are no longer listed twice. Requests to blacklisted URLs, the SDK's own included, no longer take one of the buffered request slots.
-Network log privacy settings apply more thoroughly. Props to ignore (from the dashboard and `Gleap.setNetworkLogPropsToIgnore`) are matched case-insensitively and removed from request and response headers, from JSON bodies at any depth (a dotted prop such as `user.password` also matches that path from the root), from form bodies and from URL query parameters. A body that is not valid JSON is no longer re-encoded as a JSON string. `Authorization`, `Proxy-Authorization`, `Cookie` and `Set-Cookie` header values are always replaced with `[REDACTED]`. The same rules and the URL blacklist now also apply to logs attached with `Gleap.attachNetworkLogs`. `setNetworkLogPropsToIgnore` and `setNetworkLogsBlacklist` replace their previous list instead of appending to it, the dashboard settings are replaced on every config refresh instead of piling up, and both lists apply together.
-Fixed: the event stream (`/sessions/events`, which delivers `trackEvent`s, page views and session starts) could keep hitting an overloaded API and lost events. Each request carried the whole queue, which was emptied as soon as it went out, so the events of a failed request (429, 5xx, network error) were lost; after three failures it only paused until a fixed one-minute reset, a request that never answered blocked the stream, and an event whose data cannot be sent as JSON stopped it for good. Requests now only go out with a session, one at a time, give up after 30 s, and carry the oldest 100 events or about 256 KB at most; the rest follows right after a delivered request. After a 408, a 429, a 5xx, a network error or a timeout the events stay queued (any other error answer, e.g. 400 or 413, drops them, so they cannot hold back the queue) and the next request waits 3 s, then 6, 12, 24, 48 and at most 60 s (±20 % jitter), or longer when the answer has a `Retry-After` (seconds or an HTTP date, up to 5 minutes). Any 2xx answer delivers exactly the events it carried (events tracked in the meantime wait for the next request) and brings back the normal 2.5 s interval. The queue keeps at most 500 events; a session start is kept and the oldest other events make room. An event whose data cannot be sent as JSON is dropped instead of holding back the others.
-Fixed: the real-time connection (WebSocket) reconnected every 5 s after it dropped, forever and from every open tab in step, also while the browser was offline, and a reconnect still pending when the session changed (e.g. after `identify`) closed the new connection. Reconnects now wait 1 s, then 2, 4, 8, 16, 32 and at most 60 s (±20 % jitter). The wait starts over only after a connection stayed open for 10 s or received a message, so a server that accepts and closes connections right away is not retried every second. Only one reconnect is ever pending, and a new connection cancels it. While the browser is offline no reconnect is attempted; when it is back online the SDK reconnects right away. `Gleap.destroy()` now also closes the connection. The event stream only sends while connected, so its events stay queued until the connection is back.
+
+### Breaking changes
+- `Gleap.setNetworkLogPropsToIgnore` and `Gleap.setNetworkLogsBlacklist` replace their previous list instead of adding to it. Pass the full list in one call. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+- The SDK wraps the console methods in place instead of replacing `window.console`. `Gleap.disableConsoleLogOverwrite()` restores only the methods Gleap still owns. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+
+### Added
+- Dark and light mode for the widget: turn on **Widget → Look & feel → Adapt to dark / light mode**. `Gleap.setColorScheme("auto" | "light" | "dark")` overrides it at runtime. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+
+### Changed
+- Console logs format objects, errors and `%s`-style arguments, and include uncaught errors and rejections. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+- Network logs no longer keep responses in memory. Streaming and binary responses are not read. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+- Network logs record more headers and bodies, and failed requests carry their error. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+- Props to ignore match without case and apply to headers, nested JSON, forms and query parameters. `Authorization` and `Cookie` headers are always redacted. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+
+### Fixed
+- Tracked events were lost when the API was overloaded. They now stay queued and retry with backoff. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
+- The websocket reconnected every 5 s forever. It now backs off up to 60 s and waits while offline. ([#154](https://github.com/GleapSDK/JavaScript-SDK/pull/154))
 
 ## 18.1.2
-Screenshots keep the layout around blocked elements. 18.1.1 replaced a blocked element with an empty placeholder of its size, and content after it could move, so drawings on the screenshot, which are in page coordinates, marked the wrong content: the margins of the element's first and last child that collapse through its edges were lost (a `<p>` in a blocked `<div>` moved everything after it up by its margins), a blocked `display: contents` element disappeared, a blocked table cell lost its `colspan` and `rowspan`, a blocked table row or row group took its cells' share of the column widths with it, and under a CSS transform or zoom the placeholder was scaled a second time.
-The placeholder now carries those margins and takes the element's size before transforms. A `display: contents` element keeps an empty box for each of its children, a blocked cell keeps its spans and a list item its number, and a blocked row or row group keeps an empty cell for each of its cells. A blocked inline-block, button, table cell, or flex or grid item that was aligned on the baseline of its text keeps that baseline (an empty box sits on its bottom edge, which moved the line). The `::before` and `::after` content of a blocked inline element is no longer rendered twice.
-The placeholder keeps the element's class but no longer its id, which rrweb leaves out of replays too and which can hold a name or an email address. The inner boxes of a blocked element keep only their tag, size and table spans: none of its content reaches the snapshot.
+
+### Breaking changes
+- None.
+
+### Fixed
+- Screenshots keep the layout around blocked elements, so drawings mark the right content. ([#159](https://github.com/GleapSDK/JavaScript-SDK/pull/159))
 
 ## 18.1.1
-Screenshots no longer send the values of password fields to Gleap. The page snapshot behind a screenshot copied the value of every form field and masked only fields marked `rr-mask` or `gleap-ignore="value"`, so passwords reached Gleap in clear text although the rendered image showed dots. In React apps the typed value was also copied through the field's `value` attribute (and a textarea's text), so even marked fields were not masked there.
-Screenshots and session replays now mask form fields by the same rule (except dropdowns: replays leave a `<select>`'s value visible). Always masked, whatever the replay options say: password fields (also after a "show password" toggle while replays run) and fields with `autocomplete` `current-password`, `new-password`, `one-time-code`, `cc-number` or `cc-csc`. Masked on request: fields marked `rr-mask`, `gl-mask` or `gleap-ignore="value"`, on the field or on an element around it, and fields matching the `maskTextClass` / `maskTextSelector` replay options. Replays now honor these markers on inputs too; with rrweb 2 they only masked text.
-`Gleap.setReplayOptions({ maskAllInputs: true })`, `maskInputOptions` and `maskInputFn` now apply to screenshots as well. Passing `maskInputOptions` no longer turns off password masking in replays (rrweb replaced its `{ password: true }` default with the object passed).
-In screenshots, a masked value keeps its length as `*` characters, in the field and in its `value` attribute; a masked textarea carries no text, and a masked select marks no option as selected.
-Screenshots no longer capture the content of blocked elements. An element marked `rr-block` or `gl-block`, or matching the `blockClass` / `blockSelector` replay options, was copied into the page snapshot in full (text, attributes, form fields, images, web component content) and only hidden when the screenshot was rendered. It is now replaced by an empty element of the same tag and size that keeps only its class and id, the way replays record an `rr-block` element; images inside it are not downloaded. The screenshot renders it blank, which now also holds for blocked elements inside web components and for `blockClass` / `blockSelector` elements, whose content used to show.
-Text inside elements marked `rr-mask` or `gl-mask`, or matching the `maskTextClass` / `maskTextSelector` replay options, is now masked in screenshots: every character except whitespace becomes `*`, or the site's `maskTextFn` formats it. Replays still block only `rr-block` elements and mask only `rr-mask` text (and the `blockClass` / `blockSelector` / `maskTextClass` / `maskTextSelector` options); `gl-block` and `gl-mask` apply to screenshots, and to form fields in replays. Comments inside these elements are left out. `maskTextFn` is typed `(text, element) => string`, as rrweb calls it.
+
+### Breaking changes
+- None.
+
+### Changed
+- Screenshots and replays mask form fields by the same rules. Password and card fields are always masked. ([#155](https://github.com/GleapSDK/JavaScript-SDK/pull/155))
+- `Gleap.setReplayOptions` masking options apply to screenshots too. Screenshots and replays may mask more fields than before. ([#155](https://github.com/GleapSDK/JavaScript-SDK/pull/155))
+
+### Fixed
+- Security: screenshots sent the values of password fields to Gleap. ([#155](https://github.com/GleapSDK/JavaScript-SDK/pull/155))
+- Screenshots captured the content of blocked elements (`rr-block`, `gl-block`). ([#157](https://github.com/GleapSDK/JavaScript-SDK/pull/157))
+- Text in `rr-mask` and `gl-mask` elements was not masked in screenshots. ([#157](https://github.com/GleapSDK/JavaScript-SDK/pull/157))
 
 ## 18.1.0
-Added control over the env data (device, browser and page details shown under the Env data tab of a ticket) the SDK collects:
-`Gleap.setEnvDataPropsToIgnore(["currentUrl", "userAgent"])` removes individual env data keys from every ticket and conversation before it is sent. Each call replaces the previous list; an empty list resets it.
-`Gleap.setDisableEnvData(true)` stops collecting env data entirely (tickets arrive with an empty Env data tab); `Gleap.setDisableEnvData(false)` turns it back on.
-Both can be called before or after `Gleap.initialize` and apply to the next ticket. The per-form "Exclude data → Env data" switch in the dashboard keeps working as before.
+
+### Breaking changes
+- None.
+
+### Added
+- `Gleap.setEnvDataPropsToIgnore(keys)` removes single env data keys from tickets. ([#153](https://github.com/GleapSDK/JavaScript-SDK/pull/153))
+- `Gleap.setDisableEnvData(true)` stops collecting env data. ([#153](https://github.com/GleapSDK/JavaScript-SDK/pull/153))
 
 ## 18.0.1
-The session replay buffer is now capped by size as well as by time (about 10 MB of events, on top of the existing three 5-minute checkpoints). When it grows past that, the oldest checkpoints are dropped first; if a single checkpoint outgrows the budget on a page that re-renders constantly, a fresh checkpoint replaces it (at most every 30 seconds), so the most recent activity is always kept. This bounds the memory the recorder holds in the host page and the size of the report upload.
-A report that the API (or a proxy in front of it) rejects as too large (HTTP 413) is no longer lost: it is resent without the session replay, and if needed without screenshot data and network logs.
-Added support for authenticated conversation files (opt-in per project): after a server-verified `identify`, the SDK hands a short-lived file session to the messenger, refreshes it while active, keeps it only for the same identity and revokes it on logout. Projects that have not enabled the setting are unaffected.
+
+### Breaking changes
+- None.
+
+### Added
+- Support for authenticated conversation files (opt-in per project). ([#147](https://github.com/GleapSDK/JavaScript-SDK/pull/147))
+
+### Changed
+- The session replay buffer is capped at about 10 MB. ([#148](https://github.com/GleapSDK/JavaScript-SDK/pull/148))
+
+### Fixed
+- A report rejected as too large (HTTP 413) is resent without the replay instead of being lost. ([#148](https://github.com/GleapSDK/JavaScript-SDK/pull/148))
 
 ## 18.0.0
-No breaking changes: major version aligned across all Gleap SDKs for the data-region release. Without `Gleap.setRegion` the SDK behaves exactly as 17.x (EU hosts).
 
-Added data regions: `Gleap.setRegion("eu" | "us")` (case-insensitive, call before `Gleap.initialize`) sets the API url, the SDK streaming (WS) url and the messenger realtime host for the region at once; `Gleap.getRegion()` returns the active region. The default region stays `eu`. An unknown region logs a console warning and changes nothing.
-(eu: `https://api.gleap.io`, `wss://ws.gleap.io`, `sockets.gleap.io`; us: `https://api.us.gleap.ai`, `wss://ws.us.gleap.ai`, `sockets.us.gleap.ai`)
-Manual host setters are unchanged and keep working: `setApiUrl`, `setWSApiUrl`, `setRealtimeHost`, `setFrameUrl`, `setBannerUrl`, `setModalUrl`. The last call wins: a manual setter called after `setRegion` overrides that single host, `setRegion` called after manual setters overrides the three region hosts.
-The static widget hosts stay global for every region (`messenger-app.gleap.io`, `outboundmedia.gleap.io`, `sdk.gleap.io`, `js.gleap.io`); `setRegion` never changes the frame, banner or modal url.
-Added `Gleap.setAgentConversationUrl` to override the `<gleap-agent-conversation>` iframe url (same as `setBannerUrl` / `setModalUrl`).
-Added `gleap.ai` to the default network-log blacklist, so the SDK does not record its own US traffic.
-Added the `GleapRegion` type to the TypeScript definitions.
-Fixed the consentmanager allowlist (`window.cmp_block_ignoredomains`): `messenger-app.gleap.io` was never actually added because the result of `concat` was discarded.
+### Breaking changes
+- None. The major version matches the other Gleap SDKs for the data region release. Without `Gleap.setRegion` the SDK works as in 17.x.
+
+### Added
+- `Gleap.setRegion("eu" | "us")` sets all API hosts for a data region. `Gleap.getRegion()` returns it. ([#146](https://github.com/GleapSDK/JavaScript-SDK/pull/146))
+- `Gleap.setAgentConversationUrl` overrides the agent conversation frame URL. ([#146](https://github.com/GleapSDK/JavaScript-SDK/pull/146))
+- The `GleapRegion` type. ([#146](https://github.com/GleapSDK/JavaScript-SDK/pull/146))
+
+### Changed
+- `gleap.ai` is on the default network log blacklist. ([#146](https://github.com/GleapSDK/JavaScript-SDK/pull/146))
+
+### Fixed
+- `messenger-app.gleap.io` was never added to the consentmanager allowlist. ([#146](https://github.com/GleapSDK/JavaScript-SDK/pull/146))
