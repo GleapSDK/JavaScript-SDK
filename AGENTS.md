@@ -48,6 +48,29 @@ Everything a customer can call or rely on is public: `window.Gleap`, every `Glea
 - **A change to the API updates `index.d.ts`, `CHANGELOG.md` and, for a new call, `README.md` in the same PR.** `npm run test:smoke` checks that every function `index.d.ts` declares exists on `window.Gleap`.
 - **New behaviour is opted into.** A project gets it from a dashboard setting or a new call, never because the SDK was updated. A missing setting keeps today's behaviour.
 
+## Changelog
+
+Each `## X.Y.Z` section of `CHANGELOG.md` becomes the GitHub release for that tag (`.github/workflows/release.yml`). Customers read it to decide whether an upgrade is safe, so it must be quick to scan:
+
+```md
+## X.Y.Z
+
+### Breaking changes
+- None.
+
+### Added
+- `Gleap.example()` does one thing in one line. ([#123](https://github.com/GleapSDK/JavaScript-SDK/pull/123))
+
+### Fixed
+- The launcher opens on the first tap on iPhone. ([#124](https://github.com/GleapSDK/JavaScript-SDK/pull/124))
+```
+
+- **Headings, in this order:** `### Breaking changes`, `### Added`, `### Changed`, `### Deprecated`, `### Fixed`. `Breaking changes` is always there and says `- None.` when there are none; leave out the other headings when they are empty.
+- **Breaking** is anything that can make a customer's code, build or setup act differently after the upgrade: a changed default, behaviour or typing, or something that now needs a setting. Say what to do about it. Unsure? List it here.
+- **One line per item:** short sentences, plain words, no em dashes, no internal names (ticket numbers, customers, other products). Name the API in backticks and dashboard settings in bold.
+- **End each item with a link to its PR.** Details, reasons and edge cases go in the PR or the docs, not here.
+- A change with no effect for customers (docs, tests, tooling) gets one line under `Changed`, for example `- Documentation only. No code changes.`
+
 ## Customer requests
 
 A ticket is one customer's view, a bug report too. Before changing anything for it:
