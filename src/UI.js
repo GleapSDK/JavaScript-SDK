@@ -2664,6 +2664,7 @@ export const injectStyledCSS = (
       border-radius: 32px;
       margin-right: 10px;
       background-size: cover;
+      background-position: center;
       background-repeat: no-repeat;
     }
 

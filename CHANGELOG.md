@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Breaking changes
+- None.
+
+### Fixed
+- In product tours, a sender photo that is not square is centered in its round frame instead of cropped to the top left.
+
 ## 19.9.1
 
 ### Breaking changes
