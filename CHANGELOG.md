@@ -1,5 +1,13 @@
 # Changelog
 
+## 19.9.2
+
+### Breaking changes
+- None.
+
+### Fixed
+- In product tours, a sender photo that is not square is centered in its round frame instead of cropped to the top left. ([#242](https://github.com/GleapSDK/JavaScript-SDK/pull/242))
+
 ## 19.9.1
 
 ### Breaking changes
